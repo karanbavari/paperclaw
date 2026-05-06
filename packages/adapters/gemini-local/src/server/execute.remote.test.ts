@@ -1,0 +1,320 @@
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const {
+  runChildProcess,
+  ensureCommandResolvable,
+  resolveCommandForLogs,
+  prepareWorkspaceForSshExecution,
+  restoreWorkspaceFromSshExecution,
+  runSshCommand,
+  syncDirectoryToSsh,
+  startAdapterExecutionTargetPaperClawBridge,
+} = vi.hoisted(() => ({
+  runChildProcess: vi.fn(async () => ({
+    exitCode: 0,
+    signal: null,
+    timedOut: false,
+    stdout: [
+      JSON.stringify({ type: "system", subtype: "init", session_id: "gemini-session-1", model: "gemini-2.5-pro" }),
+      JSON.stringify({ type: "message", role: "assistant", content: "hello" }),
+      JSON.stringify({
+        type: "result",
+        status: "success",
+        session_id: "gemini-session-1",
+        stats: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
+      }),
+    ].join("\n"),
+    stderr: "",
+    pid: 123,
+    startedAt: new Date().toISOString(),
+  })),
+  ensureCommandResolvable: vi.fn(async () => undefined),
+  resolveCommandForLogs: vi.fn(async () => "ssh://fixture@127.0.0.1:2222/remote/workspace :: gemini"),
+  prepareWorkspaceForSshExecution: vi.fn(async () => undefined),
+  restoreWorkspaceFromSshExecution: vi.fn(async () => undefined),
+  runSshCommand: vi.fn(async () => ({
+    stdout: "/home/agent",
+    stderr: "",
+    exitCode: 0,
+  })),
+  syncDirectoryToSsh: vi.fn(async () => undefined),
+  startAdapterExecutionTargetPaperClawBridge: vi.fn(async () => ({
+    env: {
+      PAPERCLAW_API_URL: "http://127.0.0.1:4310",
+      PAPERCLAW_API_KEY: "bridge-token",
+      PAPERCLAW_API_BRIDGE_MODE: "queue_v1",
+    },
+    stop: async () => {},
+  })),
+}));
+
+vi.mock("@kesarcloud/adapter-utils/server-utils", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/server-utils")>(
+    "@kesarcloud/adapter-utils/server-utils",
+  );
+  return {
+    ...actual,
+    ensureCommandResolvable,
+    resolveCommandForLogs,
+    runChildProcess,
+  };
+});
+
+vi.mock("@kesarcloud/adapter-utils/ssh", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/ssh")>(
+    "@kesarcloud/adapter-utils/ssh",
+  );
+  return {
+    ...actual,
+    prepareWorkspaceForSshExecution,
+    restoreWorkspaceFromSshExecution,
+    runSshCommand,
+    syncDirectoryToSsh,
+  };
+});
+
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
+  );
+  return {
+    ...actual,
+    startAdapterExecutionTargetPaperClawBridge,
+  };
+});
+
+import { execute } from "./execute.js";
+
+describe("gemini remote execution", () => {
+  const cleanupDirs: string[] = [];
+
+  afterEach(async () => {
+    vi.clearAllMocks();
+    while (cleanupDirs.length > 0) {
+      const dir = cleanupDirs.pop();
+      if (!dir) continue;
+      await rm(dir, { recursive: true, force: true }).catch(() => undefined);
+    }
+  });
+
+  it("prepares the workspace, syncs Gemini skills, and restores workspace changes for remote SSH execution", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclaw-gemini-remote-"));
+    cleanupDirs.push(rootDir);
+    const workspaceDir = path.join(rootDir, "workspace");
+    const alternateWorkspaceDir = path.join(rootDir, "workspace-other");
+    await mkdir(workspaceDir, { recursive: true });
+    await mkdir(alternateWorkspaceDir, { recursive: true });
+
+    const result = await execute({
+      runId: "run-1",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "Gemini Builder",
+        adapterType: "gemini_local",
+        adapterConfig: {},
+      },
+      runtime: {
+        sessionId: null,
+        sessionParams: null,
+        sessionDisplayId: null,
+        taskKey: null,
+      },
+      config: {
+        command: "gemini",
+      },
+      context: {
+        paperclawWorkspace: {
+          cwd: workspaceDir,
+          source: "project_primary",
+        },
+        paperclawWorkspaces: [
+          {
+            workspaceId: "workspace-1",
+            cwd: workspaceDir,
+            repoUrl: "https://github.com/karanbavari/paperclaw.git",
+            repoRef: "main",
+          },
+          {
+            workspaceId: "workspace-2",
+            cwd: alternateWorkspaceDir,
+            repoUrl: "https://github.com/karanbavari/paperclaw.git",
+            repoRef: "feature/other",
+          },
+        ],
+      },
+      executionTransport: {
+        remoteExecution: {
+          host: "127.0.0.1",
+          port: 2222,
+          username: "fixture",
+          remoteWorkspacePath: "/remote/workspace",
+          remoteCwd: "/remote/workspace",
+          privateKey: "PRIVATE KEY",
+          knownHosts: "[127.0.0.1]:2222 ssh-ed25519 AAAA",
+          strictHostKeyChecking: true,
+        },
+      },
+      onLog: async () => {},
+    });
+
+    expect(result.sessionParams).toMatchObject({
+      sessionId: "gemini-session-1",
+      cwd: "/remote/workspace",
+      remoteExecution: {
+        transport: "ssh",
+        host: "127.0.0.1",
+        port: 2222,
+        username: "fixture",
+        remoteCwd: "/remote/workspace",
+      },
+    });
+    expect(prepareWorkspaceForSshExecution).toHaveBeenCalledTimes(1);
+    expect(syncDirectoryToSsh).toHaveBeenCalledTimes(1);
+    expect(syncDirectoryToSsh).toHaveBeenCalledWith(expect.objectContaining({
+      remoteDir: "/remote/workspace/.paperclaw-runtime/gemini/skills",
+      followSymlinks: true,
+    }));
+    expect(runSshCommand).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.stringContaining(".gemini/skills"),
+      expect.anything(),
+    );
+    const call = runChildProcess.mock.calls[0] as unknown as
+      | [string, string, string[], { env: Record<string, string>; remoteExecution?: { remoteCwd: string } | null }]
+      | undefined;
+    expect(call?.[3].env.PAPERCLAW_WORKSPACE_CWD).toBe("/remote/workspace");
+    expect(JSON.parse(call?.[3].env.PAPERCLAW_WORKSPACES_JSON ?? "[]")).toEqual([
+      {
+        workspaceId: "workspace-1",
+        cwd: "/remote/workspace",
+        repoUrl: "https://github.com/karanbavari/paperclaw.git",
+        repoRef: "main",
+      },
+      {
+        workspaceId: "workspace-2",
+        repoUrl: "https://github.com/karanbavari/paperclaw.git",
+        repoRef: "feature/other",
+      },
+    ]);
+    expect(call?.[3].env.PAPERCLAW_API_URL).toBe("http://127.0.0.1:4310");
+    expect(call?.[3].env.PAPERCLAW_API_BRIDGE_MODE).toBe("queue_v1");
+    expect(call?.[3].remoteExecution?.remoteCwd).toBe("/remote/workspace");
+    expect(startAdapterExecutionTargetPaperClawBridge).toHaveBeenCalledTimes(1);
+    expect(restoreWorkspaceFromSshExecution).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes saved Gemini sessions for remote SSH execution only when the identity matches", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclaw-gemini-remote-resume-"));
+    cleanupDirs.push(rootDir);
+    const workspaceDir = path.join(rootDir, "workspace");
+    await mkdir(workspaceDir, { recursive: true });
+
+    await execute({
+      runId: "run-ssh-resume",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "Gemini Builder",
+        adapterType: "gemini_local",
+        adapterConfig: {},
+      },
+      runtime: {
+        sessionId: "session-123",
+        sessionParams: {
+          sessionId: "session-123",
+          cwd: "/remote/workspace",
+          remoteExecution: {
+            transport: "ssh",
+            host: "127.0.0.1",
+            port: 2222,
+            username: "fixture",
+            remoteCwd: "/remote/workspace",
+          },
+        },
+        sessionDisplayId: "session-123",
+        taskKey: null,
+      },
+      config: {
+        command: "gemini",
+      },
+      context: {
+        paperclawWorkspace: {
+          cwd: workspaceDir,
+          source: "project_primary",
+        },
+      },
+      executionTransport: {
+        remoteExecution: {
+          host: "127.0.0.1",
+          port: 2222,
+          username: "fixture",
+          remoteWorkspacePath: "/remote/workspace",
+          remoteCwd: "/remote/workspace",
+          privateKey: "PRIVATE KEY",
+          knownHosts: "[127.0.0.1]:2222 ssh-ed25519 AAAA",
+          strictHostKeyChecking: true,
+        },
+      },
+      onLog: async () => {},
+    });
+
+    const call = runChildProcess.mock.calls[0] as unknown as [string, string, string[]] | undefined;
+    expect(call?.[2]).toContain("--resume");
+    expect(call?.[2]).toContain("session-123");
+  });
+
+  it("restores the remote workspace if skills sync fails after workspace prep", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclaw-gemini-remote-sync-fail-"));
+    cleanupDirs.push(rootDir);
+    const workspaceDir = path.join(rootDir, "workspace");
+    await mkdir(workspaceDir, { recursive: true });
+    syncDirectoryToSsh.mockRejectedValueOnce(new Error("sync failed"));
+
+    await expect(execute({
+      runId: "run-sync-fail",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "Gemini Builder",
+        adapterType: "gemini_local",
+        adapterConfig: {},
+      },
+      runtime: {
+        sessionId: null,
+        sessionParams: null,
+        sessionDisplayId: null,
+        taskKey: null,
+      },
+      config: {
+        command: "gemini",
+      },
+      context: {
+        paperclawWorkspace: {
+          cwd: workspaceDir,
+          source: "project_primary",
+        },
+      },
+      executionTransport: {
+        remoteExecution: {
+          host: "127.0.0.1",
+          port: 2222,
+          username: "fixture",
+          remoteWorkspacePath: "/remote/workspace",
+          remoteCwd: "/remote/workspace",
+          privateKey: "PRIVATE KEY",
+          knownHosts: "[127.0.0.1]:2222 ssh-ed25519 AAAA",
+          strictHostKeyChecking: true,
+        },
+      },
+      onLog: async () => {},
+    })).rejects.toThrow("sync failed");
+
+    expect(prepareWorkspaceForSshExecution).toHaveBeenCalledTimes(1);
+    expect(restoreWorkspaceFromSshExecution).toHaveBeenCalledTimes(1);
+    expect(runChildProcess).not.toHaveBeenCalled();
+  });
+});

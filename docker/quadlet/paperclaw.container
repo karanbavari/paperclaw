@@ -1,0 +1,23 @@
+[Unit]
+Description=PaperClaw Agent Orchestrator
+Requires=paperclaw-db.service
+After=paperclaw-db.service
+
+[Container]
+Image=paperclaw-local
+ContainerName=paperclaw
+Pod=paperclaw.pod
+Volume=%h/.local/share/paperclaw:/paperclaw:Z
+Environment=HOST=0.0.0.0
+Environment=PAPERCLAW_HOME=/paperclaw
+Environment=PAPERCLAW_DEPLOYMENT_MODE=authenticated
+Environment=PAPERCLAW_DEPLOYMENT_EXPOSURE=private
+Environment=PAPERCLAW_PUBLIC_URL=http://localhost:3100
+EnvironmentFile=%h/.config/containers/systemd/paperclaw.env
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

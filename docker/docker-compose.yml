@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: paperclaw
+      POSTGRES_PASSWORD: paperclaw
+      POSTGRES_DB: paperclaw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paperclaw -d paperclaw"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  server:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "3100:3100"
+    environment:
+      DATABASE_URL: postgres://paperclaw:paperclaw@db:5432/paperclaw
+      PORT: "3100"
+      SERVE_UI: "true"
+      PAPERCLAW_DEPLOYMENT_MODE: "authenticated"
+      PAPERCLAW_DEPLOYMENT_EXPOSURE: "private"
+      PAPERCLAW_PUBLIC_URL: "${PAPERCLAW_PUBLIC_URL:-http://localhost:3100}"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+    volumes:
+      - paperclaw-data:/paperclaw
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  paperclaw-data:

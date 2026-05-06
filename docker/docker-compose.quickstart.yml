@@ -1,0 +1,18 @@
+services:
+  paperclaw:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "${PAPERCLAW_PORT:-3100}:3100"
+    environment:
+      HOST: "0.0.0.0"
+      PAPERCLAW_HOME: "/paperclaw"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      PAPERCLAW_DEPLOYMENT_MODE: "authenticated"
+      PAPERCLAW_DEPLOYMENT_EXPOSURE: "private"
+      PAPERCLAW_PUBLIC_URL: "${PAPERCLAW_PUBLIC_URL:-http://localhost:3100}"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+    volumes:
+      - "${PAPERCLAW_DATA_DIR:-../data/docker-paperclaw}:/paperclaw"

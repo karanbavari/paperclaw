@@ -1,0 +1,92 @@
+[
+  {
+    "dir": "packages/adapter-utils",
+    "name": "@kesarcloud/adapter-utils",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/acpx-local",
+    "name": "@kesarcloud/adapter-acpx-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/claude-local",
+    "name": "@kesarcloud/adapter-claude-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/codex-local",
+    "name": "@kesarcloud/adapter-codex-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/cursor-local",
+    "name": "@kesarcloud/adapter-cursor-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/gemini-local",
+    "name": "@kesarcloud/adapter-gemini-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/opencode-local",
+    "name": "@kesarcloud/adapter-opencode-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/pi-local",
+    "name": "@kesarcloud/adapter-pi-local",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/openclaw-gateway",
+    "name": "@kesarcloud/adapter-openclaw-gateway",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/shared",
+    "name": "@kesarcloud/shared",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/db",
+    "name": "@kesarcloud/db",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/plugins/sdk",
+    "name": "@kesarcloud/plugin-sdk",
+    "publishFromCi": true
+  },
+  {
+    "dir": "server",
+    "name": "@kesarcloud/server",
+    "publishFromCi": true
+  },
+  {
+    "dir": "cli",
+    "name": "paperclaw",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/mcp-server",
+    "name": "@kesarcloud/mcp-server",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/plugins/create-paperclaw-plugin",
+    "name": "@kesarcloud/create-paperclaw-plugin",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/plugins/sandbox-providers/e2b",
+    "name": "@kesarcloud/plugin-e2b",
+    "publishFromCi": true
+  },
+  {
+    "dir": "ui",
+    "name": "@kesarcloud/ui",
+    "publishFromCi": true
+  }
+]
