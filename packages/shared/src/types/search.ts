@@ -1,9 +1,9 @@
 import type { IssuePriority, IssueStatus } from "../constants.js";
 
-export const COMPANY_SEARCH_SCOPES = ["all", "issues", "comments", "documents", "agents", "projects"] as const;
+export const COMPANY_SEARCH_SCOPES = ["all", "issues", "comments", "documents", "agents", "projects", "meetings"] as const;
 export type CompanySearchScope = (typeof COMPANY_SEARCH_SCOPES)[number];
 
-export type CompanySearchResultType = "issue" | "agent" | "project";
+export type CompanySearchResultType = "issue" | "agent" | "project" | "meeting";
 
 export interface CompanySearchHighlight {
   start: number;
@@ -29,6 +29,17 @@ export interface CompanySearchIssueSummary {
   updatedAt: string;
 }
 
+export interface CompanySearchMeetingSummary {
+  id: string;
+  title: string;
+  status: string;
+  messageId: string | null;
+  messageAuthorType: "board" | "agent" | "system" | null;
+  messageAuthorAgentId: string | null;
+  messageCreatedAt: string | null;
+  updatedAt: string;
+}
+
 export interface CompanySearchResult {
   id: string;
   type: CompanySearchResultType;
@@ -40,6 +51,7 @@ export interface CompanySearchResult {
   snippet: string | null;
   snippets: CompanySearchSnippet[];
   issue?: CompanySearchIssueSummary;
+  meeting?: CompanySearchMeetingSummary;
   updatedAt: string | null;
   previewImageUrl: string | null;
 }

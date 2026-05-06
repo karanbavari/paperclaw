@@ -148,6 +148,13 @@ export {
 } from "./project.js";
 
 export {
+  createMeetingSchema,
+  addMeetingMessageSchema,
+  type CreateMeeting,
+  type AddMeetingMessage,
+} from "./meeting.js";
+
+export {
   createIssueSchema,
   createChildIssueSchema,
   createIssueLabelSchema,

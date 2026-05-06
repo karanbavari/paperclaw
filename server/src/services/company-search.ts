@@ -1,12 +1,13 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
-import { agents, companies, issues, projects } from "@kesarcloud/db";
+import { agents, companies, issues, meetingMessages, meetings, projects } from "@kesarcloud/db";
 import {
   COMPANY_SEARCH_MAX_LIMIT,
   COMPANY_SEARCH_MAX_OFFSET,
   COMPANY_SEARCH_MAX_TOKENS,
   type CompanySearchIssueSummary,
+  type CompanySearchMeetingSummary,
   type CompanySearchQuery,
   type CompanySearchResponse,
   type CompanySearchResult,
@@ -55,6 +56,21 @@ type SimpleSearchRow = {
   description: string | null;
   role?: string | null;
   updatedAt: Date;
+};
+
+type MeetingSearchRow = {
+  id: string;
+  title: string;
+  topic: string;
+  status: string;
+  updatedAt: Date;
+  score: number | string;
+  matchedFields: string[] | null;
+  messageSnippet: string | null;
+  messageId: string | null;
+  messageAuthorType: string | null;
+  messageAuthorAgentId: string | null;
+  messageCreatedAt: Date | null;
 };
 
 function normalizeQuery(query: string) {
@@ -183,12 +199,17 @@ function issueHref(prefix: string, issue: { id: string; identifier: string | nul
   return `/${prefix}/issues/${encodeURIComponent(issue.identifier ?? issue.id)}${suffix}`;
 }
 
+function meetingHref(prefix: string, row: { id: string; messageId: string | null }) {
+  const suffix = row.messageId ? `#message-${encodeURIComponent(row.messageId)}` : "";
+  return `/${prefix}/meetings/${encodeURIComponent(row.id)}${suffix}`;
+}
+
 function matchTerms(normalizedQuery: string, tokens: string[]) {
   return [normalizedQuery, ...tokens].filter((term, index, terms) => term.length > 0 && terms.indexOf(term) === index);
 }
 
 function makeCounts(results: CompanySearchResult[]) {
-  const counts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0 };
+  const counts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0 };
   for (const result of results) counts[result.type] += 1;
   return counts;
 }
@@ -203,6 +224,10 @@ function scopeIncludesAgents(scope: CompanySearchScope) {
 
 function scopeIncludesProjects(scope: CompanySearchScope) {
   return scope === "all" || scope === "projects";
+}
+
+function scopeIncludesMeetings(scope: CompanySearchScope) {
+  return scope === "all" || scope === "meetings";
 }
 
 function issueSearchCondition(scope: CompanySearchScope, input: {
@@ -276,6 +301,57 @@ function issueResult(row: IssueSearchRow, prefix: string, normalizedQuery: strin
   };
 }
 
+function meetingAuthorLabel(authorType: string | null) {
+  if (authorType === "board") return "Board";
+  if (authorType === "agent") return "Agent";
+  if (authorType === "system") return "System";
+  return "Chat";
+}
+
+function selectMeetingSnippets(row: MeetingSearchRow, normalizedQuery: string, tokens: string[]) {
+  const terms = matchTerms(normalizedQuery, tokens);
+  const matchedFields = new Set(row.matchedFields ?? []);
+  const candidates: Array<CompanySearchSnippet | null> = [];
+  if (matchedFields.has("meeting_title")) {
+    candidates.push(createSnippet("meeting_title", "Meeting", row.title, terms));
+  }
+  if (matchedFields.has("meeting_topic")) {
+    candidates.push(createSnippet("meeting_topic", "Topic", row.topic, terms));
+  }
+  if (matchedFields.has("meeting_message")) {
+    candidates.push(createSnippet("meeting_message", meetingAuthorLabel(row.messageAuthorType), row.messageSnippet, terms));
+  }
+  return candidates.filter((snippet): snippet is CompanySearchSnippet => Boolean(snippet)).slice(0, 2);
+}
+
+function meetingResult(row: MeetingSearchRow, prefix: string, normalizedQuery: string, tokens: string[]): CompanySearchResult {
+  const snippets = selectMeetingSnippets(row, normalizedQuery, tokens);
+  const meeting: CompanySearchMeetingSummary = {
+    id: row.id,
+    title: row.title,
+    status: row.status,
+    messageId: row.messageId,
+    messageAuthorType: row.messageAuthorType as CompanySearchMeetingSummary["messageAuthorType"],
+    messageAuthorAgentId: row.messageAuthorAgentId,
+    messageCreatedAt: iso(row.messageCreatedAt),
+    updatedAt: iso(row.updatedAt)!,
+  };
+  return {
+    id: row.messageId ? `${row.id}:${row.messageId}` : row.id,
+    type: "meeting",
+    score: Number(row.score),
+    title: row.title,
+    href: meetingHref(prefix, row),
+    matchedFields: row.matchedFields ?? [],
+    sourceLabel: snippets[0]?.label ?? "Meeting",
+    snippet: snippets[0]?.text ?? null,
+    snippets,
+    meeting,
+    updatedAt: meeting.messageCreatedAt ?? meeting.updatedAt,
+    previewImageUrl: null,
+  };
+}
+
 function scoreSimpleRow(row: SimpleSearchRow, normalizedQuery: string, tokens: string[]) {
   const haystack = [row.title, row.description, row.role].filter(Boolean).join(" ").toLowerCase();
   let score = haystack.includes(normalizedQuery) ? 90 : 0;
@@ -306,7 +382,7 @@ export function companySearchService(db: Db) {
       const scope = query.scope;
       const limit = query.limit;
       const offset = query.offset;
-      const emptyCounts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0 };
+      const emptyCounts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0 };
       if (normalizedQuery.length === 0) {
         return {
           query: query.q,
@@ -639,6 +715,114 @@ export function companySearchService(db: Db) {
           .limit(fetchLimit)
         : [];
 
+      const meetingTitlePhraseMatch = sql<boolean>`lower(coalesce(${meetings.title}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const meetingTitleStartsWith = sql<boolean>`lower(coalesce(${meetings.title}, '')) LIKE ${startsWithPattern} ESCAPE '\\'`;
+      const meetingTopicPhraseMatch = sql<boolean>`lower(coalesce(${meetings.topic}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const meetingTitleTokenMatch = tokenMatchExpression(sql`${meetings.title}`, tokenArray);
+      const meetingTopicTokenMatch = tokenMatchExpression(sql`${meetings.topic}`, tokenArray);
+      const meetingTextMatch = sql<boolean>`
+        ${meetingTitlePhraseMatch}
+        OR ${meetingTopicPhraseMatch}
+        OR ${meetingTitleTokenMatch}
+        OR ${meetingTopicTokenMatch}
+      `;
+      const meetingTokenCoverage = sql<number>`
+        (
+          SELECT count(*)::int
+          FROM unnest(${tokenArray}) AS search_token(value)
+          WHERE lower(coalesce(${meetings.title}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+            OR lower(coalesce(${meetings.topic}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+        )
+      `;
+      const meetingAllTokensMatch = tokenCount > 0
+        ? sql<boolean>`${meetingTokenCoverage} = ${tokenCount}`
+        : noMatchSql();
+      const meetingScore = sql<number>`
+        (
+          CASE WHEN lower(coalesce(${meetings.title}, '')) = ${normalizedQuery} THEN 800 ELSE 0 END
+          + CASE WHEN ${meetingTitleStartsWith} THEN 480 ELSE 0 END
+          + CASE WHEN ${meetingTitlePhraseMatch} THEN 320 ELSE 0 END
+          + CASE WHEN ${meetingTopicPhraseMatch} THEN 220 ELSE 0 END
+          + CASE WHEN ${meetingAllTokensMatch} THEN 220 ELSE 0 END
+          + (${meetingTokenCoverage} * 60)
+          + CASE ${meetings.status} WHEN 'closed' THEN -20 ELSE 20 END
+        )::double precision
+      `;
+      const meetingMatchedFields = sql<string[]>`
+        array_remove(ARRAY[
+          CASE WHEN ${meetingTitlePhraseMatch} OR ${meetingTitleTokenMatch} THEN 'meeting_title' END,
+          CASE WHEN ${meetingTopicPhraseMatch} OR ${meetingTopicTokenMatch} THEN 'meeting_topic' END
+        ], NULL)::text[]
+      `;
+      const meetingRows = scopeIncludesMeetings(scope)
+        ? await db
+          .select({
+            id: meetings.id,
+            title: meetings.title,
+            topic: meetings.topic,
+            status: meetings.status,
+            updatedAt: meetings.updatedAt,
+            score: meetingScore,
+            matchedFields: meetingMatchedFields,
+            messageSnippet: sql<string | null>`null`,
+            messageId: sql<string | null>`null`,
+            messageAuthorType: sql<string | null>`null`,
+            messageAuthorAgentId: sql<string | null>`null`,
+            messageCreatedAt: sql<Date | null>`null`,
+          })
+          .from(meetings)
+          .where(and(eq(meetings.companyId, companyId), meetingTextMatch))
+          .orderBy(desc(meetingScore), desc(meetings.updatedAt), desc(meetings.id))
+          .limit(fetchLimit)
+        : [];
+
+      const meetingMessagePhraseMatch = sql<boolean>`lower(coalesce(${meetingMessages.body}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const meetingMessageTokenMatch = tokenMatchExpression(sql`${meetingMessages.body}`, tokenArray);
+      const meetingMessageCoverage = sql<number>`
+        (
+          SELECT count(*)::int
+          FROM unnest(${tokenArray}) AS search_token(value)
+          WHERE lower(coalesce(${meetingMessages.body}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+        )
+      `;
+      const meetingMessageAllTokensMatch = tokenCount > 0
+        ? sql<boolean>`${meetingMessageCoverage} = ${tokenCount}`
+        : noMatchSql();
+      const meetingMessageScore = sql<number>`
+        (
+          CASE WHEN ${meetingMessagePhraseMatch} THEN 360 ELSE 0 END
+          + CASE WHEN ${meetingMessageAllTokensMatch} THEN 220 ELSE 0 END
+          + (${meetingMessageCoverage} * 70)
+          + CASE ${meetings.status} WHEN 'closed' THEN -20 ELSE 20 END
+        )::double precision
+      `;
+      const meetingMessageRows = scopeIncludesMeetings(scope)
+        ? await db
+          .select({
+            id: meetings.id,
+            title: meetings.title,
+            topic: meetings.topic,
+            status: meetings.status,
+            updatedAt: meetings.updatedAt,
+            score: meetingMessageScore,
+            matchedFields: sql<string[]>`ARRAY['meeting_message']::text[]`,
+            messageSnippet: meetingMessages.body,
+            messageId: sql<string | null>`${meetingMessages.id}::text`,
+            messageAuthorType: meetingMessages.authorType,
+            messageAuthorAgentId: sql<string | null>`${meetingMessages.authorAgentId}::text`,
+            messageCreatedAt: meetingMessages.createdAt,
+          })
+          .from(meetingMessages)
+          .innerJoin(meetings, eq(meetings.id, meetingMessages.meetingId))
+          .where(and(
+            eq(meetingMessages.companyId, companyId),
+            eq(meetings.companyId, companyId),
+            sql<boolean>`(${meetingMessagePhraseMatch} OR ${meetingMessageTokenMatch})`,
+          ))
+          .orderBy(desc(meetingMessageScore), desc(meetingMessages.createdAt), desc(meetingMessages.id))
+          .limit(fetchLimit)
+        : [];
+
       const results: CompanySearchResult[] = [
         ...(issueRows as IssueSearchRow[]).map((row) => issueResult(row, prefix, normalizedQuery, tokens)),
         ...(agentRows as SimpleSearchRow[]).map((row) => {
@@ -675,6 +859,8 @@ export function companySearchService(db: Db) {
             previewImageUrl: null,
           };
         }),
+        ...(meetingRows as MeetingSearchRow[]).map((row) => meetingResult(row, prefix, normalizedQuery, tokens)),
+        ...(meetingMessageRows as MeetingSearchRow[]).map((row) => meetingResult(row, prefix, normalizedQuery, tokens)),
       ].sort((left, right) => {
         if (right.score !== left.score) return right.score - left.score;
         return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");

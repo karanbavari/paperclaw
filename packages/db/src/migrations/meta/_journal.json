@@ -568,6 +568,20 @@
       "when": 1777849000000,
       "tag": "0080_company_search_fuzzystrmatch",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1778060000000,
+      "tag": "0081_meeting_rooms",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1778061000000,
+      "tag": "0082_meeting_search_indexes",
+      "breakpoints": true
     }
   ]
 }

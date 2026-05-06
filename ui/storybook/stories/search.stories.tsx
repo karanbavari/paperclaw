@@ -194,6 +194,7 @@ const fixtureResponse: CompanySearchResponse = {
     issue: fixtureResults.length,
     agent: fixtureAgents.length,
     project: fixtureProjects.length,
+    meeting: 0,
   },
   hasMore: false,
 };
@@ -202,13 +203,14 @@ function ScopeTabsPreview({
   active,
   response,
 }: {
-  active: "all" | "issues" | "comments" | "documents" | "agents" | "projects";
+  active: "all" | "issues" | "comments" | "documents" | "agents" | "projects" | "meetings";
   response: CompanySearchResponse;
 }) {
   const total =
     (response.countsByType.issue ?? 0) +
     (response.countsByType.agent ?? 0) +
-    (response.countsByType.project ?? 0);
+    (response.countsByType.project ?? 0) +
+    (response.countsByType.meeting ?? 0);
   const items: PageTabItem[] = [
     { value: "all", label: <ScopeTabLabel label="All" count={total} /> },
     { value: "issues", label: <ScopeTabLabel label="Issues" count={response.countsByType.issue} /> },
@@ -216,6 +218,7 @@ function ScopeTabsPreview({
     { value: "documents", label: <ScopeTabLabel label="Documents" count={response.results.filter((result) => result.matchedFields.includes("document")).length} /> },
     { value: "agents", label: <ScopeTabLabel label="Agents" count={response.countsByType.agent} /> },
     { value: "projects", label: <ScopeTabLabel label="Projects" count={response.countsByType.project} /> },
+    { value: "meetings", label: <ScopeTabLabel label="Meetings" count={response.countsByType.meeting} /> },
   ];
   return (
     <Tabs value={active}>
@@ -534,7 +537,7 @@ function SearchStories() {
             <div className="paperclaw-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">No results state</h2>
           </div>
-          <SearchPagePreview response={{ ...fixtureResponse, results: [], countsByType: { issue: 0, agent: 0, project: 0 } }} state="empty" query="ghostbuster" />
+          <SearchPagePreview response={{ ...fixtureResponse, results: [], countsByType: { issue: 0, agent: 0, project: 0, meeting: 0 } }} state="empty" query="ghostbuster" />
         </section>
 
         <section className="paperclaw-story__frame overflow-hidden p-4">

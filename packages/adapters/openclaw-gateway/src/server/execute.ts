@@ -9,6 +9,7 @@ import {
   buildPaperClawEnv,
   parseObject,
   renderPaperClawWakePrompt,
+  renderPaperClawMeetingPrompt,
   stringifyPaperClawWakePayload,
 } from "@kesarcloud/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
@@ -452,15 +453,20 @@ function appendWakeText(baseText: string, wakeText: string): string {
   return trimmedBase.length > 0 ? `${trimmedBase}\n\n${wakeText}` : wakeText;
 }
 
-function joinWakePayloadSections(structuredWakePrompt: string, structuredWakeJson: string): string {
-  const sections = [
-    structuredWakePrompt.trim(),
+function joinWakePayloadSections(...sections: string[]): string {
+  const entries = sections
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  const hasJson = entries.some((entry) => entry.startsWith("{") && entry.endsWith("}"));
+  if (!hasJson) return entries.join("\n");
+  const last = entries[entries.length - 1]!;
+  return [
+    ...entries.slice(0, -1),
     "Structured wake payload JSON:",
     "```json",
-    structuredWakeJson,
+    last,
     "```",
-  ].filter((entry) => entry.trim().length > 0);
-  return sections.join("\n");
+  ].join("\n");
 }
 
 function buildStandardPaperClawPayload(
@@ -1106,13 +1112,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const wakePayload = buildWakePayload(ctx);
   const paperclawEnv = buildPaperClawEnvForWake(ctx, wakePayload);
   const structuredWakePrompt = renderPaperClawWakePrompt(ctx.context.paperclawWake);
+  const structuredMeetingPrompt = renderPaperClawMeetingPrompt(ctx.context.paperclawMeeting);
   const structuredWakeJson = stringifyPaperClawWakePayload(ctx.context.paperclawWake);
   const wakeText = buildWakeText(
     wakePayload,
     paperclawEnv,
     structuredWakeJson
-      ? joinWakePayloadSections(structuredWakePrompt, structuredWakeJson)
-      : structuredWakePrompt,
+      ? joinWakePayloadSections(structuredWakePrompt, structuredMeetingPrompt, structuredWakeJson)
+      : joinWakePayloadSections(structuredWakePrompt, structuredMeetingPrompt),
   );
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);

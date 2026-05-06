@@ -9,6 +9,8 @@ import {
   issueComments,
   issueDocuments,
   issues,
+  meetingMessages,
+  meetings,
   projects,
 } from "@kesarcloud/db";
 import { companySearchQuerySchema, COMPANY_SEARCH_MAX_QUERY_LENGTH } from "@kesarcloud/shared";
@@ -68,6 +70,8 @@ describeEmbeddedPostgres("companySearchService", () => {
   }, 20_000);
 
   afterEach(async () => {
+    await db.delete(meetingMessages);
+    await db.delete(meetings);
     await db.delete(issueDocuments);
     await db.delete(documents);
     await db.delete(issueComments);
@@ -134,6 +138,38 @@ describeEmbeddedPostgres("companySearchService", () => {
     return id;
   }
 
+  async function createMeeting(companyId: string, values: Partial<typeof meetings.$inferInsert> = {}) {
+    const id = values.id ?? randomUUID();
+    await db.insert(meetings).values({
+      id,
+      companyId,
+      title: values.title ?? "Search meeting",
+      topic: values.topic ?? "Discuss search",
+      markdownPath: values.markdownPath ?? `data/meetings/${companyId}/${id}.md`,
+      status: values.status ?? "open",
+      ...values,
+    });
+    return id;
+  }
+
+  async function createMeetingMessage(
+    companyId: string,
+    meetingId: string,
+    values: Partial<typeof meetingMessages.$inferInsert> = {},
+  ) {
+    const id = values.id ?? randomUUID();
+    await db.insert(meetingMessages).values({
+      id,
+      companyId,
+      meetingId,
+      authorType: values.authorType ?? "board",
+      body: values.body ?? "Search meeting chat",
+      status: values.status ?? "completed",
+      ...values,
+    });
+    return id;
+  }
+
   it("ranks exact issue identifiers before weaker title matches", async () => {
     const companyId = await createCompany();
     const exactId = await createIssue(companyId, {
@@ -170,6 +206,34 @@ describeEmbeddedPostgres("companySearchService", () => {
     expect(match).toBeTruthy();
     expect(match?.matchedFields).toEqual(expect.arrayContaining(["title", "comment"]));
     expect(match?.snippets.some((snippet) => /snippet/i.test(snippet.text))).toBe(true);
+  });
+
+  it("returns meeting chat matches in the meetings scope", async () => {
+    const companyId = await createCompany();
+    const meetingId = await createMeeting(companyId, {
+      title: "Architecture council",
+      topic: "Plan the next roadmap review",
+    });
+    const messageId = await createMeetingMessage(companyId, meetingId, {
+      authorType: "board",
+      body: "Can the CTO review the roadmap risks before launch?",
+    });
+
+    const result = await svc.search(companyId, companySearchQuerySchema.parse({ q: "before launch", scope: "meetings" }));
+
+    expect(result.countsByType).toEqual({ issue: 0, agent: 0, project: 0, meeting: 1 });
+    expect(result.results[0]).toMatchObject({
+      type: "meeting",
+      title: "Architecture council",
+      matchedFields: expect.arrayContaining(["meeting_message"]),
+    });
+    expect(result.results[0]?.href).toContain(`/meetings/${meetingId}`);
+    expect(result.results[0]?.href).toContain(`#message-${messageId}`);
+    expect(result.results[0]?.meeting).toMatchObject({
+      id: meetingId,
+      messageId,
+      messageAuthorType: "board",
+    });
   });
 
   it("searches issue documents and returns document metadata for snippets", async () => {
@@ -387,7 +451,7 @@ describeEmbeddedPostgres("companySearchService", () => {
     const result = await svc.search(companyId, companySearchQuerySchema.parse({ q: "needle", limit: "2", offset: "2" }));
 
     expect(result.results.map((row) => row.id)).toEqual([agentIds[2], projectIds[0]]);
-    expect(result.countsByType).toEqual({ issue: 0, agent: 3, project: 3 });
+    expect(result.countsByType).toEqual({ issue: 0, agent: 3, project: 3, meeting: 0 });
     expect(result.hasMore).toBe(true);
   });
 

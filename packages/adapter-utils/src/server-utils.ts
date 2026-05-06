@@ -789,6 +789,63 @@ export function renderPaperClawWakePrompt(
   return lines.join("\n").trim();
 }
 
+export function renderPaperClawMeetingPrompt(value: unknown): string {
+  const payload = parseObject(value);
+  if (Object.keys(payload).length === 0) return "";
+
+  const title = asString(payload.title, "Untitled meeting").trim();
+  const topic = asString(payload.topic, "").trim();
+  const currentAgentName = asString(payload.currentAgentName, "this agent").trim();
+  const transcript = asString(payload.transcript, "").trim();
+  const targetQuestion = asString(payload.targetQuestion, "").trim();
+  const requestedBy = asString(payload.requestedBy, "Board").trim();
+  const delegationReason = asString(payload.delegationReason, "").trim();
+  const roster = Array.isArray(payload.agentRoster)
+    ? payload.agentRoster
+      .map((entry) => parseObject(entry))
+      .filter((entry) => Object.keys(entry).length > 0)
+    : [];
+  const rosterLines = roster.map((agent) => {
+    const name = asString(agent.name, "Agent");
+    const id = asString(agent.id, "");
+    const titleText = asString(agent.title, "").trim();
+    const role = asString(agent.role, "").trim();
+    const status = asString(agent.status, "").trim();
+    const reportsTo = asString(agent.reportsTo, "").trim();
+    const direct = agent.isDirectReport === true ? "; direct report to you" : "";
+    return `- ${name}${titleText ? ` (${titleText})` : ""}${role ? `; role: ${role}` : ""}${status ? `; status: ${status}` : ""}${reportsTo ? `; reportsTo: ${reportsTo}` : ""}${direct}; id: ${id}`;
+  });
+
+  return [
+    "## PaperClaw Meeting Room",
+    "",
+    "You are answering a directed Board meeting question, not participating in a round table and not executing a normal work issue.",
+    "This meeting instruction overrides the generic heartbeat execution contract for this run.",
+    "Answer the specific question asked to you. If another agent is better suited, answer what you can and delegate clearly.",
+    "Do not modify project files, run broad implementation work, or create tasks unless the Board explicitly asks for that inside this meeting.",
+    "Write the visible response as a message to the group. Be concrete and concise, and mention disagreements or tradeoffs when useful.",
+    "",
+    `- meeting: ${title}`,
+    `- you are: ${currentAgentName}`,
+    `- requested by: ${requestedBy}`,
+    delegationReason ? `- handoff reason: ${delegationReason}` : "",
+    "",
+    "### Topic",
+    topic || "(no topic provided)",
+    targetQuestion ? ["", "### Question For You", targetQuestion].join("\n") : "",
+    rosterLines.length > 0 ? ["", "### Agent Roster", ...rosterLines].join("\n") : "",
+    transcript ? ["", "### Transcript So Far", transcript].join("\n") : "",
+    "",
+    "### Required Output",
+    "Return your meeting contribution in markdown. Do not include hidden reasoning or tool logs.",
+    "If another active agent should answer next, append exactly one fenced block at the end:",
+    "```paperclaw-delegate",
+    "{\"targetAgentId\":\"agent-uuid-from-roster\",\"reason\":\"short reason\"}",
+    "```",
+    "Use that delegation block only when you genuinely want PaperClaw to wake that agent next.",
+  ].filter(Boolean).join("\n");
+}
+
 export function redactEnvForLogs(env: Record<string, string>): Record<string, string> {
   const redacted: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {

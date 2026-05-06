@@ -38,6 +38,7 @@ import {
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
   renderPaperClawWakePrompt,
+  renderPaperClawMeetingPrompt,
   shapePaperClawWorkspaceEnvForExecution,
   stringifyPaperClawWakePayload,
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
@@ -563,12 +564,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession: canResumeSession });
+  const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
   const shouldUseResumeDeltaPrompt = canResumeSession && wakePrompt.length > 0;
   const renderedHeartbeatPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclawSessionHandoffMarkdown, "").trim();
   const userPrompt = joinPromptSections([
     renderedBootstrapPrompt,
     wakePrompt,
+    meetingPrompt,
     sessionHandoffNote,
     renderedHeartbeatPrompt,
   ]);

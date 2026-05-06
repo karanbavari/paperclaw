@@ -93,6 +93,7 @@ export type { Project, ProjectCodebase, ProjectCodebaseOrigin, ProjectGoalRef, P
 export type {
   CompanySearchHighlight,
   CompanySearchIssueSummary,
+  CompanySearchMeetingSummary,
   CompanySearchResponse,
   CompanySearchResult,
   CompanySearchResultType,
@@ -222,6 +223,16 @@ export type {
   IssueTreePreviewWarning,
 } from "./issue-tree-control.js";
 export type { Goal } from "./goal.js";
+export type {
+  MeetingStatus,
+  MeetingParticipantStatus,
+  MeetingMessageAuthorType,
+  MeetingMessageStatus,
+  MeetingSummary,
+  MeetingParticipant,
+  MeetingMessage,
+  MeetingDetail,
+} from "./meeting.js";
 export type { Approval, ApprovalComment } from "./approval.js";
 export type {
   BudgetPolicy,

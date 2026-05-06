@@ -170,7 +170,7 @@ describe("Search page", () => {
       scope: "all",
       limit: 20,
       offset: 0,
-      countsByType: { issue: 1, agent: 0, project: 0 },
+      countsByType: { issue: 1, agent: 0, project: 0, meeting: 0 },
       hasMore: false,
       results: [
         {
@@ -233,6 +233,66 @@ describe("Search page", () => {
     });
   });
 
+  it("renders meeting chat results", async () => {
+    searchApiMock.search.mockResolvedValueOnce({
+      query: "roadmap",
+      normalizedQuery: "roadmap",
+      scope: "meetings",
+      limit: 20,
+      offset: 0,
+      countsByType: { issue: 0, agent: 0, project: 0, meeting: 1 },
+      hasMore: false,
+      results: [
+        {
+          id: "meeting-1:message-1",
+          type: "meeting",
+          score: 240,
+          title: "Planning Meetup",
+          href: "/PAP/meetings/meeting-1#message-message-1",
+          matchedFields: ["meeting_message"],
+          sourceLabel: "Board",
+          snippet: "Can we revisit the roadmap?",
+          snippets: [
+            {
+              field: "meeting_message",
+              label: "Board",
+              text: "Can we revisit the roadmap?",
+              highlights: [{ start: 20, end: 27 }],
+            },
+          ],
+          meeting: {
+            id: "meeting-1",
+            title: "Planning Meetup",
+            status: "open",
+            messageId: "message-1",
+            messageAuthorType: "board",
+            messageAuthorAgentId: null,
+            messageCreatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          updatedAt: new Date().toISOString(),
+          previewImageUrl: null,
+        },
+      ],
+    });
+
+    const { root } = renderSearch("/search?q=roadmap&scope=meetings", container);
+
+    await waitForAssertion(() => {
+      expect(searchApiMock.search).toHaveBeenCalledWith("company-1", {
+        q: "roadmap",
+        scope: "meetings",
+        limit: 20,
+      });
+      expect(container.textContent).toContain("Planning Meetup");
+      expect(container.textContent).toContain("Can we revisit the roadmap?");
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("debounces typing into the input and dispatches a search after the debounce window", async () => {
     searchApiMock.search.mockResolvedValue({
       query: "deflake",
@@ -240,7 +300,7 @@ describe("Search page", () => {
       scope: "all",
       limit: 20,
       offset: 0,
-      countsByType: { issue: 0, agent: 0, project: 0 },
+      countsByType: { issue: 0, agent: 0, project: 0, meeting: 0 },
       hasMore: false,
       results: [],
     });
@@ -284,7 +344,7 @@ describe("Search page", () => {
       scope: "all",
       limit: 20,
       offset: 0,
-      countsByType: { issue: 1, agent: 0, project: 0 },
+      countsByType: { issue: 1, agent: 0, project: 0, meeting: 0 },
       hasMore: false,
       results: [
         {
@@ -338,7 +398,7 @@ describe("Search page", () => {
       scope: "comments",
       limit: 20,
       offset: 0,
-      countsByType: { issue: 0, agent: 0, project: 0 },
+      countsByType: { issue: 0, agent: 0, project: 0, meeting: 0 },
       hasMore: false,
       results: [],
     });

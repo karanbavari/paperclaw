@@ -142,6 +142,7 @@ import {
 } from "./recovery/model-profile-hint.js";
 import { recoveryService } from "./recovery/service.js";
 import { productivityReviewService } from "./productivity-review.js";
+import { meetingService } from "./meetings.js";
 import { withAgentStartLock } from "./agent-start-lock.js";
 import {
   redactCurrentUserText,
@@ -7504,6 +7505,34 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const finalizedRun = persistedRun ?? (await getRun(run.id));
       if (finalizedRun) {
+        const meetingId = readNonEmptyString(context.meetingId);
+        const meetingMessageId = readNonEmptyString(context.meetingMessageId);
+        const meetingDelegationDepth = typeof context.meetingDelegationDepth === "number"
+          ? context.meetingDelegationDepth
+          : null;
+        if (meetingId && meetingMessageId) {
+          try {
+            await meetingService(db).completeAgentMessageFromRun({
+              companyId: agent.companyId,
+              meetingId,
+              messageId: meetingMessageId,
+              runId: finalizedRun.id,
+              agentId: agent.id,
+              status,
+              delegationDepth: meetingDelegationDepth,
+              body: adapterResult.summary ?? null,
+              resultJson: persistedResultJson,
+              stdoutExcerpt,
+              error: runErrorMessage,
+              wakeup: (agentId, options) => enqueueWakeup(agentId, options),
+            });
+          } catch (err) {
+            await onLog(
+              "stderr",
+              `[paperclaw] Failed to update meeting transcript: ${err instanceof Error ? err.message : String(err)}\n`,
+            );
+          }
+        }
         await appendRunEvent(finalizedRun, seq++, {
           eventType: "lifecycle",
           stream: "system",

@@ -19,6 +19,7 @@ import {
   parseObject,
   readPaperClawRuntimeSkillEntries,
   renderPaperClawWakePrompt,
+  renderPaperClawMeetingPrompt,
   renderTemplate,
   resolvePaperClawDesiredSkillNames,
   shapePaperClawWorkspaceEnvForExecution,
@@ -897,6 +898,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession });
+  const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
   const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
@@ -906,6 +908,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     promptInstructionsPrefix,
     renderedBootstrapPrompt,
     wakePrompt,
+    meetingPrompt,
     sessionHandoffNote,
     taskContextNote,
     renderedPrompt,
