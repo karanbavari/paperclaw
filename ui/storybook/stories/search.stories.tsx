@@ -195,6 +195,7 @@ const fixtureResponse: CompanySearchResponse = {
     agent: fixtureAgents.length,
     project: fixtureProjects.length,
     meeting: 0,
+    memory: 0,
   },
   hasMore: false,
 };
@@ -537,7 +538,7 @@ function SearchStories() {
             <div className="paperclaw-story__label">/search</div>
             <h2 className="mt-1 text-lg font-semibold">No results state</h2>
           </div>
-          <SearchPagePreview response={{ ...fixtureResponse, results: [], countsByType: { issue: 0, agent: 0, project: 0, meeting: 0 } }} state="empty" query="ghostbuster" />
+          <SearchPagePreview response={{ ...fixtureResponse, results: [], countsByType: { issue: 0, agent: 0, project: 0, meeting: 0, memory: 0 } }} state="empty" query="ghostbuster" />
         </section>
 
         <section className="paperclaw-story__frame overflow-hidden p-4">

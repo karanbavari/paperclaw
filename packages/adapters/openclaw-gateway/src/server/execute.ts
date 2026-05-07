@@ -8,6 +8,7 @@ import {
   asString,
   buildPaperClawEnv,
   parseObject,
+  renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
   stringifyPaperClawWakePayload,
@@ -1113,13 +1114,19 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const paperclawEnv = buildPaperClawEnvForWake(ctx, wakePayload);
   const structuredWakePrompt = renderPaperClawWakePrompt(ctx.context.paperclawWake);
   const structuredMeetingPrompt = renderPaperClawMeetingPrompt(ctx.context.paperclawMeeting);
+  const structuredLocalizationPrompt = renderPaperClawLocalizationPrompt(ctx.context.paperclawLocalization);
   const structuredWakeJson = stringifyPaperClawWakePayload(ctx.context.paperclawWake);
   const wakeText = buildWakeText(
     wakePayload,
     paperclawEnv,
     structuredWakeJson
-      ? joinWakePayloadSections(structuredWakePrompt, structuredMeetingPrompt, structuredWakeJson)
-      : joinWakePayloadSections(structuredWakePrompt, structuredMeetingPrompt),
+      ? joinWakePayloadSections(
+          structuredLocalizationPrompt,
+          structuredWakePrompt,
+          structuredMeetingPrompt,
+          structuredWakeJson,
+        )
+      : joinWakePayloadSections(structuredLocalizationPrompt, structuredWakePrompt, structuredMeetingPrompt),
   );
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);

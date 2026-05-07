@@ -1,12 +1,16 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  COMPANY_PROFILE_CURRENCY_OPTIONS,
+  COMPANY_PROFILE_LANGUAGE_OPTIONS,
+  COMPANY_PROFILE_TIMEZONE_OPTIONS,
   DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES,
   MAX_COMPANY_ATTACHMENT_MAX_BYTES,
 } from "@kesarcloud/shared";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { companiesApi } from "../api/companies";
+import { companyMemoryApi } from "../api/companyMemory";
 import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
@@ -28,6 +32,21 @@ type AgentSnippetInput = {
 const BYTES_PER_MIB = 1024 * 1024;
 const DEFAULT_COMPANY_ATTACHMENT_MAX_MIB = DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
 const MAX_COMPANY_ATTACHMENT_MAX_MIB = MAX_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
+
+function getLocalTimezone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+function normalizeTimezone(value: string | null | undefined) {
+  if (value && COMPANY_PROFILE_TIMEZONE_OPTIONS.includes(value as any)) return value;
+  const local = getLocalTimezone();
+  return COMPANY_PROFILE_TIMEZONE_OPTIONS.includes(local as any) ? local : "UTC";
+}
+
 export function CompanySettings() {
   const {
     companies,
@@ -44,6 +63,17 @@ export function CompanySettings() {
   const [attachmentMaxMiB, setAttachmentMaxMiB] = useState(String(DEFAULT_COMPANY_ATTACHMENT_MAX_MIB));
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [defaultLanguage, setDefaultLanguage] = useState("en");
+  const [defaultCurrency, setDefaultCurrency] = useState("USD");
+  const [timezone, setTimezone] = useState(() => normalizeTimezone(null));
+
+  const profileQuery = useQuery({
+    queryKey: selectedCompanyId
+      ? queryKeys.companyMemory.profile(selectedCompanyId)
+      : ["company-memory", "__disabled__", "profile"],
+    queryFn: () => companyMemoryApi.getProfile(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
 
   // Sync local state from selected company
   useEffect(() => {
@@ -54,6 +84,12 @@ export function CompanySettings() {
     setAttachmentMaxMiB(String(Math.round((selectedCompany.attachmentMaxBytes ?? DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES) / BYTES_PER_MIB)));
     setLogoUrl(selectedCompany.logoUrl ?? "");
   }, [selectedCompany]);
+
+  useEffect(() => {
+    setDefaultLanguage(profileQuery.data?.defaultLanguage ?? "en");
+    setDefaultCurrency(profileQuery.data?.defaultCurrency ?? "USD");
+    setTimezone(normalizeTimezone(profileQuery.data?.timezone));
+  }, [profileQuery.data]);
 
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSnippet, setInviteSnippet] = useState<string | null>(null);
@@ -72,6 +108,11 @@ export function CompanySettings() {
       description !== (selectedCompany.description ?? "") ||
       brandColor !== (selectedCompany.brandColor ?? "") ||
       attachmentMaxBytes !== (selectedCompany.attachmentMaxBytes ?? DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES));
+
+  const localizationDirty =
+    defaultLanguage !== (profileQuery.data?.defaultLanguage ?? "en") ||
+    defaultCurrency !== (profileQuery.data?.defaultCurrency ?? "USD") ||
+    timezone !== normalizeTimezone(profileQuery.data?.timezone);
 
   const generalMutation = useMutation({
     mutationFn: (data: {
@@ -93,6 +134,19 @@ export function CompanySettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
     }
+  });
+
+  const localizationMutation = useMutation({
+    mutationFn: () =>
+      companyMemoryApi.updateProfile(selectedCompanyId!, {
+        defaultLanguage: defaultLanguage as any,
+        defaultCurrency: defaultCurrency as any,
+        timezone: timezone as any,
+      }),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(queryKeys.companyMemory.profile(selectedCompanyId!), profile);
+      queryClient.invalidateQueries({ queryKey: queryKeys.companyMemory.profile(selectedCompanyId!) });
+    },
   });
 
   const inviteMutation = useMutation({
@@ -415,6 +469,82 @@ export function CompanySettings() {
           )}
         </div>
       )}
+
+      {/* Localization */}
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Localization
+        </div>
+        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+          <Field
+            label="Language"
+            hint="Agents use this as the default conversation and output language."
+          >
+            <select
+              value={defaultLanguage}
+              onChange={(event) => setDefaultLanguage(event.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+            >
+              {COMPANY_PROFILE_LANGUAGE_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Currency"
+            hint="Agents use this currency for financial estimates, reports, and business discussion."
+          >
+            <select
+              value={defaultCurrency}
+              onChange={(event) => setDefaultCurrency(event.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+            >
+              {COMPANY_PROFILE_CURRENCY_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.code} - {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Timezone"
+            hint="Agents use this timezone when scheduling, reporting, and interpreting dates."
+          >
+            <select
+              value={timezone}
+              onChange={(event) => setTimezone(event.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+            >
+              {COMPANY_PROFILE_TIMEZONE_OPTIONS.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => localizationMutation.mutate()}
+              disabled={!localizationDirty || localizationMutation.isPending || profileQuery.isLoading}
+            >
+              {localizationMutation.isPending ? "Saving..." : "Save localization"}
+            </Button>
+            {localizationMutation.isSuccess && (
+              <span className="text-xs text-muted-foreground">Saved</span>
+            )}
+            {localizationMutation.isError && (
+              <span className="text-xs text-destructive">
+                {localizationMutation.error instanceof Error
+                  ? localizationMutation.error.message
+                  : "Failed to save localization"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Hiring */}
       <div className="space-y-4" data-testid="company-settings-team-section">

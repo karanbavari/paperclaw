@@ -276,6 +276,75 @@ export function joinPromptSections(
     .join(separator);
 }
 
+export const PAPERCLAW_LOCALIZATION_START_MARKER = "<!-- paperclaw-localization:start -->";
+export const PAPERCLAW_LOCALIZATION_END_MARKER = "<!-- paperclaw-localization:end -->";
+
+export type PaperClawLocalizationInput = {
+  defaultLanguage?: string | null;
+  defaultLanguageLabel?: string | null;
+  defaultCurrency?: string | null;
+  defaultCurrencyLabel?: string | null;
+  timezone?: string | null;
+};
+
+function normalizeLocalizationInput(value: unknown): PaperClawLocalizationInput {
+  const record = parseObject(value);
+  return {
+    defaultLanguage: asString(record.defaultLanguage, "").trim() || null,
+    defaultLanguageLabel: asString(record.defaultLanguageLabel, "").trim() || null,
+    defaultCurrency: asString(record.defaultCurrency, "").trim() || null,
+    defaultCurrencyLabel: asString(record.defaultCurrencyLabel, "").trim() || null,
+    timezone: asString(record.timezone, "").trim() || null,
+  };
+}
+
+export function renderPaperClawLocalizationInstructionBlock(input: PaperClawLocalizationInput): string {
+  const language = input.defaultLanguageLabel || input.defaultLanguage;
+  const currency = input.defaultCurrency
+    ? input.defaultCurrencyLabel
+      ? `${input.defaultCurrency} (${input.defaultCurrencyLabel})`
+      : input.defaultCurrency
+    : null;
+  const timezone = input.timezone;
+  const lines = [
+    PAPERCLAW_LOCALIZATION_START_MARKER,
+    "## Company Localization",
+    "",
+    language
+      ? `- Default language: ${language}${input.defaultLanguage ? ` (${input.defaultLanguage})` : ""}.`
+      : "- Default language: not set.",
+    currency
+      ? `- Default currency: ${currency}.`
+      : "- Default currency: not set.",
+    timezone
+      ? `- Default timezone: ${timezone}.`
+      : "- Default timezone: not set.",
+    "",
+    "You MUST communicate with the Board, other agents, meeting rooms, task comments, status updates, plans, and completion reports in the company default language unless the Board explicitly asks for another language in the current thread.",
+    "Use the company default currency for business, finance, pricing, and estimate discussions. Use the company timezone when interpreting, scheduling, or reporting dates and times.",
+    "You may preserve another language only when quoting source material or when the Board explicitly requests that language.",
+    PAPERCLAW_LOCALIZATION_END_MARKER,
+  ];
+  return lines.join("\n");
+}
+
+export function renderPaperClawLocalizationPrompt(value: unknown): string {
+  const input = normalizeLocalizationInput(value);
+  if (!input.defaultLanguage && !input.defaultLanguageLabel && !input.defaultCurrency && !input.timezone) return "";
+  return renderPaperClawLocalizationInstructionBlock(input);
+}
+
+export function applyPaperClawLocalizationInstructionBlock(content: string, block: string): string {
+  const pattern = new RegExp(
+    `${PAPERCLAW_LOCALIZATION_START_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\\s\\S]*?${PAPERCLAW_LOCALIZATION_END_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+  );
+  const trimmedContent = content.trimEnd();
+  if (pattern.test(content)) {
+    return content.replace(pattern, block);
+  }
+  return `${trimmedContent}${trimmedContent ? "\n\n" : ""}${block}\n`;
+}
+
 type PaperClawWakeIssue = {
   id: string | null;
   identifier: string | null;

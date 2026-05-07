@@ -1,5 +1,5 @@
 import { memo, type ComponentType, type SVGProps } from "react";
-import { Bot, FileText, Hexagon, MessagesSquare, MessageSquare, Quote } from "lucide-react";
+import { Bot, Brain, FileText, Hexagon, MessagesSquare, MessageSquare, Quote } from "lucide-react";
 import type { Agent, CompanySearchResult } from "@kesarcloud/shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,9 @@ const SNIPPET_STYLES: Record<string, SnippetStyle> = {
   meeting_message: { Icon: MessageSquare, label: "Chat" },
   meeting_topic: { Icon: Quote, label: "Topic" },
   meeting_title: { Icon: MessagesSquare, label: "Meeting" },
+  memory_body: { Icon: Brain, label: "Memory" },
+  memory_summary: { Icon: Quote, label: "Summary" },
+  memory_title: { Icon: Brain, label: "Memory" },
 };
 
 function snippetStyle(field: string, fallbackLabel: string): SnippetStyle {
@@ -135,6 +138,42 @@ function SearchResultRowImpl({
               highlights={result.snippets[0]?.highlights}
               field={result.snippets[0]?.field ?? "meeting_message"}
               fallbackLabel={result.sourceLabel ?? "Meeting"}
+              multiline
+            />
+          ) : null}
+        </div>
+        {result.updatedAt ? (
+          <span className="ml-2 hidden shrink-0 text-xs tabular-nums text-muted-foreground sm:inline">
+            {formatRelativeTime(result.updatedAt)}
+          </span>
+        ) : null}
+      </Link>
+    );
+  }
+
+  if (result.type === "memory") {
+    return (
+      <Link
+        to={result.href}
+        className={cn(ROW_BASE, "py-3", isActive && "bg-muted/40", className)}
+        data-result-type="memory"
+      >
+        <Brain className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate text-sm font-medium">{result.title}</span>
+            {result.memory?.status ? (
+              <span className="shrink-0 rounded border border-border px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+                {result.memory.status.replace(/_/g, " ")}
+              </span>
+            ) : null}
+          </div>
+          {result.snippet ? (
+            <SnippetLine
+              text={result.snippets[0]?.text ?? result.snippet}
+              highlights={result.snippets[0]?.highlights}
+              field={result.snippets[0]?.field ?? "memory_body"}
+              fallbackLabel={result.sourceLabel ?? "Memory"}
               multiline
             />
           ) : null}

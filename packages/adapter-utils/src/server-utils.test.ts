@@ -6,8 +6,11 @@ import { describe, expect, it } from "vitest";
 import {
   applyPaperClawWorkspaceEnv,
   appendWithByteCap,
+  applyPaperClawLocalizationInstructionBlock,
   buildInvocationEnvForLogs,
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
+  renderPaperClawLocalizationInstructionBlock,
+  renderPaperClawLocalizationPrompt,
   materializePaperClawSkillCopy,
   renderPaperClawWakePrompt,
   runningProcesses,
@@ -59,6 +62,47 @@ describe("buildInvocationEnvForLogs", () => {
     expect(loggedEnv.PAPERCLAW_RESOLVED_COMMAND).toBe(
       "env OPENAI_API_KEY=***REDACTED*** custom-acp --token ***REDACTED***",
     );
+  });
+});
+
+describe("PaperClaw localization instructions", () => {
+  it("renders company language, currency, and timezone instructions", () => {
+    const prompt = renderPaperClawLocalizationPrompt({
+      defaultLanguage: "hi",
+      defaultLanguageLabel: "Hindi",
+      defaultCurrency: "INR",
+      defaultCurrencyLabel: "Indian Rupee",
+      timezone: "Asia/Kolkata",
+    });
+
+    expect(prompt).toContain("## Company Localization");
+    expect(prompt).toContain("Default language: Hindi (hi).");
+    expect(prompt).toContain("Default currency: INR (Indian Rupee).");
+    expect(prompt).toContain("Default timezone: Asia/Kolkata.");
+    expect(prompt).toContain("You MUST communicate with the Board");
+  });
+
+  it("appends or replaces the managed localization block without duplicates", () => {
+    const firstBlock = renderPaperClawLocalizationInstructionBlock({
+      defaultLanguage: "en",
+      defaultLanguageLabel: "English",
+      defaultCurrency: "USD",
+      timezone: "America/New_York",
+    });
+    const secondBlock = renderPaperClawLocalizationInstructionBlock({
+      defaultLanguage: "hi",
+      defaultLanguageLabel: "Hindi",
+      defaultCurrency: "INR",
+      timezone: "Asia/Kolkata",
+    });
+
+    const withFirstBlock = applyPaperClawLocalizationInstructionBlock("# Agent\n", firstBlock);
+    const withSecondBlock = applyPaperClawLocalizationInstructionBlock(withFirstBlock, secondBlock);
+
+    expect(withSecondBlock).toContain("# Agent");
+    expect(withSecondBlock).toContain("Default language: Hindi (hi).");
+    expect(withSecondBlock).not.toContain("Default language: English (en).");
+    expect(withSecondBlock.match(/paperclaw-localization:start/g)).toHaveLength(1);
   });
 });
 

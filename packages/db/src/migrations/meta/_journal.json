@@ -582,6 +582,20 @@
       "when": 1778061000000,
       "tag": "0082_meeting_search_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1778130000000,
+      "tag": "0083_company_memory",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1778131000000,
+      "tag": "0084_company_profile_localization",
+      "breakpoints": true
     }
   ]
 }

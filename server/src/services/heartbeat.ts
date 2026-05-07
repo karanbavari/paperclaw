@@ -143,6 +143,8 @@ import {
 import { recoveryService } from "./recovery/service.js";
 import { productivityReviewService } from "./productivity-review.js";
 import { meetingService } from "./meetings.js";
+import { companyMemoryService } from "./company-memory.js";
+import { buildPaperClawLocalization } from "./company-localization.js";
 import { withAgentStartLock } from "./agent-start-lock.js";
 import {
   redactCurrentUserText,
@@ -198,6 +200,8 @@ const MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_INLINE_WAKE_COMMENTS = 8;
 const MAX_INLINE_WAKE_COMMENT_BODY_CHARS = 4_000;
 const MAX_INLINE_WAKE_COMMENT_BODY_TOTAL_CHARS = 12_000;
+const MEMORY_RECALL_MAX_ITEMS = 8;
+const MEMORY_RECALL_MAX_BODY_CHARS = 900;
 const execFile = promisify(execFileCallback);
 const EXECUTION_PATH_HEARTBEAT_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;
 const CANCELLABLE_HEARTBEAT_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;
@@ -231,6 +235,11 @@ type CodexTransientFallbackMode =
   | "safer_invocation"
   | "fresh_session"
   | "fresh_session_safer_invocation";
+
+function truncateMemoryText(value: string, maxChars = MEMORY_RECALL_MAX_BODY_CHARS) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length <= maxChars ? normalized : `${normalized.slice(0, maxChars - 3)}...`;
+}
 
 interface MaxTurnContinuationPolicy {
   enabled: boolean;
@@ -7163,6 +7172,86 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .where(eq(heartbeatRuns.id, runId));
 
       const currentUserRedactionOptions = await getCurrentUserRedactionOptions();
+      try {
+        const recalledMemory = await companyMemoryService(db).recall(agent.companyId, {
+          query: [
+            issueRef?.title,
+            issueRef?.description,
+            readNonEmptyString(context.paperclawTaskMarkdown),
+          ].filter(Boolean).join("\n\n"),
+          agentId: agent.id,
+          agentRole: agent.role,
+          issueId: issueRef?.id ?? null,
+          projectId: resolvedProjectId ?? issueRef?.projectId ?? null,
+          limit: MEMORY_RECALL_MAX_ITEMS,
+        });
+        const profile = recalledMemory.profile;
+        const localization = buildPaperClawLocalization(profile);
+        const profileFacts = profile
+          ? {
+              registeredSince: profile.registeredSince,
+              businessCategory: profile.businessCategory,
+              defaultLanguage: profile.defaultLanguage,
+              defaultCurrency: profile.defaultCurrency,
+              website: profile.website,
+              contactEmail: profile.contactEmail,
+              contactPhone: profile.contactPhone,
+              timezone: profile.timezone,
+              businessSummary: profile.businessSummary,
+              targetCustomers: profile.targetCustomers,
+              brandVoice: profile.brandVoice,
+              operatingNotes: profile.operatingNotes,
+            }
+          : null;
+        context.paperclawMemory = {
+          profile: profileFacts,
+          items: recalledMemory.items.map((item) => ({
+            id: item.id,
+            memoryType: item.memoryType,
+            kind: item.kind,
+            scopeType: item.scopeType,
+            scopeId: item.scopeId,
+            title: item.title,
+            body: truncateMemoryText(item.summary ?? item.body),
+            tags: item.tags,
+            sourceType: item.sourceType,
+            sourceId: item.sourceId,
+            confidence: item.confidence,
+            importance: item.importance,
+            recallScore: item.recallScore,
+            updatedAt: item.updatedAt,
+          })),
+        };
+        if (localization) {
+          context.paperclawLocalization = localization;
+        } else {
+          delete context.paperclawLocalization;
+        }
+        await db
+          .update(heartbeatRuns)
+          .set({ contextSnapshot: context, updatedAt: new Date() })
+          .where(eq(heartbeatRuns.id, run.id));
+        await appendRunEvent(currentRun, seq++, {
+          eventType: "memory.recalled",
+          stream: "system",
+          level: "info",
+          message: `recalled ${recalledMemory.items.length} memory item${recalledMemory.items.length === 1 ? "" : "s"}`,
+          payload: {
+            itemIds: recalledMemory.items.map((item) => item.id),
+            profileIncluded: Boolean(profile),
+          },
+        });
+      } catch (error) {
+        logger.warn(
+          {
+            err: error,
+            companyId: agent.companyId,
+            agentId: agent.id,
+            runId: run.id,
+          },
+          "Failed to recall company memory for heartbeat run",
+        );
+      }
       const onLog = async (stream: "stdout" | "stderr", chunk: string) => {
         const sanitizedChunk = compactRunLogChunk(
           redactCurrentUserText(chunk, currentUserRedactionOptions),

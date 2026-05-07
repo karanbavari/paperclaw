@@ -1,13 +1,14 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
-import { agents, companies, issues, meetingMessages, meetings, projects } from "@kesarcloud/db";
+import { agents, companies, companyMemoryItems, issues, meetingMessages, meetings, projects } from "@kesarcloud/db";
 import {
   COMPANY_SEARCH_MAX_LIMIT,
   COMPANY_SEARCH_MAX_OFFSET,
   COMPANY_SEARCH_MAX_TOKENS,
   type CompanySearchIssueSummary,
   type CompanySearchMeetingSummary,
+  type CompanySearchMemorySummary,
   type CompanySearchQuery,
   type CompanySearchResponse,
   type CompanySearchResult,
@@ -71,6 +72,22 @@ type MeetingSearchRow = {
   messageAuthorType: string | null;
   messageAuthorAgentId: string | null;
   messageCreatedAt: Date | null;
+};
+
+type MemorySearchRow = {
+  id: string;
+  memoryType: string;
+  kind: string;
+  status: string;
+  scopeType: string;
+  scopeId: string | null;
+  title: string;
+  body: string;
+  summary: string | null;
+  tags: string[] | null;
+  updatedAt: Date;
+  score: number | string;
+  matchedFields: string[] | null;
 };
 
 function normalizeQuery(query: string) {
@@ -209,7 +226,7 @@ function matchTerms(normalizedQuery: string, tokens: string[]) {
 }
 
 function makeCounts(results: CompanySearchResult[]) {
-  const counts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0 };
+  const counts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0, memory: 0 };
   for (const result of results) counts[result.type] += 1;
   return counts;
 }
@@ -228,6 +245,10 @@ function scopeIncludesProjects(scope: CompanySearchScope) {
 
 function scopeIncludesMeetings(scope: CompanySearchScope) {
   return scope === "all" || scope === "meetings";
+}
+
+function scopeIncludesMemory(scope: CompanySearchScope) {
+  return scope === "all" || scope === "memory";
 }
 
 function issueSearchCondition(scope: CompanySearchScope, input: {
@@ -352,6 +373,50 @@ function meetingResult(row: MeetingSearchRow, prefix: string, normalizedQuery: s
   };
 }
 
+function selectMemorySnippets(row: MemorySearchRow, normalizedQuery: string, tokens: string[]) {
+  const terms = matchTerms(normalizedQuery, tokens);
+  const matchedFields = new Set(row.matchedFields ?? []);
+  const candidates: Array<CompanySearchSnippet | null> = [];
+  if (matchedFields.has("memory_title")) {
+    candidates.push(createSnippet("memory_title", "Memory", row.title, terms));
+  }
+  if (matchedFields.has("memory_summary")) {
+    candidates.push(createSnippet("memory_summary", "Summary", row.summary, terms));
+  }
+  if (matchedFields.has("memory_body")) {
+    candidates.push(createSnippet("memory_body", "Memory", row.body, terms));
+  }
+  return candidates.filter((snippet): snippet is CompanySearchSnippet => Boolean(snippet)).slice(0, 2);
+}
+
+function memoryResult(row: MemorySearchRow, prefix: string, normalizedQuery: string, tokens: string[]): CompanySearchResult {
+  const snippets = selectMemorySnippets(row, normalizedQuery, tokens);
+  const memory: CompanySearchMemorySummary = {
+    id: row.id,
+    memoryType: row.memoryType,
+    kind: row.kind,
+    status: row.status,
+    scopeType: row.scopeType,
+    scopeId: row.scopeId,
+    tags: row.tags ?? [],
+    updatedAt: iso(row.updatedAt)!,
+  };
+  return {
+    id: row.id,
+    type: "memory",
+    score: Number(row.score),
+    title: row.title,
+    href: `/${prefix}/memory?item=${encodeURIComponent(row.id)}`,
+    matchedFields: row.matchedFields ?? [],
+    sourceLabel: snippets[0]?.label ?? "Memory",
+    snippet: snippets[0]?.text ?? null,
+    snippets,
+    memory,
+    updatedAt: memory.updatedAt,
+    previewImageUrl: null,
+  };
+}
+
 function scoreSimpleRow(row: SimpleSearchRow, normalizedQuery: string, tokens: string[]) {
   const haystack = [row.title, row.description, row.role].filter(Boolean).join(" ").toLowerCase();
   let score = haystack.includes(normalizedQuery) ? 90 : 0;
@@ -382,7 +447,7 @@ export function companySearchService(db: Db) {
       const scope = query.scope;
       const limit = query.limit;
       const offset = query.offset;
-      const emptyCounts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0 };
+      const emptyCounts: Record<CompanySearchResultType, number> = { issue: 0, agent: 0, project: 0, meeting: 0, memory: 0 };
       if (normalizedQuery.length === 0) {
         return {
           query: query.q,
@@ -823,6 +888,81 @@ export function companySearchService(db: Db) {
           .limit(fetchLimit)
         : [];
 
+      const memoryTitlePhraseMatch = sql<boolean>`lower(coalesce(${companyMemoryItems.title}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const memoryTitleStartsWith = sql<boolean>`lower(coalesce(${companyMemoryItems.title}, '')) LIKE ${startsWithPattern} ESCAPE '\\'`;
+      const memoryBodyPhraseMatch = sql<boolean>`lower(coalesce(${companyMemoryItems.body}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const memorySummaryPhraseMatch = sql<boolean>`lower(coalesce(${companyMemoryItems.summary}, '')) LIKE ${containsPattern} ESCAPE '\\'`;
+      const memoryTitleTokenMatch = tokenMatchExpression(sql`${companyMemoryItems.title}`, tokenArray);
+      const memoryBodyTokenMatch = tokenMatchExpression(sql`${companyMemoryItems.body}`, tokenArray);
+      const memorySummaryTokenMatch = tokenMatchExpression(sql`${companyMemoryItems.summary}`, tokenArray);
+      const memoryTextMatch = sql<boolean>`
+        ${memoryTitlePhraseMatch}
+        OR ${memoryBodyPhraseMatch}
+        OR ${memorySummaryPhraseMatch}
+        OR ${memoryTitleTokenMatch}
+        OR ${memoryBodyTokenMatch}
+        OR ${memorySummaryTokenMatch}
+      `;
+      const memoryTokenCoverage = sql<number>`
+        (
+          SELECT count(*)::int
+          FROM unnest(${tokenArray}) AS search_token(value)
+          WHERE lower(coalesce(${companyMemoryItems.title}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+            OR lower(coalesce(${companyMemoryItems.body}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+            OR lower(coalesce(${companyMemoryItems.summary}, '')) LIKE '%' || search_token.value || '%' ESCAPE '\\'
+        )
+      `;
+      const memoryAllTokensMatch = tokenCount > 0
+        ? sql<boolean>`${memoryTokenCoverage} = ${tokenCount}`
+        : noMatchSql();
+      const memoryScore = sql<number>`
+        (
+          CASE WHEN lower(coalesce(${companyMemoryItems.title}, '')) = ${normalizedQuery} THEN 850 ELSE 0 END
+          + CASE WHEN ${memoryTitleStartsWith} THEN 520 ELSE 0 END
+          + CASE WHEN ${memoryTitlePhraseMatch} THEN 340 ELSE 0 END
+          + CASE WHEN ${memoryBodyPhraseMatch} THEN 220 ELSE 0 END
+          + CASE WHEN ${memorySummaryPhraseMatch} THEN 240 ELSE 0 END
+          + CASE WHEN ${memoryAllTokensMatch} THEN 240 ELSE 0 END
+          + (${memoryTokenCoverage} * 70)
+          + ${companyMemoryItems.importance}
+          + CASE ${companyMemoryItems.status} WHEN 'approved' THEN 40 WHEN 'active' THEN 20 ELSE -50 END
+        )::double precision
+      `;
+      const memoryMatchedFields = sql<string[]>`
+        array_remove(ARRAY[
+          CASE WHEN ${memoryTitlePhraseMatch} OR ${memoryTitleTokenMatch} THEN 'memory_title' END,
+          CASE WHEN ${memorySummaryPhraseMatch} OR ${memorySummaryTokenMatch} THEN 'memory_summary' END,
+          CASE WHEN ${memoryBodyPhraseMatch} OR ${memoryBodyTokenMatch} THEN 'memory_body' END
+        ], NULL)::text[]
+      `;
+      const memoryRows = scopeIncludesMemory(scope)
+        ? await db
+          .select({
+            id: companyMemoryItems.id,
+            memoryType: companyMemoryItems.memoryType,
+            kind: companyMemoryItems.kind,
+            status: companyMemoryItems.status,
+            scopeType: companyMemoryItems.scopeType,
+            scopeId: companyMemoryItems.scopeId,
+            title: companyMemoryItems.title,
+            body: companyMemoryItems.body,
+            summary: companyMemoryItems.summary,
+            tags: companyMemoryItems.tags,
+            updatedAt: companyMemoryItems.updatedAt,
+            score: memoryScore,
+            matchedFields: memoryMatchedFields,
+          })
+          .from(companyMemoryItems)
+          .where(and(
+            eq(companyMemoryItems.companyId, companyId),
+            inArray(companyMemoryItems.status, ["approved", "active", "proposed"]),
+            or(isNull(companyMemoryItems.expiresAt), sql<boolean>`${companyMemoryItems.expiresAt} > now()`),
+            memoryTextMatch,
+          ))
+          .orderBy(desc(memoryScore), desc(companyMemoryItems.updatedAt), desc(companyMemoryItems.id))
+          .limit(fetchLimit)
+        : [];
+
       const results: CompanySearchResult[] = [
         ...(issueRows as IssueSearchRow[]).map((row) => issueResult(row, prefix, normalizedQuery, tokens)),
         ...(agentRows as SimpleSearchRow[]).map((row) => {
@@ -861,6 +1001,7 @@ export function companySearchService(db: Db) {
         }),
         ...(meetingRows as MeetingSearchRow[]).map((row) => meetingResult(row, prefix, normalizedQuery, tokens)),
         ...(meetingMessageRows as MeetingSearchRow[]).map((row) => meetingResult(row, prefix, normalizedQuery, tokens)),
+        ...(memoryRows as MemorySearchRow[]).map((row) => memoryResult(row, prefix, normalizedQuery, tokens)),
       ].sort((left, right) => {
         if (right.score !== left.score) return right.score - left.score;
         return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");

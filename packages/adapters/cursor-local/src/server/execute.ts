@@ -36,6 +36,7 @@ import {
   resolvePaperClawDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
+  renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
   shapePaperClawWorkspaceEnvForExecution,
@@ -513,12 +514,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       : "";
   const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession: Boolean(sessionId) });
   const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
+  const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
   const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
   const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclawSessionHandoffMarkdown, "").trim();
   const paperclawEnvNote = renderPaperClawEnvNote(env);
   const prompt = joinPromptSections([
     instructionsPrefix,
+    localizationPrompt,
     renderedBootstrapPrompt,
     wakePrompt,
     meetingPrompt,
@@ -529,6 +532,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const promptMetrics = {
     promptChars: prompt.length,
     instructionsChars,
+    localizationPromptChars: localizationPrompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     wakePromptChars: wakePrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,

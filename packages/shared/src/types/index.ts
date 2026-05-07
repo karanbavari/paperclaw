@@ -94,6 +94,7 @@ export type {
   CompanySearchHighlight,
   CompanySearchIssueSummary,
   CompanySearchMeetingSummary,
+  CompanySearchMemorySummary,
   CompanySearchResponse,
   CompanySearchResult,
   CompanySearchResultType,

@@ -38,11 +38,12 @@ const SCOPE_LABELS: Record<CompanySearchScope, string> = {
   agents: "Agents",
   projects: "Projects",
   meetings: "Meetings",
+  memory: "Memory",
 };
 
-type SubGroupKey = "issues" | "comments" | "documents" | "agents" | "projects" | "meetings";
+type SubGroupKey = "issues" | "comments" | "documents" | "agents" | "projects" | "meetings" | "memory";
 
-const SUBGROUP_ORDER: SubGroupKey[] = ["issues", "comments", "documents", "agents", "projects", "meetings"];
+const SUBGROUP_ORDER: SubGroupKey[] = ["issues", "comments", "documents", "agents", "projects", "meetings", "memory"];
 
 const SUBGROUP_LABELS: Record<SubGroupKey, string> = {
   issues: "Issues",
@@ -51,12 +52,14 @@ const SUBGROUP_LABELS: Record<SubGroupKey, string> = {
   agents: "Agents",
   projects: "Projects",
   meetings: "Meetings",
+  memory: "Memory",
 };
 
 function classifyResult(result: CompanySearchResult): SubGroupKey {
   if (result.type === "agent") return "agents";
   if (result.type === "project") return "projects";
   if (result.type === "meeting") return "meetings";
+  if (result.type === "memory") return "memory";
   const matched = new Set(result.matchedFields);
   if (matched.has("title") || matched.has("identifier") || matched.has("description")) return "issues";
   if (matched.has("comment")) return "comments";
