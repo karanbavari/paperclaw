@@ -603,6 +603,13 @@
       "when": 1778132000000,
       "tag": "0085_marketplace_skill_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1778133000000,
+      "tag": "0086_research_labs",
+      "breakpoints": true
     }
   ]
 }

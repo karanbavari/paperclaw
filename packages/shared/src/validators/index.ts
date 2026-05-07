@@ -165,6 +165,18 @@ export {
 } from "./meeting.js";
 
 export {
+  createResearchLabSchema,
+  researchLabArtifactSchema,
+  researchLabDecisionSchema,
+  researchLabSubmitSchema,
+  updateResearchLabSchema,
+  type CreateResearchLab,
+  type ResearchLabDecision,
+  type ResearchLabSubmit,
+  type UpdateResearchLab,
+} from "./research-lab.js";
+
+export {
   createIssueSchema,
   createChildIssueSchema,
   createIssueLabelSchema,

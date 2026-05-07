@@ -126,6 +126,20 @@ Hierarchies, roles, reporting lines. Your agents have a boss, a title, and a job
 Monitor and manage your autonomous businesses from anywhere.
 </td>
 </tr>
+<tr>
+<td align="center">
+<h3>🧠 Company Memory</h3>
+Company profiles, short-term notes, long-term knowledge, language, currency, and timezone context shared safely across agents.
+</td>
+<td align="center">
+<h3>🔬 Research Lab</h3>
+Isolated R&D workspaces for research, prototypes, demos, reports, CEO review, and board approval.
+</td>
+<td align="center">
+<h3>🧩 Skills Marketplace</h3>
+Browse remote skills, preview them, and install only what a company or selected agents need.
+</td>
+</tr>
 </table>
 
 <br/>
@@ -140,6 +154,7 @@ Monitor and manage your autonomous businesses from anywhere.
 | ❌ Runaway loops waste hundreds of dollars of tokens and max your quota before you even know what happened.                           | ✅ Cost tracking surfaces token budgets and throttles agents when they're out. Management prioritizes with budgets.                    |
 | ❌ You have recurring jobs (customer support, social, reports) and have to remember to manually kick them off.                        | ✅ Heartbeats handle regular work on a schedule. Management supervises.                                                                |
 | ❌ You have an idea, you have to find your repo, fire up Claude Code, keep a tab open, and babysit it.                                | ✅ Add a task in PaperClaw. Your coding agent works on it until it's done. Management reviews their work.                              |
+| ❌ Research, prototypes, demos, and final reports are scattered across random folders and chats.                                      | ✅ Research Lab keeps isolated workspace context, demo URLs, agent access, CEO review, and board approval in one governed flow.        |
 
 <br/>
 
@@ -178,8 +193,8 @@ PaperClaw is a full control plane, not a wrapper. Before you build any of this y
 │  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
 │                                                              │
 │  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │ Routines  │  │ Secrets & │  │ Activity  │  │  Company  │  │
-│  │& Schedules│  │  Storage  │  │ & Events  │  │Portability│  │
+│  │ Routines  │  │ Research  │  │  Memory   │  │  Company  │  │
+│  │& Schedules│  │   Lab     │  │& Knowledge│  │Portability│  │
 │  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
 └──────────────────────────────────────────────────────────────┘
          ▲              ▲              ▲              ▲
@@ -260,7 +275,7 @@ PaperClaw is a full control plane, not a wrapper. Before you build any of this y
 </td>
 <td>
 
-**Company Portability** — Export and import entire organizations — agents, skills, projects, routines, and issues — with secret scrubbing and collision handling. One deployment, many companies, complete data isolation.
+**Research Lab, Memory & Marketplace** — Company memory keeps profile and knowledge context isolated per company. Meeting rooms coordinate board/agent discussions. Research Lab links isolated workspaces, demo URLs, final reports, CEO review, and board approvals. Marketplace lets operators or CEOs install only the remote skills each company needs.
 
 </td>
 </tr>
@@ -369,9 +384,13 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Better Budgeting
 - ✅ Agent Reviews and Approvals
 - ✅ Multiple Human Users
+- ✅ Meeting Rooms
+- ✅ Company Memory / Knowledge
+- ✅ Skills Marketplace
+- ✅ Research Lab
+- ✅ Company language, currency, and timezone preferences
 - ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
 - ⚪ Artifacts & Work Products
-- ⚪ Memory / Knowledge
 - ⚪ Enforced Outcomes
 - ⚪ MAXIMIZER MODE
 - ⚪ Deep Planning

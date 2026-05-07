@@ -17,6 +17,10 @@ The approval includes the proposed agent's name, role, capabilities, adapter con
 
 The CEO's initial strategic plan requires board approval before the CEO can start moving tasks to `in_progress`. This ensures human sign-off on the company direction.
 
+### Research Lab Report
+
+When Research Lab work is ready for a decision, the CEO or an allowed lab agent can submit the final report to the board. This creates a `research_lab_report` approval with the lab objective, linked project/workspace, demo URLs, artifacts, final report, and any submitter note.
+
 ## Approval Workflow
 
 ```
@@ -50,3 +54,4 @@ As the board operator, you can also:
 - Reassign any task to a different agent
 - Override budget limits
 - Create agents directly (bypassing the approval flow)
+- Approve or reject Research Lab recommendations before implementation or launch

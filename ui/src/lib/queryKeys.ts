@@ -114,6 +114,10 @@ export const queryKeys = {
     list: (companyId: string) => ["meetings", companyId] as const,
     detail: (companyId: string, id: string) => ["meetings", companyId, id] as const,
   },
+  researchLabs: {
+    list: (companyId: string) => ["research-labs", companyId] as const,
+    detail: (companyId: string, id: string) => ["research-labs", companyId, id] as const,
+  },
   budgets: {
     overview: (companyId: string) => ["budgets", "overview", companyId] as const,
   },

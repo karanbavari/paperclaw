@@ -69,6 +69,8 @@ export {
   PROJECT_COLORS,
   APPROVAL_TYPES,
   APPROVAL_STATUSES,
+  RESEARCH_LAB_TYPES,
+  RESEARCH_LAB_STATUSES,
   SECRET_PROVIDERS,
   STORAGE_PROVIDERS,
   BILLING_TYPES,
@@ -179,6 +181,8 @@ export {
   type PauseReason,
   type ApprovalType,
   type ApprovalStatus,
+  type ResearchLabType,
+  type ResearchLabStatus,
   type SecretProvider,
   type StorageProvider,
   type BillingType,
@@ -1111,3 +1115,21 @@ export {
   type UpdateCompanyMemoryItem,
   type UpdateCompanyProfile,
 } from "./validators/company-memory.js";
+
+export type {
+  ResearchLab,
+  ResearchLabArtifact,
+  ResearchLabDetail,
+  ResearchLabListItem,
+} from "./types/research-lab.js";
+
+export {
+  createResearchLabSchema,
+  researchLabDecisionSchema,
+  researchLabSubmitSchema,
+  updateResearchLabSchema,
+  type CreateResearchLab,
+  type ResearchLabDecision,
+  type ResearchLabSubmit,
+  type UpdateResearchLab,
+} from "./validators/research-lab.js";

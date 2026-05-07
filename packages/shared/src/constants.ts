@@ -371,6 +371,7 @@ export const PROJECT_COLORS = [
 export const APPROVAL_TYPES = [
   "hire_agent",
   "install_skill",
+  "research_lab_report",
   "approve_ceo_strategy",
   "budget_override_required",
   "request_board_approval",
@@ -385,6 +386,28 @@ export const APPROVAL_STATUSES = [
   "cancelled",
 ] as const;
 export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number];
+
+export const RESEARCH_LAB_TYPES = [
+  "research",
+  "prototype",
+  "experiment",
+  "business_case",
+] as const;
+export type ResearchLabType = (typeof RESEARCH_LAB_TYPES)[number];
+
+export const RESEARCH_LAB_STATUSES = [
+  "draft",
+  "researching",
+  "prototype_running",
+  "ceo_review",
+  "board_review",
+  "changes_requested",
+  "approved",
+  "rejected",
+  "archived",
+  "trashed",
+] as const;
+export type ResearchLabStatus = (typeof RESEARCH_LAB_STATUSES)[number];
 
 export const SECRET_PROVIDERS = [
   "local_encrypted",

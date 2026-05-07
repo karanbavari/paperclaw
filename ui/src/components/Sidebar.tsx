@@ -15,6 +15,7 @@ import {
   MessagesSquare,
   Brain,
   Store,
+  Microscope,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarSection } from "./SidebarSection";
@@ -105,6 +106,7 @@ export function Sidebar() {
           <SidebarNavItem to="/search" label="Search" icon={Search} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
           <SidebarNavItem to="/meetings" label="Meetings" icon={MessagesSquare} />
+          <SidebarNavItem to="/research-labs" label="Research Lab" icon={Microscope} />
           <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />

@@ -402,3 +402,10 @@ export type {
   PluginDatabaseNamespaceMode,
   PluginDatabaseNamespaceStatus,
 } from "./plugin.js";
+
+export type {
+  ResearchLab,
+  ResearchLabArtifact,
+  ResearchLabDetail,
+  ResearchLabListItem,
+} from "./research-lab.js";

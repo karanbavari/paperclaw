@@ -23,6 +23,7 @@ import { ExecutionWorkspaceDetail } from "./pages/ExecutionWorkspaceDetail";
 import { Goals } from "./pages/Goals";
 import { GoalDetail } from "./pages/GoalDetail";
 import { Meetings } from "./pages/Meetings";
+import { ResearchLab } from "./pages/ResearchLab";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { Costs } from "./pages/Costs";
@@ -123,6 +124,8 @@ function boardRoutes() {
       <Route path="goals/:goalId" element={<GoalDetail />} />
       <Route path="meetings" element={<Meetings />} />
       <Route path="meetings/:meetingId" element={<Meetings />} />
+      <Route path="research-labs" element={<ResearchLab />} />
+      <Route path="research-labs/:labId" element={<ResearchLab />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />

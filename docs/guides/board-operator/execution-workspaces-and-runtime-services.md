@@ -46,6 +46,15 @@ Issues are attached to execution workspace behavior, not to automatic runtime ma
 - Multiple issues may intentionally share one execution workspace so they can work against the same branch and running runtime services.
 - Assigning or running an issue does not automatically start or stop workspace services for that workspace.
 
+## Research Lab and execution workspaces
+
+Research Lab records can link to an execution workspace when the work needs isolation.
+
+- Use this for competitor research, experiments, prototypes, demos, and coding projects that should not pollute the main project workspace.
+- Selected agents can access the lab and update its final report, demo URLs, and artifacts.
+- Runtime services started from the linked execution workspace can expose local preview URLs that are included in the lab context.
+- When the work is ready, the lab can move to CEO review and then board review through the normal approvals queue.
+
 ## Execution workspace lifecycle
 
 Execution workspaces are durable until a human closes them.

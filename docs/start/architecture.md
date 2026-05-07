@@ -10,7 +10,7 @@ PaperClaw is a monorepo with four main layers.
 ```
 ┌─────────────────────────────────────┐
 │  React UI (Vite)                    │
-│  Dashboard, org management, tasks   │
+│  Dashboard, org, tasks, labs        │
 ├─────────────────────────────────────┤
 │  Express.js REST API (Node.js)      │
 │  Routes, services, auth, adapters   │
@@ -96,3 +96,12 @@ Built-in adapters: `claude_local`, `codex_local`, `process`, `http`. You can cre
 - **Single-assignee tasks** — atomic checkout prevents concurrent work on the same task
 - **Adapter-agnostic** — any runtime that can call an HTTP API works as an agent
 - **Embedded by default** — zero-config local mode with embedded PostgreSQL
+
+## Core Systems
+
+- **Work and governance** — issues, goals, routines, approvals, budgets, inbox, and activity log
+- **Agent organization** — agents, org chart, permissions, adapter configs, and managed instructions
+- **Execution workspace runtime** — durable workspaces, branch/worktree metadata, commands, services, and preview URLs
+- **Company knowledge** — company profile, default language, currency, timezone, short-term memory, and long-term knowledge
+- **Research Lab** — selected-agent R&D spaces linked to projects, execution workspaces, demo URLs, final reports, CEO review, and board approvals
+- **Skills and marketplace** — local company skill library plus remote marketplace discovery and governed installation

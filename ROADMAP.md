@@ -48,6 +48,26 @@ PaperClaw should support explicit review and approval stages as first-class work
 
 PaperClaw needs a clearer path from solo operator to real human teams. That means shared board access, safer collaboration, and a better model for several humans supervising the same autonomous company.
 
+### ✅ Meeting Rooms
+
+Meeting Rooms give the board a group-chat style coordination surface where selected agents can discuss a topic, answer direct questions, delegate to other agents, and preserve the meeting transcript as durable company history.
+
+### ✅ Company Memory / Knowledge
+
+Companies now have isolated profile and memory surfaces. Operators can store company identity, registration details, business category, contact context, language, currency, timezone, short-term notes, and long-term knowledge so agents can recall the right context without mixing companies.
+
+### ✅ Skills Marketplace
+
+The marketplace separates skill discovery from local installation. Operators and approved CEO agents can browse remote skills, search/filter by category, preview details, and install only the skills a company or selected agents need, with board approval controls where required.
+
+### ✅ Research Lab
+
+Research Lab is the governed R&D workspace for a company. It connects isolated execution workspaces, selected agent access, demo URLs, final reports, CEO review, and board approval so research, competitor analysis, prototypes, and launch recommendations can move from exploration to decision.
+
+### ✅ Company language, currency, and timezone preferences
+
+Company settings now include default language, currency, and timezone. Managed agent instructions sync those preferences so conversations, reports, and task outputs use the company's chosen operating context.
+
 ### ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
 
 We want agents to run in more remote and sandboxed environments while preserving the same PaperClaw control-plane model. This makes the system safer, more flexible, and more useful outside a single trusted local machine.
@@ -55,10 +75,6 @@ We want agents to run in more remote and sandboxed environments while preserving
 ### ⚪ Artifacts & Work Products
 
 PaperClaw should make outputs first-class. That means generated artifacts, previews, deployable outputs, and the handoff from "agent did work" to "here is the result" should become more visible and easier to operate.
-
-### ⚪ Memory / Knowledge
-
-We want a stronger memory and knowledge surface for companies, agents, and projects. That includes durable memory, better recall of prior decisions and context, and a clearer path for knowledge-style capabilities without turning PaperClaw into a generic chat app.
 
 ### ⚪ Enforced Outcomes
 

@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
-import { approvalComments, approvals } from "@kesarcloud/db";
+import { approvalComments, approvals, researchLabs } from "@kesarcloud/db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { agentService } from "./agents.js";
@@ -76,6 +76,25 @@ export function approvalService(db: Db) {
     throw unprocessable(
       `Only pending or revision requested approvals can be ${targetStatus === "approved" ? "approved" : "rejected"}`,
     );
+  }
+
+  async function syncResearchLabApproval(
+    approval: ApprovalRecord,
+    status: "approved" | "rejected" | "changes_requested" | "board_review",
+    decisionNote?: string | null,
+  ) {
+    if (approval.type !== "research_lab_report") return;
+    const payload = approval.payload as Record<string, unknown>;
+    const researchLabId = typeof payload.researchLabId === "string" ? payload.researchLabId : null;
+    if (!researchLabId) return;
+    await db
+      .update(researchLabs)
+      .set({
+        status,
+        decisionNote: decisionNote ?? approval.decisionNote ?? null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(researchLabs.companyId, approval.companyId), eq(researchLabs.id, researchLabId)));
   }
 
   return {
@@ -165,6 +184,10 @@ export function approvalService(db: Db) {
         }
       }
 
+      if (applied) {
+        await syncResearchLabApproval(updated, "approved", decisionNote);
+      }
+
       return { approval: updated, applied };
     },
 
@@ -184,6 +207,10 @@ export function approvalService(db: Db) {
         }
       }
 
+      if (applied) {
+        await syncResearchLabApproval(updated, "rejected", decisionNote);
+      }
+
       return { approval: updated, applied };
     },
 
@@ -194,7 +221,7 @@ export function approvalService(db: Db) {
       }
 
       const now = new Date();
-      return db
+      const updated = await db
         .update(approvals)
         .set({
           status: "revision_requested",
@@ -206,6 +233,10 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .returning()
         .then((rows) => rows[0]);
+      if (updated) {
+        await syncResearchLabApproval(updated, "changes_requested", decisionNote);
+      }
+      return updated;
     },
 
     resubmit: async (id: string, payload?: Record<string, unknown>) => {
@@ -215,7 +246,7 @@ export function approvalService(db: Db) {
       }
 
       const now = new Date();
-      return db
+      const updated = await db
         .update(approvals)
         .set({
           status: "pending",
@@ -228,6 +259,10 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .returning()
         .then((rows) => rows[0]);
+      if (updated) {
+        await syncResearchLabApproval(updated, "board_review", null);
+      }
+      return updated;
     },
 
     listComments: async (approvalId: string) => {
