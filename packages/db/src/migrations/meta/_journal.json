@@ -596,6 +596,13 @@
       "when": 1778131000000,
       "tag": "0084_company_profile_localization",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1778132000000,
+      "tag": "0085_marketplace_skill_approvals",
+      "breakpoints": true
     }
   ]
 }

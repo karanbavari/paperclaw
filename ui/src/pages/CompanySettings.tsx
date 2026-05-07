@@ -136,6 +136,16 @@ export function CompanySettings() {
     }
   });
 
+  const ceoSkillInstallApprovalMutation = useMutation({
+    mutationFn: (requireApproval: boolean) =>
+      companiesApi.update(selectedCompanyId!, {
+        requireBoardApprovalForCeoSkillInstalls: requireApproval,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+    },
+  });
+
   const localizationMutation = useMutation({
     mutationFn: () =>
       companyMemoryApi.updateProfile(selectedCompanyId!, {
@@ -559,6 +569,15 @@ export function CompanySettings() {
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
           />
+          <div className="mt-3 border-t border-border pt-3">
+            <ToggleField
+              label="Require board approval for CEO skill installs"
+              hint="CEO marketplace installs become approval requests when enabled."
+              checked={!!selectedCompany.requireBoardApprovalForCeoSkillInstalls}
+              onChange={(v) => ceoSkillInstallApprovalMutation.mutate(v)}
+              toggleTestId="company-settings-ceo-skill-install-approval-toggle"
+            />
+          </div>
         </div>
       </div>
 

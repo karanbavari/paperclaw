@@ -62,6 +62,16 @@ export type {
   CompanySkillFileUpdateRequest,
 } from "./company-skill.js";
 export type {
+  MarketplaceInstallRequest,
+  MarketplaceInstallResult,
+  MarketplaceSkillAssignMode,
+  MarketplaceSkillCategory,
+  MarketplaceSkillDetail,
+  MarketplaceSkillListItem,
+  MarketplaceSkillListResponse,
+  MarketplaceSkillTrustLevel,
+} from "./marketplace.js";
+export type {
   AgentSkillSyncMode,
   AgentSkillState,
   AgentSkillOrigin,

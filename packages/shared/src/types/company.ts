@@ -13,6 +13,7 @@ export interface Company {
   spentMonthlyCents: number;
   attachmentMaxBytes: number;
   requireBoardApprovalForNewAgents: boolean;
+  requireBoardApprovalForCeoSkillInstalls: boolean;
   feedbackDataSharingEnabled: boolean;
   feedbackDataSharingConsentAt: Date | null;
   feedbackDataSharingConsentByUserId: string | null;

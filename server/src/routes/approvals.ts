@@ -14,6 +14,7 @@ import {
   heartbeatService,
   issueApprovalService,
   logActivity,
+  marketplaceService,
   secretService,
 } from "../services/index.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
@@ -33,6 +34,7 @@ export function approvalRoutes(
 ) {
   const router = Router();
   const svc = approvalService(db);
+  const marketplace = marketplaceService(db);
   const heartbeat = heartbeatService(db, {
     pluginWorkerManager: options.pluginWorkerManager,
   });
@@ -144,6 +146,14 @@ export function approvalRoutes(
     const { approval, applied } = await svc.approve(id, decidedByUserId, req.body.decisionNote);
 
     if (applied) {
+      let marketplaceInstallResult: Awaited<ReturnType<typeof marketplace.applyApprovedInstall>> | null = null;
+      if (approval.type === "install_skill") {
+        marketplaceInstallResult = await marketplace.applyApprovedInstall(approval.id, {
+          actorType: "user",
+          actorId: req.actor.userId ?? "board",
+          agentId: null,
+        });
+      }
       const linkedIssues = await issueApprovalsSvc.listIssuesForApproval(approval.id);
       const linkedIssueIds = linkedIssues.map((issue) => issue.id);
       const primaryIssueId = linkedIssueIds[0] ?? null;
@@ -159,6 +169,8 @@ export function approvalRoutes(
           type: approval.type,
           requestedByAgentId: approval.requestedByAgentId,
           linkedIssueIds,
+          marketplaceSkillId: marketplaceInstallResult?.skill?.id ?? undefined,
+          marketplaceAssignedAgentIds: marketplaceInstallResult?.assignedAgentIds ?? undefined,
         },
       });
 

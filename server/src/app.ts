@@ -13,6 +13,7 @@ import { healthRoutes } from "./routes/health.js";
 import { companyRoutes } from "./routes/companies.js";
 import { companyMemoryRoutes } from "./routes/company-memory.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
+import { marketplaceRoutes } from "./routes/marketplace.js";
 import { agentRoutes } from "./routes/agents.js";
 import { projectRoutes } from "./routes/projects.js";
 import { issueRoutes } from "./routes/issues.js";
@@ -192,6 +193,7 @@ export async function createApp(
   api.use("/companies", companyRoutes(db, opts.storageService));
   api.use(companyMemoryRoutes(db));
   api.use(companySkillRoutes(db));
+  api.use(marketplaceRoutes(db));
   api.use(agentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(assetRoutes(db, opts.storageService));
   api.use(projectRoutes(db));

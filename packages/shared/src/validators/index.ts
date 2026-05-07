@@ -76,6 +76,16 @@ export {
   type CompanySkillFileUpdate,
 } from "./company-skill.js";
 export {
+  marketplaceInstallSchema,
+  marketplaceSkillAssignModeSchema,
+  marketplaceSkillCategorySchema,
+  marketplaceSkillDetailSchema,
+  marketplaceSkillListItemSchema,
+  marketplaceSkillListResponseSchema,
+  marketplaceSkillTrustLevelSchema,
+  type MarketplaceInstall,
+} from "./marketplace.js";
+export {
   agentSkillStateSchema,
   agentSkillSyncModeSchema,
   agentSkillEntrySchema,

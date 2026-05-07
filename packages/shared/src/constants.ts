@@ -370,6 +370,7 @@ export const PROJECT_COLORS = [
 
 export const APPROVAL_TYPES = [
   "hire_agent",
+  "install_skill",
   "approve_ceo_strategy",
   "budget_override_required",
   "request_board_approval",

@@ -2415,6 +2415,57 @@ export function companySkillService(db: Db) {
     return { imported, warnings };
   }
 
+  async function createCatalogSkill(companyId: string, input: {
+    key: string;
+    slug: string;
+    name: string;
+    description?: string | null;
+    markdown: string;
+    sourceLocator?: string | null;
+    sourceRef?: string | null;
+    metadata?: Record<string, unknown> | null;
+  }): Promise<CompanySkill> {
+    await ensureSkillInventoryCurrent(companyId);
+    const normalizedSlug = normalizeSkillSlug(input.slug) ?? "marketplace-skill";
+    const key = normalizeSkillKey(input.key) ?? `catalog/${normalizedSlug}`;
+    const metadata = {
+      ...(input.metadata ?? {}),
+      skillKey: key,
+      sourceKind: "catalog",
+    };
+    const values = {
+      companyId,
+      key,
+      slug: normalizedSlug,
+      name: input.name.trim() || normalizedSlug,
+      description: input.description ?? null,
+      markdown: input.markdown,
+      sourceType: "catalog" as CompanySkillSourceType,
+      sourceLocator: input.sourceLocator ?? null,
+      sourceRef: input.sourceRef ?? null,
+      trustLevel: "markdown_only" as CompanySkillTrustLevel,
+      compatibility: "compatible" as CompanySkillCompatibility,
+      fileInventory: serializeFileInventory([{ path: "SKILL.md", kind: "skill" }]),
+      metadata,
+      updatedAt: new Date(),
+    };
+    const existing = await getByKey(companyId, key);
+    const row = existing
+      ? await db
+        .update(companySkills)
+        .set(values)
+        .where(eq(companySkills.id, existing.id))
+        .returning()
+        .then((rows) => rows[0] ?? null)
+      : await db
+        .insert(companySkills)
+        .values(values)
+        .returning()
+        .then((rows) => rows[0] ?? null);
+    if (!row) throw notFound("Failed to persist marketplace skill");
+    return toCompanySkill(row);
+  }
+
   async function deleteSkill(companyId: string, skillId: string): Promise<CompanySkill | null> {
     const row = await db
       .select()
@@ -2470,6 +2521,7 @@ export function companySkillService(db: Db) {
     createLocalSkill,
     deleteSkill,
     importFromSource,
+    createCatalogSkill,
     scanProjectWorkspaces,
     importPackageFiles,
     installUpdate,

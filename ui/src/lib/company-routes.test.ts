@@ -42,4 +42,20 @@ describe("company routes", () => {
     expect(applyCompanyPrefix("/memory", "KES")).toBe("/KES/memory");
     expect(toCompanyRelativePath("/KES/memory")).toBe("/memory");
   });
+
+  it("treats /marketplace as a board route that needs a company prefix", () => {
+    expect(isBoardPathWithoutPrefix("/marketplace")).toBe(true);
+    expect(extractCompanyPrefixFromPath("/marketplace")).toBeNull();
+    expect(applyCompanyPrefix("/marketplace", "KES")).toBe("/KES/marketplace");
+    expect(toCompanyRelativePath("/KES/marketplace")).toBe("/marketplace");
+  });
+
+  it("treats /meetings as a board route that needs a company prefix", () => {
+    expect(isBoardPathWithoutPrefix("/meetings")).toBe(true);
+    expect(isBoardPathWithoutPrefix("/meetings/meeting-123")).toBe(true);
+    expect(extractCompanyPrefixFromPath("/meetings")).toBeNull();
+    expect(applyCompanyPrefix("/meetings", "KES")).toBe("/KES/meetings");
+    expect(applyCompanyPrefix("/meetings/meeting-123", "KES")).toBe("/KES/meetings/meeting-123");
+    expect(toCompanyRelativePath("/KES/meetings/meeting-123")).toBe("/meetings/meeting-123");
+  });
 });

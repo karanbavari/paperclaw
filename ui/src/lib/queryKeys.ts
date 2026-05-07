@@ -12,6 +12,13 @@ export const queryKeys = {
     file: (companyId: string, skillId: string, relativePath: string) =>
       ["company-skills", companyId, skillId, "file", relativePath] as const,
   },
+  marketplace: {
+    categories: (companyId: string) => ["marketplace", companyId, "categories"] as const,
+    list: (companyId: string, query: Record<string, unknown>) =>
+      ["marketplace", companyId, "list", query] as const,
+    detail: (companyId: string, skillId: string) =>
+      ["marketplace", companyId, "detail", skillId] as const,
+  },
   companyMemory: {
     profile: (companyId: string) => ["company-memory", companyId, "profile"] as const,
     list: (companyId: string, query: Record<string, unknown>) =>

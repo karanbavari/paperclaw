@@ -4,6 +4,7 @@ export { companyMemoryService } from "./company-memory.js";
 export { buildPaperClawLocalization, companyLocalizationService } from "./company-localization.js";
 export { feedbackService } from "./feedback.js";
 export { companySkillService } from "./company-skills.js";
+export { marketplaceService } from "./marketplace.js";
 export { agentService, deduplicateAgentName } from "./agents.js";
 export { agentInstructionsService, syncInstructionsBundleConfigFromFilePath } from "./agent-instructions.js";
 export { assetService } from "./assets.js";
