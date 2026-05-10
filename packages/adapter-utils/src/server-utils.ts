@@ -915,6 +915,80 @@ export function renderPaperClawMeetingPrompt(value: unknown): string {
   ].filter(Boolean).join("\n");
 }
 
+function renderDirectChatList(value: unknown, emptyLabel: string) {
+  const items = Array.isArray(value)
+    ? value
+      .map((entry) => parseObject(entry))
+      .filter((entry) => Object.keys(entry).length > 0)
+    : [];
+  if (items.length === 0) return emptyLabel;
+  return items.map((item) => {
+    const name = asString(item.name, "").trim();
+    const title = asString(item.title, "").trim();
+    const role = asString(item.role, "").trim();
+    const status = asString(item.status, "").trim();
+    const identifier = asString(item.identifier, "").trim();
+    const summary = asString(item.summary, "").trim();
+    const id = asString(item.id, "").trim();
+    const label = identifier || name || title || id || "item";
+    const details = [
+      title && title !== label ? title : "",
+      role ? `role: ${role}` : "",
+      status ? `status: ${status}` : "",
+      summary,
+      id ? `id: ${id}` : "",
+    ].filter(Boolean);
+    return `- ${label}${details.length > 0 ? `; ${details.join("; ")}` : ""}`;
+  }).join("\n");
+}
+
+export function renderPaperClawDirectChatPrompt(value: unknown): string {
+  const payload = parseObject(value);
+  if (Object.keys(payload).length === 0) return "";
+
+  const currentAgentName = asString(payload.currentAgentName, "CEO").trim();
+  const targetQuestion = asString(payload.targetQuestion, "").trim();
+  const requestedBy = asString(payload.requestedBy, "Board").trim();
+  const transcript = asString(payload.transcript, "").trim();
+  const company = parseObject(payload.company);
+  const snapshot = parseObject(payload.companySnapshot);
+  const companyName = asString(company.name, asString(snapshot.companyName, "")).trim();
+  const counts = parseObject(snapshot.counts);
+  const countLines = [
+    typeof counts.agents === "number" ? `- agents: ${counts.agents}` : "",
+    typeof counts.activeAgents === "number" ? `- active agents: ${counts.activeAgents}` : "",
+    typeof counts.openIssues === "number" ? `- open issues: ${counts.openIssues}` : "",
+    typeof counts.activeProjects === "number" ? `- active projects: ${counts.activeProjects}` : "",
+    typeof counts.openMeetings === "number" ? `- open meetings: ${counts.openMeetings}` : "",
+  ].filter(Boolean);
+
+  return [
+    "## PaperClaw Direct Chat",
+    "",
+    "You are replying in Direct Chat to the Board. This is a standalone chat message, not a meeting round and not a normal work issue.",
+    "This Direct Chat instruction overrides the generic heartbeat execution contract for this run.",
+    "Answer the latest Board message directly as the company CEO. Use the company snapshot and transcript below first.",
+    "If the right next step is a meeting, issue, goal, or Research Lab, ask Board approval by creating an approval with type `direct_chat_action`; do not perform that action before approval.",
+    "For `direct_chat_action`, include payload fields: title, summary, rationale, recommendedAction, nextActionOnApproval, risks, source.directChatThreadId, source.directChatMessageId, source.transcriptExcerpt, and action.kind/input.",
+    "Supported action kinds are `create_meeting`, `create_issue`, `create_goal`, and `create_research_lab`.",
+    "Do not mention tool logs, local mode, missing API keys, authentication, or environment diagnostics unless the Board explicitly asks about runtime/debug status.",
+    "Do not create meetings, issues, tickets, or files unless the Board explicitly asks for that inside this chat.",
+    "Return only the visible chat response in markdown.",
+    "",
+    companyName ? `- company: ${companyName}` : "",
+    `- you are: ${currentAgentName}`,
+    `- requested by: ${requestedBy}`,
+    "",
+    targetQuestion ? ["### Latest Board Message", targetQuestion].join("\n") : "",
+    countLines.length > 0 ? ["", "### Company Snapshot", ...countLines].join("\n") : "",
+    ["", "### Leadership Roster", renderDirectChatList(snapshot.agentRoster, "(no roster available)")].join("\n"),
+    ["", "### Active Projects", renderDirectChatList(snapshot.activeProjects, "(no active projects available)")].join("\n"),
+    ["", "### Recent Open Issues", renderDirectChatList(snapshot.recentOpenIssues, "(no open issues available)")].join("\n"),
+    ["", "### Recent Meetings", renderDirectChatList(snapshot.recentMeetings, "(no recent meetings available)")].join("\n"),
+    transcript ? ["", "### Direct Chat Transcript So Far", transcript].join("\n") : "",
+  ].filter(Boolean).join("\n");
+}
+
 export function redactEnvForLogs(env: Record<string, string>): Record<string, string> {
   const redacted: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
@@ -1009,6 +1083,23 @@ export function applyPaperClawWorkspaceEnv(
     }
   }
 
+  return env;
+}
+
+export function applyPaperClawDirectChatEnv(
+  env: Record<string, string>,
+  context: Record<string, unknown>,
+): Record<string, string> {
+  const directChatThreadId =
+    typeof context.directChatThreadId === "string" && context.directChatThreadId.trim().length > 0
+      ? context.directChatThreadId.trim()
+      : null;
+  const directChatMessageId =
+    typeof context.directChatMessageId === "string" && context.directChatMessageId.trim().length > 0
+      ? context.directChatMessageId.trim()
+      : null;
+  if (directChatThreadId) env.PAPERCLAW_DIRECT_CHAT_THREAD_ID = directChatThreadId;
+  if (directChatMessageId) env.PAPERCLAW_DIRECT_CHAT_MESSAGE_ID = directChatMessageId;
   return env;
 }
 

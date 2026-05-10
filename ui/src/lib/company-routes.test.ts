@@ -59,6 +59,13 @@ describe("company routes", () => {
     expect(toCompanyRelativePath("/KES/meetings/meeting-123")).toBe("/meetings/meeting-123");
   });
 
+  it("treats /direct-chat as a board route that needs a company prefix", () => {
+    expect(isBoardPathWithoutPrefix("/direct-chat")).toBe(true);
+    expect(extractCompanyPrefixFromPath("/direct-chat")).toBeNull();
+    expect(applyCompanyPrefix("/direct-chat", "KES")).toBe("/KES/direct-chat");
+    expect(toCompanyRelativePath("/KES/direct-chat")).toBe("/direct-chat");
+  });
+
   it("treats /research-labs as a board route that needs a company prefix", () => {
     expect(isBoardPathWithoutPrefix("/research-labs")).toBe(true);
     expect(isBoardPathWithoutPrefix("/research-labs/lab-123")).toBe(true);

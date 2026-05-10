@@ -26,6 +26,7 @@ import {
   asNumber,
   asStringArray,
   parseObject,
+  applyPaperClawDirectChatEnv,
   applyPaperClawWorkspaceEnv,
   buildPaperClawEnv,
   joinPromptSections,
@@ -37,6 +38,7 @@ import {
   renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
+  renderPaperClawDirectChatPrompt,
   shapePaperClawWorkspaceEnvForExecution,
   stringifyPaperClawWakePayload,
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
@@ -275,6 +277,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (approvalStatus) env.PAPERCLAW_APPROVAL_STATUS = approvalStatus;
   if (linkedIssueIds.length > 0) env.PAPERCLAW_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   if (wakePayloadJson) env.PAPERCLAW_WAKE_PAYLOAD_JSON = wakePayloadJson;
+  applyPaperClawDirectChatEnv(env, context);
   applyPaperClawWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
@@ -506,6 +509,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         : "";
     const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession: Boolean(sessionId) });
     const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
+    const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclawDirectChat);
     const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
     const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
     const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
@@ -516,6 +520,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       renderedBootstrapPrompt,
       wakePrompt,
       meetingPrompt,
+      directChatPrompt,
       sessionHandoffNote,
       renderedPrompt,
     ]);
@@ -525,6 +530,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       localizationPromptChars: localizationPrompt.length,
       bootstrapPromptChars: renderedBootstrapPrompt.length,
       wakePromptChars: wakePrompt.length,
+      directChatPromptChars: directChatPrompt.length,
       sessionHandoffChars: sessionHandoffNote.length,
       heartbeatPromptChars: renderedPrompt.length,
     };

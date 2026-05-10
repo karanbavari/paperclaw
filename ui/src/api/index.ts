@@ -20,3 +20,4 @@ export { inboxDismissalsApi } from "./inboxDismissals";
 export { companySkillsApi } from "./companySkills";
 export { marketplaceApi } from "./marketplace";
 export { researchLabsApi } from "./researchLabs";
+export { directChatApi } from "./directChat";

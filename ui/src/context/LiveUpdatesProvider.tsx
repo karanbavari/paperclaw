@@ -827,6 +827,11 @@ function handleLiveEvent(
     return;
   }
 
+  if (event.type === "direct_chat.message.created" || event.type === "direct_chat.message.updated") {
+    queryClient.invalidateQueries({ queryKey: queryKeys.directChat.detail(expectedCompanyId) });
+    return;
+  }
+
   if (event.type === "activity.logged") {
     invalidateActivityQueries(queryClient, expectedCompanyId, payload, currentActor, { pathname });
     if (shouldDeferVisibleIssueCommentActivity(queryClient, pathname, payload)) {

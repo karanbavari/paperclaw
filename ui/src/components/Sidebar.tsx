@@ -13,6 +13,7 @@ import {
   GitBranch,
   Settings,
   MessagesSquare,
+  MessageCircle,
   Brain,
   Store,
   Microscope,
@@ -105,6 +106,7 @@ export function Sidebar() {
           <SidebarNavItem to="/issues" label="Issues" icon={CircleDot} />
           <SidebarNavItem to="/search" label="Search" icon={Search} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
+          <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />
           <SidebarNavItem to="/meetings" label="Meetings" icon={MessagesSquare} />
           <SidebarNavItem to="/research-labs" label="Research Lab" icon={Microscope} />
           <SidebarNavItem to="/goals" label="Goals" icon={Target} />
