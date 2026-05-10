@@ -165,18 +165,6 @@ export {
 } from "./meeting.js";
 
 export {
-  addDirectChatMessageSchema,
-  type AddDirectChatMessage,
-} from "./direct-chat.js";
-
-export {
-  DIRECT_CHAT_ACTION_KINDS,
-  directChatActionApprovalPayloadSchema,
-  type DirectChatActionApprovalPayload,
-  type DirectChatActionKind,
-} from "./direct-chat-action.js";
-
-export {
   createResearchLabSchema,
   researchLabArtifactSchema,
   researchLabDecisionSchema,

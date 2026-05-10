@@ -1,5 +1,4 @@
-import { Link } from "@/lib/router";
-import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck, Workflow } from "lucide-react";
+import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck } from "lucide-react";
 import { formatCents } from "../lib/utils";
 
 export const typeLabel: Record<string, string> = {
@@ -7,7 +6,6 @@ export const typeLabel: Record<string, string> = {
   approve_ceo_strategy: "CEO Strategy",
   budget_override_required: "Budget Override",
   request_board_approval: "Board Approval",
-  direct_chat_action: "Direct Chat Request",
 };
 
 function firstNonEmptyString(...values: unknown[]): string | null {
@@ -43,7 +41,6 @@ export const typeIcon: Record<string, typeof UserPlus> = {
   approve_ceo_strategy: Lightbulb,
   budget_override_required: ShieldAlert,
   request_board_approval: ShieldCheck,
-  direct_chat_action: Workflow,
 };
 
 export const defaultTypeIcon = ShieldCheck;
@@ -164,78 +161,6 @@ export function BoardApprovalPayload({
   );
 }
 
-function DirectChatActionPayload({ payload }: { payload: Record<string, unknown> }) {
-  const action = typeof payload.action === "object" && payload.action !== null
-    ? payload.action as Record<string, unknown>
-    : {};
-  const input = typeof action.input === "object" && action.input !== null
-    ? action.input as Record<string, unknown>
-    : {};
-  const source = typeof payload.source === "object" && payload.source !== null
-    ? payload.source as Record<string, unknown>
-    : {};
-  const appliedAction = typeof payload.appliedAction === "object" && payload.appliedAction !== null
-    ? payload.appliedAction as Record<string, unknown>
-    : null;
-  const risks = Array.isArray(payload.risks)
-    ? payload.risks.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    : [];
-  const transcriptExcerpt = firstNonEmptyString(source.transcriptExcerpt);
-  const actionKind = firstNonEmptyString(action.kind)?.replaceAll("_", " ");
-
-  return (
-    <div className="mt-4 space-y-3.5 text-sm">
-      <PayloadField label="Action" value={actionKind} />
-      <PayloadField label="Title" value={payload.title} />
-      <PayloadField label="Summary" value={payload.summary} />
-      <PayloadField label="Rationale" value={payload.rationale} />
-      <PayloadField label="On approval" value={payload.nextActionOnApproval} />
-      {appliedAction && (
-        <div className="rounded-lg border border-green-500/20 bg-green-500/10 px-3.5 py-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-green-700 dark:text-green-300">
-            Created
-          </p>
-          <Link
-            to={String(appliedAction.href ?? "#")}
-            className="mt-1 inline-flex text-sm font-medium text-foreground underline underline-offset-2"
-          >
-            {String(appliedAction.label ?? appliedAction.entityType ?? "Created item")}
-          </Link>
-        </div>
-      )}
-      <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3">
-        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Proposed payload</p>
-        <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-muted/50 px-3 py-2 font-mono text-xs leading-5 text-muted-foreground">
-          {JSON.stringify(input, null, 2)}
-        </pre>
-      </div>
-      {risks.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Risks</p>
-          <ul className="space-y-1 text-sm text-muted-foreground">
-            {risks.map((risk) => (
-              <li key={risk} className="flex items-start gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
-                <span className="leading-6">{risk}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {transcriptExcerpt && (
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            Direct Chat context
-          </p>
-          <pre className="max-h-48 overflow-auto rounded-lg border border-border/60 bg-muted/50 px-3.5 py-3 font-mono text-xs leading-5 text-muted-foreground whitespace-pre-wrap">
-            {transcriptExcerpt}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unknown> }) {
   const risks = Array.isArray(payload.risks)
     ? payload.risks
@@ -315,7 +240,6 @@ export function ApprovalPayloadRenderer({
 }) {
   if (type === "hire_agent") return <HireAgentPayload payload={payload} />;
   if (type === "budget_override_required") return <BudgetOverridePayload payload={payload} />;
-  if (type === "direct_chat_action") return <DirectChatActionPayload payload={payload} />;
   if (type === "request_board_approval") {
     return <BoardApprovalPayload payload={payload} hideTitle={hidePrimaryTitle} />;
   }

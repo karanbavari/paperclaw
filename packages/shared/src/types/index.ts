@@ -244,14 +244,6 @@ export type {
   MeetingMessage,
   MeetingDetail,
 } from "./meeting.js";
-export type {
-  DirectChatThreadKind,
-  DirectChatMessageAuthorType,
-  DirectChatMessageStatus,
-  DirectChatThread,
-  DirectChatMessage,
-  DirectChatDetail,
-} from "./direct-chat.js";
 export type { Approval, ApprovalComment } from "./approval.js";
 export type {
   BudgetPolicy,

@@ -29,8 +29,6 @@ export { issueApprovalService } from "./issue-approvals.js";
 export { issueReferenceService } from "./issue-references.js";
 export { goalService } from "./goals.js";
 export { meetingService } from "./meetings.js";
-export { directChatService } from "./direct-chat.js";
-export { directChatActionApprovalService } from "./direct-chat-action-approvals.js";
 export { researchLabService } from "./research-labs.js";
 export { activityService, type ActivityFilters } from "./activity.js";
 export { approvalService } from "./approvals.js";

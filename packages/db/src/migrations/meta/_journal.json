@@ -610,13 +610,6 @@
       "when": 1778133000000,
       "tag": "0086_research_labs",
       "breakpoints": true
-    },
-    {
-      "idx": 87,
-      "version": "7",
-      "when": 1778134000000,
-      "tag": "0087_direct_chat",
-      "breakpoints": true
     }
   ]
 }

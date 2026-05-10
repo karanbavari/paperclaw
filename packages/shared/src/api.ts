@@ -9,7 +9,6 @@ export const API = {
   issueTreeControl: `${API_PREFIX}/issues/:issueId/tree-control`,
   issueTreeHolds: `${API_PREFIX}/issues/:issueId/tree-holds`,
   goals: `${API_PREFIX}/goals`,
-  directChat: `${API_PREFIX}/companies/:companyId/direct-chat`,
   approvals: `${API_PREFIX}/approvals`,
   secrets: `${API_PREFIX}/secrets`,
   costs: `${API_PREFIX}/costs`,

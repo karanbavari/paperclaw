@@ -11,7 +11,6 @@ import { validate } from "../middleware/validate.js";
 import { logger } from "../middleware/logger.js";
 import {
   approvalService,
-  directChatActionApprovalService,
   heartbeatService,
   issueApprovalService,
   logActivity,
@@ -35,7 +34,6 @@ export function approvalRoutes(
 ) {
   const router = Router();
   const svc = approvalService(db);
-  const directChatActions = directChatActionApprovalService(db);
   const marketplace = marketplaceService(db);
   const heartbeat = heartbeatService(db, {
     pluginWorkerManager: options.pluginWorkerManager,
@@ -82,9 +80,7 @@ export function approvalRoutes(
     const uniqueIssueIds = Array.from(new Set(issueIds));
     const { issueIds: _issueIds, ...approvalInput } = req.body;
     const normalizedPayload =
-      approvalInput.type === "direct_chat_action"
-        ? await directChatActions.validatePayload(companyId, approvalInput.payload)
-        : approvalInput.type === "hire_agent"
+      approvalInput.type === "hire_agent"
         ? await secretsSvc.normalizeHireApprovalPayloadForPersistence(
             companyId,
             approvalInput.payload,
@@ -123,10 +119,6 @@ export function approvalRoutes(
       entityId: approval.id,
       details: { type: approval.type, issueIds: uniqueIssueIds },
     });
-
-    if (approval.type === "direct_chat_action") {
-      await directChatActions.recordApprovalRequested(approval);
-    }
 
     res.status(201).json(redactApprovalPayload(approval));
   });

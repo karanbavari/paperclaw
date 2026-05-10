@@ -7,7 +7,6 @@ import type { AdapterExecutionContext, AdapterExecutionResult } from "@kesarclou
 import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@kesarcloud/adapter-utils/execution-target";
 import {
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
-  applyPaperClawDirectChatEnv,
   applyPaperClawWorkspaceEnv,
   asNumber,
   asString,
@@ -22,7 +21,6 @@ import {
   renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
-  renderPaperClawDirectChatPrompt,
   renderTemplate,
   resolvePaperClawDesiredSkillNames,
   shapePaperClawWorkspaceEnvForExecution,
@@ -697,7 +695,6 @@ async function buildRuntime(input: {
   if (approvalStatus) env.PAPERCLAW_APPROVAL_STATUS = approvalStatus;
   if (linkedIssueIds.length > 0) env.PAPERCLAW_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   if (wakePayloadJson) env.PAPERCLAW_WAKE_PAYLOAD_JSON = wakePayloadJson;
-  applyPaperClawDirectChatEnv(env, context);
   applyPaperClawWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
@@ -903,7 +900,6 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       : "";
   const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession });
   const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
-  const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclawDirectChat);
   const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
@@ -916,7 +912,6 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     renderedBootstrapPrompt,
     wakePrompt,
     meetingPrompt,
-    directChatPrompt,
     sessionHandoffNote,
     taskContextNote,
     renderedPrompt,
@@ -931,7 +926,6 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       localizationPromptChars: localizationPrompt.length,
       bootstrapPromptChars: renderedBootstrapPrompt.length,
       wakePromptChars: wakePrompt.length,
-      directChatPromptChars: directChatPrompt.length,
       sessionHandoffChars: sessionHandoffNote.length,
       taskContextChars: taskContextNote.length,
       heartbeatPromptChars: renderedPrompt.length,

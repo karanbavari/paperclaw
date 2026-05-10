@@ -22,11 +22,6 @@ import { notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";
 import { companySkillService } from "./company-skills.js";
-import {
-  curateMarketplaceSkills,
-  curateVisibleMarketplaceSkill,
-  marketplaceSkillMatchesQuery,
-} from "./marketplace-curation.js";
 
 type MarketplaceQuery = {
   q?: string | null;
@@ -152,7 +147,7 @@ function parseLocalSkillLine(line: string, category: { slug: string; name: strin
     }
   })();
   const installSource = isInstallableExternalSource(sourceUrl) ? sourceUrl : null;
-  return curateVisibleMarketplaceSkill({
+  return {
     id: `${category.slug}/${sourceSlug}`,
     slug: sourceSlug,
     name,
@@ -174,7 +169,7 @@ function parseLocalSkillLine(line: string, category: { slug: string; name: strin
     installNotes: installSource
       ? null
       : "This local fallback entry does not include package files. PaperClaw will install it as catalog markdown until the remote marketplace provides an install source.",
-  });
+  };
 }
 
 async function readLocalCatalog(): Promise<{ categories: MarketplaceSkillCategory[]; skills: MarketplaceSkillDetail[] }> {
@@ -207,7 +202,17 @@ async function readLocalCatalog(): Promise<{ categories: MarketplaceSkillCategor
 }
 
 function matchesQuery(skill: MarketplaceSkillDetail, query: MarketplaceQuery) {
-  return marketplaceSkillMatchesQuery(skill, query);
+  const category = query.category?.trim();
+  if (category && skill.categorySlug !== category) return false;
+  const q = query.q?.trim().toLowerCase();
+  if (!q) return true;
+  return [
+    skill.name,
+    skill.description,
+    skill.categoryName,
+    skill.slug,
+    skill.sourceUrl,
+  ].some((value) => value?.toLowerCase().includes(q));
 }
 
 function pageSkills(skills: MarketplaceSkillDetail[], query: MarketplaceQuery): MarketplaceSkillListResponse {
@@ -284,21 +289,14 @@ export function marketplaceService(db: Db) {
         if (query.cursor) url.searchParams.set("cursor", query.cursor);
         const json = await fetchJson(url.toString());
         const parsed = marketplaceSkillListResponseSchema.safeParse(json);
-        if (parsed.success) {
-          return {
-            ...parsed.data,
-            items: curateMarketplaceSkills(parsed.data.items),
-          };
-        }
-        const rawItems: unknown[] = Array.isArray(json.items) ? json.items : Array.isArray(json) ? json : [];
+        if (parsed.success) return parsed.data;
+        const rawItems = Array.isArray(json.items) ? json.items : Array.isArray(json) ? json : [];
         return {
-          items: rawItems
-            .map((item: unknown) => curateVisibleMarketplaceSkill(normalizeRemoteSkill(item as Record<string, unknown>)))
-            .filter((item): item is MarketplaceSkillDetail => Boolean(item))
-            .map((detail) => {
-              const { markdown: _markdown, installNotes: _installNotes, ...listItem } = detail;
-              return listItem;
-            }),
+          items: rawItems.map((item: unknown) => {
+            const detail = normalizeRemoteSkill(item as Record<string, unknown>);
+            const { markdown: _markdown, installNotes: _installNotes, ...listItem } = detail;
+            return listItem;
+          }),
           nextCursor: asString(json.nextCursor),
         };
       } catch {
@@ -314,18 +312,13 @@ export function marketplaceService(db: Db) {
       try {
         const json = await fetchJson(`${baseUrl.replace(/\/+$/, "")}/skills/${encodeURIComponent(skillId)}`);
         const parsed = marketplaceSkillDetailSchema.safeParse(json);
-        return curateVisibleMarketplaceSkill(parsed.success ? parsed.data : normalizeRemoteSkill(json as Record<string, unknown>));
+        return parsed.success ? parsed.data : normalizeRemoteSkill(json as Record<string, unknown>);
       } catch {
         // Fall through to local fallback.
       }
     }
     const local = await readLocalCatalog();
-    const normalizedSkillId = skillId.toLowerCase();
-    return local.skills.find((skill) =>
-      skill.id === skillId
-      || skill.slug === skillId
-      || skill.sourceUrl?.toLowerCase().includes(normalizedSkillId)
-    ) ?? null;
+    return local.skills.find((skill) => skill.id === skillId || skill.slug === skillId) ?? null;
   }
 
   async function findCompany(companyId: string) {

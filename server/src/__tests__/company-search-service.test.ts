@@ -221,7 +221,7 @@ describeEmbeddedPostgres("companySearchService", () => {
 
     const result = await svc.search(companyId, companySearchQuerySchema.parse({ q: "before launch", scope: "meetings" }));
 
-    expect(result.countsByType).toEqual({ issue: 0, agent: 0, project: 0, meeting: 1, memory: 0 });
+    expect(result.countsByType).toEqual({ issue: 0, agent: 0, project: 0, meeting: 1 });
     expect(result.results[0]).toMatchObject({
       type: "meeting",
       title: "Architecture council",
@@ -451,7 +451,7 @@ describeEmbeddedPostgres("companySearchService", () => {
     const result = await svc.search(companyId, companySearchQuerySchema.parse({ q: "needle", limit: "2", offset: "2" }));
 
     expect(result.results.map((row) => row.id)).toEqual([agentIds[2], projectIds[0]]);
-    expect(result.countsByType).toEqual({ issue: 0, agent: 3, project: 3, meeting: 0, memory: 0 });
+    expect(result.countsByType).toEqual({ issue: 0, agent: 3, project: 3, meeting: 0 });
     expect(result.hasMore).toBe(true);
   });
 

@@ -143,7 +143,6 @@ import {
 import { recoveryService } from "./recovery/service.js";
 import { productivityReviewService } from "./productivity-review.js";
 import { meetingService } from "./meetings.js";
-import { directChatService } from "./direct-chat.js";
 import { companyMemoryService } from "./company-memory.js";
 import { buildPaperClawLocalization } from "./company-localization.js";
 import { withAgentStartLock } from "./agent-start-lock.js";
@@ -7620,29 +7619,6 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             await onLog(
               "stderr",
               `[paperclaw] Failed to update meeting transcript: ${err instanceof Error ? err.message : String(err)}\n`,
-            );
-          }
-        }
-        const directChatThreadId = readNonEmptyString(context.directChatThreadId);
-        const directChatMessageId = readNonEmptyString(context.directChatMessageId);
-        if (directChatThreadId && directChatMessageId) {
-          try {
-            await directChatService(db).completeAgentMessageFromRun({
-              companyId: agent.companyId,
-              threadId: directChatThreadId,
-              messageId: directChatMessageId,
-              runId: finalizedRun.id,
-              agentId: agent.id,
-              status,
-              body: adapterResult.summary ?? null,
-              resultJson: persistedResultJson,
-              stdoutExcerpt,
-              error: runErrorMessage,
-            });
-          } catch (err) {
-            await onLog(
-              "stderr",
-              `[paperclaw] Failed to update direct chat transcript: ${err instanceof Error ? err.message : String(err)}\n`,
             );
           }
         }

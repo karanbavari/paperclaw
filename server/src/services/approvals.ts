@@ -5,14 +5,12 @@ import { notFound, unprocessable } from "../errors.js";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { agentService } from "./agents.js";
 import { budgetService } from "./budgets.js";
-import { directChatActionApprovalService } from "./direct-chat-action-approvals.js";
 import { notifyHireApproved } from "./hire-hook.js";
 import { instanceSettingsService } from "./instance-settings.js";
 
 export function approvalService(db: Db) {
   const agentsSvc = agentService(db);
   const budgets = budgetService(db);
-  const directChatActions = directChatActionApprovalService(db);
   const instanceSettings = instanceSettingsService(db);
   const canResolveStatuses = new Set(["pending", "revision_requested"]);
   const resolvableStatuses = Array.from(canResolveStatuses);
@@ -186,16 +184,11 @@ export function approvalService(db: Db) {
         }
       }
 
-      let result = updated;
-      if (applied && updated.type === "direct_chat_action") {
-        result = await directChatActions.applyApproved(updated);
-      }
-
       if (applied) {
         await syncResearchLabApproval(updated, "approved", decisionNote);
       }
 
-      return { approval: result, applied };
+      return { approval: updated, applied };
     },
 
     reject: async (id: string, decidedByUserId: string, decisionNote?: string | null) => {
@@ -216,9 +209,6 @@ export function approvalService(db: Db) {
 
       if (applied) {
         await syncResearchLabApproval(updated, "rejected", decisionNote);
-        if (updated.type === "direct_chat_action") {
-          await directChatActions.recordRejected(updated);
-        }
       }
 
       return { approval: updated, applied };

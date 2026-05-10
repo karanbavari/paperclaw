@@ -5,7 +5,6 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   applyPaperClawWorkspaceEnv,
-  applyPaperClawDirectChatEnv,
   appendWithByteCap,
   applyPaperClawLocalizationInstructionBlock,
   buildInvocationEnvForLogs,
@@ -13,7 +12,6 @@ import {
   renderPaperClawLocalizationInstructionBlock,
   renderPaperClawLocalizationPrompt,
   materializePaperClawSkillCopy,
-  renderPaperClawDirectChatPrompt,
   renderPaperClawWakePrompt,
   runningProcesses,
   runChildProcess,
@@ -635,47 +633,6 @@ describe("renderPaperClawWakePrompt", () => {
   });
 });
 
-describe("renderPaperClawDirectChatPrompt", () => {
-  it("renders board chat context and suppresses runtime diagnostics chatter", () => {
-    const prompt = renderPaperClawDirectChatPrompt({
-      currentAgentName: "CEO",
-      requestedBy: "Board",
-      targetQuestion: "kya chal raha hai company me?",
-      company: { name: "Direct Chat Co" },
-      companySnapshot: {
-        counts: {
-          agents: 3,
-          activeAgents: 2,
-          openIssues: 4,
-          activeProjects: 1,
-          openMeetings: 1,
-        },
-        agentRoster: [
-          { id: "agent-1", name: "CEO", title: "Chief Executive Officer", role: "ceo", status: "active" },
-        ],
-        activeProjects: [
-          { id: "project-1", name: "Direct Chat", status: "in_progress", summary: "Board to CEO chat" },
-        ],
-        recentOpenIssues: [
-          { id: "issue-1", identifier: "PAP-1", title: "Fix CEO reply", status: "todo" },
-        ],
-        recentMeetings: [
-          { id: "meeting-1", title: "Roadmap review", status: "open" },
-        ],
-      },
-      transcript: "### Board\nhello",
-    });
-
-    expect(prompt).toContain("## PaperClaw Direct Chat");
-    expect(prompt).toContain("Answer the latest Board message directly as the company CEO");
-    expect(prompt).toContain("Do not mention tool logs, local mode, missing API keys");
-    expect(prompt).toContain("kya chal raha hai company me?");
-    expect(prompt).toContain("- company: Direct Chat Co");
-    expect(prompt).toContain("- open issues: 4");
-    expect(prompt).toContain("PAP-1; Fix CEO reply; status: todo; id: issue-1");
-  });
-});
-
 describe("applyPaperClawWorkspaceEnv", () => {
   it("adds shared workspace env vars including AGENT_HOME", () => {
     const env = applyPaperClawWorkspaceEnv(
@@ -717,20 +674,6 @@ describe("applyPaperClawWorkspaceEnv", () => {
     );
 
     expect(env).toEqual({});
-  });
-});
-
-describe("applyPaperClawDirectChatEnv", () => {
-  it("adds direct chat identifiers when the wake context includes them", () => {
-    const env = applyPaperClawDirectChatEnv({}, {
-      directChatThreadId: "thread-1",
-      directChatMessageId: "message-1",
-    });
-
-    expect(env).toEqual({
-      PAPERCLAW_DIRECT_CHAT_THREAD_ID: "thread-1",
-      PAPERCLAW_DIRECT_CHAT_MESSAGE_ID: "message-1",
-    });
   });
 });
 

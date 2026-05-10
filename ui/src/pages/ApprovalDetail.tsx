@@ -151,10 +151,6 @@ export function ApprovalDetail() {
   const TypeIcon = typeIcon[approval.type] ?? defaultTypeIcon;
   const showApprovedBanner = searchParams.get("resolved") === "approved" && approval.status === "approved";
   const primaryLinkedIssue = linkedIssues?.[0] ?? null;
-  const appliedAction = typeof payload.appliedAction === "object" && payload.appliedAction !== null
-    ? payload.appliedAction as Record<string, unknown>
-    : null;
-  const appliedActionHref = typeof appliedAction?.href === "string" ? appliedAction.href : null;
   const resolvedCta =
     primaryLinkedIssue
       ? {
@@ -169,11 +165,6 @@ export function ApprovalDetail() {
             label: "Open hired agent",
             to: `/agents/${linkedAgentId}`,
           }
-        : appliedActionHref
-          ? {
-              label: "Open created item",
-              to: appliedActionHref,
-            }
         : {
             label: "Back to approvals",
             to: "/approvals",

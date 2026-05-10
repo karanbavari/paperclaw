@@ -23,7 +23,6 @@ import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
 import { goalRoutes } from "./routes/goals.js";
 import { meetingRoutes } from "./routes/meetings.js";
-import { directChatRoutes } from "./routes/direct-chat.js";
 import { researchLabRoutes } from "./routes/research-labs.js";
 import { approvalRoutes } from "./routes/approvals.js";
 import { secretRoutes } from "./routes/secrets.js";
@@ -209,7 +208,6 @@ export async function createApp(
   api.use(executionWorkspaceRoutes(db));
   api.use(goalRoutes(db));
   api.use(meetingRoutes(db, { pluginWorkerManager: workerManager }));
-  api.use(directChatRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(researchLabRoutes(db));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(secretRoutes(db));
