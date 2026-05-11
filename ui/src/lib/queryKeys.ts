@@ -23,6 +23,11 @@ export const queryKeys = {
       ["marketplace", companyId, "plugins", "list", query] as const,
     pluginDetail: (companyId: string, pluginId: string) =>
       ["marketplace", companyId, "plugins", "detail", pluginId] as const,
+    packCategories: (companyId: string) => ["marketplace", companyId, "packs", "categories"] as const,
+    packList: (companyId: string, query: Record<string, unknown>) =>
+      ["marketplace", companyId, "packs", "list", query] as const,
+    packDetail: (companyId: string, packId: string) =>
+      ["marketplace", companyId, "packs", "detail", packId] as const,
   },
   companyMemory: {
     profile: (companyId: string) => ["company-memory", companyId, "profile"] as const,

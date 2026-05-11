@@ -1,4 +1,9 @@
 import type {
+  MarketplaceCapabilityPackCategory,
+  MarketplaceCapabilityPackDetail,
+  MarketplaceCapabilityPackInstallRequest,
+  MarketplaceCapabilityPackInstallResult,
+  MarketplaceCapabilityPackListResponse,
   MarketplaceInstallRequest,
   MarketplaceInstallResult,
   MarketplacePluginCategory,
@@ -65,6 +70,33 @@ export const marketplaceApi = {
   installPlugin: (companyId: string, payload: MarketplacePluginInstallRequest) =>
     api.post<MarketplacePluginInstallResult>(
       `/companies/${encodeURIComponent(companyId)}/marketplace/plugins/install`,
+      payload,
+    ),
+  packCategories: (companyId: string) =>
+    api.get<MarketplaceCapabilityPackCategory[]>(
+      `/companies/${encodeURIComponent(companyId)}/marketplace/packs/categories`,
+    ),
+  packList: (
+    companyId: string,
+    query: { q?: string; category?: string; limit?: number; cursor?: string | null } = {},
+  ) => {
+    const params = new URLSearchParams();
+    if (query.q) params.set("q", query.q);
+    if (query.category) params.set("category", query.category);
+    if (query.limit) params.set("limit", String(query.limit));
+    if (query.cursor) params.set("cursor", query.cursor);
+    const suffix = params.toString() ? `?${params.toString()}` : "";
+    return api.get<MarketplaceCapabilityPackListResponse>(
+      `/companies/${encodeURIComponent(companyId)}/marketplace/packs${suffix}`,
+    );
+  },
+  packDetail: (companyId: string, packId: string) =>
+    api.get<MarketplaceCapabilityPackDetail>(
+      `/companies/${encodeURIComponent(companyId)}/marketplace/packs/${encodeURIComponent(packId)}`,
+    ),
+  installPack: (companyId: string, payload: MarketplaceCapabilityPackInstallRequest) =>
+    api.post<MarketplaceCapabilityPackInstallResult>(
+      `/companies/${encodeURIComponent(companyId)}/marketplace/packs/install`,
       payload,
     ),
 };

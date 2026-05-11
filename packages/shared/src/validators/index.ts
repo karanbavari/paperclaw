@@ -76,6 +76,14 @@ export {
   type CompanySkillFileUpdate,
 } from "./company-skill.js";
 export {
+  marketplaceCapabilityPackCategorySchema,
+  marketplaceCapabilityPackChecklistItemSchema,
+  marketplaceCapabilityPackChecklistStatusSchema,
+  marketplaceCapabilityPackComponentSchema,
+  marketplaceCapabilityPackDetailSchema,
+  marketplaceCapabilityPackInstallSchema,
+  marketplaceCapabilityPackListItemSchema,
+  marketplaceCapabilityPackListResponseSchema,
   marketplaceInstallSchema,
   marketplacePluginCategorySchema,
   marketplacePluginDetailSchema,
@@ -89,6 +97,7 @@ export {
   marketplaceSkillListItemSchema,
   marketplaceSkillListResponseSchema,
   marketplaceSkillTrustLevelSchema,
+  type MarketplaceCapabilityPackInstall,
   type MarketplaceInstall,
   type MarketplacePluginInstall,
 } from "./marketplace.js";

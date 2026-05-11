@@ -72,6 +72,46 @@ Company settings now include default language, currency, and timezone. Managed a
 
 We want agents to run in more remote and sandboxed environments while preserving the same PaperClaw control-plane model. This makes the system safer, more flexible, and more useful outside a single trusted local machine.
 
+### ⚪ Capability Packs
+
+Capability Packs should bundle a plugin, its matching skill, setup checklist, and recommended agent assignment into one install flow. The goal is to make marketplace installs feel like complete business capabilities instead of separate pieces the operator has to wire together manually.
+
+### ⚪ Plugin Setup Wizard
+
+Plugin installation should continue into a guided setup flow for credentials, dry-run/live mode, local folders, health checks, and a first test action. This keeps powerful integrations easy to configure and reduces the gap between "installed" and "useful."
+
+### ⚪ Plugin Tool Test Console
+
+Operators should be able to inspect installed plugin tools, view schemas and examples, run safe dry-runs, and see recent failures from one place. This would make plugin tools more understandable before agents start using them.
+
+### ⚪ Tool Permission System
+
+Powerful tools need clear controls. PaperClaw should support per-agent and per-company tool permissions such as allow, deny, approval-required, and budget-limited usage for integrations like ads, workspace automation, and browser automation.
+
+### ⚪ Outcome Center
+
+The board needs a single place to answer "what shipped?" Outcome Center should aggregate completed work products, reports, PR links, screenshots, previews, decisions, and other artifacts across issues and projects.
+
+### ⚪ Ops Incident Center
+
+Operational failures should be visible without digging through separate pages. Ops Incident Center should consolidate stuck runs, watchdog decisions, budget incidents, plugin failures, environment errors, and recovery actions into one company health surface.
+
+### ⚪ Guided First Company Bootstrap
+
+The first-run experience should create real momentum quickly. A guided bootstrap should interview the operator, create a company, CEO, first goal, first task, and first successful run so new users reach value in minutes.
+
+### ⚪ External Channel Inbox
+
+Work should be able to enter PaperClaw from the places companies already communicate. Email, Slack, WhatsApp, support tickets, and webhooks should become governed issues or comments instead of disconnected messages.
+
+### ⚪ Governed Agent Config Changes
+
+Risky agent changes should have the same governance quality as work execution. Adapter config, runtime config, permissions, budgets, and default environment changes should support diff review, approval gates, and rollback.
+
+### ⚪ Company Template Marketplace
+
+Company templates should eventually go beyond import/export into installable blueprints with org charts, agents, skills, routines, budgets, and governance defaults. This is the path toward reusable "AI company starter packs."
+
 ### ⚪ Artifacts & Work Products
 
 PaperClaw should make outputs first-class. That means generated artifacts, previews, deployable outputs, and the handoff from "agent did work" to "here is the result" should become more visible and easier to operate.

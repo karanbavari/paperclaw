@@ -62,6 +62,15 @@ export type {
   CompanySkillFileUpdateRequest,
 } from "./company-skill.js";
 export type {
+  MarketplaceCapabilityPackCategory,
+  MarketplaceCapabilityPackChecklistItem,
+  MarketplaceCapabilityPackChecklistStatus,
+  MarketplaceCapabilityPackComponent,
+  MarketplaceCapabilityPackDetail,
+  MarketplaceCapabilityPackInstallRequest,
+  MarketplaceCapabilityPackInstallResult,
+  MarketplaceCapabilityPackListItem,
+  MarketplaceCapabilityPackListResponse,
   MarketplaceInstallRequest,
   MarketplaceInstallResult,
   MarketplacePluginCategory,

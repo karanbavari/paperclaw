@@ -85,6 +85,56 @@ export const marketplacePluginListResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+export const marketplaceCapabilityPackChecklistStatusSchema = z.enum(["done", "needs_action", "failed"]);
+
+export const marketplaceCapabilityPackCategorySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  packCount: z.number().int().nonnegative(),
+});
+
+export const marketplaceCapabilityPackComponentSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  installedId: z.string().uuid().nullable(),
+  status: z.string().nullable(),
+});
+
+export const marketplaceCapabilityPackChecklistItemSchema = z.object({
+  key: z.string().min(1),
+  label: z.string().min(1),
+  status: marketplaceCapabilityPackChecklistStatusSchema,
+  required: z.boolean(),
+  href: z.string().nullable(),
+});
+
+export const marketplaceCapabilityPackListItemSchema = z.object({
+  id: z.string().min(1),
+  slug: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().nullable(),
+  categorySlug: z.string().min(1),
+  categoryName: z.string().min(1),
+  tags: z.array(z.string()).default([]),
+  plugin: marketplaceCapabilityPackComponentSchema.nullable(),
+  skills: z.array(marketplaceCapabilityPackComponentSchema).default([]),
+  defaultAssignMode: marketplaceSkillAssignModeSchema,
+  installed: z.boolean(),
+  needsSetup: z.boolean(),
+});
+
+export const marketplaceCapabilityPackDetailSchema = marketplaceCapabilityPackListItemSchema.extend({
+  markdown: z.string().nullable(),
+  installNotes: z.string().nullable(),
+  checklist: z.array(marketplaceCapabilityPackChecklistItemSchema).default([]),
+});
+
+export const marketplaceCapabilityPackListResponseSchema = z.object({
+  items: z.array(marketplaceCapabilityPackListItemSchema),
+  nextCursor: z.string().nullable(),
+});
+
 export const marketplaceInstallSchema = z.object({
   skillId: z.string().min(1),
   assignMode: marketplaceSkillAssignModeSchema,
@@ -95,5 +145,12 @@ export const marketplacePluginInstallSchema = z.object({
   pluginId: z.string().min(1),
 });
 
+export const marketplaceCapabilityPackInstallSchema = z.object({
+  packId: z.string().min(1),
+  assignMode: marketplaceSkillAssignModeSchema,
+  agentIds: z.array(z.string().uuid()).optional(),
+});
+
 export type MarketplaceInstall = z.infer<typeof marketplaceInstallSchema>;
 export type MarketplacePluginInstall = z.infer<typeof marketplacePluginInstallSchema>;
+export type MarketplaceCapabilityPackInstall = z.infer<typeof marketplaceCapabilityPackInstallSchema>;

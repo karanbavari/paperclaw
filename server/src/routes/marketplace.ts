@@ -1,6 +1,10 @@
 import { Router, type Request } from "express";
 import type { Db } from "@kesarcloud/db";
-import { marketplaceInstallSchema, marketplacePluginInstallSchema } from "@kesarcloud/shared";
+import {
+  marketplaceCapabilityPackInstallSchema,
+  marketplaceInstallSchema,
+  marketplacePluginInstallSchema,
+} from "@kesarcloud/shared";
 import { validate } from "../middleware/validate.js";
 import { forbidden, unprocessable } from "../errors.js";
 import { agentService, logActivity, marketplaceService } from "../services/index.js";
@@ -92,6 +96,85 @@ export function marketplaceRoutes(db: Db, deps: MarketplaceRouteDeps = {}) {
     }
     res.json(detail);
   });
+
+  router.get("/companies/:companyId/marketplace/packs/categories", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    res.json(await marketplace.packCategories());
+  });
+
+  router.get("/companies/:companyId/marketplace/packs", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    const limit = Number.parseInt(String(req.query.limit ?? ""), 10);
+    res.json(await marketplace.packList(companyId, {
+      q: typeof req.query.q === "string" ? req.query.q : null,
+      category: typeof req.query.category === "string" ? req.query.category : null,
+      cursor: typeof req.query.cursor === "string" ? req.query.cursor : null,
+      limit: Number.isFinite(limit) ? limit : null,
+    }));
+  });
+
+  router.get("/companies/:companyId/marketplace/packs/:packId", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    const packId = req.params.packId as string;
+    assertCompanyAccess(req, companyId);
+    const detail = await marketplace.packDetail(companyId, packId);
+    if (!detail) {
+      res.status(404).json({ error: "Capability pack not found" });
+      return;
+    }
+    res.json(detail);
+  });
+
+  router.post(
+    "/companies/:companyId/marketplace/packs/install",
+    validate(marketplaceCapabilityPackInstallSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      const detail = await marketplace.packDetail(companyId, req.body.packId);
+      if (!detail) {
+        res.status(404).json({ error: "Capability pack not found" });
+        return;
+      }
+      if (detail.plugin) {
+        assertInstanceAdmin(req);
+      } else {
+        await assertCanInstall(req, companyId);
+      }
+      const actor = getActorInfo(req);
+      const result = await marketplace.installPack(companyId, req.body, {
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+      }).catch((error: unknown) => {
+        if (error instanceof Error && error.message.includes("manifest has inconsistent capabilities")) {
+          throw unprocessable(error.message);
+        }
+        throw error;
+      });
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        action: result.approval ? "marketplace.capability_pack_install_requested" : "marketplace.capability_pack_installed",
+        entityType: result.approval ? "approval" : "capability_pack",
+        entityId: result.approval?.id ?? result.pack.id,
+        details: {
+          packId: req.body.packId,
+          pluginId: result.pack.plugin?.id ?? null,
+          skillIds: result.pack.skills.map((skill) => skill.id),
+          assignedAgentIds: result.assignedAgentIds,
+          approvalId: result.approval?.id ?? null,
+          warningCount: result.warnings.length,
+        },
+      });
+      res.status(result.approval ? 202 : 200).json(result);
+    },
+  );
 
   router.post(
     "/companies/:companyId/marketplace/plugins/install",

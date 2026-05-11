@@ -77,6 +77,56 @@ export interface MarketplacePluginListResponse {
   nextCursor: string | null;
 }
 
+export type MarketplaceCapabilityPackChecklistStatus = "done" | "needs_action" | "failed";
+
+export interface MarketplaceCapabilityPackCategory {
+  id: string;
+  name: string;
+  slug: string;
+  packCount: number;
+}
+
+export interface MarketplaceCapabilityPackComponent {
+  id: string;
+  name: string;
+  installedId: string | null;
+  status: string | null;
+}
+
+export interface MarketplaceCapabilityPackChecklistItem {
+  key: string;
+  label: string;
+  status: MarketplaceCapabilityPackChecklistStatus;
+  required: boolean;
+  href: string | null;
+}
+
+export interface MarketplaceCapabilityPackListItem {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  categorySlug: string;
+  categoryName: string;
+  tags: string[];
+  plugin: MarketplaceCapabilityPackComponent | null;
+  skills: MarketplaceCapabilityPackComponent[];
+  defaultAssignMode: MarketplaceSkillAssignMode;
+  installed: boolean;
+  needsSetup: boolean;
+}
+
+export interface MarketplaceCapabilityPackDetail extends MarketplaceCapabilityPackListItem {
+  markdown: string | null;
+  installNotes: string | null;
+  checklist: MarketplaceCapabilityPackChecklistItem[];
+}
+
+export interface MarketplaceCapabilityPackListResponse {
+  items: MarketplaceCapabilityPackListItem[];
+  nextCursor: string | null;
+}
+
 export interface MarketplaceInstallRequest {
   skillId: string;
   assignMode: MarketplaceSkillAssignMode;
@@ -96,5 +146,21 @@ export interface MarketplacePluginInstallRequest {
 
 export interface MarketplacePluginInstallResult {
   plugin: PluginRecord;
+  warnings: string[];
+}
+
+export interface MarketplaceCapabilityPackInstallRequest {
+  packId: string;
+  assignMode: MarketplaceSkillAssignMode;
+  agentIds?: string[];
+}
+
+export interface MarketplaceCapabilityPackInstallResult {
+  pack: MarketplaceCapabilityPackDetail;
+  plugin: PluginRecord | null;
+  skills: CompanySkill[];
+  assignedAgentIds: string[];
+  approval: Approval | null;
+  checklist: MarketplaceCapabilityPackChecklistItem[];
   warnings: string[];
 }

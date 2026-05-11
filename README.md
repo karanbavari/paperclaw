@@ -390,6 +390,16 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Research Lab
 - ✅ Company language, currency, and timezone preferences
 - ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
+- ⚪ Capability Packs (plugin + skill + setup + agent assignment)
+- ⚪ Plugin Setup Wizard
+- ⚪ Plugin Tool Test Console
+- ⚪ Tool Permission System
+- ⚪ Outcome Center
+- ⚪ Ops Incident Center
+- ⚪ Guided First Company Bootstrap
+- ⚪ External Channel Inbox
+- ⚪ Governed Agent Config Changes
+- ⚪ Company Template Marketplace
 - ⚪ Artifacts & Work Products
 - ⚪ Enforced Outcomes
 - ⚪ MAXIMIZER MODE
