@@ -64,6 +64,13 @@ export type {
 export type {
   MarketplaceInstallRequest,
   MarketplaceInstallResult,
+  MarketplacePluginCategory,
+  MarketplacePluginDetail,
+  MarketplacePluginInstallRequest,
+  MarketplacePluginInstallResult,
+  MarketplacePluginListItem,
+  MarketplacePluginListResponse,
+  MarketplacePluginSourceType,
   MarketplaceSkillAssignMode,
   MarketplaceSkillCategory,
   MarketplaceSkillDetail,
@@ -71,6 +78,14 @@ export type {
   MarketplaceSkillListResponse,
   MarketplaceSkillTrustLevel,
 } from "./marketplace.js";
+export type {
+  DirectChatDetail,
+  DirectChatMessage,
+  DirectChatMessageAuthorType,
+  DirectChatMessageStatus,
+  DirectChatThread,
+  DirectChatThreadKind,
+} from "./direct-chat.js";
 export type {
   AgentSkillSyncMode,
   AgentSkillState,

@@ -77,6 +77,12 @@ export {
 } from "./company-skill.js";
 export {
   marketplaceInstallSchema,
+  marketplacePluginCategorySchema,
+  marketplacePluginDetailSchema,
+  marketplacePluginInstallSchema,
+  marketplacePluginListItemSchema,
+  marketplacePluginListResponseSchema,
+  marketplacePluginSourceTypeSchema,
   marketplaceSkillAssignModeSchema,
   marketplaceSkillCategorySchema,
   marketplaceSkillDetailSchema,
@@ -84,7 +90,12 @@ export {
   marketplaceSkillListResponseSchema,
   marketplaceSkillTrustLevelSchema,
   type MarketplaceInstall,
+  type MarketplacePluginInstall,
 } from "./marketplace.js";
+export {
+  addDirectChatMessageSchema,
+  type AddDirectChatMessage,
+} from "./direct-chat.js";
 export {
   agentSkillStateSchema,
   agentSkillSyncModeSchema,

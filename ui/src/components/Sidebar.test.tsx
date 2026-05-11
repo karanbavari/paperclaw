@@ -153,4 +153,28 @@ describe("Sidebar", () => {
       root.unmount();
     });
   });
+
+  it("surfaces the direct chat shortcut", async () => {
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableIsolatedWorkspaces: false });
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Sidebar />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    const link = [...container.querySelectorAll("a")].find((anchor) => anchor.textContent === "Direct Chat");
+    expect(link?.getAttribute("href")).toBe("/direct-chat");
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

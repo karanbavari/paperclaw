@@ -23,6 +23,7 @@ import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
 import { goalRoutes } from "./routes/goals.js";
 import { meetingRoutes } from "./routes/meetings.js";
+import { directChatRoutes } from "./routes/direct-chat.js";
 import { researchLabRoutes } from "./routes/research-labs.js";
 import { approvalRoutes } from "./routes/approvals.js";
 import { secretRoutes } from "./routes/secrets.js";
@@ -194,7 +195,6 @@ export async function createApp(
   api.use("/companies", companyRoutes(db, opts.storageService));
   api.use(companyMemoryRoutes(db));
   api.use(companySkillRoutes(db));
-  api.use(marketplaceRoutes(db));
   api.use(agentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(assetRoutes(db, opts.storageService));
   api.use(projectRoutes(db));
@@ -208,6 +208,7 @@ export async function createApp(
   api.use(executionWorkspaceRoutes(db));
   api.use(goalRoutes(db));
   api.use(meetingRoutes(db, { pluginWorkerManager: workerManager }));
+  api.use(directChatRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(researchLabRoutes(db));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(secretRoutes(db));
@@ -282,6 +283,10 @@ export async function createApp(
       },
     },
   );
+  api.use(marketplaceRoutes(db, {
+    pluginLoader: loader,
+    pluginLifecycle: lifecycle,
+  }));
   api.use(
     pluginRoutes(
       db,

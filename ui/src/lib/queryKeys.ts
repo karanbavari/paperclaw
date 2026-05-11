@@ -18,6 +18,11 @@ export const queryKeys = {
       ["marketplace", companyId, "list", query] as const,
     detail: (companyId: string, skillId: string) =>
       ["marketplace", companyId, "detail", skillId] as const,
+    pluginCategories: (companyId: string) => ["marketplace", companyId, "plugins", "categories"] as const,
+    pluginList: (companyId: string, query: Record<string, unknown>) =>
+      ["marketplace", companyId, "plugins", "list", query] as const,
+    pluginDetail: (companyId: string, pluginId: string) =>
+      ["marketplace", companyId, "plugins", "detail", pluginId] as const,
   },
   companyMemory: {
     profile: (companyId: string) => ["company-memory", companyId, "profile"] as const,
@@ -113,6 +118,9 @@ export const queryKeys = {
   meetings: {
     list: (companyId: string) => ["meetings", companyId] as const,
     detail: (companyId: string, id: string) => ["meetings", companyId, id] as const,
+  },
+  directChat: {
+    detail: (companyId: string) => ["direct-chat", companyId] as const,
   },
   researchLabs: {
     list: (companyId: string) => ["research-labs", companyId] as const,

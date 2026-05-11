@@ -19,4 +19,5 @@ export { sidebarPreferencesApi } from "./sidebarPreferences";
 export { inboxDismissalsApi } from "./inboxDismissals";
 export { companySkillsApi } from "./companySkills";
 export { marketplaceApi } from "./marketplace";
+export { directChatApi } from "./directChat";
 export { researchLabsApi } from "./researchLabs";

@@ -915,6 +915,69 @@ export function renderPaperClawMeetingPrompt(value: unknown): string {
   ].filter(Boolean).join("\n");
 }
 
+export function renderPaperClawDirectChatPrompt(value: unknown): string {
+  const payload = parseObject(value);
+  if (Object.keys(payload).length === 0) return "";
+
+  const company = parseObject(payload.company);
+  const companyName = asString(company.name, "this company").trim();
+  const currentAgentName = asString(payload.currentAgentName, "CEO").trim();
+  const targetQuestion = asString(payload.targetQuestion, "").trim();
+  const requestedBy = asString(payload.requestedBy, "Board").trim();
+  const transcript = asString(payload.transcript, "").trim();
+  const snapshot = parseObject(payload.companySnapshot);
+  const counts = parseObject(snapshot.counts);
+  const responseMessageId = asString(payload.responseMessageId, "").trim();
+
+  const roster = Array.isArray(snapshot.agentRoster)
+    ? snapshot.agentRoster
+      .map((entry) => parseObject(entry))
+      .filter((entry) => Object.keys(entry).length > 0)
+    : [];
+  const rosterLines = roster.map((agent) => {
+    const name = asString(agent.name, "Agent");
+    const titleText = asString(agent.title, "").trim();
+    const role = asString(agent.role, "").trim();
+    const status = asString(agent.status, "").trim();
+    const isYou = agent.isYou === true ? "; you" : "";
+    return `- ${name}${titleText ? ` (${titleText})` : ""}${role ? `; role: ${role}` : ""}${status ? `; status: ${status}` : ""}${isYou}`;
+  });
+  const issueLines = Array.isArray(snapshot.recentOpenIssues)
+    ? snapshot.recentOpenIssues
+      .map((entry) => parseObject(entry))
+      .filter((entry) => Object.keys(entry).length > 0)
+      .map((issue) => {
+        const ref = asString(issue.identifier, asString(issue.id, "issue"));
+        const title = asString(issue.title, "").trim();
+        const status = asString(issue.status, "").trim();
+        return `- ${ref}${title ? ` ${title}` : ""}${status ? ` (${status})` : ""}`;
+      })
+    : [];
+
+  return [
+    "## PaperClaw Direct Chat",
+    "",
+    "You are replying directly to the Board as the CEO. This is not an issue comment and not a meeting room.",
+    "Answer the Board's message directly. Be clear, concise, executive, and action-oriented.",
+    "Do not modify project files or start implementation work unless the Board explicitly asks you to take that action in this chat.",
+    "",
+    `- company: ${companyName}`,
+    `- you are: ${currentAgentName}`,
+    `- requested by: ${requestedBy}`,
+    responseMessageId ? `- response message id: ${responseMessageId}` : "",
+    Object.keys(counts).length > 0
+      ? `- company counts: ${asNumber(counts.activeAgents, 0)} active agents, ${asNumber(counts.openIssues, 0)} open issues, ${asNumber(counts.activeProjects, 0)} active projects`
+      : "",
+    targetQuestion ? ["", "### Board Message", targetQuestion].join("\n") : "",
+    rosterLines.length > 0 ? ["", "### Agent Roster", ...rosterLines].join("\n") : "",
+    issueLines.length > 0 ? ["", "### Recent Open Issues", ...issueLines].join("\n") : "",
+    transcript ? ["", "### Direct Chat Transcript", transcript].join("\n") : "",
+    "",
+    "### Required Output",
+    "Return only the visible message you want posted back to Direct Chat in markdown. Do not include hidden reasoning, tool logs, or unrelated status boilerplate.",
+  ].filter(Boolean).join("\n");
+}
+
 export function redactEnvForLogs(env: Record<string, string>): Record<string, string> {
   const redacted: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
@@ -1009,6 +1072,20 @@ export function applyPaperClawWorkspaceEnv(
     }
   }
 
+  return env;
+}
+
+export function applyPaperClawDirectChatEnv(
+  env: Record<string, string>,
+  context: Record<string, unknown>,
+): Record<string, string> {
+  const payload = parseObject(context.paperclawDirectChat);
+  const threadId = asString(payload.id, "").trim();
+  const messageId = asString(payload.responseMessageId, "").trim();
+  const question = asString(payload.targetQuestion, "").trim();
+  if (threadId) env.PAPERCLAW_DIRECT_CHAT_THREAD_ID = threadId;
+  if (messageId) env.PAPERCLAW_DIRECT_CHAT_MESSAGE_ID = messageId;
+  if (question) env.PAPERCLAW_DIRECT_CHAT_QUESTION = question;
   return env;
 }
 

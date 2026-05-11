@@ -1,7 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronLeft, ChevronRight, Eye, Loader2, PackagePlus, Search, Store, Users } from "lucide-react";
-import type { MarketplaceSkillAssignMode, MarketplaceSkillDetail, MarketplaceSkillListItem } from "@kesarcloud/shared";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
+  PackagePlus,
+  Plug,
+  Search,
+  Store,
+  Users,
+  Wrench,
+} from "lucide-react";
+import type {
+  MarketplacePluginDetail,
+  MarketplacePluginListItem,
+  MarketplaceSkillAssignMode,
+  MarketplaceSkillDetail,
+  MarketplaceSkillListItem,
+} from "@kesarcloud/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { useToastActions } from "../context/ToastContext";
@@ -27,6 +46,8 @@ import { agentsApi } from "../api/agents";
 import { marketplaceApi } from "../api/marketplace";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
+
+type MarketplaceTab = "skills" | "plugins";
 
 const ASSIGN_OPTIONS: Array<{ value: MarketplaceSkillAssignMode; label: string; description: string }> = [
   { value: "library_only", label: "Company library only", description: "Install now, assign later from Skills or Agent pages." },
@@ -37,18 +58,31 @@ const ASSIGN_OPTIONS: Array<{ value: MarketplaceSkillAssignMode; label: string; 
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
+function capabilitySummary(plugin: MarketplacePluginListItem | MarketplacePluginDetail) {
+  const parts = [
+    plugin.toolCount ? `${plugin.toolCount} tools` : null,
+    plugin.uiSlotCount ? `${plugin.uiSlotCount} UI slots` : null,
+    plugin.jobCount ? `${plugin.jobCount} jobs` : null,
+    plugin.webhookCount ? `${plugin.webhookCount} webhooks` : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "No runtime surfaces";
+}
+
 export function Marketplace() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<MarketplaceTab>("skills");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(20);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
-  const [previewTarget, setPreviewTarget] = useState<MarketplaceSkillListItem | null>(null);
-  const [installTarget, setInstallTarget] = useState<MarketplaceSkillListItem | null>(null);
+  const [previewSkillTarget, setPreviewSkillTarget] = useState<MarketplaceSkillListItem | null>(null);
+  const [previewPluginTarget, setPreviewPluginTarget] = useState<MarketplacePluginListItem | null>(null);
+  const [installSkillTarget, setInstallSkillTarget] = useState<MarketplaceSkillListItem | null>(null);
+  const [installPluginTarget, setInstallPluginTarget] = useState<MarketplacePluginListItem | null>(null);
   const [assignMode, setAssignMode] = useState<MarketplaceSkillAssignMode>("library_only");
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
 
@@ -57,15 +91,15 @@ export function Marketplace() {
   }, [setBreadcrumbs]);
 
   useEffect(() => {
+    setCategory(null);
+    setPageIndex(0);
+    setPageCursors([null]);
+  }, [activeTab]);
+
+  useEffect(() => {
     setPageIndex(0);
     setPageCursors([null]);
   }, [category, pageSize, search]);
-
-  const categoriesQuery = useQuery({
-    queryKey: queryKeys.marketplace.categories(selectedCompanyId ?? ""),
-    queryFn: () => marketplaceApi.categories(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
-  });
 
   const currentCursor = pageCursors[pageIndex] ?? null;
   const listQueryParams = useMemo(() => ({
@@ -75,22 +109,46 @@ export function Marketplace() {
     cursor: currentCursor,
   }), [category, currentCursor, pageSize, search]);
 
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.marketplace.categories(selectedCompanyId ?? ""),
+    queryFn: () => marketplaceApi.categories(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId && activeTab === "skills"),
+  });
+
+  const pluginCategoriesQuery = useQuery({
+    queryKey: queryKeys.marketplace.pluginCategories(selectedCompanyId ?? ""),
+    queryFn: () => marketplaceApi.pluginCategories(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId && activeTab === "plugins"),
+  });
+
   const skillsQuery = useQuery({
     queryKey: queryKeys.marketplace.list(selectedCompanyId ?? "", listQueryParams),
     queryFn: () => marketplaceApi.list(selectedCompanyId!, listQueryParams),
-    enabled: Boolean(selectedCompanyId),
+    enabled: Boolean(selectedCompanyId && activeTab === "skills"),
   });
 
-  const previewQuery = useQuery({
-    queryKey: queryKeys.marketplace.detail(selectedCompanyId ?? "", previewTarget?.id ?? ""),
-    queryFn: () => marketplaceApi.detail(selectedCompanyId!, previewTarget!.id),
-    enabled: Boolean(selectedCompanyId && previewTarget),
+  const pluginsQuery = useQuery({
+    queryKey: queryKeys.marketplace.pluginList(selectedCompanyId ?? "", listQueryParams),
+    queryFn: () => marketplaceApi.pluginList(selectedCompanyId!, listQueryParams),
+    enabled: Boolean(selectedCompanyId && activeTab === "plugins"),
+  });
+
+  const previewSkillQuery = useQuery({
+    queryKey: queryKeys.marketplace.detail(selectedCompanyId ?? "", previewSkillTarget?.id ?? ""),
+    queryFn: () => marketplaceApi.detail(selectedCompanyId!, previewSkillTarget!.id),
+    enabled: Boolean(selectedCompanyId && previewSkillTarget),
+  });
+
+  const previewPluginQuery = useQuery({
+    queryKey: queryKeys.marketplace.pluginDetail(selectedCompanyId ?? "", previewPluginTarget?.id ?? ""),
+    queryFn: () => marketplaceApi.pluginDetail(selectedCompanyId!, previewPluginTarget!.id),
+    enabled: Boolean(selectedCompanyId && previewPluginTarget),
   });
 
   const agentsQuery = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId ?? ""),
     queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    enabled: Boolean(selectedCompanyId && installSkillTarget),
   });
 
   const activeAgents = useMemo(
@@ -98,9 +156,9 @@ export function Marketplace() {
     [agentsQuery.data],
   );
 
-  const installMutation = useMutation({
+  const installSkillMutation = useMutation({
     mutationFn: () => marketplaceApi.install(selectedCompanyId!, {
-      skillId: installTarget!.id,
+      skillId: installSkillTarget!.id,
       assignMode,
       agentIds: assignMode === "selected_agents" ? selectedAgentIds : undefined,
     }),
@@ -108,8 +166,8 @@ export function Marketplace() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.categories(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: ["marketplace", selectedCompanyId!, "list"] }),
-        installTarget
-          ? queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.detail(selectedCompanyId!, installTarget.id) })
+        installSkillTarget
+          ? queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.detail(selectedCompanyId!, installSkillTarget.id) })
           : Promise.resolve(),
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) }),
@@ -126,7 +184,7 @@ export function Marketplace() {
             : "Added to the company skill library.",
         tone: result.approval ? "info" : "success",
       });
-      closeInstall();
+      closeSkillInstall();
     },
     onError: (error) => {
       pushToast({
@@ -137,25 +195,50 @@ export function Marketplace() {
     },
   });
 
-  function closeInstall() {
-    setInstallTarget(null);
+  const installPluginMutation = useMutation({
+    mutationFn: () => marketplaceApi.installPlugin(selectedCompanyId!, {
+      pluginId: installPluginTarget!.id,
+    }),
+    onSuccess: async (result) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.pluginCategories(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: ["marketplace", selectedCompanyId!, "plugins", "list"] }),
+        installPluginTarget
+          ? queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.pluginDetail(selectedCompanyId!, installPluginTarget.id) })
+          : Promise.resolve(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.plugins.uiContributions }),
+      ]);
+      pushToast({
+        title: result.warnings.length > 0 ? "Plugin already installed" : "Plugin installed",
+        body: result.warnings[0] ?? `${result.plugin.manifestJson.displayName} is ready.`,
+        tone: result.warnings.length > 0 ? "info" : "success",
+      });
+      setInstallPluginTarget(null);
+    },
+    onError: (error) => {
+      pushToast({
+        title: "Plugin install failed",
+        body: error instanceof Error ? error.message : "Unable to install this marketplace plugin.",
+        tone: "error",
+      });
+    },
+  });
+
+  function closeSkillInstall() {
+    setInstallSkillTarget(null);
     setAssignMode("library_only");
     setSelectedAgentIds([]);
   }
 
-  function openInstall(skill: MarketplaceSkillListItem) {
-    setInstallTarget(skill);
+  function openSkillInstall(skill: MarketplaceSkillListItem | MarketplaceSkillDetail) {
+    setInstallSkillTarget(skill);
     setAssignMode(skill.installedSkillId ? "library_only" : "ceo");
     setSelectedAgentIds([]);
   }
 
-  function openInstallFromPreview(skill: MarketplaceSkillListItem | MarketplaceSkillDetail) {
-    setPreviewTarget(null);
-    openInstall(skill);
-  }
-
   function goToNextPage() {
-    const nextCursor = skillsQuery.data?.nextCursor ?? null;
+    const nextCursor = activeTab === "skills" ? skillsQuery.data?.nextCursor : pluginsQuery.data?.nextCursor;
     if (!nextCursor) return;
     setPageCursors((current) => {
       const next = [...current];
@@ -172,29 +255,46 @@ export function Marketplace() {
   }
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select a company to browse marketplace skills.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Select a company to browse marketplace items.</div>;
   }
 
-  const categories = categoriesQuery.data ?? [];
+  const skillCategories = categoriesQuery.data ?? [];
+  const pluginCategories = pluginCategoriesQuery.data ?? [];
+  const categories = activeTab === "skills" ? skillCategories : pluginCategories;
+  const categoryCount = (item: (typeof categories)[number]) =>
+    "skillCount" in item ? item.skillCount : item.pluginCount;
+  const totalCount = categories.reduce((total, item) => total + categoryCount(item), 0);
   const skills = skillsQuery.data?.items ?? [];
+  const plugins = pluginsQuery.data?.items ?? [];
+  const visibleCount = activeTab === "skills" ? skills.length : plugins.length;
   const selectedCategoryName = category
     ? categories.find((item) => item.slug === category)?.name ?? "Selected category"
     : "All categories";
-  const previewSkill = previewQuery.data ?? previewTarget;
-  const hasNextPage = Boolean(skillsQuery.data?.nextCursor);
-  const isFetchingPage = skillsQuery.isFetching && !skillsQuery.isLoading;
+  const previewSkill = previewSkillQuery.data ?? previewSkillTarget;
+  const previewPlugin = previewPluginQuery.data ?? previewPluginTarget;
+  const hasNextPage = Boolean(activeTab === "skills" ? skillsQuery.data?.nextCursor : pluginsQuery.data?.nextCursor);
+  const activeListQuery = activeTab === "skills" ? skillsQuery : pluginsQuery;
+  const isFetchingPage = activeListQuery.isFetching && !activeListQuery.isLoading;
 
   return (
     <div className="min-h-[calc(100vh-6rem)]">
       <div className="border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-lg font-semibold">Marketplace</h1>
             <p className="text-sm text-muted-foreground">
-              Browse remote OpenClaw skills and install only what your company needs.
+              Install reusable skills and first-party plugins for this PaperClaw instance.
             </p>
           </div>
-          <Badge variant="outline">{skills.length} visible</Badge>
+          <div className="flex items-center gap-3">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as MarketplaceTab)}>
+              <TabsList>
+                <TabsTrigger value="skills">Skills</TabsTrigger>
+                <TabsTrigger value="plugins">Plugins</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Badge variant="outline">{visibleCount} visible</Badge>
+          </div>
         </div>
       </div>
 
@@ -212,7 +312,7 @@ export function Marketplace() {
               onClick={() => setCategory(null)}
             >
               <span>All categories</span>
-              <span className="text-xs text-muted-foreground">{categories.reduce((total, item) => total + item.skillCount, 0)}</span>
+              <span className="text-xs text-muted-foreground">{totalCount}</span>
             </button>
             {categories.map((item) => (
               <button
@@ -224,7 +324,7 @@ export function Marketplace() {
                 onClick={() => setCategory(item.slug)}
               >
                 <span className="truncate">{item.name}</span>
-                <span className="ml-2 text-xs text-muted-foreground">{item.skillCount}</span>
+                <span className="ml-2 text-xs text-muted-foreground">{categoryCount(item)}</span>
               </button>
             ))}
           </div>
@@ -238,7 +338,7 @@ export function Marketplace() {
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search marketplace skills"
+                  placeholder={activeTab === "skills" ? "Search marketplace skills" : "Search marketplace plugins"}
                   className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
                 />
               </div>
@@ -266,7 +366,7 @@ export function Marketplace() {
                     variant="outline"
                     className="h-8 w-8"
                     onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
-                    disabled={pageIndex === 0 || skillsQuery.isLoading}
+                    disabled={pageIndex === 0 || activeListQuery.isLoading}
                     aria-label="Previous page"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -278,7 +378,7 @@ export function Marketplace() {
                     variant="outline"
                     className="h-8 w-8"
                     onClick={goToNextPage}
-                    disabled={!hasNextPage || skillsQuery.isLoading}
+                    disabled={!hasNextPage || activeListQuery.isLoading}
                     aria-label="Next page"
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -288,68 +388,43 @@ export function Marketplace() {
             </div>
           </div>
 
-          {skillsQuery.isLoading ? (
+          {activeListQuery.isLoading ? (
             <div className="p-6 text-sm text-muted-foreground">Loading marketplace...</div>
-          ) : skillsQuery.error ? (
+          ) : activeListQuery.error ? (
             <div className="p-6 text-sm text-destructive">
-              {skillsQuery.error instanceof Error ? skillsQuery.error.message : "Failed to load marketplace"}
+              {activeListQuery.error instanceof Error ? activeListQuery.error.message : "Failed to load marketplace"}
             </div>
-          ) : skills.length === 0 ? (
-            <div className="flex min-h-80 flex-col items-center justify-center gap-2 p-6 text-center">
-              <Store className="h-8 w-8 text-muted-foreground" />
-              <div className="text-sm font-medium">No skills found</div>
-              <div className="max-w-sm text-sm text-muted-foreground">Try a different search or category.</div>
+          ) : activeTab === "skills" && skills.length === 0 ? (
+            <EmptyState label="No skills found" />
+          ) : activeTab === "plugins" && plugins.length === 0 ? (
+            <EmptyState label="No plugins found" />
+          ) : activeTab === "skills" ? (
+            <div className={cn("grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", isFetchingPage && "opacity-70")}>
+              {skills.map((skill) => (
+                <SkillCard
+                  key={skill.id}
+                  skill={skill}
+                  onPreview={() => setPreviewSkillTarget(skill)}
+                  onInstall={() => openSkillInstall(skill)}
+                />
+              ))}
             </div>
           ) : (
             <div className={cn("grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", isFetchingPage && "opacity-70")}>
-              {skills.map((skill) => (
-                <article key={skill.id} className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">{skill.categoryName}</Badge>
-                      {skill.installedSkillId ? (
-                        <Badge variant="secondary"><Check className="h-3 w-3" /> Installed</Badge>
-                      ) : null}
-                    </div>
-                    <h2 className="mt-3 line-clamp-2 text-base font-semibold leading-snug">{skill.name}</h2>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {skill.description ?? skill.slug}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <span>{skill.trustLevel.replace(/_/g, " ")}</span>
-                      {skill.installSource ? <span>Package source available</span> : <span>Catalog fallback</span>}
-                    </div>
-                    {skill.tags.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {skill.tags.slice(0, 4).map((tag) => (
-                          <span key={tag} className="border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                            {tag}
-                          </span>
-                        ))}
-                        {skill.tags.length > 4 ? (
-                          <span className="px-1 py-0.5 text-xs text-muted-foreground">+{skill.tags.length - 4}</span>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button type="button" size="sm" variant="outline" onClick={() => setPreviewTarget(skill)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview
-                    </Button>
-                    <Button type="button" size="sm" variant={skill.installedSkillId ? "outline" : "default"} onClick={() => openInstall(skill)}>
-                      <PackagePlus className="mr-2 h-4 w-4" />
-                      {skill.installedSkillId ? "Assign" : "Install"}
-                    </Button>
-                  </div>
-                </article>
+              {plugins.map((plugin) => (
+                <PluginCard
+                  key={plugin.id}
+                  plugin={plugin}
+                  onPreview={() => setPreviewPluginTarget(plugin)}
+                  onInstall={() => setInstallPluginTarget(plugin)}
+                />
               ))}
             </div>
           )}
         </main>
       </div>
 
-      <Dialog open={Boolean(previewTarget)} onOpenChange={(open) => !open && setPreviewTarget(null)}>
+      <Dialog open={Boolean(previewSkillTarget)} onOpenChange={(open) => !open && setPreviewSkillTarget(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{previewSkill?.name ?? "Skill preview"}</DialogTitle>
@@ -357,66 +432,12 @@ export function Marketplace() {
               {previewSkill?.description ?? "Loading marketplace skill details..."}
             </DialogDescription>
           </DialogHeader>
-
-          {previewQuery.isLoading ? (
-            <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading preview...
-            </div>
-          ) : previewQuery.error ? (
-            <div className="py-6 text-sm text-destructive">
-              {previewQuery.error instanceof Error ? previewQuery.error.message : "Failed to load skill preview"}
-            </div>
-          ) : previewSkill ? (
-            <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">{previewSkill.categoryName}</Badge>
-                <Badge variant="secondary">{previewSkill.trustLevel.replace(/_/g, " ")}</Badge>
-                {previewSkill.installedSkillId ? (
-                  <Badge variant="secondary"><Check className="h-3 w-3" /> Installed</Badge>
-                ) : null}
-              </div>
-              <div className="grid gap-3 text-sm sm:grid-cols-2">
-                <div className="border border-border p-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Source</div>
-                  <div className="mt-1 break-words text-foreground">{previewSkill.sourceUrl ?? "Catalog fallback"}</div>
-                </div>
-                <div className="border border-border p-3">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Install source</div>
-                  <div className="mt-1 break-words text-foreground">{previewSkill.installSource ?? "Not packaged"}</div>
-                </div>
-              </div>
-              {previewSkill.tags.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {previewSkill.tags.map((tag) => (
-                    <span key={tag} className="border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {previewQuery.data?.installNotes ? (
-                <section>
-                  <h3 className="text-sm font-medium">Install notes</h3>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{previewQuery.data.installNotes}</p>
-                </section>
-              ) : null}
-              {previewQuery.data?.markdown ? (
-                <section>
-                  <h3 className="text-sm font-medium">Skill details</h3>
-                  <div className="mt-2 max-h-72 overflow-y-auto border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
-                    <pre className="whitespace-pre-wrap font-sans">{previewQuery.data.markdown}</pre>
-                  </div>
-                </section>
-              ) : null}
-            </div>
-          ) : null}
-
+          <SkillPreview skill={previewSkill} query={previewSkillQuery} />
           <DialogFooter showCloseButton>
             <Button
               type="button"
-              onClick={() => previewSkill && openInstallFromPreview(previewSkill)}
-              disabled={!previewSkill || previewQuery.isLoading}
+              onClick={() => previewSkill && openSkillInstall(previewSkill)}
+              disabled={!previewSkill || previewSkillQuery.isLoading}
             >
               <PackagePlus className="mr-2 h-4 w-4" />
               {previewSkill?.installedSkillId ? "Assign" : "Install"}
@@ -425,78 +446,348 @@ export function Marketplace() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(installTarget)} onOpenChange={(open) => !open && closeInstall()}>
+      <Dialog open={Boolean(previewPluginTarget)} onOpenChange={(open) => !open && setPreviewPluginTarget(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{previewPlugin?.name ?? "Plugin preview"}</DialogTitle>
+            <DialogDescription>
+              {previewPlugin?.description ?? "Loading marketplace plugin details..."}
+            </DialogDescription>
+          </DialogHeader>
+          <PluginPreview plugin={previewPlugin} query={previewPluginQuery} />
+          <DialogFooter showCloseButton>
+            <Button
+              type="button"
+              onClick={() => previewPlugin && setInstallPluginTarget(previewPlugin)}
+              disabled={!previewPlugin || previewPluginQuery.isLoading || Boolean(previewPlugin?.installedPluginId)}
+            >
+              <Plug className="mr-2 h-4 w-4" />
+              {previewPlugin?.installedPluginId ? "Installed" : "Install"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(installSkillTarget)} onOpenChange={(open) => !open && closeSkillInstall()}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{installTarget ? `Install ${installTarget.name}` : "Install skill"}</DialogTitle>
+            <DialogTitle>{installSkillTarget ? `Install ${installSkillTarget.name}` : "Install skill"}</DialogTitle>
             <DialogDescription>
               Add this skill to the company library and optionally attach it to agents.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              {ASSIGN_OPTIONS.map((option) => (
-                <label
-                  key={option.value}
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 border border-border px-3 py-2 transition-colors hover:bg-accent/40",
-                    assignMode === option.value && "border-foreground bg-accent/40",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="assignMode"
-                    className="mt-1"
-                    checked={assignMode === option.value}
-                    onChange={() => setAssignMode(option.value)}
-                  />
-                  <span>
-                    <span className="block text-sm font-medium">{option.label}</span>
-                    <span className="block text-xs text-muted-foreground">{option.description}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            {assignMode === "selected_agents" && (
-              <div className="max-h-56 overflow-y-auto border border-border">
-                {activeAgents.length === 0 ? (
-                  <div className="px-3 py-3 text-sm text-muted-foreground">No active agents available.</div>
-                ) : (
-                  activeAgents.map((agent) => (
-                    <label key={agent.id} className="flex cursor-pointer items-center gap-3 border-b border-border px-3 py-2 last:border-b-0">
-                      <input
-                        type="checkbox"
-                        checked={selectedAgentIds.includes(agent.id)}
-                        onChange={(event) => toggleSelectedAgent(agent.id, event.target.checked)}
-                      />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium">{agent.name}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{agent.role} · {agent.adapterType}</span>
-                      </span>
-                    </label>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-
+          <SkillInstallOptions
+            assignMode={assignMode}
+            activeAgents={activeAgents}
+            selectedAgentIds={selectedAgentIds}
+            onAssignModeChange={setAssignMode}
+            onToggleAgent={toggleSelectedAgent}
+          />
           <DialogFooter showCloseButton>
             <Button
-              onClick={() => installMutation.mutate()}
+              onClick={() => installSkillMutation.mutate()}
               disabled={
-                installMutation.isPending
-                || !installTarget
+                installSkillMutation.isPending
+                || !installSkillTarget
                 || (assignMode === "selected_agents" && selectedAgentIds.length === 0)
               }
             >
-              {installMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Users className="mr-2 h-4 w-4" />}
+              {installSkillMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Users className="mr-2 h-4 w-4" />}
               Install
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={Boolean(installPluginTarget)} onOpenChange={(open) => !open && setInstallPluginTarget(null)}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{installPluginTarget ? `Install ${installPluginTarget.name}` : "Install plugin"}</DialogTitle>
+            <DialogDescription>
+              Plugins are installed for this PaperClaw instance and can add tools, UI, jobs, webhooks, or host integrations.
+            </DialogDescription>
+          </DialogHeader>
+          {installPluginTarget ? (
+            <div className="space-y-3">
+              <div className="border border-border p-3 text-sm">
+                <div className="font-medium">{installPluginTarget.packageName}</div>
+                <div className="mt-1 text-muted-foreground">{capabilitySummary(installPluginTarget)}</div>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Instance admin access is required because plugin installation loads code on the host.
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter showCloseButton>
+            <Button
+              onClick={() => installPluginMutation.mutate()}
+              disabled={installPluginMutation.isPending || !installPluginTarget || Boolean(installPluginTarget.installedPluginId)}
+            >
+              {installPluginMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plug className="mr-2 h-4 w-4" />}
+              {installPluginTarget?.installedPluginId ? "Installed" : "Install"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-80 flex-col items-center justify-center gap-2 p-6 text-center">
+      <Store className="h-8 w-8 text-muted-foreground" />
+      <div className="text-sm font-medium">{label}</div>
+      <div className="max-w-sm text-sm text-muted-foreground">Try a different search or category.</div>
+    </div>
+  );
+}
+
+function SkillCard({ skill, onPreview, onInstall }: {
+  skill: MarketplaceSkillListItem;
+  onPreview: () => void;
+  onInstall: () => void;
+}) {
+  return (
+    <article className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{skill.categoryName}</Badge>
+          {skill.installedSkillId ? (
+            <Badge variant="secondary"><Check className="h-3 w-3" /> Installed</Badge>
+          ) : null}
+        </div>
+        <h2 className="mt-3 line-clamp-2 text-base font-semibold leading-snug">{skill.name}</h2>
+        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{skill.description ?? skill.slug}</p>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span>{skill.trustLevel.replace(/_/g, " ")}</span>
+          {skill.installSource ? <span>Package source available</span> : <span>Catalog fallback</span>}
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={onPreview}>
+          <Eye className="mr-2 h-4 w-4" />
+          Preview
+        </Button>
+        <Button type="button" size="sm" variant={skill.installedSkillId ? "outline" : "default"} onClick={onInstall}>
+          <PackagePlus className="mr-2 h-4 w-4" />
+          {skill.installedSkillId ? "Assign" : "Install"}
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+function PluginCard({ plugin, onPreview, onInstall }: {
+  plugin: MarketplacePluginListItem;
+  onPreview: () => void;
+  onInstall: () => void;
+}) {
+  return (
+    <article className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{plugin.categoryName}</Badge>
+          <Badge variant="secondary"><Wrench className="h-3 w-3" /> Plugin</Badge>
+          {plugin.installedPluginId ? (
+            <Badge variant="secondary"><Check className="h-3 w-3" /> {plugin.installedStatus ?? "Installed"}</Badge>
+          ) : null}
+        </div>
+        <h2 className="mt-3 line-clamp-2 text-base font-semibold leading-snug">{plugin.name}</h2>
+        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{plugin.description ?? plugin.slug}</p>
+        <div className="mt-3 text-xs text-muted-foreground">{capabilitySummary(plugin)}</div>
+        <div className="mt-3 truncate text-xs text-muted-foreground">{plugin.packageName}</div>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={onPreview}>
+          <Eye className="mr-2 h-4 w-4" />
+          Preview
+        </Button>
+        <Button type="button" size="sm" variant={plugin.installedPluginId ? "outline" : "default"} onClick={onInstall} disabled={Boolean(plugin.installedPluginId)}>
+          <Plug className="mr-2 h-4 w-4" />
+          {plugin.installedPluginId ? "Installed" : "Install"}
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+function SkillPreview({ skill, query }: {
+  skill: MarketplaceSkillListItem | MarketplaceSkillDetail | null;
+  query: ReturnType<typeof useQuery<MarketplaceSkillDetail>>;
+}) {
+  if (query.isLoading) {
+    return <LoadingPreview label="Loading preview..." />;
+  }
+  if (query.error) {
+    return <div className="py-6 text-sm text-destructive">{query.error instanceof Error ? query.error.message : "Failed to load skill preview"}</div>;
+  }
+  if (!skill) return null;
+  return (
+    <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">{skill.categoryName}</Badge>
+        <Badge variant="secondary">{skill.trustLevel.replace(/_/g, " ")}</Badge>
+        {skill.installedSkillId ? <Badge variant="secondary"><Check className="h-3 w-3" /> Installed</Badge> : null}
+      </div>
+      <PreviewGrid leftLabel="Source" leftValue={skill.sourceUrl ?? "Catalog fallback"} rightLabel="Install source" rightValue={skill.installSource ?? "Not packaged"} />
+      {"installNotes" in skill && skill.installNotes ? <PreviewText title="Install notes" value={skill.installNotes} /> : null}
+      {"markdown" in skill && skill.markdown ? <PreviewMarkdown title="Skill details" value={skill.markdown} /> : null}
+    </div>
+  );
+}
+
+function PluginPreview({ plugin, query }: {
+  plugin: MarketplacePluginListItem | MarketplacePluginDetail | null;
+  query: ReturnType<typeof useQuery<MarketplacePluginDetail>>;
+}) {
+  if (query.isLoading) {
+    return <LoadingPreview label="Loading preview..." />;
+  }
+  if (query.error) {
+    return <div className="py-6 text-sm text-destructive">{query.error instanceof Error ? query.error.message : "Failed to load plugin preview"}</div>;
+  }
+  if (!plugin) return null;
+  return (
+    <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">{plugin.categoryName}</Badge>
+        <Badge variant="secondary">{plugin.sourceType}</Badge>
+        {plugin.installedPluginId ? <Badge variant="secondary"><Check className="h-3 w-3" /> {plugin.installedStatus ?? "Installed"}</Badge> : null}
+      </div>
+      <PreviewGrid leftLabel="Package" leftValue={plugin.packageName} rightLabel="Source" rightValue={plugin.localPath ?? plugin.sourceType} />
+      <div className="grid gap-3 text-sm sm:grid-cols-4">
+        <Metric label="Tools" value={plugin.toolCount} />
+        <Metric label="UI slots" value={plugin.uiSlotCount} />
+        <Metric label="Jobs" value={plugin.jobCount} />
+        <Metric label="Webhooks" value={plugin.webhookCount} />
+      </div>
+      {plugin.capabilities.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {plugin.capabilities.map((capability) => (
+            <span key={capability} className="border border-border px-2 py-0.5 text-xs text-muted-foreground">
+              {capability}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {"installNotes" in plugin && plugin.installNotes ? <PreviewText title="Install notes" value={plugin.installNotes} /> : null}
+      {"markdown" in plugin && plugin.markdown ? <PreviewMarkdown title="Plugin details" value={plugin.markdown} /> : null}
+    </div>
+  );
+}
+
+function LoadingPreview({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      {label}
+    </div>
+  );
+}
+
+function PreviewGrid({ leftLabel, leftValue, rightLabel, rightValue }: {
+  leftLabel: string;
+  leftValue: string;
+  rightLabel: string;
+  rightValue: string;
+}) {
+  return (
+    <div className="grid gap-3 text-sm sm:grid-cols-2">
+      <div className="border border-border p-3">
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">{leftLabel}</div>
+        <div className="mt-1 break-words text-foreground">{leftValue}</div>
+      </div>
+      <div className="border border-border p-3">
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">{rightLabel}</div>
+        <div className="mt-1 break-words text-foreground">{rightValue}</div>
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="border border-border p-3">
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-1 text-lg font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function PreviewText({ title, value }: { title: string; value: string }) {
+  return (
+    <section>
+      <h3 className="text-sm font-medium">{title}</h3>
+      <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{value}</p>
+    </section>
+  );
+}
+
+function PreviewMarkdown({ title, value }: { title: string; value: string }) {
+  return (
+    <section>
+      <h3 className="text-sm font-medium">{title}</h3>
+      <div className="mt-2 max-h-72 overflow-y-auto border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
+        <pre className="whitespace-pre-wrap font-sans">{value}</pre>
+      </div>
+    </section>
+  );
+}
+
+function SkillInstallOptions({ assignMode, activeAgents, selectedAgentIds, onAssignModeChange, onToggleAgent }: {
+  assignMode: MarketplaceSkillAssignMode;
+  activeAgents: Array<{ id: string; name: string; role: string; adapterType: string }>;
+  selectedAgentIds: string[];
+  onAssignModeChange: (mode: MarketplaceSkillAssignMode) => void;
+  onToggleAgent: (agentId: string, checked: boolean) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-2">
+        {ASSIGN_OPTIONS.map((option) => (
+          <label
+            key={option.value}
+            className={cn(
+              "flex cursor-pointer items-start gap-3 border border-border px-3 py-2 transition-colors hover:bg-accent/40",
+              assignMode === option.value && "border-foreground bg-accent/40",
+            )}
+          >
+            <input
+              type="radio"
+              name="assignMode"
+              className="mt-1"
+              checked={assignMode === option.value}
+              onChange={() => onAssignModeChange(option.value)}
+            />
+            <span>
+              <span className="block text-sm font-medium">{option.label}</span>
+              <span className="block text-xs text-muted-foreground">{option.description}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {assignMode === "selected_agents" && (
+        <div className="max-h-56 overflow-y-auto border border-border">
+          {activeAgents.length === 0 ? (
+            <div className="px-3 py-3 text-sm text-muted-foreground">No active agents available.</div>
+          ) : (
+            activeAgents.map((agent) => (
+              <label key={agent.id} className="flex cursor-pointer items-center gap-3 border-b border-border px-3 py-2 last:border-b-0">
+                <input
+                  type="checkbox"
+                  checked={selectedAgentIds.includes(agent.id)}
+                  onChange={(event) => onToggleAgent(agent.id, event.target.checked)}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{agent.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{agent.role} · {agent.adapterType}</span>
+                </span>
+              </label>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

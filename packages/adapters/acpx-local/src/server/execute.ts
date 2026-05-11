@@ -21,6 +21,7 @@ import {
   renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
+  renderPaperClawDirectChatPrompt,
   renderTemplate,
   resolvePaperClawDesiredSkillNames,
   shapePaperClawWorkspaceEnvForExecution,
@@ -900,6 +901,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       : "";
   const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession });
   const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
+  const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclawDirectChat);
   const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
@@ -912,6 +914,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     renderedBootstrapPrompt,
     wakePrompt,
     meetingPrompt,
+    directChatPrompt,
     sessionHandoffNote,
     taskContextNote,
     renderedPrompt,

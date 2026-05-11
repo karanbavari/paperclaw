@@ -1,15 +1,26 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
 import { approvals, companies } from "@kesarcloud/db";
 import {
+  marketplacePluginCategorySchema,
+  marketplacePluginDetailSchema,
+  marketplacePluginListResponseSchema,
   marketplaceSkillCategorySchema,
   marketplaceSkillDetailSchema,
   marketplaceSkillListResponseSchema,
   type MarketplaceInstallRequest,
   type MarketplaceInstallResult,
+  type MarketplacePluginCategory,
+  type MarketplacePluginDetail,
+  type MarketplacePluginInstallRequest,
+  type MarketplacePluginInstallResult,
+  type MarketplacePluginListItem,
+  type MarketplacePluginListResponse,
   type MarketplaceSkillCategory,
   type MarketplaceSkillDetail,
   type MarketplaceSkillListItem,
@@ -23,6 +34,9 @@ import { notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";
 import { companySkillService } from "./company-skills.js";
+import { pluginRegistryService } from "./plugin-registry.js";
+import type { pluginLoader } from "./plugin-loader.js";
+import type { pluginLifecycleManager } from "./plugin-lifecycle.js";
 
 type MarketplaceQuery = {
   q?: string | null;
@@ -45,8 +59,252 @@ const BUNDLED_TOOL_SKILL_CATEGORY = {
   slug: "tools",
   name: "Tools",
 } as const;
+const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
+
+type MarketplacePluginCatalogEntry = Omit<
+  MarketplacePluginDetail,
+  "installedPluginId" | "installedStatus" | "localPath"
+> & {
+  localPath: string;
+};
+
+type MarketplacePluginDeps = {
+  loader?: ReturnType<typeof pluginLoader>;
+  lifecycle?: ReturnType<typeof pluginLifecycleManager>;
+};
+
+const BUNDLED_PLUGIN_CATALOG: MarketplacePluginCatalogEntry[] = [
+  {
+    id: "appointment-booking",
+    slug: "appointment-booking",
+    name: "Appointment Booking",
+    description: "Lets agents create PaperClaw-stored bookings and sync them to Google Calendar.",
+    categorySlug: "business-operations",
+    categoryName: "Business Operations",
+    packageName: "@kesarcloud/plugin-appointment-booking",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/appointment-booking",
+    tags: ["appointments", "booking", "calendar", "scheduler"],
+    capabilities: [
+      "http.outbound",
+      "secrets.read-ref",
+      "plugin.state.read",
+      "plugin.state.write",
+      "agent.tools.register",
+      "instance.settings.register",
+      "ui.page.register",
+      "ui.dashboardWidget.register",
+    ],
+    toolCount: 5,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: [
+      "# Appointment Booking",
+      "",
+      "A first-party business connector for appointment scheduling workflows.",
+      "",
+      "Agents can list PaperClaw-stored appointments, search availability through Google Calendar free/busy, create bookings, reschedule bookings, and cancel bookings.",
+      "",
+      "Dry run mode does not save bookings. Live mode stores booking records in PaperClaw plugin_state before syncing the event to Google Calendar.",
+    ].join("\n"),
+    installNotes: "Install the plugin, then configure Google Calendar ID and Google Access Token Secret Reference in Plugin settings. Dry run mode is enabled by default.",
+  },
+  {
+    id: "google-workspace",
+    slug: "google-workspace",
+    name: "Google Workspace",
+    description: "Connects PaperClaw agents to Gmail, Calendar, Drive, Docs, Sheets, Chat, and other Google Workspace APIs through the gws CLI.",
+    categorySlug: "business-operations",
+    categoryName: "Business Operations",
+    packageName: "@kesarcloud/plugin-google-workspace",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/google-workspace",
+    tags: ["google", "workspace", "gmail", "drive", "calendar", "docs", "sheets", "chat", "agents"],
+    capabilities: [
+      "agent.tools.register",
+      "plugin.state.read",
+      "plugin.state.write",
+      "activity.log.write",
+      "instance.settings.register",
+      "ui.page.register",
+      "ui.dashboardWidget.register",
+    ],
+    toolCount: 17,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: [
+      "# Google Workspace",
+      "",
+      "A first-party productivity connector powered by the Google Workspace CLI (`gws`).",
+      "",
+      "Agents can use curated tools for Gmail, Calendar, Drive, Docs, Sheets, and Chat. Advanced operators can enable a governed raw `gws` command tool for other Google Workspace APIs.",
+      "",
+      "Authentication stays in the local `gws` auth store. The plugin stores only command audit metadata in PaperClaw plugin state.",
+    ].join("\n"),
+    installNotes: "Install `gws`, run `gws auth setup` and `gws auth login`, then configure the optional gws config directory. Dry run mode is enabled by default.",
+  },
+  {
+    id: "meta-ads",
+    slug: "meta-ads",
+    name: "Meta Ads",
+    description: "Connects PaperClaw agents to Meta Ads AI Connectors for campaign, ad set, ad, insights, catalog, and signal workflows.",
+    categorySlug: "business-operations",
+    categoryName: "Business Operations",
+    packageName: "@kesarcloud/plugin-meta-ads",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/meta-ads",
+    tags: ["meta", "facebook", "instagram", "ads", "marketing", "campaigns", "catalogs", "mcp", "agents"],
+    capabilities: [
+      "agent.tools.register",
+      "plugin.state.read",
+      "plugin.state.write",
+      "activity.log.write",
+      "instance.settings.register",
+      "ui.page.register",
+      "ui.dashboardWidget.register",
+    ],
+    toolCount: 14,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: [
+      "# Meta Ads",
+      "",
+      "A first-party marketing connector for Meta Ads AI Connector workflows.",
+      "",
+      "Agents can inspect ad account health, list campaigns/ad sets/ads, prepare governed campaign changes, run insights reports, audit creative fatigue, inspect catalogs, and diagnose Pixel/CAPI signal health.",
+      "",
+      "Scope is intentionally Meta Ads only. This plugin does not expose WhatsApp messaging, Instagram DMs, organic Page posting, Threads, or Messenger control.",
+      "",
+      "Dry run mode is enabled by default, the raw CLI tool is disabled by default, and live changes can be limited by operation, ad account, and budget guardrails.",
+    ].join("\n"),
+    installNotes: "Install Meta's official Ads AI Connector CLI, authenticate it with a Meta Business account, then configure Meta CLI path, ad account allowlist, and budget guards. Dry run mode is enabled by default.",
+  },
+  {
+    id: "playwright-mcp",
+    slug: "playwright-mcp",
+    name: "Playwright MCP Browser Automation",
+    description: "Gives PaperClaw agents full browser automation through the official Microsoft Playwright MCP server.",
+    categorySlug: "business-operations",
+    categoryName: "Business Operations",
+    packageName: "@kesarcloud/plugin-playwright-mcp",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/playwright-mcp",
+    tags: ["browser", "automation", "playwright", "mcp", "testing", "screenshots", "agents"],
+    capabilities: [
+      "agent.tools.register",
+      "plugin.state.read",
+      "plugin.state.write",
+      "activity.log.write",
+      "instance.settings.register",
+      "ui.page.register",
+      "ui.dashboardWidget.register",
+    ],
+    toolCount: 66,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: [
+      "# Playwright MCP Browser Automation",
+      "",
+      "A first-party browser automation connector powered by official Microsoft Playwright MCP.",
+      "",
+      "Agents can navigate pages, read accessibility snapshots, click, type, fill forms, take screenshots, inspect console and network activity, mock requests, manage storage, run testing assertions, generate locators, record traces/video, export PDFs, and use coordinate mouse tools.",
+      "",
+      "The plugin starts Playwright MCP over stdio with full automation capabilities enabled by default: network, storage, testing, vision, pdf, devtools, and config.",
+      "",
+      "Browser runs are audited through PaperClaw activity logs and plugin state. Configure allowed or blocked origins when agents should be restricted to specific sites.",
+    ].join("\n"),
+    installNotes: "Requires Node/npm access to run `npx @playwright/mcp@latest`. If browser binaries are missing, install Playwright browsers on the PaperClaw host. Headless mode and full capabilities are enabled by default.",
+  },
+  {
+    id: "hello-world-example",
+    slug: "hello-world-example",
+    name: "Hello World Widget (Example)",
+    description: "Reference UI plugin that adds a simple Hello World widget to the PaperClaw dashboard.",
+    categorySlug: "examples",
+    categoryName: "Examples",
+    packageName: "@kesarcloud/plugin-hello-world-example",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/examples/plugin-hello-world-example",
+    tags: ["example", "ui"],
+    capabilities: ["ui.dashboardWidget.register"],
+    toolCount: 0,
+    uiSlotCount: 1,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: "# Hello World Widget\n\nSmallest bundled UI plugin example.",
+    installNotes: "Example plugin intended for plugin authoring reference.",
+  },
+  {
+    id: "file-browser-example",
+    slug: "file-browser-example",
+    name: "File Browser (Example)",
+    description: "Example plugin that adds file browsing surfaces to project navigation and comments.",
+    categorySlug: "examples",
+    categoryName: "Examples",
+    packageName: "@kesarcloud/plugin-file-browser-example",
+    version: "0.2.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/examples/plugin-file-browser-example",
+    tags: ["example", "workspace", "files"],
+    capabilities: [
+      "ui.sidebar.register",
+      "ui.detailTab.register",
+      "ui.commentAnnotation.register",
+      "ui.action.register",
+      "projects.read",
+      "project.workspaces.read",
+      "issue.comments.read",
+      "plugin.state.read",
+    ],
+    toolCount: 0,
+    uiSlotCount: 4,
+    jobCount: 0,
+    webhookCount: 0,
+    markdown: "# File Browser Example\n\nAdds project file browsing and comment file-link UI examples.",
+    installNotes: "Example plugin intended for UI extension reference.",
+  },
+  {
+    id: "kitchen-sink-example",
+    slug: "kitchen-sink-example",
+    name: "Kitchen Sink (Example)",
+    description: "Reference plugin that demonstrates the current PaperClaw plugin API surface.",
+    categorySlug: "examples",
+    categoryName: "Examples",
+    packageName: "@kesarcloud/plugin-kitchen-sink-example",
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: "packages/plugins/examples/plugin-kitchen-sink-example",
+    tags: ["example", "reference", "tools", "webhooks", "jobs"],
+    capabilities: [
+      "agent.tools.register",
+      "events.subscribe",
+      "events.emit",
+      "jobs.schedule",
+      "webhooks.receive",
+      "http.outbound",
+      "secrets.read-ref",
+      "ui.page.register",
+      "ui.dashboardWidget.register",
+    ],
+    toolCount: 3,
+    uiSlotCount: 12,
+    jobCount: 1,
+    webhookCount: 1,
+    markdown: "# Kitchen Sink Example\n\nDemonstrates plugin APIs, UI surfaces, bridge flows, tools, jobs, and webhooks.",
+    installNotes: "Example plugin with broad capabilities. Install only in trusted local/dev environments.",
+  },
+];
 
 const BUNDLED_TOOL_SKILL_CATALOG = [
   {
@@ -126,6 +384,10 @@ function resolveLocalCatalogRoot() {
     path.resolve(process.cwd(), "..", LOCAL_CATALOG_ROOT),
     path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..", LOCAL_CATALOG_ROOT),
   ];
+}
+
+function resolveBundledPluginPath(localPath: string) {
+  return path.resolve(REPO_ROOT, localPath);
 }
 
 function resolveBundledToolSkillPath(slug: string) {
@@ -336,6 +598,33 @@ function pageSkills(skills: MarketplaceSkillDetail[], query: MarketplaceQuery): 
   };
 }
 
+function matchesPluginQuery(plugin: MarketplacePluginDetail, query: MarketplaceQuery) {
+  const category = query.category?.trim();
+  if (category && plugin.categorySlug !== category) return false;
+  const q = query.q?.trim().toLowerCase();
+  if (!q) return true;
+  return [
+    plugin.name,
+    plugin.description,
+    plugin.categoryName,
+    plugin.slug,
+    plugin.packageName,
+    ...plugin.tags,
+  ].some((value) => value?.toLowerCase().includes(q));
+}
+
+function pagePlugins(plugins: MarketplacePluginDetail[], query: MarketplaceQuery): MarketplacePluginListResponse {
+  const limit = parsePositiveInt(query.limit, DEFAULT_LIMIT);
+  const offset = Math.max(0, Number.parseInt(query.cursor ?? "0", 10) || 0);
+  const filtered = plugins.filter((plugin) => matchesPluginQuery(plugin, query));
+  const page = filtered.slice(offset, offset + limit);
+  const nextOffset = offset + page.length;
+  return {
+    items: page.map(({ markdown: _markdown, installNotes: _installNotes, ...plugin }) => plugin),
+    nextCursor: nextOffset < filtered.length ? String(nextOffset) : null,
+  };
+}
+
 function installedMatch(skill: MarketplaceSkillListItem, companySkill: {
   id: string;
   key: string;
@@ -367,10 +656,95 @@ function withInstallState<T extends MarketplaceSkillListItem>(
   });
 }
 
-export function marketplaceService(db: Db) {
+export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
   const agents = agentService(db);
   const approvalsSvc = approvalService(db);
   const skills = companySkillService(db);
+  const pluginRegistry = pluginRegistryService(db);
+
+  async function readBundledPluginCatalog(): Promise<MarketplacePluginDetail[]> {
+    const entries: Array<MarketplacePluginDetail | null> = await Promise.all(BUNDLED_PLUGIN_CATALOG.map(async (plugin) => {
+      const absoluteLocalPath = resolveBundledPluginPath(plugin.localPath);
+      const stat = await fs.stat(absoluteLocalPath).catch(() => null);
+      if (!stat?.isDirectory()) return null;
+      return {
+        ...plugin,
+        localPath: absoluteLocalPath,
+        installedPluginId: null,
+        installedStatus: null,
+      };
+    }));
+    return entries.filter((item): item is MarketplacePluginDetail => Boolean(item));
+  }
+
+  function withPluginInstallState<T extends MarketplacePluginListItem>(items: T[], installedPlugins: Awaited<ReturnType<typeof pluginRegistry.listInstalled>>): T[] {
+    return items.map((item) => {
+      const installed = installedPlugins.find((plugin) =>
+        plugin.pluginKey === item.id
+        || plugin.packageName === item.packageName
+        || plugin.packagePath === item.localPath
+        || plugin.manifestJson?.displayName === item.name,
+      );
+      return {
+        ...item,
+        installedPluginId: installed?.id ?? null,
+        installedStatus: installed?.status ?? null,
+      };
+    });
+  }
+
+  async function fetchPluginCategories(): Promise<MarketplacePluginCategory[]> {
+    const plugins = await readBundledPluginCatalog();
+    const bySlug = new Map<string, MarketplacePluginCategory>();
+    for (const plugin of plugins) {
+      const current = bySlug.get(plugin.categorySlug);
+      bySlug.set(plugin.categorySlug, {
+        id: plugin.categorySlug,
+        slug: plugin.categorySlug,
+        name: plugin.categoryName,
+        pluginCount: (current?.pluginCount ?? 0) + 1,
+      });
+    }
+    return Array.from(bySlug.values())
+      .sort((left, right) => left.name.localeCompare(right.name))
+      .map((item) => marketplacePluginCategorySchema.parse(item));
+  }
+
+  async function fetchPlugins(query: MarketplaceQuery): Promise<MarketplacePluginListResponse> {
+    const catalog = pagePlugins(await readBundledPluginCatalog(), query);
+    return marketplacePluginListResponseSchema.parse(catalog);
+  }
+
+  async function fetchPluginDetail(pluginId: string): Promise<MarketplacePluginDetail | null> {
+    const plugins = await readBundledPluginCatalog();
+    const detail = plugins.find((plugin) =>
+      plugin.id === pluginId
+      || plugin.slug === pluginId
+      || plugin.packageName === pluginId,
+    );
+    return detail ? marketplacePluginDetailSchema.parse(detail) : null;
+  }
+
+  async function buildBundledPluginIfNeeded(plugin: MarketplacePluginDetail) {
+    if (plugin.sourceType !== "bundled" || !plugin.localPath) return;
+    const packageJsonPath = path.join(plugin.localPath, "package.json");
+    const packageJson = await fs.readFile(packageJsonPath, "utf8")
+      .then((content) => JSON.parse(content) as Record<string, unknown>)
+      .catch(() => null);
+    const manifestPath = typeof packageJson?.paperclawPlugin === "object" && packageJson.paperclawPlugin !== null
+      ? (packageJson.paperclawPlugin as Record<string, unknown>).manifest
+      : null;
+    const resolvedManifestPath = typeof manifestPath === "string"
+      ? path.resolve(plugin.localPath, manifestPath)
+      : null;
+    if (resolvedManifestPath && await fs.stat(resolvedManifestPath).then((stat) => stat.isFile()).catch(() => false)) {
+      return;
+    }
+    await execFileAsync("pnpm", ["--dir", plugin.localPath, "build"], {
+      timeout: 120_000,
+      maxBuffer: 1_000_000,
+    });
+  }
 
   async function fetchCatalogCategories(): Promise<MarketplaceSkillCategory[]> {
     const bundledSkills = await readBundledToolSkillCatalog();
@@ -542,6 +916,69 @@ export function marketplaceService(db: Db) {
       ]);
       if (!detail) return null;
       return withInstallState([detail], companySkills)[0] as MarketplaceSkillDetail;
+    },
+
+    pluginCategories: async () => fetchPluginCategories(),
+
+    pluginList: async (_companyId: string, query: MarketplaceQuery) => {
+      const [catalog, installedPlugins] = await Promise.all([
+        fetchPlugins(query),
+        pluginRegistry.listInstalled(),
+      ]);
+      return {
+        ...catalog,
+        items: withPluginInstallState(catalog.items, installedPlugins),
+      };
+    },
+
+    pluginDetail: async (_companyId: string, pluginId: string) => {
+      const [detail, installedPlugins] = await Promise.all([
+        fetchPluginDetail(pluginId),
+        pluginRegistry.listInstalled(),
+      ]);
+      if (!detail) return null;
+      return withPluginInstallState([detail], installedPlugins)[0] as MarketplacePluginDetail;
+    },
+
+    installPlugin: async (_companyId: string, request: MarketplacePluginInstallRequest): Promise<MarketplacePluginInstallResult> => {
+      if (!deps.loader || !deps.lifecycle) {
+        throw unprocessable("Marketplace plugin install is not available in this server context");
+      }
+      const detail = await fetchPluginDetail(request.pluginId);
+      if (!detail) throw notFound("Marketplace plugin not found");
+
+      const existing = (await pluginRegistry.listInstalled()).find((plugin) =>
+        plugin.packageName === detail.packageName
+        || plugin.packagePath === detail.localPath
+        || plugin.pluginKey === detail.id,
+      );
+      if (existing) {
+        return { plugin: existing, warnings: ["Plugin is already installed."] };
+      }
+
+      await buildBundledPluginIfNeeded(detail);
+
+      const discovered = await deps.loader.installPlugin({
+        localPath: detail.localPath ?? undefined,
+        packageName: detail.localPath ? undefined : detail.packageName,
+        version: detail.localPath ? undefined : detail.version ?? undefined,
+      });
+
+      if (!discovered.manifest) {
+        throw unprocessable("Plugin installed but manifest is missing");
+      }
+
+      const installed = await pluginRegistry.getByKey(discovered.manifest.id);
+      if (!installed) {
+        throw unprocessable("Plugin installed but was not found in registry");
+      }
+
+      await deps.lifecycle.load(installed.id);
+      const updated = await pluginRegistry.getById(installed.id);
+      return {
+        plugin: updated ?? installed,
+        warnings: [],
+      };
     },
 
     install: async (companyId: string, request: MarketplaceInstallRequest, actor: InstallActor) => {

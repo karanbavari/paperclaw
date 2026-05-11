@@ -11,6 +11,7 @@ import {
   renderPaperClawLocalizationPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
+  renderPaperClawDirectChatPrompt,
   stringifyPaperClawWakePayload,
 } from "@kesarcloud/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
@@ -1114,6 +1115,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const paperclawEnv = buildPaperClawEnvForWake(ctx, wakePayload);
   const structuredWakePrompt = renderPaperClawWakePrompt(ctx.context.paperclawWake);
   const structuredMeetingPrompt = renderPaperClawMeetingPrompt(ctx.context.paperclawMeeting);
+  const structuredDirectChatPrompt = renderPaperClawDirectChatPrompt(ctx.context.paperclawDirectChat);
   const structuredLocalizationPrompt = renderPaperClawLocalizationPrompt(ctx.context.paperclawLocalization);
   const structuredWakeJson = stringifyPaperClawWakePayload(ctx.context.paperclawWake);
   const wakeText = buildWakeText(
@@ -1124,9 +1126,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           structuredLocalizationPrompt,
           structuredWakePrompt,
           structuredMeetingPrompt,
+          structuredDirectChatPrompt,
           structuredWakeJson,
         )
-      : joinWakePayloadSections(structuredLocalizationPrompt, structuredWakePrompt, structuredMeetingPrompt),
+      : joinWakePayloadSections(structuredLocalizationPrompt, structuredWakePrompt, structuredMeetingPrompt, structuredDirectChatPrompt),
   );
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);

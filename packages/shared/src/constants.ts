@@ -539,6 +539,8 @@ export const LIVE_EVENT_TYPES = [
   "heartbeat.run.log",
   "agent.status",
   "activity.logged",
+  "direct_chat.message.created",
+  "direct_chat.message.updated",
   "plugin.ui.updated",
   "plugin.worker.crashed",
   "plugin.worker.restarted",

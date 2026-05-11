@@ -1,14 +1,24 @@
 import { Router, type Request } from "express";
 import type { Db } from "@kesarcloud/db";
-import { marketplaceInstallSchema } from "@kesarcloud/shared";
+import { marketplaceInstallSchema, marketplacePluginInstallSchema } from "@kesarcloud/shared";
 import { validate } from "../middleware/validate.js";
-import { forbidden } from "../errors.js";
+import { forbidden, unprocessable } from "../errors.js";
 import { agentService, logActivity, marketplaceService } from "../services/index.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertCompanyAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
+import type { pluginLoader } from "../services/plugin-loader.js";
+import type { pluginLifecycleManager } from "../services/plugin-lifecycle.js";
 
-export function marketplaceRoutes(db: Db) {
+type MarketplaceRouteDeps = {
+  pluginLoader?: ReturnType<typeof pluginLoader>;
+  pluginLifecycle?: ReturnType<typeof pluginLifecycleManager>;
+};
+
+export function marketplaceRoutes(db: Db, deps: MarketplaceRouteDeps = {}) {
   const router = Router();
-  const marketplace = marketplaceService(db);
+  const marketplace = marketplaceService(db, {
+    loader: deps.pluginLoader,
+    lifecycle: deps.pluginLifecycle,
+  });
   const agents = agentService(db);
 
   async function assertCanInstall(req: Request, companyId: string) {
@@ -52,6 +62,70 @@ export function marketplaceRoutes(db: Db) {
     }
     res.json(detail);
   });
+
+  router.get("/companies/:companyId/marketplace/plugins/categories", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    res.json(await marketplace.pluginCategories());
+  });
+
+  router.get("/companies/:companyId/marketplace/plugins", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    const limit = Number.parseInt(String(req.query.limit ?? ""), 10);
+    res.json(await marketplace.pluginList(companyId, {
+      q: typeof req.query.q === "string" ? req.query.q : null,
+      category: typeof req.query.category === "string" ? req.query.category : null,
+      cursor: typeof req.query.cursor === "string" ? req.query.cursor : null,
+      limit: Number.isFinite(limit) ? limit : null,
+    }));
+  });
+
+  router.get("/companies/:companyId/marketplace/plugins/:pluginId", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    const pluginId = req.params.pluginId as string;
+    assertCompanyAccess(req, companyId);
+    const detail = await marketplace.pluginDetail(companyId, pluginId);
+    if (!detail) {
+      res.status(404).json({ error: "Marketplace plugin not found" });
+      return;
+    }
+    res.json(detail);
+  });
+
+  router.post(
+    "/companies/:companyId/marketplace/plugins/install",
+    validate(marketplacePluginInstallSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      assertInstanceAdmin(req);
+      const actor = getActorInfo(req);
+      const result = await marketplace.installPlugin(companyId, req.body).catch((error: unknown) => {
+        if (error instanceof Error && error.message.includes("manifest has inconsistent capabilities")) {
+          throw unprocessable(error.message);
+        }
+        throw error;
+      });
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        action: "marketplace.plugin_installed",
+        entityType: "plugin",
+        entityId: result.plugin.id,
+        details: {
+          pluginId: req.body.pluginId,
+          pluginKey: result.plugin.pluginKey,
+          packageName: result.plugin.packageName,
+          warningCount: result.warnings.length,
+        },
+      });
+      res.json(result);
+    },
+  );
 
   router.post(
     "/companies/:companyId/marketplace/install",
