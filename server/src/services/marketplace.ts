@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
 import { approvals, companies } from "@kesarcloud/db";
@@ -39,6 +40,51 @@ type InstallActor = {
 const DEFAULT_LIMIT = 60;
 const MAX_LIMIT = 200;
 const LOCAL_CATALOG_ROOT = "skills database";
+const BUNDLED_TOOL_SKILL_CATEGORY = {
+  id: "tools",
+  slug: "tools",
+  name: "Tools",
+} as const;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, "../../..");
+
+const BUNDLED_TOOL_SKILL_CATALOG = [
+  {
+    slug: "research-protocol-tools",
+    name: "Research Protocol Tools",
+    description: "Industry-standard research protocol for source selection, evidence capture, synthesis, and task-specific marketplace tool selection.",
+    tags: ["research", "evidence", "marketplace", "workflow"],
+    installNotes: "Install to the CEO or a research-focused agent. Pair with the relevant plugin-specific skill for browser, Workspace, ads, or scheduling tasks.",
+  },
+  {
+    slug: "browser-automation-tools",
+    name: "Browser Automation Tools",
+    description: "Guides agents through safe Playwright MCP browser automation for navigation, forms, screenshots, assertions, console/network checks, traces, video, and PDFs.",
+    tags: ["browser", "playwright", "mcp", "automation", "testing"],
+    installNotes: "Install the Playwright MCP Browser Automation plugin first, then attach this skill to agents that need browser research or UI verification.",
+  },
+  {
+    slug: "google-workspace-tools",
+    name: "Google Workspace Tools",
+    description: "Usage protocol for Gmail, Calendar, Drive, Docs, Sheets, Chat, and governed raw gws workflows through the Google Workspace plugin.",
+    tags: ["google", "workspace", "gmail", "calendar", "drive", "docs", "sheets"],
+    installNotes: "Install and configure the Google Workspace plugin with an authenticated gws profile before assigning this skill.",
+  },
+  {
+    slug: "meta-ads-tools",
+    name: "Meta Ads Tools",
+    description: "Safe Meta Ads workflow for account inspection, insights, diagnostics, dry-run campaign edits, budget guardrails, and approval-ready ad operations.",
+    tags: ["meta", "ads", "marketing", "campaigns", "insights"],
+    installNotes: "Install and configure the Meta Ads plugin. Keep dry-run enabled until the operator approves live ad changes.",
+  },
+  {
+    slug: "appointment-booking-tools",
+    name: "Appointment Booking Tools",
+    description: "Workflow for listing appointments, finding availability, creating bookings, rescheduling, cancelling, and handling Google Calendar sync status.",
+    tags: ["appointments", "booking", "calendar", "scheduling"],
+    installNotes: "Install and configure the Appointment Booking plugin with calendar, timezone, and Google access token secret reference before live booking work.",
+  },
+] as const;
 
 function slugify(value: string) {
   return value
@@ -80,6 +126,69 @@ function resolveLocalCatalogRoot() {
     path.resolve(process.cwd(), "..", LOCAL_CATALOG_ROOT),
     path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..", LOCAL_CATALOG_ROOT),
   ];
+}
+
+function resolveBundledToolSkillPath(slug: string) {
+  return path.resolve(REPO_ROOT, "marketplace", "skills", "tools", slug);
+}
+
+async function readBundledToolSkillCatalog(): Promise<MarketplaceSkillDetail[]> {
+  const entries: Array<MarketplaceSkillDetail | null> = await Promise.all(BUNDLED_TOOL_SKILL_CATALOG.map(async (skill) => {
+    const skillPath = resolveBundledToolSkillPath(skill.slug);
+    const markdown = await fs.readFile(path.join(skillPath, "SKILL.md"), "utf8").catch(() => null);
+    if (!markdown) return null;
+    return {
+      id: `${BUNDLED_TOOL_SKILL_CATEGORY.slug}/${skill.slug}`,
+      slug: skill.slug,
+      name: skill.name,
+      description: skill.description,
+      categorySlug: BUNDLED_TOOL_SKILL_CATEGORY.slug,
+      categoryName: BUNDLED_TOOL_SKILL_CATEGORY.name,
+      sourceUrl: null,
+      installSource: skillPath,
+      trustLevel: "markdown_only",
+      tags: [...skill.tags],
+      installedSkillId: null,
+      markdown,
+      installNotes: skill.installNotes,
+    };
+  }));
+  return entries.filter((item): item is MarketplaceSkillDetail => Boolean(item));
+}
+
+function mergeSkillCategories(
+  categories: MarketplaceSkillCategory[],
+  bundledSkills: MarketplaceSkillDetail[],
+): MarketplaceSkillCategory[] {
+  const bySlug = new Map<string, MarketplaceSkillCategory>();
+  for (const category of categories) {
+    bySlug.set(category.slug, { ...category });
+  }
+  if (bundledSkills.length > 0) {
+    const current = bySlug.get(BUNDLED_TOOL_SKILL_CATEGORY.slug);
+    bySlug.set(BUNDLED_TOOL_SKILL_CATEGORY.slug, {
+      id: BUNDLED_TOOL_SKILL_CATEGORY.id,
+      slug: BUNDLED_TOOL_SKILL_CATEGORY.slug,
+      name: current?.name ?? BUNDLED_TOOL_SKILL_CATEGORY.name,
+      skillCount: (current?.skillCount ?? 0) + bundledSkills.length,
+    });
+  }
+  return Array.from(bySlug.values())
+    .sort((left, right) => left.name.localeCompare(right.name))
+    .map((item) => marketplaceSkillCategorySchema.parse(item));
+}
+
+function mergeSkillListPage(
+  catalog: MarketplaceSkillListResponse,
+  bundledSkills: MarketplaceSkillDetail[],
+  query: MarketplaceQuery,
+): MarketplaceSkillListResponse {
+  const limit = parsePositiveInt(query.limit, DEFAULT_LIMIT);
+  const bundledPage = pageSkills(bundledSkills, query);
+  return marketplaceSkillListResponseSchema.parse({
+    items: [...bundledPage.items, ...catalog.items].slice(0, limit),
+    nextCursor: bundledPage.nextCursor ?? catalog.nextCursor,
+  });
 }
 
 function isInstallableExternalSource(url: string | null) {
@@ -264,21 +373,24 @@ export function marketplaceService(db: Db) {
   const skills = companySkillService(db);
 
   async function fetchCatalogCategories(): Promise<MarketplaceSkillCategory[]> {
+    const bundledSkills = await readBundledToolSkillCatalog();
     const baseUrl = resolveMarketplaceBaseUrl();
     if (baseUrl) {
       try {
         const json = await fetchJson(`${baseUrl.replace(/\/+$/, "")}/categories`);
-        return Array.isArray(json)
+        const categories = Array.isArray(json)
           ? json.map((item) => marketplaceSkillCategorySchema.parse(item))
           : (Array.isArray(json.categories) ? json.categories.map((item: unknown) => marketplaceSkillCategorySchema.parse(item)) : []);
+        return mergeSkillCategories(categories, bundledSkills);
       } catch {
         // Fall back to the ignored local reference checkout in dev/offline environments.
       }
     }
-    return (await readLocalCatalog()).categories;
+    return mergeSkillCategories((await readLocalCatalog()).categories, bundledSkills);
   }
 
   async function fetchCatalogSkills(query: MarketplaceQuery): Promise<MarketplaceSkillListResponse> {
+    const bundledSkills = await readBundledToolSkillCatalog();
     const baseUrl = resolveMarketplaceBaseUrl();
     if (baseUrl) {
       try {
@@ -289,24 +401,32 @@ export function marketplaceService(db: Db) {
         if (query.cursor) url.searchParams.set("cursor", query.cursor);
         const json = await fetchJson(url.toString());
         const parsed = marketplaceSkillListResponseSchema.safeParse(json);
-        if (parsed.success) return parsed.data;
+        if (parsed.success) return mergeSkillListPage(parsed.data, bundledSkills, query);
         const rawItems = Array.isArray(json.items) ? json.items : Array.isArray(json) ? json : [];
-        return {
+        return mergeSkillListPage({
           items: rawItems.map((item: unknown) => {
             const detail = normalizeRemoteSkill(item as Record<string, unknown>);
             const { markdown: _markdown, installNotes: _installNotes, ...listItem } = detail;
             return listItem;
           }),
           nextCursor: asString(json.nextCursor),
-        };
+        }, bundledSkills, query);
       } catch {
         // Fall through to local fallback.
       }
     }
-    return pageSkills((await readLocalCatalog()).skills, query);
+    return mergeSkillListPage(pageSkills((await readLocalCatalog()).skills, query), bundledSkills, query);
   }
 
   async function fetchCatalogDetail(skillId: string): Promise<MarketplaceSkillDetail | null> {
+    const bundledSkills = await readBundledToolSkillCatalog();
+    const bundled = bundledSkills.find((skill) =>
+      skill.id === skillId
+      || skill.slug === skillId
+      || `${skill.categorySlug}/${skill.slug}` === skillId,
+    );
+    if (bundled) return marketplaceSkillDetailSchema.parse(bundled);
+
     const baseUrl = resolveMarketplaceBaseUrl();
     if (baseUrl) {
       try {
