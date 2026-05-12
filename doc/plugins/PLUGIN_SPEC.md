@@ -378,6 +378,8 @@ tools?: Array<{
 
 Tool names are automatically namespaced by plugin ID at runtime (e.g. `linear:search-issues`), so plugins cannot shadow core tools or each other's tools.
 
+The board UI also exposes a Plugin Tool Test Console for installed plugins. Console invocations use the same registered tool handlers as agent runs, include `invocationKind: "board_console"` and an `invocationId` in the run context, and write a `plugin.tool.tested` activity entry without storing raw parameter values.
+
 ### 11.2 Tool Execution
 
 When an agent invokes a plugin tool during a run, the host routes the call to the plugin worker via a `executeTool` RPC method:

@@ -229,6 +229,14 @@ export interface ToolRunContext {
   companyId: string;
   /** UUID of the project the run belongs to. */
   projectId: string;
+  /** How the host invoked this tool. Omitted by older hosts and normal agent runs. */
+  invocationKind?: "agent_run" | "board_console";
+  /** Stable identifier for a board-console invocation, when available. */
+  invocationId?: string;
+  /** Actor category that initiated the tool call. */
+  actorType?: "user" | "agent" | "system";
+  /** Actor identifier that initiated the tool call. */
+  actorId?: string;
 }
 
 /**

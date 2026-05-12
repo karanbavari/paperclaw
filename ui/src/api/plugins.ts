@@ -15,6 +15,11 @@ import type {
   PluginLauncherRenderContextSnapshot,
   PluginUiSlotDeclaration,
   PluginLocalFolderDeclaration,
+  PluginSetupPatchRequest,
+  PluginSetupSummary,
+  PluginToolConsoleDiscoveryResponse,
+  PluginToolConsoleTestRequest,
+  PluginToolConsoleTestResult,
   PluginRecord,
   PluginConfig,
   PluginStatus,
@@ -296,6 +301,21 @@ export const pluginsApi = {
     api.get<PluginDashboardData>(`/plugins/${pluginId}/dashboard`),
 
   /**
+   * List registered tools for one plugin, including runtime availability.
+   */
+  listTools: (pluginId: string) =>
+    api.get<PluginToolConsoleDiscoveryResponse>(`/plugins/${pluginId}/tools`),
+
+  /**
+   * Execute one plugin tool from the board operator test console.
+   */
+  testTool: (pluginId: string, toolName: string, input: PluginToolConsoleTestRequest) =>
+    api.post<PluginToolConsoleTestResult>(
+      `/plugins/${pluginId}/tools/${encodeURIComponent(toolName)}/test`,
+      input,
+    ),
+
+  /**
    * Fetch recent log entries for a plugin.
    *
    * @param pluginId - UUID of the plugin.
@@ -385,6 +405,18 @@ export const pluginsApi = {
    */
   testConfig: (pluginId: string, configJson: Record<string, unknown>) =>
     api.post<{ valid: boolean; message?: string }>(`/plugins/${pluginId}/config/test`, { configJson }),
+
+  /**
+   * Fetch the company-scoped setup wizard summary for a plugin.
+   */
+  setup: (pluginId: string, companyId: string) =>
+    api.get<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`),
+
+  /**
+   * Persist setup wizard progress for one company/plugin pair.
+   */
+  updateSetup: (pluginId: string, companyId: string, patch: PluginSetupPatchRequest) =>
+    api.patch<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`, patch),
 
   /**
    * List manifest-declared and stored company-scoped local folders for a plugin.

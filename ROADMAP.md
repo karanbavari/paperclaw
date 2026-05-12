@@ -68,21 +68,17 @@ Research Lab is the governed R&D workspace for a company. It connects isolated e
 
 Company settings now include default language, currency, and timezone. Managed agent instructions sync those preferences so conversations, reports, and task outputs use the company's chosen operating context.
 
-### ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
+### ✅ Capability Packs
 
-We want agents to run in more remote and sandboxed environments while preserving the same PaperClaw control-plane model. This makes the system safer, more flexible, and more useful outside a single trusted local machine.
+Capability Packs now bundle marketplace plugin and skill components, setup checklist state, install status, and recommended or selected agent assignment into one install flow.
 
-### ⚪ Capability Packs
+### ✅ Plugin Setup Wizard
 
-Capability Packs should bundle a plugin, its matching skill, setup checklist, and recommended agent assignment into one install flow. The goal is to make marketplace installs feel like complete business capabilities instead of separate pieces the operator has to wire together manually.
+Plugin installation can continue into a company-scoped setup wizard for config, local folders, health, tools, jobs, webhooks, database review, managed resources, progress state, and completion tracking.
 
-### ⚪ Plugin Setup Wizard
+### ✅ Plugin Tool Test Console
 
-Plugin installation should continue into a guided setup flow for credentials, dry-run/live mode, local folders, health checks, and a first test action. This keeps powerful integrations easy to configure and reduces the gap between "installed" and "useful."
-
-### ⚪ Plugin Tool Test Console
-
-Operators should be able to inspect installed plugin tools, view schemas and examples, run safe dry-runs, and see recent failures from one place. This would make plugin tools more understandable before agents start using them.
+Operators can inspect installed plugin tools, view parameter schemas, execute audited board-console test runs, inspect structured results, and see recent failures from the plugin detail page.
 
 ### ⚪ Tool Permission System
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Puzzle, ArrowLeft, ShieldAlert, ActivitySquare, CheckCircle, XCircle, Loader2, Clock, Cpu, Webhook, CalendarClock, AlertTriangle, FolderOpen, Save } from "lucide-react";
+import { Puzzle, ArrowLeft, ShieldAlert, ActivitySquare, CheckCircle, XCircle, Loader2, Clock, Cpu, Webhook, CalendarClock, AlertTriangle, FolderOpen, Save, Wrench } from "lucide-react";
 import type { PluginLocalFolderDeclaration } from "@kesarcloud/shared";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -27,6 +27,8 @@ import {
   getDefaultValues,
   type JsonSchemaNode,
 } from "@/components/JsonSchemaForm";
+import { PluginSetupWizard } from "@/components/PluginSetupWizard";
+import { PluginToolTestConsole } from "@/components/PluginToolTestConsole";
 
 /**
  * PluginSettings page component.
@@ -63,7 +65,8 @@ export function PluginSettings() {
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { companyPrefix, pluginId } = useParams<{ companyPrefix?: string; pluginId: string }>();
-  const [activeTab, setActiveTab] = useState<"configuration" | "status">("configuration");
+  const [activeTab, setActiveTab] = useState<"configuration" | "tools" | "status">("configuration");
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
 
   const { data: plugin, isLoading: pluginLoading } = useQuery({
     queryKey: queryKeys.plugins.detail(pluginId!),
@@ -170,17 +173,22 @@ export function PluginSettings() {
             v{plugin.manifestJson.version ?? plugin.version}
           </Badge>
         </div>
+        <Button variant="outline" size="sm" onClick={() => setSetupWizardOpen(true)}>
+          <Wrench className="h-4 w-4" />
+          Setup wizard
+        </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "configuration" | "status")} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "configuration" | "tools" | "status")} className="space-y-6">
         <PageTabBar
           align="start"
           items={[
             { value: "configuration", label: "Configuration" },
+            { value: "tools", label: "Tools" },
             { value: "status", label: "Status" },
           ]}
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "configuration" | "status")}
+          onValueChange={(value) => setActiveTab(value as "configuration" | "tools" | "status")}
         />
 
         <TabsContent value="configuration" className="space-y-6">
@@ -271,6 +279,14 @@ export function PluginSettings() {
               ) : null}
             </section>
           </div>
+        </TabsContent>
+
+        <TabsContent value="tools" className="space-y-6">
+          <PluginToolTestConsole
+            pluginId={pluginId!}
+            companyId={selectedCompanyId}
+            pluginStatus={plugin.status}
+          />
         </TabsContent>
 
         <TabsContent value="status" className="space-y-6">
@@ -565,6 +581,12 @@ export function PluginSettings() {
           </div>
         </TabsContent>
       </Tabs>
+      <PluginSetupWizard
+        pluginId={pluginId!}
+        companyId={selectedCompanyId}
+        open={setupWizardOpen}
+        onOpenChange={setSetupWizardOpen}
+      />
     </div>
   );
 }

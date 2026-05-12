@@ -389,10 +389,9 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Skills Marketplace
 - ✅ Research Lab
 - ✅ Company language, currency, and timezone preferences
-- ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
-- ⚪ Capability Packs (plugin + skill + setup + agent assignment)
-- ⚪ Plugin Setup Wizard
-- ⚪ Plugin Tool Test Console
+- ✅ Capability Packs (plugin + skill + setup + agent assignment)
+- ✅ Plugin Setup Wizard
+- ✅ Plugin Tool Test Console
 - ⚪ Tool Permission System
 - ⚪ Outcome Center
 - ⚪ Ops Incident Center

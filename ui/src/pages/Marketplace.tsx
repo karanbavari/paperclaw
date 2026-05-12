@@ -48,6 +48,7 @@ import { agentsApi } from "../api/agents";
 import { marketplaceApi } from "../api/marketplace";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
+import { PluginSetupWizard } from "@/components/PluginSetupWizard";
 
 type MarketplaceTab = "packs" | "skills" | "plugins";
 
@@ -87,6 +88,7 @@ export function Marketplace() {
   const [installSkillTarget, setInstallSkillTarget] = useState<MarketplaceSkillListItem | null>(null);
   const [installPluginTarget, setInstallPluginTarget] = useState<MarketplacePluginListItem | null>(null);
   const [installPackTarget, setInstallPackTarget] = useState<MarketplaceCapabilityPackListItem | null>(null);
+  const [setupPluginId, setSetupPluginId] = useState<string | null>(null);
   const [assignMode, setAssignMode] = useState<MarketplaceSkillAssignMode>("library_only");
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
 
@@ -237,6 +239,7 @@ export function Marketplace() {
         tone: result.warnings.length > 0 ? "info" : "success",
       });
       setInstallPluginTarget(null);
+      setSetupPluginId(result.plugin.id);
     },
     onError: (error) => {
       pushToast({
@@ -280,6 +283,9 @@ export function Marketplace() {
         tone: result.approval ? "info" : "success",
       });
       closePackInstall();
+      if (!result.approval && result.plugin) {
+        setSetupPluginId(result.plugin.id);
+      }
     },
     onError: (error) => {
       pushToast({
@@ -309,6 +315,10 @@ export function Marketplace() {
   }
 
   function openPackInstall(pack: MarketplaceCapabilityPackListItem | MarketplaceCapabilityPackDetail) {
+    if (pack.installed && pack.plugin?.installedId) {
+      setSetupPluginId(pack.plugin.installedId);
+      return;
+    }
     setInstallPackTarget(pack);
     setAssignMode(pack.defaultAssignMode);
     setSelectedAgentIds([]);
@@ -693,6 +703,14 @@ export function Marketplace() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <PluginSetupWizard
+        pluginId={setupPluginId}
+        companyId={selectedCompanyId}
+        open={Boolean(setupPluginId)}
+        onOpenChange={(open) => {
+          if (!open) setSetupPluginId(null);
+        }}
+      />
     </div>
   );
 }

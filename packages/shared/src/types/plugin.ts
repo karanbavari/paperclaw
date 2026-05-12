@@ -647,6 +647,111 @@ export interface PluginCompanySettings {
   updatedAt: Date;
 }
 
+export type PluginSetupStepStatus = "done" | "needs_action" | "failed" | "skipped";
+
+export type PluginSetupWizardStatus = "not_started" | "in_progress" | "complete" | "dismissed";
+
+export type PluginSetupOverallStatus = "complete" | "needs_action" | "failed";
+
+export type PluginSetupStepKind =
+  | "review"
+  | "config"
+  | "local_folder"
+  | "custom_settings"
+  | "environment_driver"
+  | "health"
+  | "tools"
+  | "jobs"
+  | "webhooks"
+  | "database"
+  | "managed_resources";
+
+export interface PluginSetupWizardState {
+  status: PluginSetupWizardStatus;
+  currentStepKey: string | null;
+  completedStepKeys: string[];
+  manuallyCompletedStepKeys: string[];
+  dismissedAt: string | null;
+  completedAt: string | null;
+  updatedAt: string;
+  version: 1;
+}
+
+export interface PluginSetupStep {
+  key: string;
+  kind: PluginSetupStepKind;
+  label: string;
+  description: string | null;
+  status: PluginSetupStepStatus;
+  required: boolean;
+  href: string | null;
+  details: Record<string, unknown>;
+}
+
+export interface PluginSetupSummary {
+  pluginId: string;
+  pluginKey: string;
+  companyId: string;
+  overallStatus: PluginSetupOverallStatus;
+  nextStepKey: string | null;
+  steps: PluginSetupStep[];
+  wizardState: PluginSetupWizardState;
+  warnings: string[];
+}
+
+export interface PluginSetupPatchRequest {
+  status?: PluginSetupWizardStatus;
+  currentStepKey?: string | null;
+  completedStepKeys?: string[];
+  manuallyCompletedStepKeys?: string[];
+  dismissedAt?: string | null;
+  completedAt?: string | null;
+}
+
+export interface PluginToolConsoleDescriptor {
+  name: string;
+  displayName: string;
+  description: string;
+  parametersSchema: JsonSchema;
+  pluginId: string;
+  pluginKey: string;
+}
+
+export interface PluginToolConsoleDiscoveryResponse {
+  pluginId: string;
+  pluginKey: string;
+  status: PluginStatus;
+  workerStatus: "running" | "stopped" | "unavailable";
+  tools: PluginToolConsoleDescriptor[];
+}
+
+export interface PluginToolConsoleTestRequest {
+  companyId: string;
+  parameters?: unknown;
+  projectId?: string | null;
+  agentId?: string | null;
+  timeoutMs?: number | null;
+}
+
+export interface PluginToolConsoleTestResult {
+  pluginId: string;
+  pluginKey: string;
+  toolName: string;
+  invocationId: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+  result: {
+    content?: string;
+    data?: unknown;
+    error?: string;
+  };
+  error?: {
+    message: string;
+    code?: string;
+  } | null;
+}
+
 /**
  * Query filter for `ctx.entities.list`.
  */

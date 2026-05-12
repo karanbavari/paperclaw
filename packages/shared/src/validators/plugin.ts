@@ -949,6 +949,80 @@ export const patchPluginConfigSchema = z.object({
 
 export type PatchPluginConfig = z.infer<typeof patchPluginConfigSchema>;
 
+export const pluginSetupStepStatusSchema = z.enum(["done", "needs_action", "failed", "skipped"]);
+
+export const pluginSetupWizardStatusSchema = z.enum(["not_started", "in_progress", "complete", "dismissed"]);
+
+export const pluginSetupStepKindSchema = z.enum([
+  "review",
+  "config",
+  "local_folder",
+  "custom_settings",
+  "environment_driver",
+  "health",
+  "tools",
+  "jobs",
+  "webhooks",
+  "database",
+  "managed_resources",
+]);
+
+export const pluginSetupWizardStateSchema = z.object({
+  status: pluginSetupWizardStatusSchema,
+  currentStepKey: z.string().min(1).nullable(),
+  completedStepKeys: z.array(z.string().min(1)),
+  manuallyCompletedStepKeys: z.array(z.string().min(1)),
+  dismissedAt: z.string().datetime().nullable(),
+  completedAt: z.string().datetime().nullable(),
+  updatedAt: z.string().datetime(),
+  version: z.literal(1),
+});
+
+export const pluginSetupStepSchema = z.object({
+  key: z.string().min(1),
+  kind: pluginSetupStepKindSchema,
+  label: z.string().min(1),
+  description: z.string().nullable(),
+  status: pluginSetupStepStatusSchema,
+  required: z.boolean(),
+  href: z.string().nullable(),
+  details: z.record(z.unknown()).default({}),
+});
+
+export const pluginSetupSummarySchema = z.object({
+  pluginId: z.string().uuid(),
+  pluginKey: z.string().min(1),
+  companyId: z.string().uuid(),
+  overallStatus: z.enum(["complete", "needs_action", "failed"]),
+  nextStepKey: z.string().min(1).nullable(),
+  steps: z.array(pluginSetupStepSchema),
+  wizardState: pluginSetupWizardStateSchema,
+  warnings: z.array(z.string()).default([]),
+});
+
+export const pluginSetupPatchSchema = z.object({
+  status: pluginSetupWizardStatusSchema.optional(),
+  currentStepKey: z.string().min(1).nullable().optional(),
+  completedStepKeys: z.array(z.string().min(1)).optional(),
+  manuallyCompletedStepKeys: z.array(z.string().min(1)).optional(),
+  dismissedAt: z.string().datetime().nullable().optional(),
+  completedAt: z.string().datetime().nullable().optional(),
+});
+
+export type PluginSetupPatch = z.infer<typeof pluginSetupPatchSchema>;
+
+export const pluginToolConsoleTestRequestSchema = z.object({
+  companyId: z.string().uuid(),
+  parameters: z.unknown().optional(),
+  projectId: z.string().uuid().nullable().optional(),
+  agentId: z.string().uuid().nullable().optional(),
+  timeoutMs: z.number().int().min(1_000).max(120_000).nullable().optional(),
+});
+
+export type PluginToolConsoleTestRequestInput = z.infer<
+  typeof pluginToolConsoleTestRequestSchema
+>;
+
 // ---------------------------------------------------------------------------
 // Plugin status update
 // ---------------------------------------------------------------------------

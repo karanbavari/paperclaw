@@ -216,10 +216,13 @@ export const queryKeys = {
     health: (pluginId: string) => ["plugins", pluginId, "health"] as const,
     uiContributions: ["plugins", "ui-contributions"] as const,
     config: (pluginId: string) => ["plugins", pluginId, "config"] as const,
+    setup: (pluginId: string, companyId: string) =>
+      ["plugins", pluginId, "companies", companyId, "setup"] as const,
     localFolders: (pluginId: string, companyId: string) =>
       ["plugins", pluginId, "companies", companyId, "local-folders"] as const,
     dashboard: (pluginId: string) => ["plugins", pluginId, "dashboard"] as const,
     logs: (pluginId: string) => ["plugins", pluginId, "logs"] as const,
+    tools: (pluginId: string) => ["plugins", pluginId, "tools"] as const,
   },
   adapters: {
     all: ["adapters"] as const,

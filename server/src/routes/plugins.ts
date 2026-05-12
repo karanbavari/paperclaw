@@ -35,6 +35,8 @@ import {
   projects,
 } from "@kesarcloud/db";
 import type {
+  PluginToolConsoleDiscoveryResponse,
+  PluginToolConsoleTestResult,
   PluginApiRouteDeclaration,
   PluginStatus,
   PaperClawPluginManifestV1,
@@ -43,6 +45,8 @@ import type {
 } from "@kesarcloud/shared";
 import {
   PLUGIN_STATUSES,
+  pluginToolConsoleTestRequestSchema,
+  pluginSetupPatchSchema,
 } from "@kesarcloud/shared";
 import { pluginRegistryService } from "../services/plugin-registry.js";
 import { pluginLifecycleManager } from "../services/plugin-lifecycle.js";
@@ -73,6 +77,10 @@ import {
   requireLocalFolderDeclaration,
   setStoredLocalFolder,
 } from "../services/plugin-local-folders.js";
+import {
+  buildPluginSetupSummary,
+  updatePluginSetupWizardState,
+} from "../services/plugin-setup.js";
 import { badRequest, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 
 /** UI slot declaration extracted from plugin manifest */
@@ -137,6 +145,7 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const PLUGIN_API_BODY_LIMIT_BYTES = 1_000_000;
+const PLUGIN_TOOL_CONSOLE_SENTINEL_UUID = "00000000-0000-4000-8000-000000000000";
 const PLUGIN_SCOPED_API_RESPONSE_HEADER_ALLOWLIST = new Set([
   "cache-control",
   "etag",
@@ -608,6 +617,95 @@ export function pluginRoutes(
     return null;
   }
 
+  async function validateOptionalToolConsoleScope(input: {
+    companyId: string;
+    agentId?: string | null;
+    projectId?: string | null;
+  }): Promise<string | null> {
+    if (input.agentId) {
+      const [agent] = await db
+        .select({ companyId: agents.companyId })
+        .from(agents)
+        .where(eq(agents.id, input.agentId))
+        .limit(1);
+      if (!agent || agent.companyId !== input.companyId) {
+        return '"agentId" does not belong to "companyId"';
+      }
+    }
+
+    if (input.projectId) {
+      const [project] = await db
+        .select({ companyId: projects.companyId })
+        .from(projects)
+        .where(eq(projects.id, input.projectId))
+        .limit(1);
+      if (!project || project.companyId !== input.companyId) {
+        return '"projectId" does not belong to "companyId"';
+      }
+    }
+
+    return null;
+  }
+
+  function pluginWorkerStatus(pluginId: string): PluginToolConsoleDiscoveryResponse["workerStatus"] {
+    const workerManager = bridgeDeps?.workerManager ?? webhookDeps?.workerManager;
+    if (!workerManager) return "unavailable";
+    return workerManager.isRunning(pluginId) ? "running" : "stopped";
+  }
+
+  function runWithOptionalTimeout<T>(promise: Promise<T>, timeoutMs?: number | null): Promise<T> {
+    if (!timeoutMs) return promise;
+    return new Promise<T>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Tool test timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+      promise.then(
+        (value) => {
+          clearTimeout(timeout);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        },
+      );
+    });
+  }
+
+  async function logPluginToolConsoleActivity(
+    req: Request,
+    input: {
+      companyId: string;
+      pluginId: string;
+      pluginKey: string;
+      toolName: string;
+      invocationId: string;
+      success: boolean;
+      durationMs: number;
+      error?: string | null;
+    },
+  ): Promise<void> {
+    const actor = getActorInfo(req);
+    await logActivity(db, {
+      companyId: input.companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      action: "plugin.tool.tested",
+      entityType: "plugin",
+      entityId: input.pluginId,
+      agentId: actor.agentId,
+      runId: null,
+      details: {
+        pluginKey: input.pluginKey,
+        toolName: input.toolName,
+        invocationId: input.invocationId,
+        success: input.success,
+        durationMs: input.durationMs,
+        error: input.error ?? null,
+      },
+    });
+  }
+
   /**
    * GET /api/plugins
    *
@@ -745,6 +843,181 @@ export function pluginRoutes(
     const filter = pluginId ? { pluginId } : undefined;
     const tools = toolDeps.toolDispatcher.listToolsForAgent(filter);
     res.json(tools);
+  });
+
+  /**
+   * GET /api/plugins/:pluginId/tools
+   *
+   * List registered tools for one plugin in an operator-console shape.
+   */
+  router.get("/plugins/:pluginId/tools", async (req, res) => {
+    assertBoardOrgAccess(req);
+
+    if (!toolDeps) {
+      res.status(501).json({ error: "Plugin tool dispatch is not enabled" });
+      return;
+    }
+
+    const { pluginId } = req.params;
+    const plugin = await resolvePlugin(registry, pluginId);
+    if (!plugin) {
+      res.status(404).json({ error: "Plugin not found" });
+      return;
+    }
+
+    const tools = toolDeps.toolDispatcher
+      .getRegistry()
+      .listTools({ pluginId: plugin.pluginKey })
+      .map((tool) => ({
+        name: tool.name,
+        displayName: tool.displayName,
+        description: tool.description,
+        parametersSchema: tool.parametersSchema,
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+      }));
+
+    const response: PluginToolConsoleDiscoveryResponse = {
+      pluginId: plugin.id,
+      pluginKey: plugin.pluginKey,
+      status: plugin.status as PluginStatus,
+      workerStatus: pluginWorkerStatus(plugin.id),
+      tools,
+    };
+    res.json(response);
+  });
+
+  /**
+   * POST /api/plugins/:pluginId/tools/:toolName/test
+   *
+   * Execute a plugin tool from the board console with an audited test context.
+   */
+  router.post("/plugins/:pluginId/tools/:toolName/test", async (req, res) => {
+    assertBoardOrgAccess(req);
+
+    if (!toolDeps) {
+      res.status(501).json({ error: "Plugin tool dispatch is not enabled" });
+      return;
+    }
+
+    const { pluginId, toolName } = req.params;
+    const plugin = await resolvePlugin(registry, pluginId);
+    if (!plugin) {
+      res.status(404).json({ error: "Plugin not found" });
+      return;
+    }
+
+    const parsed = pluginToolConsoleTestRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid request body" });
+      return;
+    }
+
+    const body = parsed.data;
+    assertCompanyAccess(req, body.companyId);
+
+    const scopeError = await validateOptionalToolConsoleScope({
+      companyId: body.companyId,
+      agentId: body.agentId,
+      projectId: body.projectId,
+    });
+    if (scopeError) {
+      res.status(403).json({ error: scopeError });
+      return;
+    }
+
+    if (plugin.status !== "ready") {
+      res.status(409).json({ error: `Plugin is not ready (status: ${plugin.status})` });
+      return;
+    }
+
+    const registeredTool = toolDeps.toolDispatcher
+      .getRegistry()
+      .getToolByPlugin(plugin.pluginKey, toolName);
+    if (!registeredTool) {
+      res.status(404).json({ error: `Tool "${toolName}" not found for plugin "${plugin.pluginKey}"` });
+      return;
+    }
+
+    const actor = getActorInfo(req);
+    const invocationId = randomUUID();
+    const started = Date.now();
+    const startedAt = new Date(started).toISOString();
+    const runContext: ToolRunContext = {
+      agentId: body.agentId ?? PLUGIN_TOOL_CONSOLE_SENTINEL_UUID,
+      runId: invocationId,
+      companyId: body.companyId,
+      projectId: body.projectId ?? PLUGIN_TOOL_CONSOLE_SENTINEL_UUID,
+      invocationKind: "board_console",
+      invocationId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+    };
+
+    try {
+      const execution = await runWithOptionalTimeout(
+        toolDeps.toolDispatcher.executeTool(
+          registeredTool.namespacedName,
+          body.parameters ?? {},
+          runContext,
+        ),
+        body.timeoutMs,
+      );
+      const finished = Date.now();
+      const resultError = execution.result.error ?? null;
+      const response: PluginToolConsoleTestResult = {
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+        toolName: registeredTool.name,
+        invocationId,
+        startedAt,
+        finishedAt: new Date(finished).toISOString(),
+        durationMs: finished - started,
+        result: execution.result,
+        error: resultError ? { message: resultError } : null,
+      };
+      await logPluginToolConsoleActivity(req, {
+        companyId: body.companyId,
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+        toolName: registeredTool.name,
+        invocationId,
+        success: !resultError,
+        durationMs: response.durationMs,
+        error: resultError,
+      });
+      res.json(response);
+    } catch (err) {
+      const finished = Date.now();
+      const message = err instanceof Error ? err.message : String(err);
+      const response: PluginToolConsoleTestResult = {
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+        toolName: registeredTool.name,
+        invocationId,
+        startedAt,
+        finishedAt: new Date(finished).toISOString(),
+        durationMs: finished - started,
+        result: { error: message },
+        error: { message },
+      };
+      await logPluginToolConsoleActivity(req, {
+        companyId: body.companyId,
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+        toolName: registeredTool.name,
+        invocationId,
+        success: false,
+        durationMs: response.durationMs,
+        error: message,
+      });
+
+      if (message.includes("not running") || message.includes("worker")) {
+        res.status(502).json(response);
+      } else {
+        res.status(500).json(response);
+      }
+    }
   });
 
   /**
@@ -2384,6 +2657,71 @@ export function pluginRoutes(
         error: errorMessage,
       });
     }
+  });
+
+  // ===========================================================================
+  // Company-scoped plugin setup wizard
+  // ===========================================================================
+
+  router.get("/plugins/:pluginId/companies/:companyId/setup", async (req, res) => {
+    assertBoardOrgAccess(req);
+    const { pluginId, companyId } = req.params;
+    assertCompanyAccess(req, companyId);
+
+    const plugin = await resolvePlugin(registry, pluginId);
+    if (!plugin) {
+      res.status(404).json({ error: "Plugin not found" });
+      return;
+    }
+
+    res.json(await buildPluginSetupSummary({ registry, plugin, companyId }));
+  });
+
+  router.patch("/plugins/:pluginId/companies/:companyId/setup", async (req, res) => {
+    assertBoardOrgAccess(req);
+    const { pluginId, companyId } = req.params;
+    assertCompanyAccess(req, companyId);
+
+    const plugin = await resolvePlugin(registry, pluginId);
+    if (!plugin) {
+      res.status(404).json({ error: "Plugin not found" });
+      return;
+    }
+
+    const parsed = pluginSetupPatchSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      res.status(400).json({
+        error: "Invalid plugin setup wizard state",
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    const state = await updatePluginSetupWizardState({
+      registry,
+      plugin,
+      companyId,
+      patch: parsed.data,
+    });
+    const actor = getActorInfo(req);
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      action: "plugin.setup.updated",
+      entityType: "plugin",
+      entityId: plugin.id,
+      details: {
+        pluginId: plugin.id,
+        pluginKey: plugin.pluginKey,
+        status: state.status,
+        currentStepKey: state.currentStepKey,
+      },
+    });
+
+    res.json(await buildPluginSetupSummary({ registry, plugin, companyId }));
   });
 
   // ===========================================================================

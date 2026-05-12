@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PluginRecord } from "@kesarcloud/shared";
 import { Link } from "@/lib/router";
-import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash } from "lucide-react";
+import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash, Wrench } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { pluginsApi } from "@/api/plugins";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToastActions } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
+import { PluginSetupWizard } from "@/components/PluginSetupWizard";
 
 function firstNonEmptyLine(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -61,7 +62,7 @@ function getPluginErrorSummary(plugin: PluginRecord): string {
  * @see doc/plugins/PLUGIN_SPEC.md §3 — Plugin Lifecycle for status semantics.
  */
 export function PluginManager() {
-  const { selectedCompany } = useCompany();
+  const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -71,6 +72,7 @@ export function PluginManager() {
   const [uninstallPluginId, setUninstallPluginId] = useState<string | null>(null);
   const [uninstallPluginName, setUninstallPluginName] = useState<string>("");
   const [errorDetailsPlugin, setErrorDetailsPlugin] = useState<PluginRecord | null>(null);
+  const [setupPluginId, setSetupPluginId] = useState<string | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -99,11 +101,12 @@ export function PluginManager() {
   const installMutation = useMutation({
     mutationFn: (params: { packageName: string; version?: string; isLocalPath?: boolean }) =>
       pluginsApi.install(params),
-    onSuccess: () => {
+    onSuccess: (plugin) => {
       invalidatePluginQueries();
       setInstallDialogOpen(false);
       setInstallPackage("");
       pushToast({ title: "Plugin installed successfully", tone: "success" });
+      if (selectedCompanyId) setSetupPluginId(plugin.id);
     },
     onError: (err: Error) => {
       pushToast({ title: "Failed to install plugin", body: err.message, tone: "error" });
@@ -426,6 +429,16 @@ export function PluginManager() {
                           Configure
                         </Link>
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8"
+                        onClick={() => setSetupPluginId(plugin.id)}
+                        disabled={!selectedCompanyId}
+                      >
+                        <Wrench className="h-4 w-4" />
+                        Review setup
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -504,6 +517,14 @@ export function PluginManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <PluginSetupWizard
+        pluginId={setupPluginId}
+        companyId={selectedCompanyId}
+        open={Boolean(setupPluginId)}
+        onOpenChange={(open) => {
+          if (!open) setSetupPluginId(null);
+        }}
+      />
     </div>
   );
 }

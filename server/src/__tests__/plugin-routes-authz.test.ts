@@ -516,6 +516,140 @@ describe.sequential("plugin tool and bridge authz", () => {
     );
   });
 
+  it("lists plugin tools for the board console by plugin key", async () => {
+    readyPlugin();
+    const listTools = vi.fn(() => [
+      {
+        name: "search",
+        displayName: "Search",
+        description: "Search records",
+        parametersSchema: { type: "object", properties: {} },
+        pluginId: "paperclaw.example",
+        pluginDbId: pluginId,
+        namespacedName: "paperclaw.example:search",
+      },
+    ]);
+    const { app } = await createApp(boardActor(), {}, {
+      toolDeps: {
+        toolDispatcher: {
+          listToolsForAgent: vi.fn(),
+          getTool: vi.fn(),
+          getRegistry: vi.fn(() => ({
+            listTools,
+          })),
+          executeTool: vi.fn(),
+        },
+      },
+      bridgeDeps: {
+        workerManager: { isRunning: vi.fn(() => true) },
+      },
+    });
+
+    const res = await request(app).get(`/api/plugins/${pluginId}/tools`);
+
+    expect(res.status).toBe(200);
+    expect(listTools).toHaveBeenCalledWith({ pluginId: "paperclaw.example" });
+    expect(res.body).toMatchObject({
+      pluginId,
+      pluginKey: "paperclaw.example",
+      workerStatus: "running",
+      tools: [{ name: "search", pluginId, pluginKey: "paperclaw.example" }],
+    });
+  });
+
+  it("rejects plugin tool console tests with cross-company optional context", async () => {
+    readyPlugin();
+    const executeTool = vi.fn();
+    const { app } = await createApp(boardActor(), {}, {
+      db: createSelectQueueDb([[{ companyId: companyB }]]),
+      toolDeps: {
+        toolDispatcher: {
+          listToolsForAgent: vi.fn(),
+          getTool: vi.fn(),
+          getRegistry: vi.fn(() => ({
+            getToolByPlugin: vi.fn(() => ({ name: "search", namespacedName: "paperclaw.example:search" })),
+          })),
+          executeTool,
+        },
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/plugins/${pluginId}/tools/search/test`)
+      .send({
+        companyId: companyA,
+        agentId: agentA,
+        parameters: {},
+      });
+
+    expect(res.status).toBe(403);
+    expect(executeTool).not.toHaveBeenCalled();
+  });
+
+  it("executes plugin tool console tests with board-console context and activity logging", async () => {
+    readyPlugin();
+    const executeTool = vi.fn().mockResolvedValue({
+      pluginId: "paperclaw.example",
+      toolName: "search",
+      result: { content: "ok", data: { count: 1 } },
+    });
+    const { logActivity } = await import("../services/activity-log.js");
+    const { app } = await createApp(boardActor(), {}, {
+      toolDeps: {
+        toolDispatcher: {
+          listToolsForAgent: vi.fn(),
+          getTool: vi.fn(),
+          getRegistry: vi.fn(() => ({
+            getToolByPlugin: vi.fn(() => ({ name: "search", namespacedName: "paperclaw.example:search" })),
+          })),
+          executeTool,
+        },
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/plugins/${pluginId}/tools/search/test`)
+      .send({
+        companyId: companyA,
+        parameters: { q: "test" },
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      pluginId,
+      pluginKey: "paperclaw.example",
+      toolName: "search",
+      result: { content: "ok", data: { count: 1 } },
+      error: null,
+    });
+    expect(executeTool).toHaveBeenCalledWith(
+      "paperclaw.example:search",
+      { q: "test" },
+      expect.objectContaining({
+        companyId: companyA,
+        invocationKind: "board_console",
+        actorType: "user",
+        actorId: "user-1",
+      }),
+    );
+    expect(logActivity).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        companyId: companyA,
+        actorType: "user",
+        actorId: "user-1",
+        action: "plugin.tool.tested",
+        entityType: "plugin",
+        entityId: pluginId,
+        details: expect.objectContaining({
+          pluginKey: "paperclaw.example",
+          toolName: "search",
+          success: true,
+        }),
+      }),
+    );
+  });
+
   it.each([
     ["legacy data", "post", `/api/plugins/${pluginId}/bridge/data`, { key: "health" }],
     ["legacy action", "post", `/api/plugins/${pluginId}/bridge/action`, { key: "sync" }],
