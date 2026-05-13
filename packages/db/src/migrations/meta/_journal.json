@@ -617,6 +617,13 @@
       "when": 1778134000000,
       "tag": "0087_direct_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1778135000000,
+      "tag": "0088_tool_permission_system",
+      "breakpoints": true
     }
   ]
 }

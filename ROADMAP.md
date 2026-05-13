@@ -80,13 +80,13 @@ Plugin installation can continue into a company-scoped setup wizard for config, 
 
 Operators can inspect installed plugin tools, view parameter schemas, execute audited board-console test runs, inspect structured results, and see recent failures from the plugin detail page.
 
-### ⚪ Tool Permission System
+### ✅ Tool Permission System
 
-Powerful tools need clear controls. PaperClaw should support per-agent and per-company tool permissions such as allow, deny, approval-required, and budget-limited usage for integrations like ads, workspace automation, and browser automation.
+Powerful tools now have clear controls. PaperClaw supports company defaults, company tool rules, per-agent overrides, approval-required execution, budget-limited usage, deny rules, sanitized tool-execution approvals, and audit records for plugin-contributed tools.
 
-### ⚪ Outcome Center
+### ✅ Outcome Center
 
-The board needs a single place to answer "what shipped?" Outcome Center should aggregate completed work products, reports, PR links, screenshots, previews, decisions, and other artifacts across issues and projects.
+The board now has a single place to answer "what shipped?" Outcome Center aggregates issue work products such as PRs, previews, artifacts, documents, commits, branches, and runtime-service links across issues and projects.
 
 ### ⚪ Ops Incident Center
 

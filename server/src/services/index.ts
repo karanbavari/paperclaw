@@ -35,6 +35,7 @@ export { activityService, type ActivityFilters } from "./activity.js";
 export { approvalService } from "./approvals.js";
 export { budgetService } from "./budgets.js";
 export { secretService } from "./secrets.js";
+export { toolPermissionService, ToolPermissionBlockedError } from "./tool-permissions.js";
 export { routineService } from "./routines.js";
 export { costService } from "./costs.js";
 export { financeService } from "./finance.js";
@@ -45,6 +46,7 @@ export {
 } from "./productivity-review.js";
 export { classifyIssueGraphLiveness, type IssueLivenessFinding } from "./recovery/index.js";
 export { dashboardService } from "./dashboard.js";
+export { outcomeCenterService } from "./outcome-center.js";
 export { sidebarBadgeService } from "./sidebar-badges.js";
 export { sidebarPreferenceService } from "./sidebar-preferences.js";
 export { inboxDismissalService } from "./inbox-dismissals.js";

@@ -392,8 +392,8 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Capability Packs (plugin + skill + setup + agent assignment)
 - ✅ Plugin Setup Wizard
 - ✅ Plugin Tool Test Console
-- ⚪ Tool Permission System
-- ⚪ Outcome Center
+- ✅ Tool Permission System
+- ✅ Outcome Center
 - ⚪ Ops Incident Center
 - ⚪ Guided First Company Bootstrap
 - ⚪ External Channel Inbox

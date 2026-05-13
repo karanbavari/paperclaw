@@ -187,6 +187,14 @@ export interface PluginLocalFoldersResponse {
   folders: PluginLocalFolderStatus[];
 }
 
+export interface AgentToolDescriptor {
+  name: string;
+  displayName: string;
+  description: string;
+  parametersSchema: Record<string, unknown>;
+  pluginId: string;
+}
+
 export interface PluginLocalFolderSaveInput {
   path: string;
   access?: "read" | "readWrite";
@@ -363,6 +371,9 @@ export const pluginsApi = {
    */
   listUiContributions: () =>
     api.get<PluginUiContribution[]>("/plugins/ui-contributions"),
+
+  listAllTools: () =>
+    api.get<AgentToolDescriptor[]>("/plugins/tools"),
 
   // ===========================================================================
   // Plugin configuration endpoints

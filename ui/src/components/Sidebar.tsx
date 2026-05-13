@@ -17,6 +17,7 @@ import {
   Brain,
   Store,
   Microscope,
+  PackageCheck,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarSection } from "./SidebarSection";
@@ -104,6 +105,7 @@ export function Sidebar() {
 
         <SidebarSection label="Work">
           <SidebarNavItem to="/issues" label="Issues" icon={CircleDot} />
+          <SidebarNavItem to="/outcomes" label="Outcomes" icon={PackageCheck} />
           <SidebarNavItem to="/search" label="Search" icon={Search} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
           <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />

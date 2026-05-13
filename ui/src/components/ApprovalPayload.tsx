@@ -1,4 +1,4 @@
-import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck } from "lucide-react";
+import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck, KeyRound } from "lucide-react";
 import { formatCents } from "../lib/utils";
 
 export const typeLabel: Record<string, string> = {
@@ -6,6 +6,7 @@ export const typeLabel: Record<string, string> = {
   approve_ceo_strategy: "CEO Strategy",
   budget_override_required: "Budget Override",
   request_board_approval: "Board Approval",
+  tool_execution: "Tool Execution",
 };
 
 function firstNonEmptyString(...values: unknown[]): string | null {
@@ -41,6 +42,7 @@ export const typeIcon: Record<string, typeof UserPlus> = {
   approve_ceo_strategy: Lightbulb,
   budget_override_required: ShieldAlert,
   request_board_approval: ShieldCheck,
+  tool_execution: KeyRound,
 };
 
 export const defaultTypeIcon = ShieldCheck;
@@ -161,6 +163,23 @@ export function BoardApprovalPayload({
   );
 }
 
+export function ToolExecutionPayload({ payload }: { payload: Record<string, unknown> }) {
+  return (
+    <div className="mt-3 space-y-1.5 text-sm">
+      <PayloadField label="Plugin" value={payload.pluginKey ?? payload.pluginId} />
+      <PayloadField label="Tool" value={payload.toolName ?? payload.namespacedTool} />
+      <PayloadField label="Agent" value={payload.agentId} />
+      <PayloadField label="Run" value={payload.runId} />
+      <PayloadField label="Hash" value={payload.parameterHash} />
+      {!!payload.parameterSummary && (
+        <div className="rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          {String(payload.parameterSummary)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unknown> }) {
   const risks = Array.isArray(payload.risks)
     ? payload.risks
@@ -240,6 +259,7 @@ export function ApprovalPayloadRenderer({
 }) {
   if (type === "hire_agent") return <HireAgentPayload payload={payload} />;
   if (type === "budget_override_required") return <BudgetOverridePayload payload={payload} />;
+  if (type === "tool_execution") return <ToolExecutionPayload payload={payload} />;
   if (type === "request_board_approval") {
     return <BoardApprovalPayload payload={payload} hideTitle={hidePrimaryTitle} />;
   }

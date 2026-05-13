@@ -15,6 +15,7 @@ export { secretRoutes } from "./secrets.js";
 export { costRoutes } from "./costs.js";
 export { activityRoutes } from "./activity.js";
 export { dashboardRoutes } from "./dashboard.js";
+export { outcomeCenterRoutes } from "./outcome-center.js";
 export { sidebarBadgeRoutes } from "./sidebar-badges.js";
 export { sidebarPreferenceRoutes } from "./sidebar-preferences.js";
 export { inboxDismissalRoutes } from "./inbox-dismissals.js";

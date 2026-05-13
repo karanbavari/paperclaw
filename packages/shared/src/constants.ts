@@ -375,6 +375,7 @@ export const APPROVAL_TYPES = [
   "approve_ceo_strategy",
   "budget_override_required",
   "request_board_approval",
+  "tool_execution",
 ] as const;
 export type ApprovalType = (typeof APPROVAL_TYPES)[number];
 
@@ -603,6 +604,27 @@ export const PERMISSION_KEYS = [
   "joins:approve",
 ] as const;
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
+
+export const TOOL_PERMISSION_EFFECTS = [
+  "inherit",
+  "allow",
+  "deny",
+  "approval_required",
+  "budget_limited",
+] as const;
+export type ToolPermissionEffect = (typeof TOOL_PERMISSION_EFFECTS)[number];
+
+export const TOOL_PERMISSION_SUBJECT_TYPES = ["company", "agent"] as const;
+export type ToolPermissionSubjectType = (typeof TOOL_PERMISSION_SUBJECT_TYPES)[number];
+
+export const TOOL_PERMISSION_DECISIONS = [
+  "allowed",
+  "denied",
+  "approval_required",
+  "budget_limited",
+  "budget_blocked",
+] as const;
+export type ToolPermissionDecision = (typeof TOOL_PERMISSION_DECISIONS)[number];
 
 // ---------------------------------------------------------------------------
 // Plugin System — see doc/plugins/PLUGIN_SPEC.md for the full specification

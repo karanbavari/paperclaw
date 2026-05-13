@@ -445,3 +445,20 @@ export type {
   ResearchLabDetail,
   ResearchLabListItem,
 } from "./research-lab.js";
+export type {
+  EffectiveToolPermission,
+  ReplaceToolPermissionPoliciesRequest,
+  ToolPermissionBudgetLimit,
+  ToolPermissionDecisionRecord,
+  ToolPermissionListResponse,
+  ToolPermissionPolicy,
+  UpsertToolPermissionPolicyRequest,
+} from "./tool-permissions.js";
+export type {
+  OutcomeCenterFilters,
+  OutcomeCenterIssueRef,
+  OutcomeCenterItem,
+  OutcomeCenterKindCount,
+  OutcomeCenterProjectRef,
+  OutcomeCenterSummary,
+} from "./outcome-center.js";

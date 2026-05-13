@@ -380,6 +380,8 @@ Tool names are automatically namespaced by plugin ID at runtime (e.g. `linear:se
 
 The board UI also exposes a Plugin Tool Test Console for installed plugins. Console invocations use the same registered tool handlers as agent runs, include `invocationKind: "board_console"` and an `invocationId` in the run context, and write a `plugin.tool.tested` activity entry without storing raw parameter values.
 
+Plugin tool execution is governed by the Tool Permission System. Operators can set company defaults, company tool rules, and per-agent overrides with `allow`, `deny`, `approval_required`, or `budget_limited` effects. The host enforces these policies before dispatching `executeTool`; approval-required calls create a `tool_execution` approval that stores only tool identity, context, parameter keys, and a parameter hash.
+
 ### 11.2 Tool Execution
 
 When an agent invokes a plugin tool during a run, the host routes the call to the plugin worker via a `executeTool` RPC method:

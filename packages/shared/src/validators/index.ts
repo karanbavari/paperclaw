@@ -463,3 +463,16 @@ export {
   type SetPluginState,
   type ListPluginState,
 } from "./plugin.js";
+export {
+  effectiveToolPermissionsQuerySchema,
+  replaceToolPermissionPoliciesSchema,
+  toolPermissionBudgetLimitSchema,
+  upsertToolPermissionPolicySchema,
+  type EffectiveToolPermissionsQuery,
+  type ReplaceToolPermissionPoliciesInput,
+  type UpsertToolPermissionPolicyInput,
+} from "./tool-permissions.js";
+export {
+  outcomeCenterQuerySchema,
+  type OutcomeCenterQuery,
+} from "./outcome-center.js";

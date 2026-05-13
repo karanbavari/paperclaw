@@ -81,6 +81,7 @@ import {
   buildPluginSetupSummary,
   updatePluginSetupWizardState,
 } from "../services/plugin-setup.js";
+import { ToolPermissionBlockedError, toolPermissionService } from "../services/tool-permissions.js";
 import { badRequest, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 
 /** UI slot declaration extracted from plugin manifest */
@@ -388,6 +389,7 @@ export function pluginRoutes(
     workerManager: bridgeDeps?.workerManager ?? webhookDeps?.workerManager,
   });
   const issuesSvc = issueService(db);
+  const toolPermissions = toolPermissionService(db);
 
   function matchScopedApiRoute(route: PluginApiRouteDeclaration, method: string, requestPath: string) {
     if (route.method !== method) return null;
@@ -955,6 +957,15 @@ export function pluginRoutes(
     };
 
     try {
+      await toolPermissions.enforce({
+        companyId: body.companyId,
+        agentId: body.agentId ?? null,
+        runId: null,
+        invocationKind: "board_console",
+        tool: registeredTool,
+        parameters: body.parameters ?? {},
+        actor,
+      });
       const execution = await runWithOptionalTimeout(
         toolDeps.toolDispatcher.executeTool(
           registeredTool.namespacedName,
@@ -988,6 +999,21 @@ export function pluginRoutes(
       });
       res.json(response);
     } catch (err) {
+      if (err instanceof ToolPermissionBlockedError) {
+        res.status(err.status).json({
+          pluginId: plugin.id,
+          pluginKey: plugin.pluginKey,
+          toolName: registeredTool.name,
+          invocationId,
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          durationMs: Date.now() - started,
+          result: { error: err.message },
+          error: { message: err.message, code: err.decision },
+          approvalId: err.approvalId,
+        });
+        return;
+      }
       const finished = Date.now();
       const message = err instanceof Error ? err.message : String(err);
       const response: PluginToolConsoleTestResult = {
@@ -1089,6 +1115,16 @@ export function pluginRoutes(
     }
 
     try {
+      const actor = getActorInfo(req);
+      await toolPermissions.enforce({
+        companyId: runContext.companyId,
+        agentId: runContext.agentId,
+        runId: runContext.runId,
+        invocationKind: runContext.invocationKind ?? "agent_run",
+        tool: registeredTool,
+        parameters: parameters ?? {},
+        actor,
+      });
       const result = await toolDeps.toolDispatcher.executeTool(
         tool,
         parameters ?? {},
@@ -1096,6 +1132,14 @@ export function pluginRoutes(
       );
       res.json(result);
     } catch (err) {
+      if (err instanceof ToolPermissionBlockedError) {
+        res.status(err.status).json({
+          error: err.message,
+          decision: err.decision,
+          approvalId: err.approvalId,
+        });
+        return;
+      }
       const message = err instanceof Error ? err.message : String(err);
 
       // Distinguish between "worker not running" (502) and other errors (500)

@@ -69,6 +69,9 @@ export {
   PROJECT_COLORS,
   APPROVAL_TYPES,
   APPROVAL_STATUSES,
+  TOOL_PERMISSION_DECISIONS,
+  TOOL_PERMISSION_EFFECTS,
+  TOOL_PERMISSION_SUBJECT_TYPES,
   RESEARCH_LAB_TYPES,
   RESEARCH_LAB_STATUSES,
   SECRET_PROVIDERS,
@@ -181,6 +184,9 @@ export {
   type PauseReason,
   type ApprovalType,
   type ApprovalStatus,
+  type ToolPermissionDecision,
+  type ToolPermissionEffect,
+  type ToolPermissionSubjectType,
   type ResearchLabType,
   type ResearchLabStatus,
   type SecretProvider,
@@ -1184,6 +1190,23 @@ export type {
   ResearchLabDetail,
   ResearchLabListItem,
 } from "./types/research-lab.js";
+export type {
+  EffectiveToolPermission,
+  ReplaceToolPermissionPoliciesRequest,
+  ToolPermissionBudgetLimit,
+  ToolPermissionDecisionRecord,
+  ToolPermissionListResponse,
+  ToolPermissionPolicy,
+  UpsertToolPermissionPolicyRequest,
+} from "./types/tool-permissions.js";
+export type {
+  OutcomeCenterFilters,
+  OutcomeCenterIssueRef,
+  OutcomeCenterItem,
+  OutcomeCenterKindCount,
+  OutcomeCenterProjectRef,
+  OutcomeCenterSummary,
+} from "./types/outcome-center.js";
 
 export {
   createResearchLabSchema,
@@ -1195,3 +1218,16 @@ export {
   type ResearchLabSubmit,
   type UpdateResearchLab,
 } from "./validators/research-lab.js";
+export {
+  effectiveToolPermissionsQuerySchema,
+  replaceToolPermissionPoliciesSchema,
+  toolPermissionBudgetLimitSchema,
+  upsertToolPermissionPolicySchema,
+  type EffectiveToolPermissionsQuery,
+  type ReplaceToolPermissionPoliciesInput,
+  type UpsertToolPermissionPolicyInput,
+} from "./validators/tool-permissions.js";
+export {
+  outcomeCenterQuerySchema,
+  type OutcomeCenterQuery,
+} from "./validators/outcome-center.js";

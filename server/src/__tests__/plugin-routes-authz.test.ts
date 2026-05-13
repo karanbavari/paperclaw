@@ -18,6 +18,10 @@ const mockLifecycle = vi.hoisted(() => ({
   disable: vi.fn(),
 }));
 
+const mockToolPermissions = vi.hoisted(() => ({
+  enforce: vi.fn(),
+}));
+
 vi.mock("../services/plugin-registry.js", () => ({
   pluginRegistryService: () => mockRegistry,
 }));
@@ -25,6 +29,27 @@ vi.mock("../services/plugin-registry.js", () => ({
 vi.mock("../services/plugin-lifecycle.js", () => ({
   pluginLifecycleManager: () => mockLifecycle,
 }));
+
+vi.mock("../services/tool-permissions.js", () => {
+  class ToolPermissionBlockedError extends Error {
+    status: number;
+    decision: string;
+    approvalId: string | null;
+
+    constructor(message: string, input: { status: number; decision: string; approvalId?: string | null }) {
+      super(message);
+      this.name = "ToolPermissionBlockedError";
+      this.status = input.status;
+      this.decision = input.decision;
+      this.approvalId = input.approvalId ?? null;
+    }
+  }
+
+  return {
+    ToolPermissionBlockedError,
+    toolPermissionService: () => mockToolPermissions,
+  };
+});
 
 vi.mock("../services/activity-log.js", () => ({
   logActivity: vi.fn(),
@@ -110,6 +135,18 @@ function readyPlugin() {
     version: "1.0.0",
     status: "ready",
   });
+}
+
+function registeredTool() {
+  return {
+    pluginId: "paperclaw.example",
+    pluginDbId: pluginId,
+    name: "search",
+    namespacedName: "paperclaw.example:search",
+    displayName: "Search",
+    description: "Search records",
+    parametersSchema: { type: "object", properties: {} },
+  };
 }
 
 describe.sequential("plugin install and upgrade authz", () => {
@@ -377,6 +414,10 @@ describe.sequential("plugin local folder routes", () => {
 describe.sequential("plugin tool and bridge authz", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockToolPermissions.enforce.mockResolvedValue({
+      effect: "allow",
+      policyId: "policy-1",
+    });
   });
 
   it("rejects tool execution when the board user cannot access runContext.companyId", async () => {
@@ -449,7 +490,7 @@ describe.sequential("plugin tool and bridge authz", () => {
         toolDeps: {
           toolDispatcher: {
             listToolsForAgent: vi.fn(),
-            getTool: vi.fn(() => ({ name: "paperclaw.example:search" })),
+            getTool: vi.fn(() => registeredTool()),
             executeTool,
           },
         },
@@ -484,7 +525,7 @@ describe.sequential("plugin tool and bridge authz", () => {
       toolDeps: {
         toolDispatcher: {
           listToolsForAgent: vi.fn(),
-          getTool: vi.fn(() => ({ name: "paperclaw.example:search" })),
+          getTool: vi.fn(() => registeredTool()),
           executeTool,
         },
       },
@@ -514,6 +555,54 @@ describe.sequential("plugin tool and bridge authz", () => {
         projectId: projectA,
       },
     );
+  });
+
+  it("blocks tool execution when tool permission enforcement requires approval", async () => {
+    const { ToolPermissionBlockedError } = await import("../services/tool-permissions.js");
+    mockToolPermissions.enforce.mockRejectedValueOnce(new ToolPermissionBlockedError(
+      "Tool execution requires board approval",
+      {
+        status: 409,
+        decision: "approval_required",
+        approvalId: "approval-1",
+      },
+    ));
+    const executeTool = vi.fn();
+    const { app } = await createApp(boardActor(), {}, {
+      db: createSelectQueueDb([
+        [{ companyId: companyA }],
+        [{ companyId: companyA, agentId: agentA }],
+        [{ companyId: companyA }],
+      ]),
+      toolDeps: {
+        toolDispatcher: {
+          listToolsForAgent: vi.fn(),
+          getTool: vi.fn(() => registeredTool()),
+          executeTool,
+        },
+      },
+    });
+
+    const res = await request(app)
+      .post("/api/plugins/tools/execute")
+      .send({
+        tool: "paperclaw.example:search",
+        parameters: { q: "test" },
+        runContext: {
+          agentId: agentA,
+          runId: runA,
+          companyId: companyA,
+          projectId: projectA,
+        },
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body).toMatchObject({
+      error: "Tool execution requires board approval",
+      decision: "approval_required",
+      approvalId: "approval-1",
+    });
+    expect(executeTool).not.toHaveBeenCalled();
   });
 
   it("lists plugin tools for the board console by plugin key", async () => {
@@ -567,7 +656,7 @@ describe.sequential("plugin tool and bridge authz", () => {
           listToolsForAgent: vi.fn(),
           getTool: vi.fn(),
           getRegistry: vi.fn(() => ({
-            getToolByPlugin: vi.fn(() => ({ name: "search", namespacedName: "paperclaw.example:search" })),
+            getToolByPlugin: vi.fn(() => registeredTool()),
           })),
           executeTool,
         },
@@ -600,7 +689,7 @@ describe.sequential("plugin tool and bridge authz", () => {
           listToolsForAgent: vi.fn(),
           getTool: vi.fn(),
           getRegistry: vi.fn(() => ({
-            getToolByPlugin: vi.fn(() => ({ name: "search", namespacedName: "paperclaw.example:search" })),
+            getToolByPlugin: vi.fn(() => registeredTool()),
           })),
           executeTool,
         },

@@ -396,7 +396,7 @@ The current implementation includes additional V1-control-plane tables beyond th
 
 - Issue structure and review: `issue_relations` for blockers, `labels`/`issue_labels`, `issue_thread_interactions`, `issue_approvals`, `issue_execution_decisions`, `issue_work_products`, `issue_inbox_archives`, `issue_read_states`, and issue reference mention indexes.
 - Execution and workspace control: `execution_workspaces`, `project_workspaces`, `workspace_runtime_services`, `workspace_operations`, `environments`, `environment_leases`, `agent_task_sessions`, `agent_runtime_state`, `agent_wakeup_requests`, heartbeat events, and watchdog decision tables.
-- Plugins and routines: `plugins`, plugin config/state/entities/jobs/logs/webhooks, plugin database namespaces/migrations, plugin company settings, and `routines`.
+- Plugins and routines: `plugins`, plugin config/state/entities/jobs/logs/webhooks, plugin database namespaces/migrations, plugin company settings, plugin tool permission policies/decisions, and `routines`.
 - Access and operations: company memberships, instance roles, principal permission grants, invites, join requests, board API keys, CLI auth challenges, budget policies/incidents, feedback exports/votes, company skills, sidebar preferences, and company logos.
 
 ## 8. State Machines
@@ -568,6 +568,8 @@ Server behavior:
 - `POST /approvals/:approvalId/approve`
 - `POST /approvals/:approvalId/reject`
 
+Tool execution approvals use `type=tool_execution`. The approval payload stores tool identity, agent/run context, parameter keys, and a parameter hash; raw tool parameters are not stored in approval payloads. After approval, the same tool/context/parameter-hash retry is allowed and audited.
+
 ## 10.7 Cost and Budgets
 
 - `POST /companies/:companyId/cost-events`
@@ -576,6 +578,15 @@ Server behavior:
 - `GET /companies/:companyId/costs/by-project`
 - `PATCH /companies/:companyId/budgets`
 - `PATCH /agents/:agentId/budgets`
+
+## 10.7.1 Tool Permissions
+
+- `GET /companies/:companyId/tool-permissions`
+- `PUT /companies/:companyId/tool-permissions`
+- `GET /companies/:companyId/tool-permissions/effective`
+- `GET /companies/:companyId/tool-permission-decisions`
+
+Plugin-contributed tools are governed by company-scoped policies. The effective policy can be `allow`, `deny`, `approval_required`, or `budget_limited`; UI drafts may use `inherit`.
 
 ## 10.8 Activity and Dashboard
 

@@ -4,6 +4,16 @@ export const queryKeys = {
     detail: (id: string) => ["companies", id] as const,
     stats: ["companies", "stats"] as const,
   },
+  outcomes: {
+    list: (companyId: string, filters?: Record<string, unknown>) =>
+      ["outcomes", companyId, filters ?? {}] as const,
+  },
+  toolPermissions: {
+    list: (companyId: string) => ["tool-permissions", companyId] as const,
+    effective: (companyId: string, agentId?: string | null) =>
+      ["tool-permissions", companyId, "effective", agentId ?? "__company__"] as const,
+    decisions: (companyId: string) => ["tool-permissions", companyId, "decisions"] as const,
+  },
   companySkills: {
     list: (companyId: string) => ["company-skills", companyId] as const,
     detail: (companyId: string, skillId: string) => ["company-skills", companyId, skillId] as const,
