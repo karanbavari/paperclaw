@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Overview | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Platform Overview</h1>
+          <p class="page-subtitle">Real-time platform KPIs and performance metrics</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm"><i class="ph ph-download"></i> Export</button>
+          <button class="btn btn-primary btn-sm"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">12,847</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +12.5% this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Users (30d)</div>
+          <div class="stat-value">8,234</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +8.2% this quarter</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Monthly Revenue</div>
+          <div class="stat-value">&#8377;4,62,000</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +15.3% vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Subscriptions</div>
+          <div class="stat-value">3,456</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +124 new this month</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">User Growth</span></div>
+          <div class="card-body">
+            <div style="height:240px;display:flex;align-items:flex-end;gap:8px;padding-top:20px">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:120px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">Jan</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:150px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">Feb</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:100px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">Mar</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:170px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">Apr</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:200px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">May</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-300);height:130px;border-radius:4px 4px 0 0"></div>
+                <span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">Jun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Revenue Breakdown</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                  <span>Subscriptions</span><span>62%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:62%;background:var(--color-primary-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                  <span>One-time Purchases</span><span>18%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:18%;background:var(--color-success-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                  <span>Add-ons</span><span>12%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--color-warning-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                  <span>Services</span><span>8%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:8%;background:var(--color-info-500)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><span class="card-title">Recent Activity</span></div>
+        <div class="card-body">
+          <div class="activity-item">
+            <div class="activity-icon"><i class="ph ph-user-plus"></i></div>
+            <div class="activity-content"><strong>New user registered:</strong> Rahul Verma from TechCorp (Enterprise plan)</div>
+            <div class="activity-time">2m ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon"><i class="ph ph-currency-circle-dollar"></i></div>
+            <div class="activity-content"><strong>Payment received:</strong> &#8377;1,20,000 from Acme Technologies (Annual renewal)</div>
+            <div class="activity-time">15m ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon"><i class="ph ph-user-switch"></i></div>
+            <div class="activity-content"><strong>Plan upgrade:</strong> Sneha Patel upgraded from Pro to Enterprise</div>
+            <div class="activity-time">1h ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon"><i class="ph ph-file-plus"></i></div>
+            <div class="activity-content"><strong>Content published:</strong> New blog post "Getting Started with KesarCloud"</div>
+            <div class="activity-time">3h ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon"><i class="ph ph-warning-circle"></i></div>
+            <div class="activity-content"><strong>System alert:</strong> API response time increased to 450ms (threshold: 300ms)</div>
+            <div class="activity-time">5h ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

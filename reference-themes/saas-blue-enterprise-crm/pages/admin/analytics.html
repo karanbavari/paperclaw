@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Analytics</h1>
+          <p class="page-subtitle">Deep platform analytics with date range filters</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" type="date" value="2026-05-01" style="width:auto;min-width:140px">
+          <span style="color:var(--color-neutral-400)">to</span>
+          <input class="form-input" type="date" value="2026-05-15" style="width:auto;min-width:140px">
+          <button class="btn btn-secondary btn-sm"><i class="ph ph-funnel"></i> Filter</button>
+          <button class="btn btn-primary btn-sm"><i class="ph ph-download"></i> Export</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Page Views</div>
+          <div class="stat-value">2,84,721</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +18.2% vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unique Visitors</div>
+          <div class="stat-value">1,42,456</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +12.7% vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Session</div>
+          <div class="stat-value">4m 32s</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +8.1% vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Bounce Rate</div>
+          <div class="stat-value">32.4%</div>
+          <div class="stat-change down"><i class="ph ph-trend-down"></i> -2.1% improvement</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Page Views Over Time</span></div>
+          <div class="card-body">
+            <div style="height:220px;display:flex;align-items:flex-end;gap:6px;padding-top:20px">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-400);height:80px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Mon</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-400);height:120px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Tue</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-400);height:95px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Wed</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-400);height:150px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Thu</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-500);height:180px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Fri</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-300);height:70px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Sat</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-primary-300);height:55px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Sun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Traffic Sources</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Direct</span><span>42%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:42%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Organic Search</span><span>28%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:28%;background:var(--color-success-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Social Media</span><span>15%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:15%;background:var(--color-info-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Referral</span><span>10%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--color-warning-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Email</span><span>5%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:5%;background:var(--color-success-300)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:24px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Top Pages</span></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Page</th><th>Views</th><th>Unique</th><th>Avg Time</th></tr></thead>
+              <tbody>
+                <tr><td>/dashboard</td><td>45,230</td><td>22,100</td><td>5m 12s</td></tr>
+                <tr><td>/pricing</td><td>28,450</td><td>14,200</td><td>3m 45s</td></tr>
+                <tr><td>/features</td><td>18,720</td><td>9,800</td><td>4m 10s</td></tr>
+                <tr><td>/blog</td><td>15,340</td><td>8,450</td><td>6m 30s</td></tr>
+                <tr><td>/login</td><td>12,890</td><td>7,600</td><td>1m 20s</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">User Demographics</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>India</span><span>55%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:55%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>United States</span><span>18%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:18%;background:var(--color-success-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>UK</span><span>8%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:8%;background:var(--color-info-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>UAE</span><span>7%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:7%;background:var(--color-warning-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Other</span><span>12%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--color-neutral-300)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

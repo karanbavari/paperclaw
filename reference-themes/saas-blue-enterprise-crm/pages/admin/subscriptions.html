@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscriptions | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Subscriptions</h1>
+          <p class="page-subtitle">Manage plans, view subscribers, and track MRR</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm"><i class="ph ph-download"></i> Export</button>
+          <button class="btn btn-primary btn-sm"><i class="ph ph-plus-circle"></i> New Plan</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Monthly Recurring Revenue</div>
+          <div class="stat-value">&#8377;4,62,000</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +15.3% vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Subscriptions</div>
+          <div class="stat-value">3,456</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +124 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Revenue Per User</div>
+          <div class="stat-value">&#8377;134</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +&#8377;8 vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Churn Rate</div>
+          <div class="stat-value">2.3%</div>
+          <div class="stat-change down"><i class="ph ph-trend-down"></i> -0.4% improvement</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">MRR Growth</span></div>
+          <div class="card-body">
+            <div style="height:200px;display:flex;align-items:flex-end;gap:8px;padding-top:20px">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:80px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Dec</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:95px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Jan</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:88px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Feb</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:110px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Mar</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:130px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">Apr</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <div style="width:100%;background:var(--color-success-500);height:145px;border-radius:3px 3px 0 0"></div>
+                <span style="font-size:10px;color:var(--color-neutral-500);margin-top:4px">May</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Plan Distribution</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Free</span><span>45%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:45%;background:var(--color-neutral-400)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Pro</span><span>30%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Enterprise</span><span>15%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:15%;background:var(--color-warning-500)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Business</span><span>10%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--color-success-500)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><span class="card-title">Plans Overview</span></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Plan Name</th>
+                <th>Price</th>
+                <th>Subscribers</th>
+                <th>Revenue</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Free</strong></td>
+                <td>&#8377;0</td>
+                <td>1,555</td>
+                <td>&#8377;0</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Pro Monthly</strong></td>
+                <td>&#8377;499</td>
+                <td>845</td>
+                <td>&#8377;4,21,655</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Pro Annual</strong></td>
+                <td>&#8377;4,999</td>
+                <td>192</td>
+                <td>&#8377;95,808</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Enterprise Monthly</strong></td>
+                <td>&#8377;1,999</td>
+                <td>456</td>
+                <td>&#8377;9,11,544</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Enterprise Annual</strong></td>
+                <td>&#8377;19,999</td>
+                <td>123</td>
+                <td>&#8377;24,59,877</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Business</strong></td>
+                <td>&#8377;999</td>
+                <td>285</td>
+                <td>&#8377;2,84,715</td>
+                <td><span class="badge badge-blue">Coming Soon</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><span class="card-title">Recent Subscriptions</span></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Plan</th>
+                <th>Billing</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Acme Technologies</strong></td>
+                <td>Enterprise Annual</td>
+                <td>Annual</td>
+                <td>&#8377;19,999</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>15 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Rahul Verma</strong></td>
+                <td>Pro Monthly</td>
+                <td>Monthly</td>
+                <td>&#8377;499</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>12 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>TechCorp Solutions</strong></td>
+                <td>Enterprise Annual</td>
+                <td>Annual</td>
+                <td>&#8377;19,999</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>10 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Sneha Nair</strong></td>
+                <td>Pro Monthly</td>
+                <td>Monthly</td>
+                <td>&#8377;499</td>
+                <td><span class="badge badge-yellow">Past Due</span></td>
+                <td>5 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Global Corp</strong></td>
+                <td>Enterprise Monthly</td>
+                <td>Monthly</td>
+                <td>&#8377;1,999</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>1 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-5 of 3,456</span>
+          <div class="pagination" style="margin-top:0">
+            <button class="page-btn" disabled><i class="ph ph-caret-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">...</button>
+            <button class="page-btn">692</button>
+            <button class="page-btn"><i class="ph ph-caret-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

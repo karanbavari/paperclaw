@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Logs | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">System Logs</h1>
+          <p class="page-subtitle">Monitor system events, errors, and audit trails</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm"><i class="ph ph-download"></i> Download Logs</button>
+          <button class="btn btn-ghost btn-sm"><i class="ph ph-arrows-clockwise"></i> Auto-refresh</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Events (24h)</div>
+          <div class="stat-value">12,847</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +8.2% vs yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Errors</div>
+          <div class="stat-value">23</div>
+          <div class="stat-change down"><i class="ph ph-trend-down"></i> -5 vs yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Warnings</div>
+          <div class="stat-value">89</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +12 vs yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Response Time</div>
+          <div class="stat-value">245ms</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +15ms above baseline</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input class="form-input" placeholder="Search logs..." style="min-width:240px">
+        <select class="form-select">
+          <option>All Severities</option>
+          <option style="color:var(--color-error-600)">Error</option>
+          <option style="color:var(--color-warning-600)">Warning</option>
+          <option style="color:var(--color-info-600)">Info</option>
+          <option>Debug</option>
+        </select>
+        <select class="form-select">
+          <option>All Services</option>
+          <option>API</option>
+          <option>Auth</option>
+          <option>Database</option>
+          <option>Email</option>
+          <option>Payment</option>
+        </select>
+        <select class="form-select">
+          <option>Last 24 Hours</option>
+          <option>Last 7 Days</option>
+          <option>Last 30 Days</option>
+          <option>Custom Range</option>
+        </select>
+        <span class="toolbar-spacer"></span>
+        <button class="btn btn-primary btn-sm"><i class="ph ph-funnel"></i> Apply Filters</button>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Severity</th>
+                <th>Service</th>
+                <th>Message</th>
+                <th>User</th>
+                <th>IP</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:32:18</td>
+                <td><span class="badge badge-red"><span class="badge-dot red"></span> Error</span></td>
+                <td>API</td>
+                <td style="font-family:var(--font-mono);font-size:13px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">POST /api/v2/payments - 500 Internal Server Error: timeout connecting to payment gateway</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">10.0.1.45</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:28:05</td>
+                <td><span class="badge badge-yellow"><span class="badge-dot yellow"></span> Warning</span></td>
+                <td>Auth</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Rate limit approaching for user_id=45892 (85/100 req/min)</td>
+                <td>rahul@acme.com</td>
+                <td style="font-family:var(--font-mono);font-size:12px">203.0.113.42</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:25:00</td>
+                <td><span class="badge badge-blue"><span class="badge-dot blue"></span> Info</span></td>
+                <td>Email</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Bulk email sent: campaign_id=42, recipients=2,450, success=2,448, failed=2</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">—</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:20:33</td>
+                <td><span class="badge badge-red"><span class="badge-dot red"></span> Error</span></td>
+                <td>Database</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Query timeout: SELECT * FROM subscriptions WHERE status='active' (took 12.4s, threshold 5s)</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">10.0.1.10</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:15:47</td>
+                <td><span class="badge badge-blue"><span class="badge-dot blue"></span> Info</span></td>
+                <td>Auth</td>
+                <td style="font-family:var(--font-mono);font-size:13px">User login successful: amit.verma@kesarcloud.in (admin) from IP 192.168.1.100</td>
+                <td>amit@kesarcloud.in</td>
+                <td style="font-family:var(--font-mono);font-size:12px">192.168.1.100</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:10:22</td>
+                <td><span class="badge badge-yellow"><span class="badge-dot yellow"></span> Warning</span></td>
+                <td>Payment</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Payment retry #2 for user sneha.nair@acme.com (invoice INV-2026-042) — card_declined</td>
+                <td>sneha@acme.com</td>
+                <td style="font-family:var(--font-mono);font-size:12px">—</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 14:05:00</td>
+                <td><span class="badge badge-blue"><span class="badge-dot blue"></span> Info</span></td>
+                <td>API</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Webhook received: stripe.charge.completed for charge ch_3R7a2bCdef</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">3.210.45.67</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 13:58:45</td>
+                <td><span class="badge badge-gray"><span class="badge-dot gray"></span> Debug</span></td>
+                <td>API</td>
+                <td style="font-family:var(--font-mono);font-size:13px">Cache miss: GET /api/v2/users/45892 — fetching from primary database</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">10.0.1.45</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 13:52:30</td>
+                <td><span class="badge badge-blue"><span class="badge-dot blue"></span> Info</span></td>
+                <td>API</td>
+                <td style="font-family:var(--font-mono);font-size:13px">User registered: rahul.verma@techcorp.com — plan: enterprise, source: referral</td>
+                <td>system</td>
+                <td style="font-family:var(--font-mono);font-size:12px">45.67.89.123</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono);font-size:12px;white-space:nowrap">15 May 13:45:12</td>
+                <td><span class="badge badge-red"><span class="badge-dot red"></span> Error</span></td>
+                <td>API</td>
+                <td style="font-family:var(--font-mono);font-size:13px">POST /api/v2/subscriptions - 422 Validation Error: invalid payment_method_id</td>
+                <td>test@example.com</td>
+                <td style="font-family:var(--font-mono);font-size:12px">198.51.100.23</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-10 of 12,847</span>
+          <div class="pagination" style="margin-top:0">
+            <button class="page-btn" disabled><i class="ph ph-caret-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">...</button>
+            <button class="page-btn">1,285</button>
+            <button class="page-btn"><i class="ph ph-caret-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" style="display:none" id="noResults">
+        <div class="empty-state-icon"><i class="ph ph-magnifying-glass" style="font-size:48px"></i></div>
+        <div class="empty-state-title">No matching logs found</div>
+        <div class="empty-state-desc">Try adjusting your search or filter criteria</div>
+        <button class="btn btn-secondary">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Management | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Content</h1>
+          <p class="page-subtitle">Manage blog posts, pages, and media</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm"><i class="ph ph-upload"></i> Upload Media</button>
+          <button class="btn btn-primary btn-sm"><i class="ph ph-file-plus"></i> New Post</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active">All Posts</button>
+        <button class="tab">Pages</button>
+        <button class="tab">Media</button>
+        <button class="tab">Categories</button>
+      </div>
+
+      <div class="toolbar">
+        <input class="form-input" placeholder="Search content..." style="min-width:240px">
+        <select class="form-select">
+          <option>All Status</option>
+          <option>Published</option>
+          <option>Draft</option>
+          <option>Archived</option>
+        </select>
+        <select class="form-select">
+          <option>All Categories</option>
+          <option>Product</option>
+          <option>Engineering</option>
+          <option>Company</option>
+          <option>Tutorial</option>
+        </select>
+        <span class="toolbar-spacer"></span>
+        <span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-8 of 156</span>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th><div class="checkbox"><input type="checkbox"></div></th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Getting Started with KesarCloud</strong></a></td>
+                <td><span class="badge badge-blue">Blog</span></td>
+                <td>Tutorial</td>
+                <td>Amit Verma</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>15 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Enterprise Features: Deep Dive</strong></a></td>
+                <td><span class="badge badge-blue">Blog</span></td>
+                <td>Product</td>
+                <td>Priya Sharma</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>12 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>API Reference v2 Documentation</strong></a></td>
+                <td><span class="badge badge-green">Doc</span></td>
+                <td>Engineering</td>
+                <td>Sneha Nair</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>10 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Q2 Product Roadmap</strong></a></td>
+                <td><span class="badge badge-blue">Blog</span></td>
+                <td>Company</td>
+                <td>Amit Verma</td>
+                <td><span class="badge badge-yellow">Draft</span></td>
+                <td>8 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Case Study: Acme Technologies</strong></a></td>
+                <td><span class="badge badge-blue">Blog</span></td>
+                <td>Product</td>
+                <td>Priya Sharma</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>5 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Privacy Policy Update</strong></a></td>
+                <td><span class="badge badge-gray">Page</span></td>
+                <td>Legal</td>
+                <td>Amit Verma</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>1 May 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>How to Migrate from Competitors</strong></a></td>
+                <td><span class="badge badge-blue">Blog</span></td>
+                <td>Tutorial</td>
+                <td>Sneha Nair</td>
+                <td><span class="badge badge-yellow">Draft</span></td>
+                <td>28 Apr 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><div class="checkbox"><input type="checkbox"></div></td>
+                <td><a href="#"><strong>Terms of Service</strong></a></td>
+                <td><span class="badge badge-gray">Page</span></td>
+                <td>Legal</td>
+                <td>Amit Verma</td>
+                <td><span class="badge badge-green">Published</span></td>
+                <td>25 Apr 2026</td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-8 of 156</span>
+          <div class="pagination" style="margin-top:0">
+            <button class="page-btn" disabled><i class="ph ph-caret-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">...</button>
+            <button class="page-btn">20</button>
+            <button class="page-btn"><i class="ph ph-caret-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>
