@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports | KesarCloud Admin</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+      <a href="overview.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-chart-line"></i></span>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-users"></i></span>
+        Users
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-magnifying-glass-chart"></i></span>
+        Analytics
+      </a>
+      <a href="content.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-file-text"></i></span>
+        Content
+      </a>
+      <a href="subscriptions.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-currency-circle-dollar"></i></span>
+        Subscriptions
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-gear"></i></span>
+        Settings
+      </a>
+      <a href="logs.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-scroll"></i></span>
+        Logs
+      </a>
+      <a href="reports.html" class="nav-item active">
+        <span class="nav-icon"><i class="ph ph-file-arrow-down"></i></span>
+        Reports
+      </a>
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <header class="top-header">
+      <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+      <div class="header-search">
+        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+        <input type="text" placeholder="Search admin..." />
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+        <button class="header-btn"><i class="ph ph-question"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Reports</h1>
+          <p class="page-subtitle">Generate, download, and schedule platform reports</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm"><i class="ph ph-plus-circle"></i> New Report</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Available Reports</div>
+          <div class="stat-value">24</div>
+          <div class="stat-change up">8 generated this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Scheduled Reports</div>
+          <div class="stat-value">6</div>
+          <div class="stat-change up">Next: Daily Summary in 3h</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Downloads (30d)</div>
+          <div class="stat-value">342</div>
+          <div class="stat-change up"><i class="ph ph-trend-up"></i> +18% vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Storage Used</div>
+          <div class="stat-value">2.4 GB</div>
+          <div class="stat-change up">of 10 GB allocated</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="cursor:pointer">
+          <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+            <div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--color-primary-600);font-size:24px">
+              <i class="ph ph-users-three"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px;margin-bottom:4px">User Growth Report</div>
+              <div style="font-size:13px;color:var(--color-neutral-500);margin-bottom:8px">Monthly user acquisition, activation, and retention metrics</div>
+              <div style="display:flex;gap:12px;font-size:12px;color:var(--color-neutral-400)">
+                <span><i class="ph ph-calendar-blank"></i> Updated daily</span>
+                <span><i class="ph ph-file-csv"></i> CSV, PDF, XLSX</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+              <button class="btn btn-sm btn-primary"><i class="ph ph-download"></i> Download</button>
+              <button class="btn btn-sm btn-ghost"><i class="ph ph-clock"></i> Schedule</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer">
+          <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+            <div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--color-success-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--color-success-600);font-size:24px">
+              <i class="ph ph-currency-circle-dollar"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px;margin-bottom:4px">Revenue Report</div>
+              <div style="font-size:13px;color:var(--color-neutral-500);margin-bottom:8px">MRR, ARPU, churn analysis, and revenue breakdown by plan</div>
+              <div style="display:flex;gap:12px;font-size:12px;color:var(--color-neutral-400)">
+                <span><i class="ph ph-calendar-blank"></i> Updated weekly</span>
+                <span><i class="ph ph-file-csv"></i> CSV, PDF, XLSX</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+              <button class="btn btn-sm btn-primary"><i class="ph ph-download"></i> Download</button>
+              <button class="btn btn-sm btn-ghost"><i class="ph ph-clock"></i> Schedule</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer">
+          <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+            <div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--color-warning-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--color-warning-600);font-size:24px">
+              <i class="ph ph-chart-bar"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px;margin-bottom:4px">Usage Analytics</div>
+              <div style="font-size:13px;color:var(--color-neutral-500);margin-bottom:8px">Feature adoption, active users, session duration, and page views</div>
+              <div style="display:flex;gap:12px;font-size:12px;color:var(--color-neutral-400)">
+                <span><i class="ph ph-calendar-blank"></i> Updated daily</span>
+                <span><i class="ph ph-file-csv"></i> CSV, PDF</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+              <button class="btn btn-sm btn-primary"><i class="ph ph-download"></i> Download</button>
+              <button class="btn btn-sm btn-ghost"><i class="ph ph-clock"></i> Schedule</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer">
+          <div class="card-body" style="display:flex;align-items:flex-start;gap:16px">
+            <div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--color-info-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--color-info-600);font-size:24px">
+              <i class="ph ph-shield-check"></i>
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px;margin-bottom:4px">Security Audit</div>
+              <div style="font-size:13px;color:var(--color-neutral-500);margin-bottom:8px">Login attempts, API access patterns, and security event log</div>
+              <div style="display:flex;gap:12px;font-size:12px;color:var(--color-neutral-400)">
+                <span><i class="ph ph-calendar-blank"></i> Generated on demand</span>
+                <span><i class="ph ph-file-csv"></i> PDF, JSON</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+              <button class="btn btn-sm btn-primary"><i class="ph ph-download"></i> Generate</button>
+              <button class="btn btn-sm btn-ghost"><i class="ph ph-clock"></i> Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><span class="card-title">Scheduled Reports</span></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Report Name</th>
+                <th>Frequency</th>
+                <th>Format</th>
+                <th>Recipients</th>
+                <th>Next Run</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Daily Summary</strong></td>
+                <td>Daily at 08:00 IST</td>
+                <td>PDF</td>
+                <td>admin@kesarcloud.in</td>
+                <td>16 May 2026, 08:00</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Weekly Revenue Report</strong></td>
+                <td>Every Monday 09:00 IST</td>
+                <td>XLSX</td>
+                <td>finance@kesarcloud.in, admin@kesarcloud.in</td>
+                <td>18 May 2026, 09:00</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>User Growth Monthly</strong></td>
+                <td>1st of month 10:00 IST</td>
+                <td>PDF, CSV</td>
+                <td>team@kesarcloud.in</td>
+                <td>1 Jun 2026, 10:00</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>System Health Report</strong></td>
+                <td>Every 6 hours</td>
+                <td>JSON</td>
+                <td>devops@kesarcloud.in</td>
+                <td>15 May 2026, 18:00</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Quarterly Business Review</strong></td>
+                <td>Quarterly (next: Jul)</td>
+                <td>PDF, XLSX</td>
+                <td>leadership@kesarcloud.in</td>
+                <td>1 Jul 2026, 09:00</td>
+                <td><span class="badge badge-blue">Scheduled</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><strong>Churn Analysis</strong></td>
+                <td>Weekly (Sun 12:00)</td>
+                <td>PDF</td>
+                <td>product@kesarcloud.in</td>
+                <td>17 May 2026, 12:00</td>
+                <td><span class="badge badge-yellow">Paused</span></td>
+                <td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

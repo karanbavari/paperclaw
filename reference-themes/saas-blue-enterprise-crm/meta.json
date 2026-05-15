@@ -10,7 +10,7 @@
     "primary": "#2563eb",
     "variant": "enterprise"
   },
-  "pages": 34,
+  "pages": 42,
   "cssVariables": "210+",
   "responsive": true,
   "breakpoints": ["1024px", "768px", "480px"],
@@ -64,6 +64,14 @@
     {"file": "security.html", "title": "Security", "group": "system"},
     {"file": "help.html", "title": "Help Center", "group": "system"},
     {"file": "notifications.html", "title": "Notifications", "group": "system"},
-    {"file": "404.html", "title": "404 Not Found", "group": "system"}
+    {"file": "404.html", "title": "404 Not Found", "group": "system"},
+    {"file": "admin/overview.html", "title": "Admin Overview", "group": "admin"},
+    {"file": "admin/users.html", "title": "Admin Users", "group": "admin"},
+    {"file": "admin/analytics.html", "title": "Admin Analytics", "group": "admin"},
+    {"file": "admin/settings.html", "title": "Admin Settings", "group": "admin"},
+    {"file": "admin/content.html", "title": "Admin Content", "group": "admin"},
+    {"file": "admin/subscriptions.html", "title": "Admin Subscriptions", "group": "admin"},
+    {"file": "admin/logs.html", "title": "Admin Logs", "group": "admin"},
+    {"file": "admin/reports.html", "title": "Admin Reports", "group": "admin"}
   ]
 }
