@@ -58,6 +58,7 @@ import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { buildAgentUpdatePatch, type AgentConfigOverlay } from "../lib/agent-config-patch";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
 import { filterAcpxModelsByAgent } from "../lib/acpx-model-filter";
+import { deriveCheapProfileState } from "../lib/agent-cheap-profile";
 
 /* ---- Create mode values ---- */
 
@@ -583,26 +584,17 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // Cheap profile read/write helpers. Edit-mode values come from
   // runtimeConfig.modelProfiles.cheap with overlay overrides on top; create-mode
   // values come straight from CreateConfigValues (cheapModel + cheapModelEnabled).
-  const cheapProfileFromAgent = useMemo(() => {
-    const profiles = (runtimeConfig.modelProfiles ?? {}) as Record<string, unknown>;
-    const cheap = (profiles.cheap ?? {}) as Record<string, unknown>;
-    const cheapAdapterConfig = (cheap.adapterConfig ?? {}) as Record<string, unknown>;
-    return {
-      enabled: cheap.enabled !== false,
-      model: typeof cheapAdapterConfig.model === "string" ? cheapAdapterConfig.model : "",
-    };
-  }, [runtimeConfig]);
   const cheapOverlay = !isCreate ? overlay.modelProfiles?.cheap : undefined;
+  const cheapProfileState = useMemo(
+    () => deriveCheapProfileState({ runtimeConfig, overlay: cheapOverlay }),
+    [runtimeConfig, cheapOverlay],
+  );
   const currentCheapEnabled = isCreate
     ? val!.cheapModelEnabled ?? false
-    : cheapOverlay?.enabled ?? cheapProfileFromAgent.enabled;
+    : cheapProfileState.enabled;
   const currentCheapModel = isCreate
     ? val!.cheapModel ?? ""
-    : (() => {
-        const overlayModel = (cheapOverlay?.adapterConfig as Record<string, unknown> | undefined)?.model;
-        if (typeof overlayModel === "string") return overlayModel;
-        return cheapProfileFromAgent.model;
-      })();
+    : cheapProfileState.model;
 
   function setCheapEnabled(next: boolean) {
     if (isCreate) {

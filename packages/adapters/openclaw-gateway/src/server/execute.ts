@@ -9,6 +9,7 @@ import {
   buildPaperClawEnv,
   parseObject,
   renderPaperClawLocalizationPrompt,
+  renderPaperClawMemoryPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
   renderPaperClawDirectChatPrompt,
@@ -1117,6 +1118,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const structuredMeetingPrompt = renderPaperClawMeetingPrompt(ctx.context.paperclawMeeting);
   const structuredDirectChatPrompt = renderPaperClawDirectChatPrompt(ctx.context.paperclawDirectChat);
   const structuredLocalizationPrompt = renderPaperClawLocalizationPrompt(ctx.context.paperclawLocalization);
+  const structuredMemoryPrompt = renderPaperClawMemoryPrompt(ctx.context.paperclawMemory);
   const structuredWakeJson = stringifyPaperClawWakePayload(ctx.context.paperclawWake);
   const wakeText = buildWakeText(
     wakePayload,
@@ -1124,12 +1126,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     structuredWakeJson
       ? joinWakePayloadSections(
           structuredLocalizationPrompt,
+          structuredMemoryPrompt,
           structuredWakePrompt,
           structuredMeetingPrompt,
           structuredDirectChatPrompt,
           structuredWakeJson,
         )
-      : joinWakePayloadSections(structuredLocalizationPrompt, structuredWakePrompt, structuredMeetingPrompt, structuredDirectChatPrompt),
+      : joinWakePayloadSections(structuredLocalizationPrompt, structuredMemoryPrompt, structuredWakePrompt, structuredMeetingPrompt, structuredDirectChatPrompt),
   );
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);

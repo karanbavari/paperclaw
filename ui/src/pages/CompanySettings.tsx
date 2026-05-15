@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  COMPANY_AGENT_RUN_LIMIT_OPTIONS,
   COMPANY_PROFILE_CURRENCY_OPTIONS,
   COMPANY_PROFILE_LANGUAGE_OPTIONS,
   COMPANY_PROFILE_TIMEZONE_OPTIONS,
@@ -32,6 +33,36 @@ type AgentSnippetInput = {
 const BYTES_PER_MIB = 1024 * 1024;
 const DEFAULT_COMPANY_ATTACHMENT_MAX_MIB = DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
 const MAX_COMPANY_ATTACHMENT_MAX_MIB = MAX_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
+const CUSTOM_CONTEXT_OPTION = "__custom__";
+const UNLIMITED_RUN_LIMIT_VALUE = "unlimited";
+
+const COMPANY_CATEGORY_OPTIONS = [
+  {
+    value: "technology",
+    label: "Technology",
+    subcategories: ["SaaS", "AI/ML", "Developer tools", "Cloud infrastructure", "Cybersecurity"],
+  },
+  {
+    value: "commerce",
+    label: "Commerce",
+    subcategories: ["E-commerce", "Retail", "Marketplace", "D2C brand", "Wholesale"],
+  },
+  {
+    value: "services",
+    label: "Professional services",
+    subcategories: ["Agency", "Consulting", "Legal", "Finance", "Operations"],
+  },
+  {
+    value: "education",
+    label: "Education",
+    subcategories: ["EdTech", "Coaching", "Training", "Research", "Content"],
+  },
+  {
+    value: "health",
+    label: "Health",
+    subcategories: ["Healthcare", "Wellness", "Fitness", "Diagnostics", "Care operations"],
+  },
+] as const;
 
 function getLocalTimezone() {
   try {
@@ -45,6 +76,10 @@ function normalizeTimezone(value: string | null | undefined) {
   if (value && COMPANY_PROFILE_TIMEZONE_OPTIONS.includes(value as any)) return value;
   const local = getLocalTimezone();
   return COMPANY_PROFILE_TIMEZONE_OPTIONS.includes(local as any) ? local : "UTC";
+}
+
+function findCategoryOptionByLabel(label: string) {
+  return COMPANY_CATEGORY_OPTIONS.find((option) => option.label === label) ?? null;
 }
 
 export function CompanySettings() {
@@ -66,6 +101,11 @@ export function CompanySettings() {
   const [defaultLanguage, setDefaultLanguage] = useState("en");
   const [defaultCurrency, setDefaultCurrency] = useState("USD");
   const [timezone, setTimezone] = useState(() => normalizeTimezone(null));
+  const [businessCategory, setBusinessCategory] = useState("");
+  const [businessSubcategory, setBusinessSubcategory] = useState("");
+  const [customCategoryMode, setCustomCategoryMode] = useState(false);
+  const [customSubcategoryMode, setCustomSubcategoryMode] = useState(false);
+  const [maxConcurrentAgentRuns, setMaxConcurrentAgentRuns] = useState("10");
 
   const profileQuery = useQuery({
     queryKey: selectedCompanyId
@@ -89,7 +129,26 @@ export function CompanySettings() {
     setDefaultLanguage(profileQuery.data?.defaultLanguage ?? "en");
     setDefaultCurrency(profileQuery.data?.defaultCurrency ?? "USD");
     setTimezone(normalizeTimezone(profileQuery.data?.timezone));
+    const nextCategory = profileQuery.data?.businessCategory ?? "";
+    const nextSubcategory = profileQuery.data?.businessSubcategory ?? "";
+    const knownCategory = findCategoryOptionByLabel(nextCategory);
+    setBusinessCategory(nextCategory);
+    setBusinessSubcategory(nextSubcategory);
+    setCustomCategoryMode(Boolean(nextCategory && !knownCategory));
+    setCustomSubcategoryMode(Boolean(
+      nextSubcategory &&
+      (!knownCategory || !(knownCategory.subcategories as readonly string[]).includes(nextSubcategory)),
+    ));
   }, [profileQuery.data]);
+
+  useEffect(() => {
+    if (!selectedCompany) return;
+    setMaxConcurrentAgentRuns(
+      selectedCompany.maxConcurrentAgentRuns === null
+        ? UNLIMITED_RUN_LIMIT_VALUE
+        : String(selectedCompany.maxConcurrentAgentRuns ?? 10),
+    );
+  }, [selectedCompany]);
 
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSnippet, setInviteSnippet] = useState<string | null>(null);
@@ -113,6 +172,26 @@ export function CompanySettings() {
     defaultLanguage !== (profileQuery.data?.defaultLanguage ?? "en") ||
     defaultCurrency !== (profileQuery.data?.defaultCurrency ?? "USD") ||
     timezone !== normalizeTimezone(profileQuery.data?.timezone);
+
+  const businessContextDirty =
+    businessCategory !== (profileQuery.data?.businessCategory ?? "") ||
+    businessSubcategory !== (profileQuery.data?.businessSubcategory ?? "");
+
+  const runLimitDirty =
+    !!selectedCompany &&
+    maxConcurrentAgentRuns !== (
+      selectedCompany.maxConcurrentAgentRuns === null
+        ? UNLIMITED_RUN_LIMIT_VALUE
+        : String(selectedCompany.maxConcurrentAgentRuns ?? 10)
+    );
+
+  const selectedCategoryOption = customCategoryMode ? null : findCategoryOptionByLabel(businessCategory);
+  const categorySelectValue = customCategoryMode ? CUSTOM_CONTEXT_OPTION : selectedCategoryOption?.value ?? "";
+  const subcategorySelectValue = customSubcategoryMode
+    ? CUSTOM_CONTEXT_OPTION
+    : (selectedCategoryOption?.subcategories as readonly string[] | undefined)?.includes(businessSubcategory)
+    ? businessSubcategory
+      : "";
 
   const generalMutation = useMutation({
     mutationFn: (data: {
@@ -156,6 +235,31 @@ export function CompanySettings() {
     onSuccess: (profile) => {
       queryClient.setQueryData(queryKeys.companyMemory.profile(selectedCompanyId!), profile);
       queryClient.invalidateQueries({ queryKey: queryKeys.companyMemory.profile(selectedCompanyId!) });
+    },
+  });
+
+  const businessContextMutation = useMutation({
+    mutationFn: () =>
+      companyMemoryApi.updateProfile(selectedCompanyId!, {
+        businessCategory: businessCategory.trim() || null,
+        businessSubcategory: businessSubcategory.trim() || null,
+      }),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(queryKeys.companyMemory.profile(selectedCompanyId!), profile);
+      queryClient.invalidateQueries({ queryKey: queryKeys.companyMemory.profile(selectedCompanyId!) });
+    },
+  });
+
+  const runLimitMutation = useMutation({
+    mutationFn: () =>
+      companiesApi.update(selectedCompanyId!, {
+        maxConcurrentAgentRuns:
+          maxConcurrentAgentRuns === UNLIMITED_RUN_LIMIT_VALUE
+            ? null
+            : Number(maxConcurrentAgentRuns),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
     },
   });
 
@@ -480,6 +584,129 @@ export function CompanySettings() {
         </div>
       )}
 
+      {/* Business context */}
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Business context
+        </div>
+        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+          <Field
+            label="Category"
+            hint="CEO and other agents use this to understand the company domain."
+          >
+            <div className="space-y-2">
+              <select
+                value={categorySelectValue}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  if (!next) {
+                    setCustomCategoryMode(false);
+                    setCustomSubcategoryMode(false);
+                    setBusinessCategory("");
+                    setBusinessSubcategory("");
+                    return;
+                  }
+                  if (next === CUSTOM_CONTEXT_OPTION) {
+                    setCustomCategoryMode(true);
+                    setCustomSubcategoryMode(false);
+                    setBusinessCategory("");
+                    setBusinessSubcategory("");
+                    return;
+                  }
+                  const option = COMPANY_CATEGORY_OPTIONS.find((item) => item.value === next);
+                  setCustomCategoryMode(false);
+                  setCustomSubcategoryMode(false);
+                  setBusinessCategory(option?.label ?? "");
+                  setBusinessSubcategory("");
+                }}
+                className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+              >
+                <option value="">Select category</option>
+                {COMPANY_CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_CONTEXT_OPTION}>Custom</option>
+              </select>
+              {categorySelectValue === CUSTOM_CONTEXT_OPTION && (
+                <input
+                  type="text"
+                  value={businessCategory}
+                  onChange={(event) => setBusinessCategory(event.target.value)}
+                  placeholder="Custom category"
+                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                />
+              )}
+            </div>
+          </Field>
+          <Field
+            label="Subcategory"
+            hint="Adds a more specific business focus for company-level agent context."
+          >
+            <div className="space-y-2">
+              {selectedCategoryOption ? (
+                <select
+                  value={subcategorySelectValue}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    if (!next) {
+                      setCustomSubcategoryMode(false);
+                      setBusinessSubcategory("");
+                      return;
+                    }
+                    if (next === CUSTOM_CONTEXT_OPTION) {
+                      setCustomSubcategoryMode(true);
+                      setBusinessSubcategory("");
+                      return;
+                    }
+                    setCustomSubcategoryMode(false);
+                    setBusinessSubcategory(next);
+                  }}
+                  className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+                >
+                  <option value="">Select subcategory</option>
+                  {selectedCategoryOption.subcategories.map((subcategory) => (
+                    <option key={subcategory} value={subcategory}>
+                      {subcategory}
+                    </option>
+                  ))}
+                  <option value={CUSTOM_CONTEXT_OPTION}>Custom</option>
+                </select>
+              ) : null}
+              {(!selectedCategoryOption || subcategorySelectValue === CUSTOM_CONTEXT_OPTION) && (
+                <input
+                  type="text"
+                  value={businessSubcategory}
+                  onChange={(event) => setBusinessSubcategory(event.target.value)}
+                  placeholder="Subcategory"
+                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                />
+              )}
+            </div>
+          </Field>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => businessContextMutation.mutate()}
+              disabled={!businessContextDirty || businessContextMutation.isPending || profileQuery.isLoading}
+            >
+              {businessContextMutation.isPending ? "Saving..." : "Save business context"}
+            </Button>
+            {businessContextMutation.isSuccess && (
+              <span className="text-xs text-muted-foreground">Saved</span>
+            )}
+            {businessContextMutation.isError && (
+              <span className="text-xs text-destructive">
+                {businessContextMutation.error instanceof Error
+                  ? businessContextMutation.error.message
+                  : "Failed to save business context"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Localization */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -550,6 +777,51 @@ export function CompanySettings() {
                 {localizationMutation.error instanceof Error
                   ? localizationMutation.error.message
                   : "Failed to save localization"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Resource limits */}
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Resource limits
+        </div>
+        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+          <Field
+            label="Concurrent agent sessions"
+            hint="Limits how many agent runs can execute at the same time for this company."
+          >
+            <select
+              value={maxConcurrentAgentRuns}
+              onChange={(event) => setMaxConcurrentAgentRuns(event.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none"
+            >
+              {COMPANY_AGENT_RUN_LIMIT_OPTIONS.map((value) => (
+                <option key={value} value={String(value)}>
+                  {value}
+                </option>
+              ))}
+              <option value={UNLIMITED_RUN_LIMIT_VALUE}>Unlimited</option>
+            </select>
+          </Field>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => runLimitMutation.mutate()}
+              disabled={!runLimitDirty || runLimitMutation.isPending}
+            >
+              {runLimitMutation.isPending ? "Saving..." : "Save limit"}
+            </Button>
+            {runLimitMutation.isSuccess && (
+              <span className="text-xs text-muted-foreground">Saved</span>
+            )}
+            {runLimitMutation.isError && (
+              <span className="text-xs text-destructive">
+                {runLimitMutation.error instanceof Error
+                  ? runLimitMutation.error.message
+                  : "Failed to save limit"}
               </span>
             )}
           </div>

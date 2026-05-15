@@ -43,6 +43,13 @@ export function companyMemoryRoutes(db: Db) {
     };
   }
 
+  async function syncMemoryProjectionAfterChange(companyId: string, item?: { status: string; scopeType: string; scopeId: string | null } | null) {
+    if (!item) return { updated: 0, skipped: 0, failed: 0 };
+    if (item.scopeType === "company") return memory.syncManagedAgentMemoryFiles(companyId);
+    if (item.scopeType === "agent" && item.scopeId) return memory.syncManagedAgentMemoryFiles(companyId, item.scopeId);
+    return { updated: 0, skipped: 0, failed: 0 };
+  }
+
   router.get("/companies/:companyId/profile", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
@@ -57,6 +64,7 @@ export function companyMemoryRoutes(db: Db) {
       await assertCanManageMemory(req, companyId);
       const profile = await memory.upsertProfile(companyId, req.body);
       const localizationSync = await localization.syncManagedAgentInstructions(companyId, profile);
+      const memorySync = await memory.syncManagedAgentMemoryFiles(companyId);
       const actor = getActorInfo(req);
       await logActivity(db, {
         companyId,
@@ -67,7 +75,7 @@ export function companyMemoryRoutes(db: Db) {
         action: "company.profile_updated",
         entityType: "company",
         entityId: companyId,
-        details: { ...req.body, localizationSync },
+        details: { ...req.body, localizationSync, memorySync },
       });
       res.json(profile);
     },
@@ -88,6 +96,7 @@ export function companyMemoryRoutes(db: Db) {
       assertCompanyAccess(req, companyId);
       const canApprove = await canManageMemory(req, companyId);
       const item = await memory.createMemory(companyId, req.body, actorForWrite(req, canApprove));
+      const memorySync = await syncMemoryProjectionAfterChange(companyId, item);
       const actor = getActorInfo(req);
       await logActivity(db, {
         companyId,
@@ -98,7 +107,7 @@ export function companyMemoryRoutes(db: Db) {
         action: "company.memory_created",
         entityType: "company_memory",
         entityId: item.id,
-        details: { memoryType: item.memoryType, status: item.status, sourceType: item.sourceType },
+        details: { memoryType: item.memoryType, status: item.status, sourceType: item.sourceType, memorySync },
       });
       res.status(201).json(item);
     },
@@ -116,6 +125,7 @@ export function companyMemoryRoutes(db: Db) {
         res.status(404).json({ error: "Memory item not found" });
         return;
       }
+      await syncMemoryProjectionAfterChange(companyId, item);
       res.json(item);
     },
   );
@@ -129,6 +139,7 @@ export function companyMemoryRoutes(db: Db) {
       res.status(404).json({ error: "Memory item not found" });
       return;
     }
+    await syncMemoryProjectionAfterChange(companyId, item);
     res.json(item);
   });
 
@@ -141,6 +152,7 @@ export function companyMemoryRoutes(db: Db) {
       res.status(404).json({ error: "Memory item not found" });
       return;
     }
+    await memory.syncManagedAgentMemoryFiles(companyId);
     res.json(item);
   });
 

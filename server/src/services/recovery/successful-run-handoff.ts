@@ -3,6 +3,7 @@ import type { Db } from "@kesarcloud/db";
 import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@kesarcloud/db";
 import type { IssueCommentMetadata, IssueCommentPresentation, RunLivenessState } from "@kesarcloud/shared";
 import { withRecoveryModelProfileHint } from "./model-profile-hint.js";
+import { isStrandedIssueRecoveryOriginKind } from "./origins.js";
 
 export const FINISH_SUCCESSFUL_RUN_HANDOFF_REASON = "finish_successful_run_handoff";
 export const SUCCESSFUL_RUN_MISSING_STATE_REASON = "successful_run_missing_state";
@@ -45,7 +46,7 @@ export function isIdempotentFinishSuccessfulRunHandoffWakeStatus(status: string)
 type HeartbeatRunRow = typeof heartbeatRuns.$inferSelect;
 type IssueRow = Pick<
   typeof issues.$inferSelect,
-  "id" | "companyId" | "identifier" | "title" | "status" | "assigneeAgentId" | "assigneeUserId" | "executionState"
+  "id" | "companyId" | "identifier" | "title" | "status" | "assigneeAgentId" | "assigneeUserId" | "executionState" | "originKind"
 >;
 type AgentRow = Pick<typeof agents.$inferSelect, "id" | "companyId" | "status">;
 type NoticeIssue = Pick<typeof issues.$inferSelect, "id" | "identifier" | "title" | "status">;
@@ -344,6 +345,9 @@ export function decideSuccessfulRunHandoff(input: {
     return { kind: "skip", reason: "issue is no longer assigned to the source run agent" };
   }
   if (issue.assigneeUserId) return { kind: "skip", reason: "issue is human-owned" };
+  if (isStrandedIssueRecoveryOriginKind(issue.originKind)) {
+    return { kind: "skip", reason: "stranded recovery issue owns its own recovery path" };
+  }
   if (issue.status !== "in_progress") return { kind: "skip", reason: `issue status ${issue.status} is a valid disposition` };
   if (issue.executionState) return { kind: "skip", reason: "issue has execution policy state" };
   if (agent.status === "paused" || agent.status === "terminated" || agent.status === "pending_approval") {

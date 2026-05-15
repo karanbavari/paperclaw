@@ -38,6 +38,7 @@ import {
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
   renderPaperClawLocalizationPrompt,
+  renderPaperClawMemoryPrompt,
   renderPaperClawWakePrompt,
   renderPaperClawMeetingPrompt,
   renderPaperClawDirectChatPrompt,
@@ -569,11 +570,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
   const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclawDirectChat);
   const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
+  const memoryPrompt = renderPaperClawMemoryPrompt(context.paperclawMemory);
   const shouldUseResumeDeltaPrompt = canResumeSession && wakePrompt.length > 0;
   const renderedHeartbeatPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclawSessionHandoffMarkdown, "").trim();
   const userPrompt = joinPromptSections([
     localizationPrompt,
+    memoryPrompt,
     renderedBootstrapPrompt,
     wakePrompt,
     meetingPrompt,
@@ -586,6 +589,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     promptChars: userPrompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     localizationPromptChars: localizationPrompt.length,
+    memoryPromptChars: memoryPrompt.length,
     wakePromptChars: wakePrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
     heartbeatPromptChars: renderedHeartbeatPrompt.length,

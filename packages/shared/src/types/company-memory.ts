@@ -173,6 +173,7 @@ export interface CompanyProfile {
   companyId: string;
   registeredSince: string | null;
   businessCategory: string | null;
+  businessSubcategory: string | null;
   defaultLanguage: CompanyProfileLanguageCode | null;
   defaultCurrency: CompanyProfileCurrencyCode | null;
   website: string | null;

@@ -5,6 +5,7 @@ export const companyProfiles = pgTable("company_profiles", {
   companyId: uuid("company_id").primaryKey().references(() => companies.id, { onDelete: "cascade" }),
   registeredSince: date("registered_since"),
   businessCategory: text("business_category"),
+  businessSubcategory: text("business_subcategory"),
   defaultLanguage: text("default_language"),
   defaultCurrency: text("default_currency"),
   website: text("website"),

@@ -17,6 +17,7 @@ function memoryQueryString(query: Partial<CompanyMemoryListQuery>) {
   if (query.memoryType) params.set("memoryType", query.memoryType);
   if (query.status) params.set("status", query.status);
   if (query.scopeType) params.set("scopeType", query.scopeType);
+  if (query.scopeId) params.set("scopeId", query.scopeId);
   if (query.limit) params.set("limit", String(query.limit));
   if (query.offset) params.set("offset", String(query.offset));
   const value = params.toString();

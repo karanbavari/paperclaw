@@ -624,6 +624,20 @@
       "when": 1778135000000,
       "tag": "0088_tool_permission_system",
       "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1778136000000,
+      "tag": "0089_disable_agent_cheap_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1778137000000,
+      "tag": "0090_company_context_and_run_limit",
+      "breakpoints": true
     }
   ]
 }

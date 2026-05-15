@@ -45,6 +45,7 @@ export function companyService(db: Db) {
     issueCounter: companies.issueCounter,
     budgetMonthlyCents: companies.budgetMonthlyCents,
     spentMonthlyCents: companies.spentMonthlyCents,
+    maxConcurrentAgentRuns: companies.maxConcurrentAgentRuns,
     attachmentMaxBytes: companies.attachmentMaxBytes,
     requireBoardApprovalForNewAgents: companies.requireBoardApprovalForNewAgents,
     requireBoardApprovalForCeoSkillInstalls: companies.requireBoardApprovalForCeoSkillInstalls,

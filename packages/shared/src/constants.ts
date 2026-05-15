@@ -73,6 +73,8 @@ export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
 };
 
 export const AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20;
+export const COMPANY_AGENT_RUN_LIMIT_OPTIONS = [5, 10, 20, 30] as const;
+export const COMPANY_DEFAULT_MAX_CONCURRENT_AGENT_RUNS = 10;
 export const WORKSPACE_BRANCH_ROUTINE_VARIABLE = "workspaceBranch";
 
 export const MODEL_PROFILE_KEYS = ["cheap"] as const;

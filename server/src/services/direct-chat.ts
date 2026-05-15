@@ -82,6 +82,83 @@ function firstText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
+function parseJsonObject(value: string): Record<string, unknown> | null {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function readNestedText(record: Record<string, unknown>, keys: readonly string[]): string | null {
+  let current: unknown = record;
+  for (const key of keys) {
+    if (!current || typeof current !== "object" || Array.isArray(current)) return null;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return firstText(current);
+}
+
+function isStructuredRunEvent(record: Record<string, unknown>) {
+  return (
+    typeof record.type === "string" &&
+    (
+      "sessionID" in record ||
+      "part" in record ||
+      "messageID" in record ||
+      "callID" in record ||
+      record.type === "step_start" ||
+      record.type === "step_finish" ||
+      record.type === "tool_use" ||
+      record.type === "tool_result" ||
+      record.type === "text" ||
+      record.type === "error"
+    )
+  );
+}
+
+function readStructuredRunEventText(record: Record<string, unknown>) {
+  const type = firstText(record.type);
+  if (type === "text") {
+    return readNestedText(record, ["part", "text"]) ?? firstText(record.text);
+  }
+  if (type === "message" || type === "assistant_message") {
+    return firstText(record.message) ?? firstText(record.content) ?? readNestedText(record, ["part", "text"]);
+  }
+  return null;
+}
+
+function sanitizeRunOutputText(value: unknown): string | null {
+  const text = firstText(value);
+  if (!text) return null;
+
+  const lines = text.split(/\r?\n/);
+  const extracted: string[] = [];
+  let sawStructuredRunEvent = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const event = parseJsonObject(line);
+    if (!event || !isStructuredRunEvent(event)) continue;
+
+    sawStructuredRunEvent = true;
+    const eventText = readStructuredRunEventText(event);
+    if (eventText) extracted.push(eventText);
+  }
+
+  if (!sawStructuredRunEvent) return text;
+  const body = extracted.join("\n\n").trim();
+  return body.length > 0 ? body : null;
+}
+
+function sanitizeAgentMessageBody(value: string) {
+  return sanitizeRunOutputText(value) ?? "";
+}
+
 function readRunResponseBody(input: {
   body?: string | null;
   resultJson?: Record<string, unknown> | null;
@@ -93,7 +170,7 @@ function readRunResponseBody(input: {
     firstText(input.resultJson?.summary) ??
     firstText(input.resultJson?.result) ??
     firstText(input.resultJson?.message) ??
-    firstText(input.stdoutExcerpt) ??
+    sanitizeRunOutputText(input.stdoutExcerpt) ??
     firstText(input.error) ??
     ""
   );
@@ -243,7 +320,7 @@ export function directChatService(db: Db) {
         authorUserId: message.authorUserId,
         authorAgentId: message.authorAgentId,
         authorAgent: toAgent(agent),
-        body: message.body,
+        body: message.authorType === "agent" ? sanitizeAgentMessageBody(message.body) : message.body,
         status: effectiveMessageStatus({ messageStatus: message.status, runStatus }),
         error: message.error,
         runId: message.runId,

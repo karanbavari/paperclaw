@@ -32,6 +32,7 @@ export const companiesApi = {
         | "description"
         | "status"
         | "budgetMonthlyCents"
+        | "maxConcurrentAgentRuns"
         | "attachmentMaxBytes"
         | "requireBoardApprovalForNewAgents"
         | "requireBoardApprovalForCeoSkillInstalls"

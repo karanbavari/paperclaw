@@ -11,6 +11,7 @@ import {
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
   renderPaperClawLocalizationInstructionBlock,
   renderPaperClawLocalizationPrompt,
+  renderPaperClawMemoryPrompt,
   materializePaperClawSkillCopy,
   renderPaperClawWakePrompt,
   runningProcesses,
@@ -103,6 +104,40 @@ describe("PaperClaw localization instructions", () => {
     expect(withSecondBlock).toContain("Default language: Hindi (hi).");
     expect(withSecondBlock).not.toContain("Default language: English (en).");
     expect(withSecondBlock.match(/paperclaw-localization:start/g)).toHaveLength(1);
+  });
+});
+
+describe("PaperClaw memory prompt", () => {
+  it("renders profile and recalled memory items", () => {
+    const prompt = renderPaperClawMemoryPrompt({
+      profile: {
+        businessCategory: "Technology",
+        businessSubcategory: "Developer tools",
+        businessSummary: "Builds AI agent company control-plane software.",
+      },
+      items: [
+        {
+          title: "Use scoped memory",
+          body: "Prefer agent, project, or issue scope for operational lessons.",
+          memoryType: "long_term",
+          kind: "procedure",
+          scopeType: "agent",
+          sourceType: "agent_proposal",
+          recallScore: 145,
+        },
+      ],
+    });
+
+    expect(prompt).toContain("## PaperClaw Memory");
+    expect(prompt).toContain("Business category: Technology");
+    expect(prompt).toContain("Business subcategory: Developer tools");
+    expect(prompt).toContain("Use scoped memory");
+    expect(prompt).toContain("POST /api/companies/{companyId}/memory");
+  });
+
+  it("omits empty memory payloads", () => {
+    expect(renderPaperClawMemoryPrompt(null)).toBe("");
+    expect(renderPaperClawMemoryPrompt({})).toBe("");
   });
 });
 
@@ -463,6 +498,7 @@ describe("renderPaperClawWakePrompt", () => {
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Start actionable work in this heartbeat");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("do not stop at a plan");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Prefer the smallest verification that proves the change");
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("choose one explicit PaperClaw disposition");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Use child issues");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("instead of polling agents, sessions, or processes");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Create child issues directly when you know what needs to be done");
@@ -496,7 +532,8 @@ describe("renderPaperClawWakePrompt", () => {
     expect(prompt).toContain("## PaperClaw Wake Payload");
     expect(prompt).toContain("Execution contract: take concrete action in this heartbeat");
     expect(prompt).toContain("use child issues instead of polling");
-    expect(prompt).toContain("mark blocked work with the unblock owner/action");
+    expect(prompt).toContain("choose one explicit issue disposition");
+    expect(prompt).toContain("explicit continuation with resume intent");
   });
 
   it("renders dependency-blocked interaction guidance", () => {

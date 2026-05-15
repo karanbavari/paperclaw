@@ -94,6 +94,7 @@ export const DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE = [
   "Execution contract:",
   "- Start actionable work in this heartbeat; do not stop at a plan unless the issue asks for planning.",
   "- Leave durable progress in comments, documents, or work products with a clear next action.",
+  "- Before exiting issue-scoped work, choose one explicit PaperClaw disposition: mark done/cancelled, move to in_review with a real reviewer or pending interaction/approval, mark blocked with blockers or a named unblock owner/action, create/link delegated follow-up work and block the parent if needed, or record an explicit continuation path with resume intent and a concrete next action.",
   "- Prefer the smallest verification that proves the change; do not default to full workspace typecheck/build/test on every heartbeat unless the task scope warrants it.",
   "- Use child issues for parallel or long delegated work instead of polling agents, sessions, or processes.",
   "- If woken by a human comment on a dependency-blocked issue, respond or triage the comment without treating the blocked deliverable work as unblocked.",
@@ -101,6 +102,8 @@ export const DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE = [
   "- To ask for that input, create an interaction on the current issue with POST /api/issues/{issueId}/interactions using kind suggest_tasks, ask_user_questions, or request_confirmation. Use continuationPolicy wake_assignee when you need to resume after a response; for request_confirmation this resumes only after acceptance.",
   "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` with the POST /api/issues/{issueId}/comments or PATCH /api/issues/{issueId} comment payload. Generic agent comments on closed issues are inert by default.",
   "- For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}. Wait for acceptance before creating implementation subtasks, and create a fresh confirmation after superseding board/user comments if approval is still needed.",
+  "- Use PaperClaw memory when it is provided in the run context. Treat it as helpful context with provenance, not as a replacement for current issue instructions.",
+  "- Save durable discoveries as PaperClaw memory with POST /api/companies/{companyId}/memory when they will help future work; never save secrets, credentials, raw private logs, or unverified guesses.",
   "- If blocked, mark the issue blocked and name the unblock owner and action.",
   "- Respect budget, pause/cancel, approval gates, and company boundaries.",
 ].join("\n");
@@ -332,6 +335,66 @@ export function renderPaperClawLocalizationPrompt(value: unknown): string {
   const input = normalizeLocalizationInput(value);
   if (!input.defaultLanguage && !input.defaultLanguageLabel && !input.defaultCurrency && !input.timezone) return "";
   return renderPaperClawLocalizationInstructionBlock(input);
+}
+
+function compactPromptText(value: unknown, maxChars: number) {
+  const text = asString(value, "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
+}
+
+function renderMemoryFact(label: string, value: unknown) {
+  const text = compactPromptText(value, 500);
+  return text ? `- ${label}: ${text}` : "";
+}
+
+export function renderPaperClawMemoryPrompt(value: unknown): string {
+  const payload = parseObject(value);
+  if (Object.keys(payload).length === 0) return "";
+
+  const profile = parseObject(payload.profile);
+  const profileLines = [
+    renderMemoryFact("Business category", profile.businessCategory),
+    renderMemoryFact("Business subcategory", profile.businessSubcategory),
+    renderMemoryFact("Business summary", profile.businessSummary),
+    renderMemoryFact("Target customers", profile.targetCustomers),
+    renderMemoryFact("Brand voice", profile.brandVoice),
+    renderMemoryFact("Operating notes", profile.operatingNotes),
+  ].filter(Boolean);
+
+  const items = Array.isArray(payload.items)
+    ? payload.items
+      .map((entry) => parseObject(entry))
+      .filter((entry) => Object.keys(entry).length > 0)
+      .slice(0, 8)
+    : [];
+  const itemLines = items.map((item) => {
+    const title = compactPromptText(item.title, 140) || "Untitled memory";
+    const body = compactPromptText(item.body, 700);
+    const scopeType = compactPromptText(item.scopeType, 40);
+    const kind = compactPromptText(item.kind, 40);
+    const sourceType = compactPromptText(item.sourceType, 40);
+    const recallScore = asNumber(item.recallScore, Number.NaN);
+    const meta = [
+      scopeType ? `scope: ${scopeType}` : "",
+      kind ? `kind: ${kind}` : "",
+      sourceType ? `source: ${sourceType}` : "",
+      Number.isFinite(recallScore) ? `score: ${recallScore}` : "",
+    ].filter(Boolean).join("; ");
+    return `- ${title}${meta ? ` (${meta})` : ""}${body ? `\n  ${body}` : ""}`;
+  });
+
+  if (profileLines.length === 0 && itemLines.length === 0) return "";
+
+  return [
+    "## PaperClaw Memory",
+    "",
+    "Use this memory as relevant background for the current task. Prefer current Board instructions, issue state, and fresh evidence when they conflict with older memory.",
+    "If you learn a durable fact, decision, preference, procedure, or project lesson that will help future work, create or propose a PaperClaw memory item with POST /api/companies/{companyId}/memory using clear scope and provenance.",
+    "Never store secrets, credentials, API keys, private tokens, raw sensitive logs, or unverified guesses in memory.",
+    profileLines.length > 0 ? ["", "### Company Profile", ...profileLines].join("\n") : "",
+    itemLines.length > 0 ? ["", "### Recalled Items", ...itemLines].join("\n") : "",
+  ].filter(Boolean).join("\n");
 }
 
 export function applyPaperClawLocalizationInstructionBlock(content: string, block: string): string {
@@ -684,7 +747,7 @@ export function renderPaperClawWakePrompt(
         "Focus on the new wake delta below and continue the current task without restating the full heartbeat boilerplate.",
         "Fetch the API thread only when `fallbackFetchNeeded` is true or you need broader history than this batch.",
         "",
-        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and mark blocked work with the unblock owner/action.",
+        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
         "",
         `- reason: ${normalized.reason ?? "unknown"}`,
         `- issue: ${normalized.issue?.identifier ?? normalized.issue?.id ?? "unknown"}${normalized.issue?.title ? ` ${normalized.issue.title}` : ""}`,
@@ -701,7 +764,7 @@ export function renderPaperClawWakePrompt(
         "Use this inline wake data first before refetching the issue thread.",
         "Only fetch the API thread when `fallbackFetchNeeded` is true or you need broader history than this batch.",
         "",
-        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and mark blocked work with the unblock owner/action.",
+        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
         "",
         `- reason: ${normalized.reason ?? "unknown"}`,
         `- issue: ${normalized.issue?.identifier ?? normalized.issue?.id ?? "unknown"}${normalized.issue?.title ? ` ${normalized.issue.title}` : ""}`,

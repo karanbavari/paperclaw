@@ -79,6 +79,37 @@ describeEmbeddedPostgres("directChatService", () => {
     return id;
   }
 
+  const noisyRunTranscript = [
+    "21312}}",
+    JSON.stringify({
+      type: "step_start",
+      timestamp: 1778778060297,
+      sessionID: "ses_direct_chat",
+      part: { type: "step-start" },
+    }),
+    JSON.stringify({
+      type: "tool_use",
+      timestamp: 1778778065880,
+      sessionID: "ses_direct_chat",
+      part: {
+        type: "tool",
+        tool: "bash",
+        callID: "call_direct_chat",
+        state: {
+          status: "completed",
+          input: { command: "curl -sS http://127.0.0.1:3100/api/companies/test/agent-hires" },
+          output: "created\n",
+        },
+      },
+    }),
+    JSON.stringify({
+      type: "step_finish",
+      timestamp: 1778778079227,
+      sessionID: "ses_direct_chat",
+      part: { type: "step-finish", tokens: { total: 100 } },
+    }),
+  ].join("\n");
+
   it("resolves the root CEO before other CEO-role agents", async () => {
     const companyId = await createCompany();
     const parentId = await createAgent(companyId, {
@@ -222,10 +253,125 @@ describeEmbeddedPostgres("directChatService", () => {
       agentId: ceoId,
       status: "succeeded",
       body: "We are on track.",
+      stdoutExcerpt: noisyRunTranscript,
     });
 
     const updated = await svc.get(companyId);
     expect(updated.messages[1]?.status).toBe("completed");
     expect(updated.messages[1]?.body).toBe("We are on track.");
+  });
+
+  it("does not expose raw run transcript output as a Direct Chat reply", async () => {
+    const companyId = await createCompany();
+    const ceoId = await createAgent(companyId);
+    const wakeup = vi.fn(async () => {
+      const [run] = await db.insert(heartbeatRuns).values({
+        companyId,
+        agentId: ceoId,
+        invocationSource: "on_demand",
+        status: "queued",
+      }).returning();
+      return { id: run.id };
+    });
+
+    const detail = await svc.addBoardMessage({
+      companyId,
+      body: "Hire the team.",
+      actor: { type: "user", id: "local-board" },
+      wakeup,
+    });
+    const response = detail.messages[1]!;
+
+    await svc.completeAgentMessageFromRun({
+      companyId,
+      threadId: detail.id,
+      messageId: response.id,
+      runId: response.runId!,
+      agentId: ceoId,
+      status: "succeeded",
+      stdoutExcerpt: noisyRunTranscript,
+    });
+
+    const updated = await svc.get(companyId);
+    expect(updated.messages[1]?.status).toBe("completed");
+    expect(updated.messages[1]?.body).toBe("");
+    expect(updated.messages[1]?.body).not.toContain("tool_use");
+    expect(updated.messages[1]?.body).not.toContain("sessionID");
+    expect(updated.messages[1]?.body).not.toContain("curl -sS");
+  });
+
+  it("extracts text events from structured stdout when no adapter summary is available", async () => {
+    const companyId = await createCompany();
+    const ceoId = await createAgent(companyId);
+    const wakeup = vi.fn(async () => {
+      const [run] = await db.insert(heartbeatRuns).values({
+        companyId,
+        agentId: ceoId,
+        invocationSource: "on_demand",
+        status: "queued",
+      }).returning();
+      return { id: run.id };
+    });
+
+    const detail = await svc.addBoardMessage({
+      companyId,
+      body: "What changed?",
+      actor: { type: "user", id: "local-board" },
+      wakeup,
+    });
+    const response = detail.messages[1]!;
+
+    await svc.completeAgentMessageFromRun({
+      companyId,
+      threadId: detail.id,
+      messageId: response.id,
+      runId: response.runId!,
+      agentId: ceoId,
+      status: "succeeded",
+      stdoutExcerpt: [
+        JSON.stringify({ type: "step_start", sessionID: "ses_direct_chat", part: { type: "step-start" } }),
+        JSON.stringify({ type: "text", sessionID: "ses_direct_chat", part: { text: "The hiring issue is done." } }),
+        JSON.stringify({ type: "tool_use", sessionID: "ses_direct_chat", part: { tool: "bash" } }),
+      ].join("\n"),
+    });
+
+    const updated = await svc.get(companyId);
+    expect(updated.messages[1]?.body).toBe("The hiring issue is done.");
+  });
+
+  it("hides previously stored raw agent transcript output and keeps it out of future prompts", async () => {
+    const companyId = await createCompany();
+    const ceoId = await createAgent(companyId);
+
+    const initial = await svc.addAgentMessage({
+      companyId,
+      agentId: ceoId,
+      body: noisyRunTranscript,
+    });
+    expect(initial.messages[0]?.body).toBe("");
+
+    const wakeup = vi.fn(async () => {
+      const [run] = await db.insert(heartbeatRuns).values({
+        companyId,
+        agentId: ceoId,
+        invocationSource: "on_demand",
+        status: "queued",
+      }).returning();
+      return { id: run.id };
+    });
+
+    await svc.addBoardMessage({
+      companyId,
+      body: "Continue.",
+      actor: { type: "user", id: "local-board" },
+      wakeup,
+    });
+
+    const directChatContext = wakeup.mock.calls[0]?.[1].contextSnapshot.paperclawDirectChat as
+      | { transcript?: string }
+      | undefined;
+    expect(directChatContext?.transcript).not.toContain("tool_use");
+    expect(directChatContext?.transcript).not.toContain("sessionID");
+    expect(directChatContext?.transcript).not.toContain("curl -sS");
   });
 });

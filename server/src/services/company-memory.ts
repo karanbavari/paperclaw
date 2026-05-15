@@ -14,6 +14,9 @@ import type {
   UpdateCompanyMemoryItem,
   UpdateCompanyProfile,
 } from "@kesarcloud/shared";
+import { logger } from "../middleware/logger.js";
+import { agentService } from "./agents.js";
+import { agentInstructionsService } from "./agent-instructions.js";
 
 function iso(value: Date | string | null | undefined): string | null {
   if (!value) return null;
@@ -36,6 +39,7 @@ function toProfile(row: typeof companyProfiles.$inferSelect | null): CompanyProf
     companyId: row.companyId,
     registeredSince: dateString(row.registeredSince),
     businessCategory: row.businessCategory,
+    businessSubcategory: row.businessSubcategory,
     defaultLanguage: row.defaultLanguage as CompanyProfile["defaultLanguage"],
     defaultCurrency: row.defaultCurrency as CompanyProfile["defaultCurrency"],
     website: row.website,
@@ -100,17 +104,120 @@ function textSearchCondition(query: string): SQL<boolean> | null {
 function activeMemoryCondition(now = new Date()) {
   return and(
     inArray(companyMemoryItems.status, ["approved", "active"]),
-    or(isNull(companyMemoryItems.expiresAt), sql`${companyMemoryItems.expiresAt} > ${now}`),
+    or(isNull(companyMemoryItems.expiresAt), sql`${companyMemoryItems.expiresAt} > ${now.toISOString()}`),
   );
 }
 
-function defaultStatusFor(input: CreateCompanyMemoryItem, canApprove: boolean): CompanyMemoryStatus {
+export function defaultStatusFor(input: CreateCompanyMemoryItem, canApprove: boolean): CompanyMemoryStatus {
   if (input.status && canApprove) return input.status as CompanyMemoryStatus;
   if (input.memoryType === "short_term") return "active";
+  if (!canApprove) {
+    const autoScope = input.scopeType === "agent" || input.scopeType === "project" || input.scopeType === "issue";
+    const autoKind = input.kind === "fact" || input.kind === "note" || input.kind === "preference" || input.kind === "procedure";
+    if (autoScope && autoKind && input.memoryType !== "profile") return "active";
+  }
   return canApprove ? "approved" : "proposed";
 }
 
+const MEMORY_FILE_NAME = "MEMORY.md";
+const MEMORY_FILE_MAX_ITEMS = 20;
+const MEMORY_FILE_TEXT_MAX_CHARS = 600;
+
+function compactMemoryFileText(value: string | null | undefined, maxChars = MEMORY_FILE_TEXT_MAX_CHARS) {
+  const text = (value ?? "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
+}
+
+function renderMemoryFile(profile: CompanyProfile | null, items: CompanyMemoryItem[]) {
+  const profileLines = profile
+    ? [
+        profile.businessCategory ? `- Business category: ${profile.businessCategory}` : "",
+        profile.businessSubcategory ? `- Business subcategory: ${profile.businessSubcategory}` : "",
+        profile.businessSummary ? `- Business summary: ${compactMemoryFileText(profile.businessSummary)}` : "",
+        profile.targetCustomers ? `- Target customers: ${compactMemoryFileText(profile.targetCustomers)}` : "",
+        profile.brandVoice ? `- Brand voice: ${compactMemoryFileText(profile.brandVoice)}` : "",
+        profile.operatingNotes ? `- Operating notes: ${compactMemoryFileText(profile.operatingNotes)}` : "",
+      ].filter(Boolean)
+    : [];
+  const memoryLines = items.slice(0, MEMORY_FILE_MAX_ITEMS).map((item) => {
+    const scope = item.scopeType === "agent" ? "agent" : "company";
+    const body = compactMemoryFileText(item.summary ?? item.body);
+    const tags = item.tags.length > 0 ? `; tags: ${item.tags.join(", ")}` : "";
+    return `- ${item.title} (${scope}; ${item.memoryType}; ${item.kind}; importance ${item.importance}${tags})${body ? `\n  ${body}` : ""}`;
+  });
+
+  return [
+    "# PaperClaw Agent Memory",
+    "",
+    "This file is generated from approved/active PaperClaw memory. Do not treat it as the source of truth; create or propose PaperClaw memory items when durable facts change.",
+    "Never store secrets, credentials, API keys, private tokens, raw sensitive logs, or unverified guesses in memory.",
+    profileLines.length > 0 ? ["", "## Company Profile", ...profileLines].join("\n") : "",
+    memoryLines.length > 0 ? ["", "## Recalled Durable Memory", ...memoryLines].join("\n") : "",
+    profileLines.length === 0 && memoryLines.length === 0 ? "\n_No active company or agent memory yet._" : "",
+    "",
+  ].filter(Boolean).join("\n");
+}
+
 export function companyMemoryService(db: Db) {
+  const agents = agentService(db);
+  const instructions = agentInstructionsService();
+
+  async function activeProjectionItems(companyId: string, agentId: string) {
+    const now = new Date();
+    const rows = await db
+      .select()
+      .from(companyMemoryItems)
+      .where(
+        and(
+          eq(companyMemoryItems.companyId, companyId),
+          activeMemoryCondition(now),
+          or(
+            eq(companyMemoryItems.scopeType, "company"),
+            and(eq(companyMemoryItems.scopeType, "agent"), eq(companyMemoryItems.scopeId, agentId)),
+          ),
+        ),
+      )
+      .orderBy(desc(companyMemoryItems.importance), desc(companyMemoryItems.updatedAt), asc(companyMemoryItems.id))
+      .limit(MEMORY_FILE_MAX_ITEMS);
+    return rows.map(toMemoryItem);
+  }
+
+  async function buildAgentMemoryMarkdown(companyId: string, agentId: string): Promise<string> {
+    const [profile, items] = await Promise.all([
+      db
+        .select()
+        .from(companyProfiles)
+        .where(eq(companyProfiles.companyId, companyId))
+        .then((profileRows) => toProfile(profileRows[0] ?? null)),
+      activeProjectionItems(companyId, agentId),
+    ]);
+    return renderMemoryFile(profile, items);
+  }
+
+  async function syncAgentMemoryFile(companyId: string, agentId: string) {
+    const agent = await agents.getById(agentId);
+    if (!agent || agent.companyId !== companyId) return { updated: 0, skipped: 1, failed: 0 };
+    try {
+      const bundle = await instructions.getBundle(agent);
+      if (bundle.mode !== "managed") return { updated: 0, skipped: 1, failed: 0 };
+      const nextContent = await buildAgentMemoryMarkdown(companyId, agentId);
+      let currentContent = "";
+      try {
+        currentContent = (await instructions.readFile(agent, MEMORY_FILE_NAME)).content;
+      } catch {
+        currentContent = "";
+      }
+      if (currentContent === nextContent) return { updated: 0, skipped: 1, failed: 0 };
+      const result = await instructions.writeFile(agent, MEMORY_FILE_NAME, nextContent);
+      await agents.update(agent.id, { adapterConfig: result.adapterConfig });
+      return { updated: 1, skipped: 0, failed: 0 };
+    } catch (error) {
+      logger.warn({ err: error, companyId, agentId }, "Failed to sync agent MEMORY.md");
+      return { updated: 0, skipped: 0, failed: 1 };
+    }
+  }
+
   return {
     getProfile: async (companyId: string): Promise<CompanyProfile | null> => {
       const row = await db
@@ -126,6 +233,7 @@ export function companyMemoryService(db: Db) {
       const insertValues = {
         registeredSince: input.registeredSince ?? null,
         businessCategory: input.businessCategory ?? null,
+        businessSubcategory: input.businessSubcategory ?? null,
         defaultLanguage: input.defaultLanguage ?? null,
         defaultCurrency: input.defaultCurrency ?? null,
         website: input.website ?? null,
@@ -159,6 +267,7 @@ export function companyMemoryService(db: Db) {
       if (query.memoryType) conditions.push(eq(companyMemoryItems.memoryType, query.memoryType));
       if (query.status) conditions.push(eq(companyMemoryItems.status, query.status));
       if (query.scopeType) conditions.push(eq(companyMemoryItems.scopeType, query.scopeType));
+      if (query.scopeId) conditions.push(eq(companyMemoryItems.scopeId, query.scopeId));
       const search = textSearchCondition(query.q);
       if (search) conditions.push(search);
       const where = and(...conditions);
@@ -214,7 +323,8 @@ export function companyMemoryService(db: Db) {
         })
         .returning()
         .then((rows) => rows[0]!);
-      return toMemoryItem(row);
+      const item = toMemoryItem(row);
+      return item;
     },
 
     updateMemory: async (
@@ -280,6 +390,30 @@ export function companyMemoryService(db: Db) {
       return row ? toMemoryItem(row) : null;
     },
 
+    buildAgentMemoryMarkdown: async (companyId: string, agentId: string): Promise<string> => {
+      return buildAgentMemoryMarkdown(companyId, agentId);
+    },
+
+    syncAgentMemoryFile: async (companyId: string, agentId: string) => {
+      return syncAgentMemoryFile(companyId, agentId);
+    },
+
+    syncManagedAgentMemoryFiles: async (companyId: string, agentId?: string | null) => {
+      const companyAgents = agentId
+        ? (await agents.getById(agentId).then((agent) => agent && agent.companyId === companyId ? [agent] : []))
+        : await agents.list(companyId, { includeTerminated: true });
+      let updated = 0;
+      let skipped = 0;
+      let failed = 0;
+      for (const agent of companyAgents) {
+        const result = await syncAgentMemoryFile(companyId, agent.id);
+        updated += result.updated;
+        skipped += result.skipped;
+        failed += result.failed;
+      }
+      return { updated, skipped, failed };
+    },
+
     recall: async (companyId: string, input: CompanyMemoryRecallRequest): Promise<CompanyMemoryRecallResponse> => {
       const now = new Date();
       const terms = [
@@ -294,6 +428,14 @@ export function companyMemoryService(db: Db) {
       if (input.issueId) scopeConditions.push(and(eq(companyMemoryItems.scopeType, "issue"), eq(companyMemoryItems.scopeId, input.issueId))!);
       if (input.projectId) scopeConditions.push(and(eq(companyMemoryItems.scopeType, "project"), eq(companyMemoryItems.scopeId, input.projectId))!);
       const scoped = or(...scopeConditions);
+      const relevance = search
+        ? or(
+            search,
+            input.agentId ? and(eq(companyMemoryItems.scopeType, "agent"), eq(companyMemoryItems.scopeId, input.agentId))! : sql`false`,
+            input.issueId ? and(eq(companyMemoryItems.scopeType, "issue"), eq(companyMemoryItems.scopeId, input.issueId))! : sql`false`,
+            input.projectId ? and(eq(companyMemoryItems.scopeType, "project"), eq(companyMemoryItems.scopeId, input.projectId))! : sql`false`,
+          )
+        : sql`true`;
       const score = sql<number>`
         (
           ${companyMemoryItems.importance}
@@ -311,7 +453,7 @@ export function companyMemoryService(db: Db) {
           recallScore: score,
         })
         .from(companyMemoryItems)
-        .where(and(eq(companyMemoryItems.companyId, companyId), activeMemoryCondition(now), scoped))
+        .where(and(eq(companyMemoryItems.companyId, companyId), activeMemoryCondition(now), scoped, relevance))
         .orderBy(desc(score), desc(companyMemoryItems.updatedAt), asc(companyMemoryItems.id))
         .limit(input.limit);
       const ids = rows.map((row) => row.item.id);

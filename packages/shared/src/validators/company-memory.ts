@@ -30,6 +30,7 @@ export const updateCompanyProfileSchema = z.object({
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   ),
   businessCategory: nullableTrimmedString,
+  businessSubcategory: nullableTrimmedString,
   defaultLanguage: z.enum(COMPANY_PROFILE_LANGUAGE_CODES).nullable().optional(),
   defaultCurrency: z.enum(COMPANY_PROFILE_CURRENCY_CODES).nullable().optional(),
   website: nullableTrimmedString,
@@ -89,6 +90,7 @@ export const companyMemoryListQuerySchema = z.object({
   memoryType: z.preprocess(firstQueryValue, z.enum(COMPANY_MEMORY_TYPES).optional()),
   status: z.preprocess(firstQueryValue, z.enum(COMPANY_MEMORY_STATUSES).optional()),
   scopeType: z.preprocess(firstQueryValue, z.enum(COMPANY_MEMORY_SCOPE_TYPES).optional()),
+  scopeId: z.preprocess(firstQueryValue, z.string().trim().min(1).optional()),
   limit: z.unknown().optional().transform((value) => intQuery(value, 50, 1, 100)),
   offset: z.unknown().optional().transform((value) => intQuery(value, 0, 0, 500)),
 });

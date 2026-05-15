@@ -11,6 +11,7 @@ export interface Company {
   issueCounter: number;
   budgetMonthlyCents: number;
   spentMonthlyCents: number;
+  maxConcurrentAgentRuns: number | null;
   attachmentMaxBytes: number;
   requireBoardApprovalForNewAgents: boolean;
   requireBoardApprovalForCeoSkillInstalls: boolean;

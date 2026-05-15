@@ -7,6 +7,7 @@ import { and, asc, desc, eq, getTableColumns, gt, inArray, isNull, lt, lte, notI
 import type { Db } from "@kesarcloud/db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
+  COMPANY_DEFAULT_MAX_CONCURRENT_AGENT_RUNS,
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
   MODEL_PROFILE_KEYS,
   isEnvironmentDriverSupportedForAdapter,
@@ -27,6 +28,7 @@ import {
   agentWakeupRequests,
   activityLog,
   approvals,
+  companies,
   companySkills as companySkillsTable,
   documentRevisions,
   issueDocuments,
@@ -1042,11 +1044,11 @@ function readAgentRuntimeModelProfile(
   const modelProfiles = parseObject(parseObject(runtimeConfig).modelProfiles);
   const profile = parseObject(modelProfiles[key]);
   if (Object.keys(profile).length === 0) {
-    return { enabled: true, adapterConfig: {}, configured: false };
+    return { enabled: false, adapterConfig: {}, configured: false };
   }
 
   return {
-    enabled: profile.enabled !== false,
+    enabled: profile.enabled === true,
     adapterConfig: parseObject(profile.adapterConfig),
     configured: true,
   };
@@ -3936,6 +3938,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         assigneeUserId: issues.assigneeUserId,
         executionState: issues.executionState,
         projectId: issues.projectId,
+        originKind: issues.originKind,
       })
       .from(issues)
       .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
@@ -5427,6 +5430,65 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     };
   }
 
+  function normalizeCompanyMaxConcurrentAgentRuns(value: unknown) {
+    if (value === null) return null;
+    const parsed = Math.floor(asNumber(value, COMPANY_DEFAULT_MAX_CONCURRENT_AGENT_RUNS));
+    if (parsed === 5 || parsed === 10 || parsed === 20 || parsed === 30) return parsed;
+    return COMPANY_DEFAULT_MAX_CONCURRENT_AGENT_RUNS;
+  }
+
+  function resolveCompanyRunLimit(company: { maxConcurrentAgentRuns: number | null } | null) {
+    if (!company) return COMPANY_DEFAULT_MAX_CONCURRENT_AGENT_RUNS;
+    return normalizeCompanyMaxConcurrentAgentRuns(company.maxConcurrentAgentRuns);
+  }
+
+  async function availableCompanyRunSlots(companyId: string) {
+    const company = await db
+      .select({ maxConcurrentAgentRuns: companies.maxConcurrentAgentRuns })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .then((rows) => rows[0] ?? null);
+    const limit = resolveCompanyRunLimit(company);
+    if (limit === null) return Number.POSITIVE_INFINITY;
+    const runningCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "running")))
+      .then((rows) => rows[0]?.count ?? 0);
+    return Math.max(0, limit - runningCount);
+  }
+
+  async function claimQueuedRunWithinCompanyLimit(run: typeof heartbeatRuns.$inferSelect, claimedAt: Date) {
+    return db.transaction(async (tx) => {
+      await tx.execute(sql`select id from companies where id = ${run.companyId} for update`);
+      const company = await tx
+        .select({ maxConcurrentAgentRuns: companies.maxConcurrentAgentRuns })
+        .from(companies)
+        .where(eq(companies.id, run.companyId))
+        .then((rows) => rows[0] ?? null);
+      const limit = resolveCompanyRunLimit(company);
+      if (limit !== null) {
+        const runningCount = await tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(heartbeatRuns)
+          .where(and(eq(heartbeatRuns.companyId, run.companyId), eq(heartbeatRuns.status, "running")))
+          .then((rows) => rows[0]?.count ?? 0);
+        if (Number(runningCount ?? 0) >= limit) return null;
+      }
+
+      return tx
+        .update(heartbeatRuns)
+        .set({
+          status: "running",
+          startedAt: run.startedAt ?? claimedAt,
+          updatedAt: claimedAt,
+        })
+        .where(and(eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.status, "queued")))
+        .returning()
+        .then((rows) => rows[0] ?? null);
+    });
+  }
+
   function parseMaxTurnContinuationPolicy(agent: typeof agents.$inferSelect): MaxTurnContinuationPolicy {
     const runtimeConfig = parseObject(agent.runtimeConfig);
     const heartbeat = parseObject(runtimeConfig.heartbeat);
@@ -5555,16 +5617,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     const claimedAt = new Date();
-    const claimed = await db
-      .update(heartbeatRuns)
-      .set({
-        status: "running",
-        startedAt: run.startedAt ?? claimedAt,
-        updatedAt: claimedAt,
-      })
-      .where(and(eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.status, "queued")))
-      .returning()
-      .then((rows) => rows[0] ?? null);
+    const claimed = await claimQueuedRunWithinCompanyLimit(run, claimedAt);
     if (!claimed) return null;
 
     publishLiveEvent({
@@ -6231,7 +6284,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       });
 
       await finalizeAgentStatus(run.agentId, "failed");
-      await startNextQueuedRunForAgent(run.agentId);
+      await resumeQueuedRunsForCompany(run.companyId);
       runningProcesses.delete(run.id);
       reaped.push(run.id);
     }
@@ -6249,6 +6302,19 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .where(eq(heartbeatRuns.status, "queued"));
 
     const agentIds = [...new Set(queuedRuns.map((r) => r.agentId))];
+    for (const agentId of agentIds) {
+      await startNextQueuedRunForAgent(agentId);
+    }
+  }
+
+  async function resumeQueuedRunsForCompany(companyId: string) {
+    const queuedRuns = await db
+      .select({ agentId: heartbeatRuns.agentId })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "queued")))
+      .orderBy(asc(heartbeatRuns.createdAt));
+
+    const agentIds = [...new Set(queuedRuns.map((run) => run.agentId))];
     for (const agentId of agentIds) {
       await startNextQueuedRunForAgent(agentId);
     }
@@ -6365,7 +6431,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       }
       const policy = parseHeartbeatPolicy(agent);
       const runningCount = await countRunningRunsForAgent(agentId);
-      const availableSlots = Math.max(0, policy.maxConcurrentRuns - runningCount);
+      const companyAvailableSlots = await availableCompanyRunSlots(agent.companyId);
+      const availableSlots = Math.max(0, Math.min(policy.maxConcurrentRuns - runningCount, companyAvailableSlots));
       if (availableSlots <= 0) return [];
 
       const queuedRuns = await db
@@ -7192,6 +7259,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           ? {
               registeredSince: profile.registeredSince,
               businessCategory: profile.businessCategory,
+              businessSubcategory: profile.businessSubcategory,
               defaultLanguage: profile.defaultLanguage,
               defaultCurrency: profile.defaultCurrency,
               website: profile.website,
@@ -7656,6 +7724,59 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             exitCode: adapterResult.exitCode,
           },
         });
+        if (outcome === "succeeded") {
+          const summary = readNonEmptyString(adapterResult.summary);
+          if (summary && summary.length >= 30) {
+            try {
+              const memoryItem = await companyMemoryService(db).createMemory(agent.companyId, {
+                memoryType: "short_term",
+                kind: "note",
+                scopeType: issueId ? "issue" : "agent",
+                scopeId: issueId ?? agent.id,
+                title: issueRef?.title ? `Run summary: ${issueRef.title}` : `Run summary from ${agent.name}`,
+                body: summary,
+                summary,
+                tags: ["run-summary", agent.role].filter(Boolean),
+                sourceType: "run_summary",
+                sourceId: finalizedRun.id,
+                confidence: 70,
+                importance: issueId ? 55 : 45,
+                metadata: {
+                  agentId: agent.id,
+                  issueId: issueId ?? null,
+                  projectId: resolvedProjectId ?? issueRef?.projectId ?? null,
+                },
+              }, {
+                agentId: agent.id,
+                canApprove: false,
+              });
+              await logActivity(db, {
+                companyId: agent.companyId,
+                actorType: "agent",
+                actorId: agent.id,
+                agentId: agent.id,
+                runId: finalizedRun.id,
+                action: "company.memory_created",
+                entityType: "company_memory",
+                entityId: memoryItem.id,
+                details: {
+                  memoryType: memoryItem.memoryType,
+                  status: memoryItem.status,
+                  sourceType: memoryItem.sourceType,
+                  autoCaptured: true,
+                },
+              });
+              if (memoryItem.scopeType === "agent") {
+                await companyMemoryService(db).syncManagedAgentMemoryFiles(agent.companyId, agent.id);
+              }
+            } catch (err) {
+              await onLog(
+                "stderr",
+                `[paperclaw] Failed to save run summary memory: ${err instanceof Error ? err.message : String(err)}\n`,
+              );
+            }
+          }
+        }
         const livenessRun = finalizedRun;
         await refreshContinuationSummaryForRun(livenessRun, agent);
         if (issueId && outcome === "succeeded") {
@@ -7869,7 +7990,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           });
           await releaseRuntimeServicesForRun(run.id).catch(() => undefined);
           activeRunExecutions.delete(run.id);
-          await startNextQueuedRunForAgent(run.agentId);
+          await resumeQueuedRunsForCompany(run.companyId);
         }
   }
 
@@ -9143,7 +9264,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     runningProcesses.delete(run.id);
     await finalizeAgentStatus(run.agentId, "cancelled");
-    await startNextQueuedRunForAgent(run.agentId);
+    await resumeQueuedRunsForCompany(run.companyId);
     return cancelled;
   }
 

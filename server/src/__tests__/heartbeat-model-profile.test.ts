@@ -20,7 +20,13 @@ describe("heartbeat model profile application", () => {
   it("applies cheap profile patches before explicit issue adapter config overrides", () => {
     const modelProfile = resolveModelProfileApplication({
       adapterModelProfiles: [cheapProfile],
-      agentRuntimeConfig: {},
+      agentRuntimeConfig: {
+        modelProfiles: {
+          cheap: {
+            enabled: true,
+          },
+        },
+      },
       issueModelProfile: "cheap",
       contextSnapshot: {},
     });
@@ -41,7 +47,7 @@ describe("heartbeat model profile application", () => {
       requested: "cheap",
       requestedBy: "issue_override",
       applied: "cheap",
-      configSource: "adapter_default",
+      configSource: "agent_runtime",
       fallbackReason: null,
     });
     expect(merged).toEqual({
@@ -57,6 +63,7 @@ describe("heartbeat model profile application", () => {
       agentRuntimeConfig: {
         modelProfiles: {
           cheap: {
+            enabled: true,
             adapterConfig: {
               model: "agent-cheap",
             },
@@ -110,6 +117,61 @@ describe("heartbeat model profile application", () => {
       adapterConfig: null,
     });
     expect(merged).toEqual({ model: "primary" });
+  });
+
+  it("falls back to the primary config when the agent has no enabled cheap profile", () => {
+    const modelProfile = resolveModelProfileApplication({
+      adapterModelProfiles: [cheapProfile],
+      agentRuntimeConfig: {},
+      issueModelProfile: "cheap",
+      contextSnapshot: {},
+    });
+
+    const merged = mergeModelProfileAdapterConfig({
+      baseConfig: {
+        model: "primary",
+        modelReasoningEffort: "high",
+      },
+      modelProfile,
+      issueAdapterConfig: null,
+    });
+
+    expect(modelProfile).toMatchObject({
+      requested: "cheap",
+      applied: null,
+      fallbackReason: "agent_runtime_profile_disabled",
+      adapterConfig: null,
+    });
+    expect(merged).toEqual({
+      model: "primary",
+      modelReasoningEffort: "high",
+    });
+  });
+
+  it("falls back to the primary config when the agent cheap profile is disabled", () => {
+    const modelProfile = resolveModelProfileApplication({
+      adapterModelProfiles: [cheapProfile],
+      agentRuntimeConfig: {
+        modelProfiles: {
+          cheap: {
+            enabled: false,
+            adapterConfig: {
+              model: "agent-cheap",
+            },
+          },
+        },
+      },
+      issueModelProfile: null,
+      contextSnapshot: { modelProfile: "cheap" },
+    });
+
+    expect(modelProfile).toMatchObject({
+      requested: "cheap",
+      requestedBy: "wake_context",
+      applied: null,
+      fallbackReason: "agent_runtime_profile_disabled",
+      adapterConfig: null,
+    });
   });
 
   it("normalizes a wake payload model profile into run context", () => {

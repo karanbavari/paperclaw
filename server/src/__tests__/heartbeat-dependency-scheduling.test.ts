@@ -526,6 +526,93 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
     }
   }, 40_000);
 
+  it("honors the company-wide concurrent agent run limit across agents", async () => {
+    const companyId = randomUUID();
+    const agentIds = Array.from({ length: 6 }, () => randomUUID());
+    let releaseRuns!: () => void;
+    const runsReleased = new Promise<void>((resolve) => {
+      releaseRuns = resolve;
+    });
+
+    mockAdapterExecute.mockImplementation(async () => {
+      await runsReleased;
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Company run limit test completed.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "PaperClaw",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+      maxConcurrentAgentRuns: 5,
+    });
+    await db.insert(agents).values(agentIds.map((agentId, index) => ({
+      id: agentId,
+      companyId,
+      name: `Agent-${index + 1}`,
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {
+        heartbeat: {
+          wakeOnDemand: true,
+          maxConcurrentRuns: 10,
+        },
+      },
+      permissions: {},
+    })));
+
+    try {
+      const wakes = [];
+      for (const [index, agentId] of agentIds.entries()) {
+        wakes.push(await heartbeat.invoke(agentId, "on_demand", { queueIndex: index }, "manual"));
+      }
+      expect(wakes.every(Boolean)).toBe(true);
+
+      let statusCounts: Array<{ status: string; count: number }> = [];
+      const companyLimitApplied = await waitForCondition(async () => {
+        statusCounts = await db
+          .select({
+            status: heartbeatRuns.status,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(heartbeatRuns)
+          .where(eq(heartbeatRuns.companyId, companyId))
+          .groupBy(heartbeatRuns.status);
+        return (
+          statusCounts.find((row) => row.status === "running")?.count === 5 &&
+          statusCounts.find((row) => row.status === "queued")?.count === 1
+        );
+      }, 30_000);
+      expect(companyLimitApplied).toBe(true);
+      expect(statusCounts.find((row) => row.status === "running")?.count).toBe(5);
+      expect(statusCounts.find((row) => row.status === "queued")?.count).toBe(1);
+      expect(mockAdapterExecute.mock.calls.length).toBeLessThanOrEqual(5);
+
+      releaseRuns();
+
+      const allRunsSucceeded = await waitForCondition(async () => {
+        const [{ count }] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(heartbeatRuns)
+          .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "succeeded")));
+        return Number(count ?? 0) === 6;
+      }, 30_000);
+      expect(allRunsSucceeded).toBe(true);
+    } finally {
+      releaseRuns();
+    }
+  }, 60_000);
+
   it("cancels stale queued runs when issue blockers are still unresolved", async () => {
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -723,7 +810,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       executionLockedAt: null,
     });
     expect(readyRun?.status).toBe("succeeded");
-    expect(mockAdapterExecute).toHaveBeenCalledTimes(2);
+    expect(mockAdapterExecute).toHaveBeenCalledTimes(1);
   });
 
   it("suppresses normal wakeups while allowing comment interaction wakes under a pause hold", async () => {

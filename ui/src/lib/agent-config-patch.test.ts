@@ -168,6 +168,36 @@ describe("buildAgentUpdatePatch", () => {
     });
   });
 
+  it("keeps a model-only cheap profile disabled unless explicitly enabled", () => {
+    const agent = makeAgent();
+    agent.runtimeConfig = {
+      heartbeat: { enabled: true, intervalSec: 300 },
+      modelProfiles: {
+        cheap: {
+          adapterConfig: { model: "old-cheap" },
+        },
+      },
+    };
+
+    const patch = buildAgentUpdatePatch(
+      agent,
+      makeOverlay({
+        modelProfiles: {
+          cheap: {
+            adapterConfig: { model: "new-cheap" },
+          },
+        },
+      }),
+    );
+
+    expect((patch.runtimeConfig as Record<string, unknown>).modelProfiles).toEqual({
+      cheap: {
+        enabled: false,
+        adapterConfig: { model: "new-cheap" },
+      },
+    });
+  });
+
   it("clears the cheap profile when the overlay marks it cleared", () => {
     const agent = makeAgent();
     agent.runtimeConfig = {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  COMPANY_AGENT_RUN_LIMIT_OPTIONS,
   COMPANY_STATUSES,
   MAX_COMPANY_ATTACHMENT_MAX_BYTES,
 } from "../constants.js";
@@ -7,6 +8,18 @@ import {
 const logoAssetIdSchema = z.string().uuid().nullable().optional();
 const brandColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional();
 const feedbackDataSharingTermsVersionSchema = z.string().min(1).nullable().optional();
+const companyMaxConcurrentAgentRunsSchema = z
+  .union([
+    z.enum(COMPANY_AGENT_RUN_LIMIT_OPTIONS.map(String) as ["5", "10", "20", "30"]).transform(Number),
+    z.union([
+      z.literal(5),
+      z.literal(10),
+      z.literal(20),
+      z.literal(30),
+    ]),
+    z.null(),
+  ])
+  .optional();
 const attachmentMaxBytesSchema = z
   .number()
   .int()
@@ -35,6 +48,7 @@ export const updateCompanySchema = createCompanySchema
     feedbackDataSharingTermsVersion: feedbackDataSharingTermsVersionSchema,
     brandColor: brandColorSchema,
     logoAssetId: logoAssetIdSchema,
+    maxConcurrentAgentRuns: companyMaxConcurrentAgentRunsSchema,
     attachmentMaxBytes: attachmentMaxBytesSchema.optional(),
   });
 

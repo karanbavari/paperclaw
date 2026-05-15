@@ -92,7 +92,7 @@ export function buildAgentUpdatePatch(agent: Agent, overlay: AgentConfigOverlay)
           ...((existingCheap.adapterConfig ?? {}) as Record<string, unknown>),
           ...(cheapOverlay.adapterConfig ?? {}),
         };
-        const enabled = cheapOverlay.enabled ?? (existingCheap.enabled !== false);
+        const enabled = cheapOverlay.enabled ?? (existingCheap.enabled === true);
         nextProfiles.cheap = {
           ...existingCheap,
           enabled,

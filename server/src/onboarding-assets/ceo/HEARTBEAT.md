@@ -64,6 +64,7 @@ Status quick guide:
 ## 8. Exit
 
 - Comment on any in_progress work before exiting.
+- Before exiting issue-scoped work, choose one explicit PaperClaw disposition: `done`/`cancelled`, `in_review` with a real reviewer or pending interaction/approval, `blocked` with blockers or a named unblock owner/action, delegated follow-up with the parent blocked if needed, or explicit continuation with resume intent and a concrete next action.
 - If no assignments and no valid mention-handoff, exit cleanly.
 
 ---
