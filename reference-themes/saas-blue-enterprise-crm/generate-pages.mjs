@@ -5,7 +5,9 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PAGES_DIR = join(__dirname, 'pages');
+const ADMIN_DIR = join(__dirname, 'pages', 'admin');
 const CSS_PATH = '../css/theme.css';
+const ADMIN_CSS_PATH = '../../css/theme.css';
 
 function writePage(filename, html) {
   const path = join(PAGES_DIR, filename);
@@ -1051,6 +1053,186 @@ function pageMeetingDetail() {
   return pageWrapper('', '', header + grid, 'Calendar');
 }
 
+// ==================== ADMIN PAGE GENERATORS ====================
+
+function adminWritePage(filename, html) {
+  const path = join(ADMIN_DIR, filename);
+  writeFileSync(path, `<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${extractTitle(html)} | KesarCloud Admin</title>
+  <link rel="stylesheet" href="${ADMIN_CSS_PATH}">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+</head>
+<body>
+${html}
+</body>
+</html>
+`);
+  console.log(`  \u2713 admin/${filename}`);
+}
+
+function adminSidebar(activeLabel) {
+  const items = [
+    { icon: '<i class="ph ph-chart-line"></i>', label: 'Overview', href: 'overview.html' },
+    { icon: '<i class="ph ph-users"></i>', label: 'Users', href: 'users.html' },
+    { icon: '<i class="ph ph-magnifying-glass-chart"></i>', label: 'Analytics', href: 'analytics.html' },
+    { icon: '<i class="ph ph-file-text"></i>', label: 'Content', href: 'content.html' },
+    { icon: '<i class="ph ph-currency-circle-dollar"></i>', label: 'Subscriptions', href: 'subscriptions.html' },
+  ];
+  const systemItems = [
+    { icon: '<i class="ph ph-gear"></i>', label: 'Settings', href: 'settings.html' },
+    { icon: '<i class="ph ph-scroll"></i>', label: 'Logs', href: 'logs.html' },
+    { icon: '<i class="ph ph-file-arrow-down"></i>', label: 'Reports', href: 'reports.html' },
+  ];
+
+  const isActive = (label) => label === activeLabel ? ' active' : '';
+
+  return `<div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">K</div>
+      <span class="sidebar-brand">KesarCloud</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Admin</div>
+${items.map(i => `      <a href="${i.href}" class="nav-item${isActive(i.label)}">
+        <span class="nav-icon">${i.icon}</span>
+        ${i.label}
+      </a>`).join('\n')}
+      <div class="nav-section">System</div>
+${systemItems.map(i => `      <a href="${i.href}" class="nav-item${isActive(i.label)}">
+        <span class="nav-icon">${i.icon}</span>
+        ${i.label}
+      </a>`).join('\n')}
+      <div class="nav-section">App</div>
+      <a href="../dashboard.html" class="nav-item">
+        <span class="nav-icon"><i class="ph ph-arrow-left"></i></span>
+        Back to App
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon"><i class="ph ph-sign-out"></i></span>
+        Sign Out
+      </div>
+    </div>
+  </div>`;
+}
+
+function adminTopHeader() {
+  return `<header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><i class="ph ph-list"></i></button>
+    <div class="header-search">
+      <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+      <input type="text" placeholder="Search admin..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+      <button class="header-btn"><i class="ph ph-bell"></i><span class="dot"></span></button>
+      <button class="header-btn"><i class="ph ph-question"></i></button>
+      <div class="avatar">AK</div>
+    </div>
+  </header>`;
+}
+
+function adminPageWrapper(title, subtitle, content, activeLabel = 'Overview') {
+  return `${adminSidebar(activeLabel)}
+  <div class="main-content">
+    ${adminTopHeader()}
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">${title}</h1>
+          ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
+        </div>
+      </div>
+      ${content}
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>`;
+}
+
+function pageAdminOverview() {
+  const s = `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">12,847</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +12.5% this month</div></div>
+    <div class="stat-card"><div class="stat-label">Active Users (30d)</div><div class="stat-value">8,234</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +8.2% this quarter</div></div>
+    <div class="stat-card"><div class="stat-label">Monthly Revenue</div><div class="stat-value">\u20B94,62,000</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +15.3% vs last month</div></div>
+    <div class="stat-card"><div class="stat-label">Active Subscriptions</div><div class="stat-value">3,456</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +124 new this month</div></div>
+  </div>`;
+
+  const chartHtml = `<div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">User Growth</span></div><div class="card-body"><div style="height:240px;display:flex;align-items:flex-end;gap:8px;padding-top:20px">
+      ${['Jan','Feb','Mar','Apr','May','Jun'].map((m,i) => {
+        const h = [120,150,100,170,200,130][i];
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--color-primary-500);height:${h}px;border-radius:4px 4px 0 0"></div><span style="font-size:11px;color:var(--color-neutral-500);margin-top:6px">${m}</span></div>`;
+      }).join('')}
+    </div></div></div>
+    ${card('Revenue Breakdown', \`<div style="display:flex;flex-direction:column;gap:16px">${[
+      ['Subscriptions', 62, 'var(--color-primary-500)'],
+      ['One-time Purchases', 18, 'var(--color-success-500)'],
+      ['Add-ons', 12, 'var(--color-warning-500)'],
+      ['Services', 8, 'var(--color-info-500)'],
+    ].map(d => \`<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>\${d[0]}</span><span>\${d[1]}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:\${d[1]}%;background:\${d[2]}"></div></div></div>\`).join('')}</div>\`)}
+  </div>`;
+
+  const activity = `<div class="card" style="margin-top:24px"><div class="card-header"><span class="card-title">Recent Activity</span></div><div class="card-body">
+    <div class="activity-item"><div class="activity-icon"><i class="ph ph-user-plus"></i></div><div class="activity-content"><strong>New user registered:</strong> Rahul Verma from TechCorp (Enterprise plan)</div><div class="activity-time">2m ago</div></div>
+    <div class="activity-item"><div class="activity-icon"><i class="ph ph-currency-circle-dollar"></i></div><div class="activity-content"><strong>Payment received:</strong> \u20B91,20,000 from Acme Technologies (Annual renewal)</div><div class="activity-time">15m ago</div></div>
+    <div class="activity-item"><div class="activity-icon"><i class="ph ph-user-switch"></i></div><div class="activity-content"><strong>Plan upgrade:</strong> Sneha Patel upgraded from Pro to Enterprise</div><div class="activity-time">1h ago</div></div>
+    <div class="activity-item"><div class="activity-icon"><i class="ph ph-file-plus"></i></div><div class="activity-content"><strong>Content published:</strong> New blog post "Getting Started with KesarCloud"</div><div class="activity-time">3h ago</div></div>
+    <div class="activity-item"><div class="activity-icon"><i class="ph ph-warning-circle"></i></div><div class="activity-content"><strong>System alert:</strong> API response time increased to 450ms (threshold: 300ms)</div><div class="activity-time">5h ago</div></div>
+  </div></div>`;
+
+  return adminPageWrapper('Platform Overview', 'Real-time platform KPIs and performance metrics', s + chartHtml + activity, 'Overview');
+}
+
+function pageAdminUsers() {
+  const s = `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">12,847</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +342 this month</div></div>
+    <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value">8,234</div><div class="stat-change up"><i class="ph ph-trend-up"></i> 64.1% of total</div></div>
+    <div class="stat-card"><div class="stat-label">New (30d)</div><div class="stat-value">1,245</div><div class="stat-change up"><i class="ph ph-trend-up"></i> +18.3% vs last month</div></div>
+    <div class="stat-card"><div class="stat-label">Churned (30d)</div><div class="stat-value">187</div><div class="stat-change down"><i class="ph ph-trend-down"></i> 2.3% churn rate</div></div>
+  </div>`;
+  const toolbar = \`<div class="toolbar"><input class="form-input" placeholder="Search users..." style="min-width:240px"><select class="form-select"><option>All Roles</option><option>Admin</option><option>User</option><option>Manager</option></select><select class="form-select"><option>All Status</option><option>Active</option><option>Inactive</option><option>Suspended</option></select><span class="toolbar-spacer"></span><span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-10 of 12,847</span></div>\`;
+  const users = [
+    ['RK', 'Amit Verma', 'amit.verma@kesarcloud.in', 'Admin', 'Enterprise', 'Active', '12 Jan 2024'],
+    ['PS', 'Priya Sharma', 'priya.sharma@kesarcloud.in', 'Admin', 'Enterprise', 'Active', '3 Mar 2024'],
+    ['SN', 'Sneha Nair', 'sneha.nair@acme.com', 'User', 'Pro', 'Active', '22 Jun 2024'],
+    ['RJ', 'Rahul Joshi', 'rahul.joshi@techcorp.com', 'User', 'Free', 'Active', '5 Feb 2025'],
+    ['MP', 'Meera Patel', 'meera.patel@innovate.io', 'User', 'Pro', 'Inactive', '18 Aug 2024'],
+    ['VK', 'Vikram Khanna', 'vikram.khanna@global.com', 'User', 'Enterprise', 'Active', '1 Nov 2023'],
+    ['AD', 'Ananya Desai', 'ananya.desai@startup.in', 'User', 'Free', 'Suspended', '10 Apr 2025'],
+    ['RS', 'Rohit Sharma', 'rohit.sharma@example.com', 'User', 'Pro', 'Active', '14 Sep 2024'],
+    ['NK', 'Neha Kapoor', 'neha.kapoor@designlab.com', 'User', 'Free', 'Active', '3 Dec 2024'],
+    ['AM', 'Arun Mishra', 'arun.mishra@biz.co', 'Manager', 'Enterprise', 'Active', '20 Jul 2024'],
+  ];
+  const badgeMap = { 'Admin': 'badge-blue', 'Manager': 'badge-yellow', 'User': 'badge-gray' };
+  const statusMap = { 'Active': '<span class="badge badge-green"><span class="badge-dot green"></span> Active</span>', 'Inactive': '<span class="badge badge-yellow"><span class="badge-dot yellow"></span> Inactive</span>', 'Suspended': '<span class="badge badge-red"><span class="badge-dot red"></span> Suspended</span>' };
+  const rows = users.map(u => \`<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:32px;height:32px;font-size:12px">\${u[0]}</div><strong>\${u[1]}</strong></div></td><td>\${u[2]}</td><td><span class="badge \${badgeMap[u[3]]}">\${u[3]}</span></td><td>\${u[4]}</td><td>\${statusMap[u[5]]}</td><td>\${u[6]}</td><td><button class="btn btn-sm btn-ghost"><i class="ph ph-dots-three-vertical"></i></button></td></tr>\`).join('\n');
+  const table = \`<div class="card"><div class="table-container"><table><thead><tr><th><div class="checkbox"><input type="checkbox"></div></th><th>User</th><th>Email</th><th>Role</th><th>Plan</th><th>Status</th><th>Joined</th><th></th></tr></thead><tbody>\${rows}</tbody></table></div><div class="card-footer" style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-10 of 12,847</span><div class="pagination" style="margin-top:0"><button class="page-btn" disabled><i class="ph ph-caret-left"></i></button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">...</button><button class="page-btn">1,285</button><button class="page-btn"><i class="ph ph-caret-right"></i></button></div></div></div>\`;
+  return adminPageWrapper('Users', 'Manage all registered users on the platform', s + toolbar + table, 'Users');
+}
+
+const adminPages = [
+  ['overview.html', pageAdminOverview],
+  ['users.html', pageAdminUsers],
+  ['analytics.html', () => adminPageWrapper('Analytics', 'Deep platform analytics with date range filters', '<!-- static content -->', 'Analytics')],
+  ['settings.html', () => adminPageWrapper('System Settings', 'Configure platform settings, email, and security', '<!-- static content -->', 'Settings')],
+  ['content.html', () => adminPageWrapper('Content', 'Manage blog posts, pages, and media', '<!-- static content -->', 'Content')],
+  ['subscriptions.html', () => adminPageWrapper('Subscriptions', 'Manage plans, view subscribers, and track MRR', '<!-- static content -->', 'Subscriptions')],
+  ['logs.html', () => adminPageWrapper('System Logs', 'Monitor system events, errors, and audit trails', '<!-- static content -->', 'Logs')],
+  ['reports.html', () => adminPageWrapper('Reports', 'Generate, download, and schedule platform reports', '<!-- static content -->', 'Reports')],
+];
+
 function pageNotFound() {
   return `  <div style="display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--color-neutral-100)">
     <div style="text-align:center;padding:20px">
@@ -1154,10 +1336,17 @@ const pages = [
 ];
 
 mkdirSync(PAGES_DIR, { recursive: true });
-console.log('Generating 34 pages (32 CRM + 2 extras)...');
+mkdirSync(ADMIN_DIR, { recursive: true });
 let count = 0;
 for (const [filename, generator] of pages) {
   writePage(filename, generator());
   count++;
 }
-console.log(`\n✅ Done! Generated ${count} pages in ${PAGES_DIR}`);
+console.log(`\n✅ Generated ${count} CRM pages in ${PAGES_DIR}`);
+
+console.log('Generating 8 admin pages...');
+for (const [filename, generator] of adminPages) {
+  adminWritePage(filename, generator());
+  count++;
+}
+console.log(`\n✅ Done! Generated ${count} pages total`);

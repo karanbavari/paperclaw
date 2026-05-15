@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — BoldGrowth</title>
+  <meta name="description" content="BoldGrowth documentation: getting started guides, API references, SDKs, and tutorials to help you make the most of the platform.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">B</span>
+        <span>BoldGrowth</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="features.html" class="navbar-link">Features</a>
+        <a href="pricing.html" class="navbar-link">Pricing</a>
+        <a href="about.html" class="navbar-link">About</a>
+        <a href="blog.html" class="navbar-link">Blog</a>
+        <a href="docs.html" class="navbar-link active">Docs</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="contact.html" class="btn btn-secondary btn-sm">Contact</a>
+        <a href="#" class="btn btn-primary btn-sm">Get Started</a>
+        <button class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header" style="padding-bottom:var(--spacing-xl)">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-book-open"></i>
+        Documentation
+      </span>
+      <h1>Build with BoldGrowth</h1>
+      <p>Everything you need to integrate, configure, and get the most out of the BoldGrowth platform.</p>
+    </div>
+  </section>
+
+  <!-- Docs -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="search-box" style="max-width:100%;margin-bottom:var(--spacing-xl)">
+        <i class="ph-bold ph-magnifying-glass"></i>
+        <input type="text" placeholder="Search documentation..." aria-label="Search documentation">
+      </div>
+
+      <div class="docs-layout">
+        <aside class="docs-sidebar">
+          <h4>Getting Started</h4>
+          <a href="#" class="docs-nav-item active">Quickstart Guide</a>
+          <a href="#" class="docs-nav-item sub">Account Setup</a>
+          <a href="#" class="docs-nav-item sub">First Integration</a>
+          <a href="#" class="docs-nav-item sub">Dashboard Tour</a>
+
+          <h4 style="margin-top:var(--spacing-lg)">Guides</h4>
+          <a href="#" class="docs-nav-item">Analytics Setup</a>
+          <a href="#" class="docs-nav-item">Automation Workflows</a>
+          <a href="#" class="docs-nav-item">Team Management</a>
+          <a href="#" class="docs-nav-item">Custom Reports</a>
+          <a href="#" class="docs-nav-item">Alert Configuration</a>
+
+          <h4 style="margin-top:var(--spacing-lg)">API Reference</h4>
+          <a href="#" class="docs-nav-item">Authentication</a>
+          <a href="#" class="docs-nav-item">Events API</a>
+          <a href="#" class="docs-nav-item">Users API</a>
+          <a href="#" class="docs-nav-item">Reports API</a>
+          <a href="#" class="docs-nav-item">Webhooks</a>
+
+          <h4 style="margin-top:var(--spacing-lg)">SDKs</h4>
+          <a href="#" class="docs-nav-item">JavaScript / TypeScript</a>
+          <a href="#" class="docs-nav-item">Python</a>
+          <a href="#" class="docs-nav-item">Go</a>
+          <a href="#" class="docs-nav-item">Ruby</a>
+          <a href="#" class="docs-nav-item">REST API Overview</a>
+        </aside>
+
+        <main class="docs-content">
+          <h2>Quickstart Guide</h2>
+          <p>Welcome to BoldGrowth! This guide will walk you through setting up your account, connecting your first tool, and exploring your dashboard in under 15 minutes.</p>
+
+          <h3>1. Create Your Account</h3>
+          <p>Sign up for a free BoldGrowth account at <a href="#">boldgrowth.com/signup</a>. You will need your work email to get started. No credit card is required for the 14-day trial.</p>
+
+          <h3>2. Connect Your First Integration</h3>
+          <p>BoldGrowth connects with 200+ tools. To add your first integration:</p>
+          <ul>
+            <li>Navigate to <strong>Settings &gt; Integrations</strong> from the sidebar</li>
+            <li>Search for the tool you want to connect (e.g., Slack, HubSpot, Jira)</li>
+            <li>Click <strong>Connect</strong> and follow the OAuth flow</li>
+            <li>Configure data sync preferences and field mappings</li>
+          </ul>
+          <p>Data will begin syncing within minutes. You can monitor sync status from the Integrations dashboard.</p>
+
+          <h3>3. Set Up Your First Dashboard</h3>
+          <p>Create a custom analytics dashboard to track what matters most to your team:</p>
+          <ul>
+            <li>Go to <strong>Analytics &gt; Dashboards</strong> and click <strong>New Dashboard</strong></li>
+            <li>Choose from pre-built templates or start from scratch</li>
+            <li>Drag and drop widgets: line charts, bar graphs, number cards, tables</li>
+            <li>Apply filters by date range, team, or data source</li>
+            <li>Share the dashboard with your team or export as PDF</li>
+          </ul>
+
+          <h3>4. Create Your First Automation</h3>
+          <p>Automate repetitive tasks with BoldGrowth's workflow engine:</p>
+          <ul>
+            <li>Navigate to <strong>Automation &gt; Workflows</strong></li>
+            <li>Click <strong>Create Workflow</strong> and choose a trigger event</li>
+            <li>Add conditions and actions using the visual builder</li>
+            <li>Test your workflow with sample data</li>
+            <li>Enable the workflow and monitor its performance</li>
+          </ul>
+
+          <h3>5. Invite Your Team</h3>
+          <p>Collaborate with your team in shared workspaces:</p>
+          <ul>
+            <li>Go to <strong>Settings &gt; Team</strong></li>
+            <li>Click <strong>Invite Members</strong> and enter email addresses</li>
+            <li>Assign roles: Admin, Editor, or Viewer</li>
+            <li>Set permissions per workspace and data source</li>
+          </ul>
+
+          <h2>Next Steps</h2>
+          <p>Once you have completed the quickstart, explore these advanced resources:</p>
+          <ul>
+            <li><a href="#">Analytics Setup Guide</a> — Configure custom metrics and reports</li>
+            <li><a href="#">Automation Workflows</a> — Build complex multi-step automations</li>
+            <li><a href="#">API Reference</a> — Integrate programmatically with our REST API</li>
+            <li><a href="#">Best Practices</a> — Tips from the BoldGrowth team</li>
+          </ul>
+
+          <h2>API Example</h2>
+          <p>Here is how you can track a custom event using the BoldGrowth API:</p>
+          <pre>curl -X POST https://api.boldgrowth.com/v1/events \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event": "user_signup",
+    "properties": {
+      "plan": "growth",
+      "source": "website"
+    },
+    "user_id": "usr_12345"
+  }'</pre>
+          <p>Check the <a href="#">full API reference</a> for all available endpoints and parameters.</p>
+        </main>
+
+        <aside class="docs-toc">
+          <h4>On this page</h4>
+          <a href="#" class="toc-item active">Quickstart Guide</a>
+          <a href="#" class="toc-item">1. Create Account</a>
+          <a href="#" class="toc-item">2. First Integration</a>
+          <a href="#" class="toc-item">3. Analytics Dashboard</a>
+          <a href="#" class="toc-item">4. First Automation</a>
+          <a href="#" class="toc-item">5. Invite Team</a>
+          <a href="#" class="toc-item">Next Steps</a>
+          <a href="#" class="toc-item">API Example</a>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">B</span>
+            <span>BoldGrowth</span>
+          </a>
+          <p>BoldGrowth is the all-in-one growth platform for modern teams. Automate workflows, analyze data in real-time, and scale customer experiences effortlessly.</p>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <a href="features.html">Features</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="integrations.html">Integrations</a>
+          <a href="changelog.html">Changelog</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="blog.html">Blog</a>
+          <a href="contact.html">Contact</a>
+          <a href="docs.html">Documentation</a>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <a href="faq.html">FAQ</a>
+          <a href="docs.html">API Reference</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 BoldGrowth. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="GitHub"><i class="ph-bold ph-github-logo"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="ph-bold ph-linkedin-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

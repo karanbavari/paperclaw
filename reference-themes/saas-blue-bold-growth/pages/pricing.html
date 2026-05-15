@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — BoldGrowth</title>
+  <meta name="description" content="Simple, transparent pricing for teams of all sizes. Start free and scale with confidence. Monthly or annual billing available.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">B</span>
+        <span>BoldGrowth</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="features.html" class="navbar-link">Features</a>
+        <a href="pricing.html" class="navbar-link active">Pricing</a>
+        <a href="about.html" class="navbar-link">About</a>
+        <a href="blog.html" class="navbar-link">Blog</a>
+        <a href="docs.html" class="navbar-link">Docs</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="contact.html" class="btn btn-secondary btn-sm">Contact</a>
+        <a href="#" class="btn btn-primary btn-sm">Get Started</a>
+        <button class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-currency-dollar"></i>
+        Pricing
+      </span>
+      <h1>Simple, transparent pricing</h1>
+      <p>Choose the plan that fits your team. No hidden fees, no surprises. Upgrade or cancel anytime.</p>
+    </div>
+  </section>
+
+  <!-- Pricing Toggle -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="pricing-toggle" id="pricingToggle">
+        <span class="pricing-toggle-label active">Monthly</span>
+        <div class="switch" onclick="togglePricing()">
+          <span class="sr-only">Toggle billing period</span>
+        </div>
+        <span class="pricing-toggle-label">Annual</span>
+        <span class="toggle-save">Save up to 20%</span>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-name">Starter</div>
+          <div class="pricing-desc">For small teams getting started</div>
+          <div>
+            <span class="pricing-amount" data-monthly="$29" data-annual="$23">$29</span>
+            <span class="pricing-period" data-monthly="/month" data-annual="/month, billed annually">/month</span>
+          </div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Up to 5 team members</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> 10K events/month</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> 50+ integrations</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Basic analytics dashboard</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Email support</div>
+          </div>
+          <a href="#" class="btn btn-secondary">Start Free Trial</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-badge">Most Popular</div>
+          <div class="pricing-name">Growth</div>
+          <div class="pricing-desc">For growing teams scaling fast</div>
+          <div>
+            <span class="pricing-amount" data-monthly="$79" data-annual="$63">$79</span>
+            <span class="pricing-period" data-monthly="/month" data-annual="/month, billed annually">/month</span>
+          </div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Up to 25 team members</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> 100K events/month</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> 200+ integrations</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Advanced analytics & reports</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> AI-powered automation</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Priority support</div>
+          </div>
+          <a href="#" class="btn btn-primary">Start Free Trial</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-name">Enterprise</div>
+          <div class="pricing-desc">For large organizations with custom needs</div>
+          <div>
+            <span class="pricing-amount" data-monthly="Custom" data-annual="Custom">Custom</span>
+            <span class="pricing-period" data-monthly="" data-annual="">pricing</span>
+          </div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Unlimited team members</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Unlimited events</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> All integrations + custom</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> White-label reporting</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> Dedicated account manager</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> SOC 2 compliance</div>
+            <div class="pricing-feature"><i class="ph-bold ph-check"></i> 24/7 phone & email support</div>
+          </div>
+          <a href="contact.html" class="btn btn-secondary">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="section">
+    <div class="container container-md">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-seal-check"></i>
+          Feature Comparison
+        </span>
+        <h2>Compare plans in detail</h2>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Starter</th>
+            <th>Growth</th>
+            <th>Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Team Members</td><td>5</td><td>25</td><td>Unlimited</td></tr>
+          <tr><td>Events / Month</td><td>10K</td><td>100K</td><td>Unlimited</td></tr>
+          <tr><td>Integrations</td><td>50+</td><td>200+</td><td>All + Custom</td></tr>
+          <tr><td>Real-Time Analytics</td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>Custom Reports</td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>AI Automation</td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>API Access</td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>White Label</td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>SSO / SAML</td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>Audit Logs</td><td><i class="ph-bold ph-x cross"></i></td><td><i class="ph-bold ph-check check"></i></td><td><i class="ph-bold ph-check check"></i></td></tr>
+          <tr><td>Support</td><td>Email</td><td>Priority</td><td>24/7 Phone & Email</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" style="background:var(--color-neutral-100)">
+    <div class="container container-md">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-question"></i>
+          FAQ
+        </span>
+        <h2>Frequently asked questions</h2>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            Can I switch plans anytime?
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          <div class="faq-answer">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we prorate your billing accordingly.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            Is there a free trial?
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          <div class="faq-answer">Absolutely! All plans come with a 14-day free trial — no credit card required. You get full access to all features during the trial period.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            What payment methods do you accept?
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          <div class="faq-answer">We accept all major credit cards (Visa, Mastercard, Amex), PayPal, and bank transfers for annual Enterprise plans. Invoices are generated automatically.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            Can I get a refund?
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          <div class="faq-answer">Yes. If you are not satisfied within the first 30 days of your paid subscription, we offer a full refund — no questions asked.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            Do you offer custom enterprise pricing?
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          <div class="faq-answer">Yes! Contact our sales team for custom pricing tailored to your organization's needs. We offer volume discounts and custom contracts for large deployments.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-section">
+        <h2>Start growing today</h2>
+        <p>Join 10,000+ teams already using BoldGrowth. Start your 14-day free trial now.</p>
+        <div style="display:flex;gap:var(--spacing-md);justify-content:center;flex-wrap:wrap">
+          <a href="#" class="btn btn-lg">Start Free Trial</a>
+          <a href="contact.html" class="btn btn-secondary btn-lg">Talk to Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">B</span>
+            <span>BoldGrowth</span>
+          </a>
+          <p>BoldGrowth is the all-in-one growth platform for modern teams. Automate workflows, analyze data in real-time, and scale customer experiences effortlessly.</p>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <a href="features.html">Features</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="integrations.html">Integrations</a>
+          <a href="changelog.html">Changelog</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="blog.html">Blog</a>
+          <a href="contact.html">Contact</a>
+          <a href="docs.html">Documentation</a>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <a href="faq.html">FAQ</a>
+          <a href="docs.html">API Reference</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 BoldGrowth. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="GitHub"><i class="ph-bold ph-github-logo"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="ph-bold ph-linkedin-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function togglePricing() {
+      const toggle = document.querySelector('.switch');
+      toggle.classList.toggle('active');
+      const labels = document.querySelectorAll('.pricing-toggle-label');
+      labels.forEach(l => l.classList.toggle('active'));
+      const amounts = document.querySelectorAll('.pricing-amount');
+      const periods = document.querySelectorAll('.pricing-period');
+      const isAnnual = toggle.classList.contains('active');
+      amounts.forEach(el => { el.textContent = el.getAttribute(isAnnual ? 'data-annual' : 'data-monthly'); });
+      periods.forEach(el => { el.textContent = el.getAttribute(isAnnual ? 'data-annual' : 'data-monthly'); });
+    }
+  </script>
+</body>
+</html>

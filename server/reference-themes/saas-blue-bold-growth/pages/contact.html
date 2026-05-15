@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — BoldGrowth</title>
+  <meta name="description" content="Get in touch with the BoldGrowth team. Sales inquiries, support requests, partnership opportunities — we would love to hear from you.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">B</span>
+        <span>BoldGrowth</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="features.html" class="navbar-link">Features</a>
+        <a href="pricing.html" class="navbar-link">Pricing</a>
+        <a href="about.html" class="navbar-link">About</a>
+        <a href="blog.html" class="navbar-link">Blog</a>
+        <a href="docs.html" class="navbar-link">Docs</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="contact.html" class="btn btn-secondary btn-sm">Contact</a>
+        <a href="#" class="btn btn-primary btn-sm">Get Started</a>
+        <button class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-envelope"></i>
+        Contact
+      </span>
+      <h1>We would love to hear from you</h1>
+      <p>Whether you have a question about our platform, need help with your account, or want to explore partnership opportunities — our team is here to help.</p>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section">
+    <div class="container">
+      <div class="contact-grid">
+        <div>
+          <h2 style="margin-bottom:var(--spacing-md)">Send us a message</h2>
+          <p style="margin-bottom:var(--spacing-lg)">Fill out the form below and our team will get back to you within 24 hours.</p>
+          <form class="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First Name</label>
+                <input class="form-input" type="text" id="firstName" placeholder="Anika" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last Name</label>
+                <input class="form-input" type="text" id="lastName" placeholder="Kapoor" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <input class="form-input" type="email" id="email" placeholder="anika@company.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="subject">Subject</label>
+              <select class="form-input" id="subject" style="appearance:none">
+                <option value="">Select a topic...</option>
+                <option value="sales">Sales Inquiry</option>
+                <option value="support">Technical Support</option>
+                <option value="partnership">Partnership Opportunity</option>
+                <option value="billing">Billing Question</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="message">Message</label>
+              <textarea class="form-textarea" id="message" placeholder="Tell us how we can help..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="align-self:flex-start">Send Message</button>
+          </form>
+        </div>
+        <div>
+          <h2 style="margin-bottom:var(--spacing-md)">Contact Information</h2>
+          <p style="margin-bottom:var(--spacing-lg)">Prefer a more direct approach? Reach out through any of the channels below.</p>
+          <div class="contact-info">
+            <div class="contact-card">
+              <div class="contact-card-icon"><i class="ph-bold ph-envelope"></i></div>
+              <div>
+                <h4>Email Us</h4>
+                <p>hello@boldgrowth.com<br>support@boldgrowth.com</p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon"><i class="ph-bold ph-phone"></i></div>
+              <div>
+                <h4>Call Us</h4>
+                <p>+91 80 4567 8900<br>Mon-Fri, 9 AM - 6 PM IST</p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon"><i class="ph-bold ph-map-pin"></i></div>
+              <div>
+                <h4>Visit Us</h4>
+                <p>91, MG Road, Indiranagar<br>Bangalore, Karnataka 560038<br>India</p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon"><i class="ph-bold ph-chat-circle"></i></div>
+              <div>
+                <h4>Live Chat</h4>
+                <p>Available 24/7 for all customers<br>Average response: under 2 minutes</p>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:var(--spacing-xl)">
+            <h4 style="margin-bottom:var(--spacing-sm)">Follow Us</h4>
+            <div style="display:flex;gap:var(--spacing-sm)">
+              <a href="#" class="btn btn-secondary btn-icon" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+              <a href="#" class="btn btn-secondary btn-icon" aria-label="GitHub"><i class="ph-bold ph-github-logo"></i></a>
+              <a href="#" class="btn btn-secondary btn-icon" aria-label="LinkedIn"><i class="ph-bold ph-linkedin-logo"></i></a>
+              <a href="#" class="btn btn-secondary btn-icon" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div style="background:var(--color-neutral-100);border-radius:var(--radius-2xl);padding:var(--spacing-3xl);text-align:center">
+        <i class="ph-bold ph-map-pin" style="font-size:2.5rem;color:var(--color-primary-600);margin-bottom:var(--spacing-md);display:block"></i>
+        <h3 style="margin-bottom:var(--spacing-sm)">Bangalore Headquarters</h3>
+        <p style="margin-bottom:0">91, MG Road, Indiranagar, Bangalore, Karnataka 560038, India</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-section">
+        <h2>Ready to get started?</h2>
+        <p>Join 10,000+ teams already using BoldGrowth. Start your free trial today — no strings attached.</p>
+        <a href="#" class="btn btn-lg">Start Free Trial</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">B</span>
+            <span>BoldGrowth</span>
+          </a>
+          <p>BoldGrowth is the all-in-one growth platform for modern teams. Automate workflows, analyze data in real-time, and scale customer experiences effortlessly.</p>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <a href="features.html">Features</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="integrations.html">Integrations</a>
+          <a href="changelog.html">Changelog</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="blog.html">Blog</a>
+          <a href="contact.html">Contact</a>
+          <a href="docs.html">Documentation</a>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <a href="faq.html">FAQ</a>
+          <a href="docs.html">API Reference</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 BoldGrowth. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="GitHub"><i class="ph-bold ph-github-logo"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="ph-bold ph-linkedin-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
