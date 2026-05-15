@@ -76,6 +76,15 @@ const ISSUE_LIST_RELATED_QUERY_CHUNK_SIZE = 500;
 export const MAX_CHILD_ISSUES_CREATED_BY_HELPER = 25;
 const MAX_CHILD_COMPLETION_SUMMARIES = 20;
 const CHILD_COMPLETION_SUMMARY_BODY_MAX_CHARS = 500;
+
+function normalizeChildIssueTitleForReuse(title: string) {
+  return title.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function sameNullableOwner(left: string | null | undefined, right: string | null | undefined) {
+  return (left ?? null) === (right ?? null);
+}
+
 function assertTransition(from: string, to: string) {
   if (from === to) return;
   if (!ALL_ISSUE_STATUSES.includes(to)) {
@@ -2689,6 +2698,60 @@ export function issueService(db: Db) {
         .then((rows) => rows[0] ?? null);
       if (!parent) throw notFound("Parent issue not found");
 
+      const {
+        acceptanceCriteria,
+        blockParentUntilDone,
+        actorAgentId,
+        actorUserId,
+        ...issueData
+      } = data;
+      const normalizedTitle = normalizeChildIssueTitleForReuse(issueData.title);
+      const assigneeAgentId = issueData.assigneeAgentId ?? null;
+      const assigneeUserId = issueData.assigneeUserId ?? null;
+      const openChildren = await db
+        .select()
+        .from(issues)
+        .where(
+          and(
+            eq(issues.companyId, parent.companyId),
+            eq(issues.parentId, parent.id),
+            isNull(issues.hiddenAt),
+            notInArray(issues.status, ["done", "cancelled"]),
+          ),
+        );
+      const duplicateChild = openChildren.find((child) =>
+        normalizeChildIssueTitleForReuse(child.title) === normalizedTitle &&
+        sameNullableOwner(child.assigneeAgentId, assigneeAgentId) &&
+        sameNullableOwner(child.assigneeUserId, assigneeUserId)
+      );
+
+      if (duplicateChild) {
+        if (blockParentUntilDone) {
+          const existingBlockers = await db
+            .select({ blockerIssueId: issueRelations.issueId })
+            .from(issueRelations)
+            .where(and(eq(issueRelations.companyId, parent.companyId), eq(issueRelations.relatedIssueId, parent.id), eq(issueRelations.type, "blocks")));
+          await syncBlockedByIssueIds(
+            parent.id,
+            parent.companyId,
+            [...new Set([...existingBlockers.map((row) => row.blockerIssueId), duplicateChild.id])],
+            { agentId: actorAgentId ?? null, userId: actorUserId ?? null },
+          );
+          if (parent.status !== "done" && parent.status !== "cancelled" && parent.status !== "blocked") {
+            await db
+              .update(issues)
+              .set({ status: "blocked", updatedAt: new Date() })
+              .where(eq(issues.id, parent.id));
+          }
+        }
+
+        return {
+          issue: duplicateChild,
+          parentBlockerAdded: Boolean(blockParentUntilDone),
+          reusedExistingChild: true,
+        };
+      }
+
       const [{ childCount }] = await db
         .select({ childCount: sql<number>`count(*)::int` })
         .from(issues)
@@ -2697,13 +2760,6 @@ export function issueService(db: Db) {
         throw unprocessable(`Parent issue already has the maximum ${MAX_CHILD_ISSUES_CREATED_BY_HELPER} child issues for this helper`);
       }
 
-      const {
-        acceptanceCriteria,
-        blockParentUntilDone,
-        actorAgentId,
-        actorUserId,
-        ...issueData
-      } = data;
       const child = await issueService(db).create(parent.companyId, {
         ...issueData,
         parentId: parent.id,

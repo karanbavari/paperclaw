@@ -50,6 +50,7 @@ function decide(overrides: Partial<Parameters<typeof decideSuccessfulRunHandoff>
     hasQueuedWake: false,
     hasPendingInteractionOrApproval: false,
     hasExplicitBlockerPath: false,
+    hasOpenChildIssuePath: false,
     hasOpenRecoveryIssue: false,
     hasPauseHold: false,
     budgetBlocked: false,
@@ -121,6 +122,10 @@ describe("successful run handoff decision", () => {
     expect(decide({ hasExplicitBlockerPath: true })).toEqual({
       kind: "skip",
       reason: "explicit blocker path owns the next action",
+    });
+    expect(decide({ hasOpenChildIssuePath: true })).toEqual({
+      kind: "skip",
+      reason: "open child issue path owns delegated follow-up",
     });
   });
 

@@ -531,9 +531,11 @@ describe("renderPaperClawWakePrompt", () => {
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("do not stop at a plan");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Prefer the smallest verification that proves the change");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("choose one explicit PaperClaw disposition");
-    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Use child issues");
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Prefer one accountable owner");
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Use child issues only");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("instead of polling agents, sessions, or processes");
-    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Create child issues directly when you know what needs to be done");
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Keep delegation one level deep by default");
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("Create a small bounded set of child issues");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("POST /api/issues/{issueId}/interactions");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("kind suggest_tasks, ask_user_questions, or request_confirmation");
     expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain("confirmation:{issueId}:plan:{revisionId}");
@@ -563,7 +565,8 @@ describe("renderPaperClawWakePrompt", () => {
 
     expect(prompt).toContain("## PaperClaw Wake Payload");
     expect(prompt).toContain("Execution contract: take concrete action in this heartbeat");
-    expect(prompt).toContain("use child issues instead of polling");
+    expect(prompt).toContain("prefer one accountable owner");
+    expect(prompt).toContain("use child issues only");
     expect(prompt).toContain("blockParentUntilDone true");
     expect(prompt).toContain("PAPERCLAW_API_URL");
     expect(prompt).toContain("choose one explicit issue disposition");

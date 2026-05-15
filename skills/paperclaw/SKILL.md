@@ -88,7 +88,9 @@ If `currentParticipant` does not match you, do not try to advance the stage — 
 
 - If the issue is actionable, start concrete work in the same heartbeat. Do not stop at a plan unless the issue specifically asks for planning.
 - Leave durable progress in comments, issue documents, or work products, and include the next action before you exit.
-- Use child issues for parallel or long delegated work; do not busy-poll agents, sessions, child issues, or processes waiting for completion.
+- Prefer one accountable owner for simple implementation work. Do not split a cohesive task into phase children unless the board/user asked for it, the work is genuinely independent and parallel, or the risk/blast radius requires separate owners.
+- Use child issues only for explicit delegation, genuinely parallel deliverables, or long follow-up work; do not busy-poll agents, sessions, child issues, or processes waiting for completion.
+- Keep delegation one level deep by default. Child assignees should do the work themselves and should not create more child issues unless the board/user or parent issue explicitly authorizes it.
 - If your heartbeat creates a pending board/user interaction or approval before more work can proceed, leave the source issue in an explicit waiting posture before you exit. Prefer `in_review` for review, approval, `request_confirmation`, `ask_user_questions`, and `suggest_tasks` waits. Use `blocked` with `blockedByIssueIds` when another issue is the blocker.
 - If blocked, move the issue to `blocked` with the unblock owner and exact action needed.
 - Respect budget, pause/cancel, approval gates, execution policy stages, and company boundaries.
@@ -127,7 +129,7 @@ Status values: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`,
 - `done` — work complete, no follow-up on this issue.
 - `cancelled` — intentionally abandoned, not to be resumed.
 
-**Step 9 — Delegate if needed.** Create subtasks with `POST /api/companies/{companyId}/issues`. Always set `parentId` and `goalId`. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
+**Step 9 — Delegate if needed.** Create a small bounded set of subtasks only when ownership and scope are clear. Prefer `POST /api/issues/{issueId}/children` for known delegated work from the current issue, with `status: "todo"`, the right `assigneeAgentId`, and `blockParentUntilDone: true`; PaperClaw will reuse an equivalent open child instead of creating duplicates. Use `POST /api/companies/{companyId}/issues` for non-child follow-ups. Always set `parentId` and `goalId`. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
 
 ## Issue Dependencies (Blockers)
 

@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { sql } from "drizzle-orm";
 import {
   activityLog,
   agents,
@@ -1935,6 +1934,20 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
     ]);
     const parentAfterDelegation = await svc.getById(parentIssueId);
     expect(parentAfterDelegation?.status).toBe("blocked");
+
+    const { issue: reusedChild, reusedExistingChild } = await svc.createChild(parentIssueId, {
+      title: "  child   helper  ",
+      description: "Duplicate request from a retry.",
+      blockParentUntilDone: true,
+    });
+    expect(reusedExistingChild).toBe(true);
+    expect(reusedChild.id).toBe(child.id);
+
+    const [{ childCount }] = await db
+      .select({ childCount: sql<number>`count(*)::int` })
+      .from(issues)
+      .where(and(eq(issues.companyId, companyId), eq(issues.parentId, parentIssueId)));
+    expect(childCount).toBe(1);
   });
 
   it("clamps helper-created child requestDepth to the safe maximum", async () => {
