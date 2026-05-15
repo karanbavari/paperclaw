@@ -207,6 +207,29 @@ function summarizeText(value: string | null | undefined, maxChars = 220) {
   return text.length > maxChars ? `${text.slice(0, maxChars).trim()}...` : text;
 }
 
+function parseRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function readBoolean(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function isAgentInvokableStatus(status: string | null | undefined) {
+  return status !== "paused" && status !== "terminated" && status !== "pending_approval";
+}
+
+function readHeartbeatPolicy(runtimeConfig: unknown) {
+  const heartbeat = parseRecord(parseRecord(runtimeConfig).heartbeat);
+  return {
+    enabled: readBoolean(heartbeat.enabled, false),
+    wakeOnDemand: readBoolean(
+      heartbeat.wakeOnDemand ?? heartbeat.wakeOnAssignment ?? heartbeat.wakeOnOnDemand ?? heartbeat.wakeOnAutomation,
+      true,
+    ),
+  };
+}
+
 function publishDirectChatMessageEvent(companyId: string, type: "direct_chat.message.created" | "direct_chat.message.updated", payload: {
   threadId: string;
   messageId: string;
@@ -365,6 +388,8 @@ export function directChatService(db: Db) {
           role: agents.role,
           status: agents.status,
           reportsTo: agents.reportsTo,
+          runtimeConfig: agents.runtimeConfig,
+          pauseReason: agents.pauseReason,
           updatedAt: agents.updatedAt,
         })
         .from(agents)
@@ -419,7 +444,7 @@ export function directChatService(db: Db) {
         .limit(5),
       Promise.all([
         db.select({ count: sql<number>`count(*)::int` }).from(agents).where(eq(agents.companyId, companyId)).then((rows) => Number(rows[0]?.count ?? 0)),
-        db.select({ count: sql<number>`count(*)::int` }).from(agents).where(and(eq(agents.companyId, companyId), eq(agents.status, "active"))).then((rows) => Number(rows[0]?.count ?? 0)),
+        db.select({ count: sql<number>`count(*)::int` }).from(agents).where(and(eq(agents.companyId, companyId), sql`${agents.status} not in ('paused', 'terminated', 'pending_approval')`)).then((rows) => Number(rows[0]?.count ?? 0)),
         db.select({ count: sql<number>`count(*)::int` }).from(issues).where(and(eq(issues.companyId, companyId), sql`${issues.hiddenAt} is null`, sql`${issues.status} not in ('done', 'cancelled')`)).then((rows) => Number(rows[0]?.count ?? 0)),
         db.select({ count: sql<number>`count(*)::int` }).from(projects).where(and(eq(projects.companyId, companyId), sql`${projects.archivedAt} is null`, sql`${projects.status} not in ('done', 'cancelled')`)).then((rows) => Number(rows[0]?.count ?? 0)),
         db.select({ count: sql<number>`count(*)::int` }).from(meetings).where(and(eq(meetings.companyId, companyId), eq(meetings.status, "open"))).then((rows) => Number(rows[0]?.count ?? 0)),
@@ -432,20 +457,29 @@ export function directChatService(db: Db) {
       companyDescription: summarizeText(company?.description),
       counts: {
         agents: counts[0],
+        invokableAgents: counts[1],
         activeAgents: counts[1],
         openIssues: counts[2],
         activeProjects: counts[3],
         openMeetings: counts[4],
       },
-      agentRoster: roster.map((agent) => ({
-        id: agent.id,
-        name: agent.name,
-        title: agent.title,
-        role: agent.role,
-        status: agent.status,
-        reportsTo: agent.reportsTo,
-        isYou: agent.id === currentAgentId,
-      })),
+      agentRoster: roster.map((agent) => {
+        const heartbeat = readHeartbeatPolicy(agent.runtimeConfig);
+        const invokable = isAgentInvokableStatus(agent.status);
+        return {
+          id: agent.id,
+          name: agent.name,
+          title: agent.title,
+          role: agent.role,
+          status: agent.status,
+          reportsTo: agent.reportsTo,
+          heartbeatEnabled: heartbeat.enabled,
+          wakeOnDemand: heartbeat.wakeOnDemand,
+          assignmentReady: invokable && heartbeat.wakeOnDemand,
+          pauseReason: agent.pauseReason,
+          isYou: agent.id === currentAgentId,
+        };
+      }),
       activeProjects: activeProjects.map((project) => ({
         id: project.id,
         name: project.name,

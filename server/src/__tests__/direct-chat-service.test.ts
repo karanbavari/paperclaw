@@ -138,6 +138,14 @@ describeEmbeddedPostgres("directChatService", () => {
   it("creates a board message, queued CEO placeholder, and wakeup context", async () => {
     const companyId = await createCompany();
     const ceoId = await createAgent(companyId);
+    const ctoId = await createAgent(companyId, {
+      name: "CTO",
+      role: "cto",
+      title: "Chief Technology Officer",
+      status: "idle",
+      reportsTo: ceoId,
+      runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: true } },
+    });
     const [project] = await db.insert(projects).values({
       companyId,
       name: "Direct Chat rollout",
@@ -194,10 +202,21 @@ describeEmbeddedPostgres("directChatService", () => {
             company: expect.objectContaining({ name: "Direct Chat Co" }),
             companySnapshot: expect.objectContaining({
               counts: expect.objectContaining({
+                invokableAgents: 2,
                 activeProjects: 1,
                 openIssues: 1,
                 openMeetings: 1,
               }),
+              agentRoster: expect.arrayContaining([
+                expect.objectContaining({
+                  id: ctoId,
+                  name: "CTO",
+                  status: "idle",
+                  heartbeatEnabled: false,
+                  wakeOnDemand: true,
+                  assignmentReady: true,
+                }),
+              ]),
             }),
           }),
         }),

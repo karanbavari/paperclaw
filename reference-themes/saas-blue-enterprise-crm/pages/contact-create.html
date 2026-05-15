@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Contact | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item active">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Add Contact</h1>
+          <p class="page-subtitle">Create a new contact record.</p>
+        </div>
+      </div>
+      <div class="card">
+    <div class="card-header"><span class="card-title">Contact Details</span></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" value="Rajesh" placeholder="Enter first name"></div>
+        <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" value="Kumar" placeholder="Enter last name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" value="rajesh.kumar@example.com" placeholder="Enter email"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" value="+91 98765 43210" placeholder="Enter phone number"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company</label><select class="form-select"><option>TechCorp Solutions</option><option>Acme Technologies</option><option>Innovatech India</option></select></div>
+        <div class="form-group"><label class="form-label">Designation</label><input class="form-input" value="Senior Software Engineer" placeholder="Enter designation"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Owner</label><select class="form-select"><option>Amit Verma</option><option>Priya Sharma</option><option>Sneha Patel</option></select></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select"><option>Active</option><option>Inactive</option><option>Lead</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" placeholder="Enter full address"></textarea></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="Add notes about this contact"></textarea></div>
+    </div>
+    <div class="card-footer" style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-secondary">Cancel</button>
+      <button class="btn btn-primary">💾 Save Contact</button>
+    </div>
+  </div>
+    </div>
+  </div>
+</body>
+</html>

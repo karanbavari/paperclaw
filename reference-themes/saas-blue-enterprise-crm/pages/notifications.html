@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item active">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Notifications</h1>
+          <p class="page-subtitle">Stay updated with the latest activity.</p>
+        </div>
+      </div>
+      <div class="tabs"><button class="tab active">All</button><button class="tab">Unread</button><button class="tab">Mentions</button></div><div class="card">
+    <div class="card-body">
+<div class="activity-item" style="background:var(--color-success-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">💰</div><div class="activity-content"><strong>Deal Won:</strong> TechCorp Solutions deal worth ₹12,50,000 was won!</div><div class="activity-time">5 minutes ago</div></div>
+<div class="activity-item" style="background:var(--color-primary-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">👤</div><div class="activity-content"><strong>New Contact:</strong> Priya Sharma was added to Enterprise leads by Amit Verma</div><div class="activity-time">15 minutes ago</div></div>
+<div class="activity-item" style="background:var(--color-warning-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">📋</div><div class="activity-content"><strong>Task Reminder:</strong> Follow-up with TechCorp is due today</div><div class="activity-time">1 hour ago</div></div>
+<div class="activity-item" style="background:var(--color-info-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">📧</div><div class="activity-content"><strong>Campaign Sent:</strong> Q2 Newsletter sent to 2,450 recipients</div><div class="activity-time">3 hours ago</div></div>
+<div class="activity-item" style="background:var(--color-primary-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">🏢</div><div class="activity-content"><strong>Company Added:</strong> Acme Technologies was added by Sneha Patel</div><div class="activity-time">5 hours ago</div></div>
+<div class="activity-item" style="background:var(--color-neutral-100);margin:0 -20px;padding:12px 20px"><div class="activity-icon">👤</div><div class="activity-content"><strong>Team Update:</strong> Vikram Singh joined the Enterprise team</div><div class="activity-time">1 day ago</div></div>
+<div class="activity-item" style="background:var(--color-info-50);margin:0 -20px;padding:12px 20px"><div class="activity-icon">📈</div><div class="activity-content"><strong>Report Ready:</strong> Monthly performance report for April is ready</div><div class="activity-time">2 days ago</div></div>
+    </div>
+  </div>
+    </div>
+  </div>
+</body>
+</html>

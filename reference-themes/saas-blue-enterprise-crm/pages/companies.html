@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Companies | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item active">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Companies</h1>
+          <p class="page-subtitle">Manage your company accounts.</p>
+        </div>
+      </div>
+      <div class="toolbar"><input class="form-input" placeholder="Search companies..." style="min-width:240px"><select class="form-select"><option>All Industries</option><option>Technology</option><option>Finance</option><option>Healthcare</option></select><select class="form-select"><option>All Status</option><option>Active</option><option>Inactive</option></select><span class="toolbar-spacer"></span><button class="btn btn-primary">+ Add Company</button></div><div class="card"><div class="table-container"><table><thead><tr><th><div class="checkbox"><input type="checkbox"></div></th><th>Company</th><th>Industry</th><th>Contacts</th><th>Deals</th><th>Revenue</th><th>Status</th><th></th></tr></thead><tbody>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>TechCorp Solutions</strong></a></td><td>Technology</td><td>24</td><td>3</td><td>₹1,25,00,000</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>Acme Technologies</strong></a></td><td>Technology</td><td>18</td><td>2</td><td>₹85,00,000</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>Innovatech India</strong></a></td><td>Technology</td><td>12</td><td>1</td><td>₹45,00,000</td><td><span class="badge badge-yellow">Lead</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>Global Solutions Ltd</strong></a></td><td>Finance</td><td>8</td><td>0</td><td>—</td><td><span class="badge badge-gray">Inactive</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>Pinnacle Corp</strong></a></td><td>Healthcare</td><td>15</td><td>4</td><td>₹2,10,00,000</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>Digital Ventures</strong></a></td><td>Technology</td><td>7</td><td>1</td><td>₹32,00,000</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="company-detail.html"><strong>NexGen Corporation</strong></a></td><td>Finance</td><td>11</td><td>2</td><td>₹67,00,000</td><td><span class="badge badge-yellow">Lead</span></td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+</tbody></table></div><div class="card-footer" style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-7 of 156</span><div class="pagination"><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">⋯</button><button class="page-btn">›</button></div></div></div>
+    </div>
+  </div>
+</body>
+</html>

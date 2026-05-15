@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MAX_ISSUE_REQUEST_DEPTH } from "../index.js";
 import {
   addIssueCommentSchema,
+  createChildIssueSchema,
   createIssueSchema,
   respondIssueThreadInteractionSchema,
   suggestedTaskDraftSchema,
@@ -125,6 +126,15 @@ describe("issue validators", () => {
     });
 
     expect(parsed.requestDepth).toBe(MAX_ISSUE_REQUEST_DEPTH);
+  });
+
+  it("defaults child issue creation to todo dispatch state", () => {
+    const parsed = createChildIssueSchema.parse({
+      title: "Delegate follow-up",
+      assigneeAgentId: "11111111-1111-4111-8111-111111111111",
+    });
+
+    expect(parsed.status).toBe("todo");
   });
 
   it("clamps oversized requestDepth values on update", () => {

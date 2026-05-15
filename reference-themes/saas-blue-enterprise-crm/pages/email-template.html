@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Template | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item active">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Email Template</h1>
+          <p class="page-subtitle">Design and manage email templates.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Template Editor</span></div>
+      <div class="card-body">
+        <div class="form-group"><label class="form-label">Template Name</label><input class="form-input" value="Q2 Newsletter"></div>
+        <div class="form-group"><label class="form-label">Subject</label><input class="form-input" value="Your Q2 Newsletter from BlueSuite CRM"></div>
+        <div class="form-group"><label class="form-label">Email Content (HTML)</label><textarea class="form-textarea" style="min-height:300px;font-family:var(--font-mono);font-size:13px">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Newsletter&lt;/title&gt;&lt;/head&gt;
+&lt;body style="font-family:Arial,sans-serif"&gt;
+  &lt;h1&gt;Q2 Newsletter&lt;/h1&gt;
+  &lt;p&gt;Dear {{contact_name}},&lt;/p&gt;
+  &lt;p&gt;Welcome to our Q2 newsletter...&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea></div>
+        <div class="form-hint">Use {{contact_name}}, {{company}}, {{deal_amount}} as merge tags.</div>
+      </div>
+      <div class="card-footer" style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-secondary">Preview</button>
+        <button class="btn btn-primary">💾 Save Template</button>
+      </div>
+    </div>
+    <div class="card">
+    <div class="card-header"><span class="card-title">Merge Tags</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+        <div><code style="background:var(--color-neutral-100);padding:2px 6px;border-radius:3px">{{contact_name}}</code> — Contact Name</div>
+        <div><code style="background:var(--color-neutral-100);padding:2px 6px;border-radius:3px">{{company}}</code> — Company Name</div>
+        <div><code style="background:var(--color-neutral-100);padding:2px 6px;border-radius:3px">{{deal_amount}}</code> — Deal Amount</div>
+        <div><code style="background:var(--color-neutral-100);padding:2px 6px;border-radius:3px">{{owner}}</code> — Assigned Owner</div>
+        <div><code style="background:var(--color-neutral-100);padding:2px 6px;border-radius:3px">{{close_date}}</code> — Expected Close Date</div>
+      </div>
+    </div>
+  </div>
+  </div>
+    </div>
+  </div>
+</body>
+</html>

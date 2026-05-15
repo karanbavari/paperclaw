@@ -201,8 +201,10 @@ export const createChildIssueSchema = createIssueSchema
   .omit({
     parentId: true,
     inheritExecutionWorkspaceFromIssueId: true,
+    status: true,
   })
   .extend({
+    status: z.enum(ISSUE_STATUSES).optional().default("todo"),
     acceptanceCriteria: z.array(z.string().trim().min(1).max(500)).max(20).optional(),
     blockParentUntilDone: z.boolean().optional().default(false),
   });

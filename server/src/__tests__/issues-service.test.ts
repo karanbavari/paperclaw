@@ -1909,13 +1909,13 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
 
     const { issue: child, parentBlockerAdded } = await svc.createChild(parentIssueId, {
       title: "Child helper",
-      status: "todo",
       description: "Implement the helper.",
       acceptanceCriteria: ["Uses the parent issue as parentId", "Reuses the parent execution workspace"],
       blockParentUntilDone: true,
     });
 
     expect(parentBlockerAdded).toBe(true);
+    expect(child.status).toBe("todo");
     expect(child.parentId).toBe(parentIssueId);
     expect(child.projectId).toBe(projectId);
     expect(child.goalId).toBe(goalId);
@@ -1933,6 +1933,8 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
         title: "Child helper",
       }),
     ]);
+    const parentAfterDelegation = await svc.getById(parentIssueId);
+    expect(parentAfterDelegation?.status).toBe("blocked");
   });
 
   it("clamps helper-created child requestDepth to the safe maximum", async () => {

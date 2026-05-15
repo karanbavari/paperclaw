@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Brain, Check, Clock, Database, Search, Archive } from "lucide-react";
+import { AlertCircle, Brain, Check, Clock, Database, Search, Archive } from "lucide-react";
 import {
   COMPANY_MEMORY_KINDS,
   COMPANY_MEMORY_SCOPE_TYPES,
@@ -133,8 +133,11 @@ export function CompanyMemory() {
 
   const saveProfileMutation = useMutation({
     mutationFn: () => companyMemoryApi.updateProfile(selectedCompanyId!, profileDraft),
-    onSuccess: (profile) => {
+    onSuccess: async (profile) => {
       queryClient.setQueryData(queryKeys.companyMemory.profile(selectedCompanyId!), profile);
+      setProfileDraft(profile);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.companyMemory.profile(selectedCompanyId!) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.companyMemory.recall(selectedCompanyId!, { query: recallQuery, agentId: recallAgentId || null }) });
     },
   });
 
@@ -179,6 +182,7 @@ export function CompanyMemory() {
   }
 
   function setProfileField<K extends keyof UpdateCompanyProfile>(key: K, value: UpdateCompanyProfile[K]) {
+    if (saveProfileMutation.isError || saveProfileMutation.isSuccess) saveProfileMutation.reset();
     setProfileDraft((current) => ({ ...current, [key]: value }));
   }
 
@@ -303,10 +307,24 @@ export function CompanyMemory() {
               />
             </Field>
           </div>
-          <Button onClick={() => saveProfileMutation.mutate()} disabled={saveProfileMutation.isPending}>
-            <Check className="h-4 w-4" />
-            Save Profile
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={() => saveProfileMutation.mutate()} disabled={saveProfileMutation.isPending || profileQuery.isLoading}>
+              <Check className="h-4 w-4" />
+              {saveProfileMutation.isPending ? "Saving..." : "Save Profile"}
+            </Button>
+            {saveProfileMutation.isSuccess ? (
+              <div className="flex items-center gap-1.5 text-sm text-emerald-700">
+                <Check className="h-4 w-4" />
+                Profile saved.
+              </div>
+            ) : null}
+            {saveProfileMutation.isError ? (
+              <div className="flex items-center gap-1.5 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                {saveProfileMutation.error instanceof Error ? saveProfileMutation.error.message : "Failed to save profile."}
+              </div>
+            ) : null}
+          </div>
         </TabsContent>
 
         <TabsContent value="knowledge" className="space-y-4">

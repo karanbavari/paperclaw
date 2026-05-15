@@ -279,6 +279,70 @@ describe("issue execution policy routes", () => {
     );
   });
 
+  it("defaults delegated child issues to todo and wakes the assignee", async () => {
+    mockIssueService.getById.mockResolvedValue({
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      companyId: "company-1",
+      status: "in_progress",
+      assigneeAgentId: "11111111-1111-4111-8111-111111111111",
+      assigneeUserId: null,
+      createdByUserId: "local-board",
+      identifier: "PAP-1001",
+      title: "Parent issue",
+      executionPolicy: null,
+      executionState: null,
+    });
+    mockIssueService.createChild.mockResolvedValueOnce({
+      issue: {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        companyId: "company-1",
+        identifier: "PAP-1002",
+        title: "Delegated child",
+        status: "todo",
+        assigneeAgentId: "33333333-3333-4333-8333-333333333333",
+      },
+      parentBlockerAdded: true,
+    });
+
+    const res = await request(await createApp())
+      .post("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/children")
+      .send({
+        title: "Delegated child",
+        assigneeAgentId: "33333333-3333-4333-8333-333333333333",
+        blockParentUntilDone: true,
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockIssueService.createChild).toHaveBeenCalledWith(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      expect.objectContaining({
+        title: "Delegated child",
+        status: "todo",
+        assigneeAgentId: "33333333-3333-4333-8333-333333333333",
+        blockParentUntilDone: true,
+      }),
+    );
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
+      "33333333-3333-4333-8333-333333333333",
+      expect.objectContaining({
+        reason: "issue_assigned",
+        payload: expect.objectContaining({
+          issueId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          mutation: "create",
+        }),
+      }),
+    );
+    expect(mockLogActivity).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        action: "issue.child_created",
+        details: expect.objectContaining({
+          parentBlockerAdded: true,
+        }),
+      }),
+    );
+  });
+
   it("rejects child monitor scheduling by a non-assignee agent even with task assignment permission", async () => {
     mockAccessService.hasPermission.mockResolvedValue(true);
     mockIssueService.getById.mockResolvedValue({

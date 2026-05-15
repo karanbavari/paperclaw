@@ -24,9 +24,31 @@ const nullableTrimmedString = z.preprocess(
   z.string().trim().nullable().optional(),
 );
 
+function normalizeProfileDate(value: unknown) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const localized = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!localized) return trimmed;
+  const [, dayRaw, monthRaw, yearRaw] = localized;
+  const day = Number(dayRaw);
+  const month = Number(monthRaw);
+  const year = Number(yearRaw);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return trimmed;
+  }
+  return `${yearRaw}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 export const updateCompanyProfileSchema = z.object({
   registeredSince: z.preprocess(
-    (value) => (typeof value === "string" && value.trim().length === 0 ? null : value),
+    normalizeProfileDate,
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   ),
   businessCategory: nullableTrimmedString,

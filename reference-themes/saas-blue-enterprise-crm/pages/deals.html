@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deals | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item active">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Deals</h1>
+          <p class="page-subtitle">Track your sales pipeline.</p>
+        </div>
+      </div>
+      <div class="toolbar"><input class="form-input" placeholder="Search deals..." style="min-width:240px"><select class="form-select"><option>All Stages</option><option>Qualified</option><option>Proposal</option><option>Negotiation</option></select><select class="form-select"><option>All Owners</option><option>Amit Verma</option><option>Priya Sharma</option></select><span class="toolbar-spacer"></span><button class="btn btn-primary">+ Add Deal</button></div><div class="kanban-board">
+<div class="kanban-column"><div class="kanban-header">Qualified <span class="kanban-count">12</span></div><div class="kanban-cards"><div class="kanban-card"><span class="badge badge-blue" style="margin-bottom:6px">TechMahindra</span><div class="kanban-card-title">TechMahindra Deal</div><div class="kanban-card-meta">₹8,50,000</div></div><div class="kanban-card"><span class="badge badge-blue" style="margin-bottom:6px">Infosys</span><div class="kanban-card-title">Infosys Consulting</div><div class="kanban-card-meta">₹15,00,000</div></div><div class="kanban-card"><span class="badge badge-blue" style="margin-bottom:6px">Wipro</span><div class="kanban-card-title">Wipro Cloud Migration</div><div class="kanban-card-meta">₹22,00,000</div></div><div class="kanban-card"><span class="badge badge-blue" style="margin-bottom:6px">HCL</span><div class="kanban-card-title">HCL Digital Suite</div><div class="kanban-card-meta">₹5,00,000</div></div></div></div>
+<div class="kanban-column"><div class="kanban-header">Proposal <span class="kanban-count">8</span></div><div class="kanban-cards"><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">TCS</span><div class="kanban-card-title">TCS Enterprise Deal</div><div class="kanban-card-meta">₹45,00,000</div></div><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">L&T</span><div class="kanban-card-title">L&T Tech Platform</div><div class="kanban-card-meta">₹18,00,000</div></div><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">Adani Group</span><div class="kanban-card-title">Adani Digital</div><div class="kanban-card-meta">₹12,00,000</div></div></div></div>
+<div class="kanban-column"><div class="kanban-header">Negotiation <span class="kanban-count">5</span></div><div class="kanban-cards"><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">Reliance</span><div class="kanban-card-title">Reliance Retail CRM</div><div class="kanban-card-meta">₹62,00,000</div></div><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">Bajaj</span><div class="kanban-card-title">Bajaj Finance Suite</div><div class="kanban-card-meta">₹28,00,000</div></div><div class="kanban-card"><span class="badge badge-yellow" style="margin-bottom:6px">ICICI</span><div class="kanban-card-title">ICICI Bank Platform</div><div class="kanban-card-meta">₹95,00,000</div></div></div></div>
+<div class="kanban-column"><div class="kanban-header">Closed Won <span class="kanban-count">3</span></div><div class="kanban-cards"><div class="kanban-card"><span class="badge badge-green" style="margin-bottom:6px">TechCorp</span><div class="kanban-card-title">TechCorp Solutions</div><div class="kanban-card-meta">₹12,50,000</div></div><div class="kanban-card"><span class="badge badge-green" style="margin-bottom:6px">Small Co.</span><div class="kanban-card-title">Small Co. Package</div><div class="kanban-card-meta">₹2,40,000</div></div><div class="kanban-card"><span class="badge badge-green" style="margin-bottom:6px">ABC Corp</span><div class="kanban-card-title">ABC Corp License</div><div class="kanban-card-meta">₹8,00,000</div></div></div></div>
+  </div>
+    </div>
+  </div>
+</body>
+</html>

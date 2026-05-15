@@ -97,8 +97,10 @@ export const DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE = [
   "- Before exiting issue-scoped work, choose one explicit PaperClaw disposition: mark done/cancelled, move to in_review with a real reviewer or pending interaction/approval, mark blocked with blockers or a named unblock owner/action, create/link delegated follow-up work and block the parent if needed, or record an explicit continuation path with resume intent and a concrete next action.",
   "- Prefer the smallest verification that proves the change; do not default to full workspace typecheck/build/test on every heartbeat unless the task scope warrants it.",
   "- Use child issues for parallel or long delegated work instead of polling agents, sessions, or processes.",
+  "- When delegating known follow-up work from a parent issue, create a child issue with status todo, the right assigneeAgentId, and blockParentUntilDone true so the parent has an explicit delegated follow-up disposition.",
   "- If woken by a human comment on a dependency-blocked issue, respond or triage the comment without treating the blocked deliverable work as unblocked.",
   "- Create child issues directly when you know what needs to be done; use issue-thread interactions when the board/user must choose suggested tasks, answer structured questions, or confirm a proposal.",
+  "- Use the runtime-provided PAPERCLAW_API_URL and PAPERCLAW_API_KEY for PaperClaw API calls. Never guess or hardcode localhost ports.",
   "- To ask for that input, create an interaction on the current issue with POST /api/issues/{issueId}/interactions using kind suggest_tasks, ask_user_questions, or request_confirmation. Use continuationPolicy wake_assignee when you need to resume after a response; for request_confirmation this resumes only after acceptance.",
   "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` with the POST /api/issues/{issueId}/comments or PATCH /api/issues/{issueId} comment payload. Generic agent comments on closed issues are inert by default.",
   "- For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}. Wait for acceptance before creating implementation subtasks, and create a fresh confirmation after superseding board/user comments if approval is still needed.",
@@ -747,7 +749,7 @@ export function renderPaperClawWakePrompt(
         "Focus on the new wake delta below and continue the current task without restating the full heartbeat boilerplate.",
         "Fetch the API thread only when `fallbackFetchNeeded` is true or you need broader history than this batch.",
         "",
-        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
+        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and when delegating known follow-up work create a todo child issue with the right assigneeAgentId and blockParentUntilDone true. Use PAPERCLAW_API_URL and PAPERCLAW_API_KEY for PaperClaw API calls; never guess localhost ports. Before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
         "",
         `- reason: ${normalized.reason ?? "unknown"}`,
         `- issue: ${normalized.issue?.identifier ?? normalized.issue?.id ?? "unknown"}${normalized.issue?.title ? ` ${normalized.issue.title}` : ""}`,
@@ -764,7 +766,7 @@ export function renderPaperClawWakePrompt(
         "Use this inline wake data first before refetching the issue thread.",
         "Only fetch the API thread when `fallbackFetchNeeded` is true or you need broader history than this batch.",
         "",
-        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
+        "Execution contract: take concrete action in this heartbeat when the issue is actionable; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action, use child issues instead of polling for long or parallel work, and when delegating known follow-up work create a todo child issue with the right assigneeAgentId and blockParentUntilDone true. Use PAPERCLAW_API_URL and PAPERCLAW_API_KEY for PaperClaw API calls; never guess localhost ports. Before exiting choose one explicit issue disposition: done/cancelled, in_review with a real reviewer or pending interaction/approval, blocked with blockers or a named unblock owner/action, delegated follow-up with parent blocked if needed, or explicit continuation with resume intent.",
         "",
         `- reason: ${normalized.reason ?? "unknown"}`,
         `- issue: ${normalized.issue?.identifier ?? normalized.issue?.id ?? "unknown"}${normalized.issue?.title ? ` ${normalized.issue.title}` : ""}`,
@@ -1002,8 +1004,21 @@ export function renderPaperClawDirectChatPrompt(value: unknown): string {
     const titleText = asString(agent.title, "").trim();
     const role = asString(agent.role, "").trim();
     const status = asString(agent.status, "").trim();
+    const heartbeatEnabled = agent.heartbeatEnabled === true;
+    const wakeOnDemand = agent.wakeOnDemand !== false;
+    const assignmentReady = agent.assignmentReady === true;
+    const pauseReason = asString(agent.pauseReason, "").trim();
     const isYou = agent.isYou === true ? "; you" : "";
-    return `- ${name}${titleText ? ` (${titleText})` : ""}${role ? `; role: ${role}` : ""}${status ? `; status: ${status}` : ""}${isYou}`;
+    return [
+      `- ${name}${titleText ? ` (${titleText})` : ""}`,
+      role ? `role: ${role}` : "",
+      status ? `status: ${status}` : "",
+      `timer: ${heartbeatEnabled ? "on" : "off"}`,
+      `assignment wake: ${wakeOnDemand ? "on" : "off"}`,
+      `assignment-ready: ${assignmentReady ? "yes" : "no"}`,
+      pauseReason ? `pause reason: ${pauseReason}` : "",
+      isYou ? "you" : "",
+    ].filter(Boolean).join("; ");
   });
   const issueLines = Array.isArray(snapshot.recentOpenIssues)
     ? snapshot.recentOpenIssues
@@ -1023,13 +1038,16 @@ export function renderPaperClawDirectChatPrompt(value: unknown): string {
     "You are replying directly to the Board as the CEO. This is not an issue comment and not a meeting room.",
     "Answer the Board's message directly. Be clear, concise, executive, and action-oriented.",
     "Do not modify project files or start implementation work unless the Board explicitly asks you to take that action in this chat.",
+    "PaperClaw agent status note: `idle` means available, not broken. `timer: off` only means scheduled heartbeat is disabled; if `assignment wake: on`, assigning an issue or task can still wake that agent.",
+    "Do not claim an auth/env/root-cause such as missing BETTER_AUTH_SECRET or PAPERCLAW_API_KEY unless the current context, API response, or run logs explicitly show that exact failure.",
+    "If the Board asks you to create or assign a task to the CTO or another agent, create/update a PaperClaw issue with the matching assigneeAgentId and summarize the issue identifier.",
     "",
     `- company: ${companyName}`,
     `- you are: ${currentAgentName}`,
     `- requested by: ${requestedBy}`,
     responseMessageId ? `- response message id: ${responseMessageId}` : "",
     Object.keys(counts).length > 0
-      ? `- company counts: ${asNumber(counts.activeAgents, 0)} active agents, ${asNumber(counts.openIssues, 0)} open issues, ${asNumber(counts.activeProjects, 0)} active projects`
+      ? `- company counts: ${asNumber(counts.invokableAgents ?? counts.activeAgents, 0)} assignment-ready agents, ${asNumber(counts.openIssues, 0)} open issues, ${asNumber(counts.activeProjects, 0)} active projects`
       : "",
     targetQuestion ? ["", "### Board Message", targetQuestion].join("\n") : "",
     rosterLines.length > 0 ? ["", "### Agent Roster", ...rosterLines].join("\n") : "",

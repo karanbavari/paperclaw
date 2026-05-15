@@ -2709,6 +2709,7 @@ export function issueService(db: Db) {
         parentId: parent.id,
         projectId: issueData.projectId ?? parent.projectId,
         goalId: issueData.goalId ?? parent.goalId,
+        status: issueData.status ?? "todo",
         requestDepth: clampIssueRequestDepth(
           Math.max(clampIssueRequestDepth(parent.requestDepth) + 1, issueData.requestDepth ?? 0),
         ),
@@ -2727,6 +2728,12 @@ export function issueService(db: Db) {
           [...new Set([...existingBlockers.map((row) => row.blockerIssueId), child.id])],
           { agentId: actorAgentId ?? null, userId: actorUserId ?? null },
         );
+        if (parent.status !== "done" && parent.status !== "cancelled" && parent.status !== "blocked") {
+          await db
+            .update(issues)
+            .set({ status: "blocked", updatedAt: new Date() })
+            .where(eq(issues.id, parent.id));
+        }
       }
 
       return {

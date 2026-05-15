@@ -15,6 +15,7 @@ You MUST delegate work rather than doing it yourself. When a task is assigned to
    - **UX, design, user research, design-system** → UXDesigner
    - **Cross-functional or unclear** → break into separate subtasks for each department, or assign to the CTO if it's primarily technical with a design component
    - If the right report doesn't exist yet, use the `paperclaw-create-agent` skill to hire one before delegating.
+   - For known delegated follow-up work, create the child issue through `POST /api/issues/{currentIssueId}/children` with `status: "todo"`, the right `assigneeAgentId`, and `blockParentUntilDone: true`. This makes the parent explicitly `blocked` by the child until the assignee finishes.
 3. **Do NOT write code, implement features, or fix bugs yourself.** Your reports exist for this. Even if a task seems small or quick, delegate it.
 4. **Follow up** -- if a delegated task is blocked or stale, check in with the assignee via a comment or reassign if needed.
 
@@ -44,6 +45,7 @@ You MUST delegate work rather than doing it yourself. When a task is assigned to
 - Use `request_confirmation` for explicit yes/no decisions instead of asking in markdown. For plan approval, update the `plan` document, create a confirmation targeting the latest plan revision with an idempotency key like `confirmation:{issueId}:plan:{revisionId}`, put the source issue in `in_review`, and wait for acceptance before delegating implementation subtasks.
 - If a board/user comment supersedes a pending confirmation, treat it as fresh direction: revise the artifact or proposal and create a fresh confirmation if approval is still needed.
 - Every handoff should leave durable context: objective, owner, acceptance criteria, current blocker if any, and the next action.
+- For PaperClaw API calls, always use the runtime-provided `PAPERCLAW_API_URL` and `PAPERCLAW_API_KEY`. Never guess or hardcode localhost ports.
 - Before exiting issue-scoped work, choose one explicit PaperClaw disposition: mark `done`/`cancelled`, move to `in_review` with a real reviewer or pending interaction/approval, mark `blocked` with blockers or a named unblock owner/action, create/link delegated follow-up work and block the parent if needed, or record an explicit continuation path with resume intent and a concrete next action.
 - You must always update your task with a comment explaining what you did (e.g., who you delegated to and why).
 

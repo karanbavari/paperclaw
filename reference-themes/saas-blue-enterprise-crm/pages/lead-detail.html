@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item active">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title"></h1>
+          
+        </div>
+      </div>
+      <div class="detail-header">
+    <div class="detail-avatar">RV</div>
+    <div class="detail-info">
+      <div class="detail-name">Rahul Verma</div>
+      <div class="detail-role">Freelance Consultant</div>
+      <div class="detail-meta">
+        <span class="detail-meta-item"><strong>Email:</strong> rahul.verma@example.com</span>
+        <span class="detail-meta-item"><strong>Phone:</strong> +91 99887 76655</span>
+        <span class="detail-meta-item"><strong>Source:</strong> Website</span>
+        <span class="detail-meta-item"><strong>Score:</strong> 85/100</span>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary">✏️ Edit</button>
+      <button class="btn btn-success">✅ Convert</button>
+      <button class="btn btn-secondary">📧 Email</button>
+      <button class="btn btn-ghost">⋯</button>
+    </div>
+  </div><div class="tabs"><button class="tab active">Details</button><button class="tab">Activities</button><button class="tab">Notes</button></div><div class="grid-2">
+    <div class="card">
+    <div class="card-header"><span class="card-title">Lead Information</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div class="form-label">Status</div><div><span class="badge badge-blue">New</span></div></div>
+        <div><div class="form-label">Lead Score</div><div><strong>85</strong>/100</div></div>
+        <div><div class="form-label">Source</div><div>Website Form</div></div>
+        <div><div class="form-label">Owner</div><div>Priya Sharma</div></div>
+        <div><div class="form-label">Created</div><div>12 May 2026</div></div>
+        <div><div class="form-label">Interest</div><div>Enterprise Plan</div></div>
+      </div>
+    </div>
+  </div>
+    <div class="card">
+    <div class="card-header"><span class="card-title">Lead Scoring Breakdown</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Profile Fit</span><span>90%</span></div><div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Engagement</span><span>75%</span></div><div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Budget Fit</span><span>85%</span></div><div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Timeline</span><span>70%</span></div><div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div></div>
+      </div>
+    </div>
+  </div>
+  </div>
+    </div>
+  </div>
+</body>
+</html>

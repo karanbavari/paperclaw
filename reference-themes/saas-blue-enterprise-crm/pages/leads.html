@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leads | BlueSuite CRM</title>
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">B</div>
+      <span class="sidebar-brand">BlueSuite CRM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main Menu</div>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Contacts
+      </a>
+      <a href="companies.html" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        Companies
+      </a>
+      <a href="deals.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        Deals
+      </a>
+      <a href="leads.html" class="nav-item active">
+        <span class="nav-icon">⭐</span>
+        Leads
+      </a>
+      <a href="tasks.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        Tasks
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        Calendar
+      </a>
+      <div class="nav-section">Marketing</div>
+      <a href="campaigns.html" class="nav-item">
+        <span class="nav-icon">📧</span>
+        Campaigns
+      </a>
+      <div class="nav-section">Analytics</div>
+      <a href="reports.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Reports
+      </a>
+      <div class="nav-section">System</div>
+      <a href="settings.html" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <span class="nav-icon">🚪</span>
+        Sign Out
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+      <header class="top-header">
+    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search contacts, deals, tasks..." />
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">🔔<span class="dot"></span></button>
+      <button class="header-btn">❓</button>
+      <div class="avatar">RK</div>
+    </div>
+  </header>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Leads</h1>
+          <p class="page-subtitle">Manage and score incoming leads.</p>
+        </div>
+      </div>
+      <div class="toolbar"><input class="form-input" placeholder="Search leads..." style="min-width:240px"><select class="form-select"><option>All Sources</option><option>Website</option><option>Referral</option><option>LinkedIn</option><option>Event</option></select><select class="form-select"><option>All Status</option><option>New</option><option>Contacted</option><option>Qualified</option></select><span class="toolbar-spacer"></span><button class="btn btn-primary">+ Add Lead</button></div><div class="card"><div class="table-container"><table><thead><tr><th><div class="checkbox"><input type="checkbox"></div></th><th>Lead</th><th>Source</th><th>Company</th><th>Score</th><th>Status</th><th>Owner</th><th></th></tr></thead><tbody>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Rahul Verma</strong></a></td><td>Website</td><td>Self Employed</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:85%"></div></div><span style="font-size:12px">85</span></td><td><span class="badge badge-blue">New</span></td><td>Priya Sharma</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Neha Kapoor</strong></a></td><td>LinkedIn</td><td>TechCorp</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:72%"></div></div><span style="font-size:12px">72</span></td><td><span class="badge badge-yellow">Contacted</span></td><td>Amit Verma</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Sunil Mehta</strong></a></td><td>Referral</td><td>Acme Tech</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:91%"></div></div><span style="font-size:12px">91</span></td><td><span class="badge badge-green">Qualified</span></td><td>Sneha Patel</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Deepa Iyer</strong></a></td><td>Event</td><td>Innovatech</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:45%"></div></div><span style="font-size:12px">45</span></td><td><span class="badge badge-blue">New</span></td><td>Rajesh Kumar</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Arun Nair</strong></a></td><td>Website</td><td>Self Employed</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:63%"></div></div><span style="font-size:12px">63</span></td><td><span class="badge badge-yellow">Contacted</span></td><td>Priya Sharma</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Kavita Joshi</strong></a></td><td>LinkedIn</td><td>Global Corp</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:88%"></div></div><span style="font-size:12px">88</span></td><td><span class="badge badge-green">Qualified</span></td><td>Amit Verma</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+<tr><td><div class="checkbox"><input type="checkbox"></div></td><td><a href="lead-detail.html"><strong>Vijay Deshmukh</strong></a></td><td>Referral</td><td>Digital Ventures</td><td><div class="progress-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-right:8px"><div class="progress-fill" style="width:38%"></div></div><span style="font-size:12px">38</span></td><td><span class="badge badge-gray">Lost</span></td><td>Sneha Patel</td><td><button class="btn btn-sm btn-ghost">⋯</button></td></tr>
+</tbody></table></div><div class="card-footer" style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--color-neutral-500)">Showing 1-7 of 143</span><div class="pagination"><button class="page-btn" disabled>‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">⋯</button><button class="page-btn">›</button></div></div></div>
+    </div>
+  </div>
+</body>
+</html>

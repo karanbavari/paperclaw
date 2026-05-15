@@ -11,6 +11,7 @@ import {
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
   renderPaperClawLocalizationInstructionBlock,
   renderPaperClawLocalizationPrompt,
+  renderPaperClawDirectChatPrompt,
   renderPaperClawMemoryPrompt,
   materializePaperClawSkillCopy,
   renderPaperClawWakePrompt,
@@ -138,6 +139,37 @@ describe("PaperClaw memory prompt", () => {
   it("omits empty memory payloads", () => {
     expect(renderPaperClawMemoryPrompt(null)).toBe("");
     expect(renderPaperClawMemoryPrompt({})).toBe("");
+  });
+});
+
+describe("PaperClaw direct chat prompt", () => {
+  it("explains idle assignment-ready agents without inventing auth root causes", () => {
+    const prompt = renderPaperClawDirectChatPrompt({
+      company: { name: "KesarCloud" },
+      currentAgentName: "CEO",
+      requestedBy: "Board",
+      targetQuestion: "CTO ko task assign karo",
+      companySnapshot: {
+        counts: { invokableAgents: 3, openIssues: 2, activeProjects: 1 },
+        agentRoster: [
+          {
+            name: "CTO",
+            title: "Chief Technology Officer",
+            role: "cto",
+            status: "idle",
+            heartbeatEnabled: false,
+            wakeOnDemand: true,
+            assignmentReady: true,
+          },
+        ],
+      },
+    });
+
+    expect(prompt).toContain("idle` means available");
+    expect(prompt).toContain("assignment wake: on");
+    expect(prompt).toContain("assignment-ready: yes");
+    expect(prompt).toContain("missing BETTER_AUTH_SECRET");
+    expect(prompt).toContain("3 assignment-ready agents");
   });
 });
 
@@ -532,6 +564,8 @@ describe("renderPaperClawWakePrompt", () => {
     expect(prompt).toContain("## PaperClaw Wake Payload");
     expect(prompt).toContain("Execution contract: take concrete action in this heartbeat");
     expect(prompt).toContain("use child issues instead of polling");
+    expect(prompt).toContain("blockParentUntilDone true");
+    expect(prompt).toContain("PAPERCLAW_API_URL");
     expect(prompt).toContain("choose one explicit issue disposition");
     expect(prompt).toContain("explicit continuation with resume intent");
   });

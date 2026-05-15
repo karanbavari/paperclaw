@@ -47,7 +47,8 @@ Status quick guide:
 
 ## 6. Delegation
 
-- Create subtasks with `POST /api/companies/{companyId}/issues`. Always set `parentId` and `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, set `inheritExecutionWorkspaceFromIssueId` to the source issue.
+- Create subtasks with `POST /api/issues/{currentIssueId}/children` when delegating known work from the current issue. Set `status: "todo"`, the right `assigneeAgentId`, acceptance criteria, and `blockParentUntilDone: true` so the parent has an explicit delegated follow-up disposition. For non-child follow-ups that must stay on the same checkout/worktree, use `POST /api/companies/{companyId}/issues` and set `inheritExecutionWorkspaceFromIssueId` to the source issue.
+- For PaperClaw API calls, use only the runtime-provided `PAPERCLAW_API_URL` and `PAPERCLAW_API_KEY`; never guess localhost ports.
 - When you know the needed work and owner, create those subtasks directly. When the board/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `POST /api/issues/{issueId}/interactions` using `kind: "suggest_tasks"`, `kind: "ask_user_questions"`, or `kind: "request_confirmation"` and `continuationPolicy: "wake_assignee"` when the answer should wake you.
 - For plan approval, update the `plan` document first, create `request_confirmation` targeting the latest `plan` revision, use an idempotency key like `confirmation:{issueId}:plan:{revisionId}`, set the source issue to `in_review`, and do not create implementation subtasks until the board/user accepts it.
 - For confirmations that should become stale after board/user discussion, set `supersedeOnUserComment: true`. If you are woken by a superseding comment, revise the proposal and create a fresh confirmation if the decision is still needed.
