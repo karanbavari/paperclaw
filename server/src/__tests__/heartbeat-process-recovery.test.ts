@@ -25,6 +25,8 @@ import {
   issueTreeHolds,
   issueWorkProducts,
   issues,
+  projects,
+  projectWorkspaces,
 } from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
@@ -354,6 +356,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     }
     await db.delete(agentWakeupRequests);
     await db.delete(budgetPolicies);
+    await db.delete(projectWorkspaces);
+    await db.delete(projects);
     for (let attempt = 0; attempt < 5; attempt += 1) {
       await db.delete(agentRuntimeState);
       try {
@@ -1339,6 +1343,86 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .from(activityLog)
       .where(eq(activityLog.entityId, issueId));
     expect(activity.some((event) => event.action === "issue.successful_run_handoff_required")).toBe(true);
+  });
+
+  it("blocks project-scoped issue work instead of running in a fallback workspace", async () => {
+    const { companyId, agentId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const projectId = randomUUID();
+    const projectWorkspaceId = randomUUID();
+    const missingCwd = `/tmp/paperclaw-missing-workspace-${randomUUID()}`;
+    const adapterRunIds: string[] = [];
+    mockAdapterExecute.mockImplementation(async (ctx: { runId: string }) => {
+      adapterRunIds.push(ctx.runId);
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Recovery owner inspected the blocked workspace issue.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(projects).values({
+      id: projectId,
+      companyId,
+      name: "External theme project",
+      status: "in_progress",
+    });
+    await db.insert(projectWorkspaces).values({
+      id: projectWorkspaceId,
+      companyId,
+      projectId,
+      name: "Operator workspace",
+      sourceType: "local_path",
+      visibility: "default",
+      isPrimary: true,
+      cwd: missingCwd,
+    });
+    await db
+      .update(issues)
+      .set({ projectId, projectWorkspaceId })
+      .where(eq(issues.id, issueId));
+    await db
+      .update(heartbeatRuns)
+      .set({
+        contextSnapshot: {
+          issueId,
+          taskId: issueId,
+          projectId,
+          projectWorkspaceId,
+          wakeReason: "issue_assigned",
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    const settledRun = await waitForRunToSettle(heartbeat, runId, 5_000);
+
+    expect(settledRun?.status).toBe("failed");
+    expect(settledRun?.errorCode).toBe("project_workspace_unavailable");
+    expect(settledRun?.error).toContain("will not run project-scoped issue work in a fallback workspace");
+    expect(adapterRunIds).not.toContain(runId);
+
+    const sourceIssue = await waitForValue(async () => {
+      const row = await db.select().from(issues).where(eq(issues.id, issueId)).then((rows) => rows[0] ?? null);
+      return row?.status === "blocked" ? row : null;
+    }, 5_000);
+    expect(sourceIssue?.projectWorkspaceId).toBe(projectWorkspaceId);
+    await expect(sourceBlockerIssueIds(companyId, issueId)).resolves.toHaveLength(1);
+
+    const recovery = await db
+      .select()
+      .from(issues)
+      .where(and(
+        eq(issues.companyId, companyId),
+        eq(issues.originKind, "stranded_issue_recovery"),
+        eq(issues.originId, issueId),
+      ))
+      .then((rows) => rows[0] ?? null);
+    expect(recovery?.assigneeAgentId).toBe(agentId);
   });
 
   it("requeues a missing-disposition handoff when the previous corrective wake was cancelled", async () => {

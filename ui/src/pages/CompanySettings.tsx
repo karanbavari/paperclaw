@@ -62,6 +62,11 @@ const COMPANY_CATEGORY_OPTIONS = [
     label: "Health",
     subcategories: ["Healthcare", "Wellness", "Fitness", "Diagnostics", "Care operations"],
   },
+  {
+    value: "pats-shop",
+    label: "Pats Shop",
+    subcategories: ["Online Store", "Boutique", "Handmade", "Print on Demand", "Digital Products"],
+  },
 ] as const;
 
 function getLocalTimezone() {

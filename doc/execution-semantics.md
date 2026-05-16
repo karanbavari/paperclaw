@@ -168,6 +168,8 @@ The valid action-path primitives are:
 - a pending issue-thread interaction or linked approval that is waiting for a specific responder
 - a one-shot issue monitor (`executionPolicy.monitor.nextCheckAt`) that will wake the assignee for a future check
 - a human owner via `assigneeUserId`
+
+A bare open child issue is not a valid action path for an `in_progress` parent. If the parent is waiting on that child, the parent must record an explicit blocker, delegated follow-up, review state, or continuation path.
 - a first-class blocker chain whose unresolved leaf issues are themselves healthy
 - an open explicit recovery issue that names the owner and action needed to restore liveness
 

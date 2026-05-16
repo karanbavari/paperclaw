@@ -114,7 +114,7 @@ describe("successful run handoff decision", () => {
     });
   });
 
-  it("does not queue when another wake or dependency path already owns the next action", () => {
+  it("does not queue when another wake or explicit dependency path already owns the next action", () => {
     expect(decide({ hasQueuedWake: true })).toEqual({
       kind: "skip",
       reason: "issue already has a queued or deferred wake",
@@ -123,10 +123,14 @@ describe("successful run handoff decision", () => {
       kind: "skip",
       reason: "explicit blocker path owns the next action",
     });
-    expect(decide({ hasOpenChildIssuePath: true })).toEqual({
-      kind: "skip",
-      reason: "open child issue path owns delegated follow-up",
-    });
+  });
+
+  it("does not treat a bare child issue as a valid delegated follow-up path", () => {
+    const decision = decide({ hasOpenChildIssuePath: true });
+
+    expect(decision.kind).toBe("enqueue");
+    if (decision.kind !== "enqueue") return;
+    expect(decision.idempotencyKey).toBe("finish_successful_run_handoff:issue-1:run-1:1");
   });
 
   it("does not queue when a successful run has no progress signal", () => {

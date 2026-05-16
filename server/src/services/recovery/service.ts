@@ -89,6 +89,8 @@ type SuccessfulLatestIssueRun = NonNullable<LatestIssueRun> & { status: "succeed
 
 type StrandedRecoveryCause = "stranded_assigned_issue" | typeof SUCCESSFUL_RUN_MISSING_STATE_REASON;
 
+const PROJECT_WORKSPACE_UNAVAILABLE_ERROR_CODE = "project_workspace_unavailable";
+
 type SuccessfulRunHandoffRecoveryEvidence = {
   sourceRunId: string | null;
   correctiveRunId: string;
@@ -246,6 +248,10 @@ function isUnsuccessfulTerminalIssueRun(latestRun: LatestIssueRun) {
         latestRun.status as (typeof UNSUCCESSFUL_HEARTBEAT_RUN_TERMINAL_STATUSES)[number],
       ),
   );
+}
+
+function isProjectWorkspaceUnavailableRun(latestRun: LatestIssueRun) {
+  return latestRun?.errorCode === PROJECT_WORKSPACE_UNAVAILABLE_ERROR_CODE;
 }
 
 function isSuccessfulInProgressContinuationRun(latestRun: LatestIssueRun): latestRun is SuccessfulLatestIssueRun {
@@ -1831,6 +1837,26 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           continue;
         }
 
+        if (isProjectWorkspaceUnavailableRun(latestRun)) {
+          const failureSummary = summarizeRunFailureForIssueComment(latestRun);
+          const updated = await escalateStrandedAssignedIssue({
+            issue,
+            previousStatus: "todo",
+            latestRun,
+            comment:
+              "PaperClaw stopped automatic dispatch because this project-scoped issue has no available project workspace. " +
+              `It will not run in a fallback workspace.${failureSummary ?? ""} ` +
+              "Moving it to `blocked` so the project workspace can be fixed first.",
+          });
+          if (updated) {
+            result.escalated += 1;
+            result.issueIds.push(issue.id);
+          } else {
+            result.skipped += 1;
+          }
+          continue;
+        }
+
         if (await isInvocationBudgetBlocked(issue, agentId)) {
           result.skipped += 1;
           continue;
@@ -1873,6 +1899,25 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         });
         if (updated) {
           result.successfulRunHandoffEscalated += 1;
+          result.issueIds.push(issue.id);
+        } else {
+          result.skipped += 1;
+        }
+        continue;
+      }
+      if (isProjectWorkspaceUnavailableRun(latestRun)) {
+        const failureSummary = summarizeRunFailureForIssueComment(latestRun);
+        const updated = await escalateStrandedAssignedIssue({
+          issue,
+          previousStatus: "in_progress",
+          latestRun,
+          comment:
+            "PaperClaw stopped automatic continuation because this project-scoped issue has no available project workspace. " +
+            `It will not run in a fallback workspace.${failureSummary ?? ""} ` +
+            "Moving it to `blocked` so the project workspace can be fixed first.",
+        });
+        if (updated) {
+          result.escalated += 1;
           result.issueIds.push(issue.id);
         } else {
           result.skipped += 1;

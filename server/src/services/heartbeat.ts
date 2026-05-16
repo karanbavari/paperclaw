@@ -955,6 +955,27 @@ type UsageTotals = {
   outputTokens: number;
 };
 
+const PROJECT_WORKSPACE_UNAVAILABLE_ERROR_CODE = "project_workspace_unavailable";
+
+class ProjectWorkspaceUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProjectWorkspaceUnavailableError";
+  }
+}
+
+function heartbeatExecutionErrorCode(error: unknown) {
+  return error instanceof ProjectWorkspaceUnavailableError
+    ? PROJECT_WORKSPACE_UNAVAILABLE_ERROR_CODE
+    : "adapter_failed";
+}
+
+function isProjectWorkspaceUnavailableRun(
+  run: Pick<typeof heartbeatRuns.$inferSelect, "errorCode"> | null | undefined,
+) {
+  return run?.errorCode === PROJECT_WORKSPACE_UNAVAILABLE_ERROR_CODE;
+}
+
 type SessionCompactionDecision = {
   rotate: boolean;
   reason: string | null;
@@ -3343,12 +3364,15 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .select({
             projectId: issues.projectId,
             projectWorkspaceId: issues.projectWorkspaceId,
+            originKind: issues.originKind,
           })
           .from(issues)
           .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
           .then((rows) => rows[0] ?? null)
       : null;
     const issueProjectId = issueProjectRef?.projectId ?? null;
+    const isRecoveryIssue = issueProjectRef?.originKind === RECOVERY_ORIGIN_KINDS.strandedIssueRecovery ||
+      issueProjectRef?.originKind === RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation;
     const preferredProjectWorkspaceId =
       issueProjectRef?.projectWorkspaceId ?? contextProjectWorkspaceId ?? null;
     const resolvedProjectId = issueProjectId ?? contextProjectId;
@@ -3435,35 +3459,55 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         missingProjectCwds.push(projectCwd);
       }
 
-      const fallbackCwd = resolveDefaultAgentWorkspaceDir(agent.id);
-      await fs.mkdir(fallbackCwd, { recursive: true });
-      const warnings: string[] = [];
-      if (preferredWorkspaceWarning) {
-        warnings.push(preferredWorkspaceWarning);
+      if (isRecoveryIssue) {
+        const fallbackCwd = resolveDefaultAgentWorkspaceDir(agent.id);
+        await fs.mkdir(fallbackCwd, { recursive: true });
+        const warnings: string[] = [];
+        if (preferredWorkspaceWarning) warnings.push(preferredWorkspaceWarning);
+        if (missingProjectCwds.length > 0) {
+          const firstMissing = missingProjectCwds[0];
+          const extraMissingCount = Math.max(0, missingProjectCwds.length - 1);
+          warnings.push(
+            extraMissingCount > 0
+              ? `Project workspace path "${firstMissing}" and ${extraMissingCount} other configured path(s) are not available. Using recovery fallback workspace "${fallbackCwd}".`
+              : `Project workspace path "${firstMissing}" is not available. Using recovery fallback workspace "${fallbackCwd}".`,
+          );
+        } else if (!hasConfiguredProjectCwd) {
+          warnings.push(
+            `Project workspace has no local cwd configured. Using recovery fallback workspace "${fallbackCwd}".`,
+          );
+        }
+        return {
+          cwd: fallbackCwd,
+          source: "agent_home" as const,
+          projectId: resolvedProjectId,
+          workspaceId: projectWorkspaceRows[0]?.id ?? null,
+          repoUrl: projectWorkspaceRows[0]?.repoUrl ?? null,
+          repoRef: projectWorkspaceRows[0]?.repoRef ?? null,
+          workspaceHints,
+          warnings,
+        };
       }
-      if (missingProjectCwds.length > 0) {
-        const firstMissing = missingProjectCwds[0];
-        const extraMissingCount = Math.max(0, missingProjectCwds.length - 1);
-        warnings.push(
-          extraMissingCount > 0
-            ? `Project workspace path "${firstMissing}" and ${extraMissingCount} other configured path(s) are not available yet. Using fallback workspace "${fallbackCwd}" for this run.`
-            : `Project workspace path "${firstMissing}" is not available yet. Using fallback workspace "${fallbackCwd}" for this run.`,
-        );
-      } else if (!hasConfiguredProjectCwd) {
-        warnings.push(
-          `Project workspace has no local cwd configured. Using fallback workspace "${fallbackCwd}" for this run.`,
-        );
-      }
-      return {
-        cwd: fallbackCwd,
-        source: "project_primary" as const,
-        projectId: resolvedProjectId,
-        workspaceId: projectWorkspaceRows[0]?.id ?? null,
-        repoUrl: projectWorkspaceRows[0]?.repoUrl ?? null,
-        repoRef: projectWorkspaceRows[0]?.repoRef ?? null,
-        workspaceHints,
-        warnings,
-      };
+
+      const reason = (() => {
+        const details: string[] = [];
+        if (preferredWorkspaceWarning) details.push(preferredWorkspaceWarning);
+        if (missingProjectCwds.length > 0) {
+          const firstMissing = missingProjectCwds[0];
+          const extraMissingCount = Math.max(0, missingProjectCwds.length - 1);
+          details.push(
+            extraMissingCount > 0
+              ? `Project workspace path "${firstMissing}" and ${extraMissingCount} other configured path(s) are not available.`
+              : `Project workspace path "${firstMissing}" is not available.`,
+          );
+        } else if (!hasConfiguredProjectCwd) {
+          details.push("Project workspace has no local cwd configured.");
+        }
+        return details.join(" ") || "No configured project workspace path is available.";
+      })();
+      throw new ProjectWorkspaceUnavailableError(
+        `${reason} PaperClaw will not run project-scoped issue work in a fallback workspace.`,
+      );
     }
 
     if (workspaceProjectId) {
@@ -4497,6 +4541,21 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         issueCommentRetryQueuedAt: null,
       });
       return { outcome: "satisfied" as const, queuedRun: null };
+    }
+
+    if (isProjectWorkspaceUnavailableRun(run)) {
+      await patchRunIssueCommentStatus(run.id, {
+        issueCommentStatus: "not_applicable",
+        issueCommentSatisfiedByCommentId: null,
+        issueCommentRetryQueuedAt: null,
+      });
+      await appendRunEvent(run, await nextRunEventSeq(run.id), {
+        eventType: "lifecycle",
+        stream: "system",
+        level: "warn",
+        message: "Run ended before adapter execution because the project workspace is unavailable; skipping missing-comment retry",
+      });
+      return { outcome: "not_applicable" as const, queuedRun: null };
     }
 
     if (readNonEmptyString(contextSnapshot.retryReason) === "missing_issue_comment") {
@@ -6126,8 +6185,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const [eventStats] = await db
       .select({
-        count: sql<number>`count(*) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error'))::int`,
-        latestAt: sql<Date | null>`max(${heartbeatRunEvents.createdAt}) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error'))`,
+        count: sql<number>`count(*) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error', 'memory.recalled'))::int`,
+        latestAt: sql<Date | null>`max(${heartbeatRunEvents.createdAt}) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error', 'memory.recalled'))`,
       })
       .from(heartbeatRunEvents)
       .where(and(eq(heartbeatRunEvents.companyId, run.companyId), eq(heartbeatRunEvents.runId, run.id)));
@@ -7880,6 +7939,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         err instanceof Error ? err.message : "Unknown adapter failure",
         await getCurrentUserRedactionOptions(),
       );
+      const errorCode = heartbeatExecutionErrorCode(err);
       logger.error({ err, runId }, "heartbeat execution failed");
 
       let logSummary: { bytes: number; sha256?: string; compressed: boolean } | null = null;
@@ -7900,10 +7960,10 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const failedRun = await setRunStatus(run.id, "failed", {
         error: message,
-        errorCode: "adapter_failed",
+        errorCode,
         finishedAt: new Date(),
         resultJson: mergeRunStopMetadataForAgent(agent, "failed", {
-          errorCode: "adapter_failed",
+          errorCode,
           errorMessage: message,
         }),
         stdoutExcerpt,
@@ -7958,15 +8018,16 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           // Setup code before adapter.execute threw (e.g. ensureRuntimeState, resolveWorkspaceForRun).
           // The inner catch did not fire, so we must record the failure here.
           const message = outerErr instanceof Error ? outerErr.message : "Unknown setup failure";
+          const errorCode = heartbeatExecutionErrorCode(outerErr);
           logger.error({ err: outerErr, runId }, "heartbeat execution setup failed");
           const setupFailureAgent = await getAgent(run.agentId).catch(() => null);
           await setRunStatus(runId, "failed", {
             error: message,
-            errorCode: "adapter_failed",
+            errorCode,
             finishedAt: new Date(),
             ...(setupFailureAgent ? {
               resultJson: mergeRunStopMetadataForAgent(setupFailureAgent, "failed", {
-                errorCode: "adapter_failed",
+                errorCode,
                 errorMessage: message,
               }),
             } : {}),
@@ -8320,6 +8381,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const shouldBlockImmediately =
         issue.originKind === RECOVERY_ORIGIN_KINDS.strandedIssueRecovery ||
+        isProjectWorkspaceUnavailableRun(run) ||
         !recoveryAgentInvokable ||
         !recoveryAgent ||
         didAutomaticRecoveryFail(run, issue.status === "todo" ? "assignment_recovery" : "issue_continuation_needed");
