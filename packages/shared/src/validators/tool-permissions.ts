@@ -10,7 +10,7 @@ export const toolPermissionBudgetLimitSchema = z.object({
   metric: z.literal("execution_count").default("execution_count"),
 });
 
-export const upsertToolPermissionPolicySchema = z.object({
+const upsertToolPermissionPolicyBaseSchema = z.object({
   id: z.string().uuid().optional(),
   subjectType: z.enum(TOOL_PERMISSION_SUBJECT_TYPES),
   subjectId: z.string().uuid().nullable().optional(),
@@ -19,7 +19,9 @@ export const upsertToolPermissionPolicySchema = z.object({
   effect: z.enum(TOOL_PERMISSION_EFFECTS),
   budgetLimit: toolPermissionBudgetLimitSchema.nullable().optional(),
   enabled: z.boolean().optional().default(true),
-}).superRefine((value, ctx) => {
+});
+
+export const upsertToolPermissionPolicySchema = upsertToolPermissionPolicyBaseSchema.superRefine((value, ctx) => {
   if (value.subjectType === "agent" && !value.subjectId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -47,6 +49,23 @@ export const replaceToolPermissionPoliciesSchema = z.object({
   policies: z.array(upsertToolPermissionPolicySchema).max(500),
 });
 
+export const upsertAgentToolPermissionPolicySchema = upsertToolPermissionPolicyBaseSchema.omit({
+  subjectType: true,
+  subjectId: true,
+}).superRefine((value, ctx) => {
+  if (value.effect !== "budget_limited" && value.budgetLimit) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "budgetLimit is only valid for budget_limited policies",
+      path: ["budgetLimit"],
+    });
+  }
+});
+
+export const replaceAgentToolPermissionPoliciesSchema = z.object({
+  policies: z.array(upsertAgentToolPermissionPolicySchema).max(200),
+});
+
 export const effectiveToolPermissionsQuerySchema = z.object({
   agentId: z.string().uuid().optional(),
   pluginKey: z.string().trim().min(1).optional(),
@@ -55,4 +74,6 @@ export const effectiveToolPermissionsQuerySchema = z.object({
 
 export type UpsertToolPermissionPolicyInput = z.infer<typeof upsertToolPermissionPolicySchema>;
 export type ReplaceToolPermissionPoliciesInput = z.infer<typeof replaceToolPermissionPoliciesSchema>;
+export type UpsertAgentToolPermissionPolicyInput = z.infer<typeof upsertAgentToolPermissionPolicySchema>;
+export type ReplaceAgentToolPermissionPoliciesInput = z.infer<typeof replaceAgentToolPermissionPoliciesSchema>;
 export type EffectiveToolPermissionsQuery = z.infer<typeof effectiveToolPermissionsQuerySchema>;

@@ -1193,12 +1193,16 @@ export type {
   ResearchLabListItem,
 } from "./types/research-lab.js";
 export type {
+  AgentToolPermissionListResponse,
+  AgentToolsMdSyncResult,
   EffectiveToolPermission,
+  ReplaceAgentToolPermissionPoliciesRequest,
   ReplaceToolPermissionPoliciesRequest,
   ToolPermissionBudgetLimit,
   ToolPermissionDecisionRecord,
   ToolPermissionListResponse,
   ToolPermissionPolicy,
+  UpsertAgentToolPermissionPolicyRequest,
   UpsertToolPermissionPolicyRequest,
 } from "./types/tool-permissions.js";
 export type {
@@ -1209,6 +1213,17 @@ export type {
   OutcomeCenterProjectRef,
   OutcomeCenterSummary,
 } from "./types/outcome-center.js";
+export type {
+  OpsIncidentAction,
+  OpsIncidentFilters,
+  OpsIncidentItem,
+  OpsIncidentKind,
+  OpsIncidentKindCount,
+  OpsIncidentRef,
+  OpsIncidentSeverity,
+  OpsIncidentStatus,
+  OpsIncidentSummary,
+} from "./types/ops-incident.js";
 
 export {
   createResearchLabSchema,
@@ -1222,14 +1237,25 @@ export {
 } from "./validators/research-lab.js";
 export {
   effectiveToolPermissionsQuerySchema,
+  replaceAgentToolPermissionPoliciesSchema,
   replaceToolPermissionPoliciesSchema,
   toolPermissionBudgetLimitSchema,
+  upsertAgentToolPermissionPolicySchema,
   upsertToolPermissionPolicySchema,
   type EffectiveToolPermissionsQuery,
+  type ReplaceAgentToolPermissionPoliciesInput,
   type ReplaceToolPermissionPoliciesInput,
+  type UpsertAgentToolPermissionPolicyInput,
   type UpsertToolPermissionPolicyInput,
 } from "./validators/tool-permissions.js";
 export {
   outcomeCenterQuerySchema,
   type OutcomeCenterQuery,
 } from "./validators/outcome-center.js";
+export {
+  opsIncidentKindSchema,
+  opsIncidentQuerySchema,
+  opsIncidentSeveritySchema,
+  opsIncidentStatusSchema,
+  type OpsIncidentQuery,
+} from "./validators/ops-incident.js";

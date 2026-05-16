@@ -88,9 +88,21 @@ Powerful tools now have clear controls. PaperClaw supports company defaults, com
 
 The board now has a single place to answer "what shipped?" Outcome Center aggregates issue work products such as PRs, previews, artifacts, documents, commits, branches, and runtime-service links across issues and projects.
 
-### ⚪ Ops Incident Center
+### ✅ Ops Incident Center
 
-Operational failures should be visible without digging through separate pages. Ops Incident Center should consolidate stuck runs, watchdog decisions, budget incidents, plugin failures, environment errors, and recovery actions into one company health surface.
+Operational failures should be visible without digging through separate pages. Ops Incident Center consolidates failed/stuck runs, watchdog recovery issues, budget incidents, plugin failures, workspace runtime failures, and agent error states into one company health surface with safe operator actions.
+
+### ⚪ Governed Self-Healing
+
+PaperClaw should repair routine operational failures automatically when the recovery action is low-risk and auditable. Self-healing should preserve governance: only real blockers stop work, every automated repair has evidence, and risky actions still route through board or reviewer approval.
+
+### ⚪ Agent Fleet Monitoring
+
+Large companies need fleet-level observability across many agents and sessions. The fleet view should show concurrency pressure, stuck teams, unhealthy departments, recurring adapter failures, and resource saturation before a single issue becomes a company-wide stall.
+
+### ⚪ Enterprise Autopilot Controls
+
+Enterprise operators need explicit limits for autonomy. PaperClaw should support policy-driven run ceilings, escalation rules, budget-aware scheduling, maintenance windows, and incident playbooks so a company can run continuously without uncontrolled resource drain.
 
 ### ⚪ Guided First Company Bootstrap
 

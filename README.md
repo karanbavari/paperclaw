@@ -394,7 +394,10 @@ See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 - ✅ Plugin Tool Test Console
 - ✅ Tool Permission System
 - ✅ Outcome Center
-- ⚪ Ops Incident Center
+- ✅ Ops Incident Center
+- ⚪ Governed Self-Healing
+- ⚪ Agent Fleet Monitoring
+- ⚪ Enterprise Autopilot Controls
 - ⚪ Guided First Company Bootstrap
 - ⚪ External Channel Inbox
 - ⚪ Governed Agent Config Changes

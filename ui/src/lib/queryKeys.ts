@@ -8,6 +8,10 @@ export const queryKeys = {
     list: (companyId: string, filters?: Record<string, unknown>) =>
       ["outcomes", companyId, filters ?? {}] as const,
   },
+  opsIncidents: {
+    list: (companyId: string, filters?: Record<string, unknown>) =>
+      ["ops-incidents", companyId, filters ?? {}] as const,
+  },
   toolPermissions: {
     list: (companyId: string) => ["tool-permissions", companyId] as const,
     effective: (companyId: string, agentId?: string | null) =>
@@ -52,6 +56,7 @@ export const queryKeys = {
     runtimeState: (id: string) => ["agents", "runtime-state", id] as const,
     taskSessions: (id: string) => ["agents", "task-sessions", id] as const,
     skills: (id: string) => ["agents", "skills", id] as const,
+    toolPermissions: (id: string) => ["agents", "tool-permissions", id] as const,
     instructionsBundle: (id: string) => ["agents", "instructions-bundle", id] as const,
     instructionsFile: (id: string, relativePath: string) =>
       ["agents", "instructions-bundle", id, "file", relativePath] as const,

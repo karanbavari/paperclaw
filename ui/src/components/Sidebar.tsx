@@ -18,6 +18,7 @@ import {
   Store,
   Microscope,
   PackageCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarSection } from "./SidebarSection";
@@ -28,6 +29,7 @@ import { useDialogActions } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
+import { opsIncidentsApi } from "../api/opsIncidents";
 import { queryKeys } from "../lib/queryKeys";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { Button } from "@/components/ui/button";
@@ -48,7 +50,14 @@ export function Sidebar() {
     enabled: !!selectedCompanyId,
     refetchInterval: 10_000,
   });
+  const { data: opsSummary } = useQuery({
+    queryKey: queryKeys.opsIncidents.list(selectedCompanyId!, { limit: 1 }),
+    queryFn: () => opsIncidentsApi.summary(selectedCompanyId!, { limit: 1 }),
+    enabled: !!selectedCompanyId,
+    refetchInterval: 30_000,
+  });
   const liveRunCount = liveRuns?.length ?? 0;
+  const opsBadge = (opsSummary?.critical ?? 0) + (opsSummary?.needsAction ?? 0);
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
 
   function openSearch() {
@@ -106,6 +115,14 @@ export function Sidebar() {
         <SidebarSection label="Work">
           <SidebarNavItem to="/issues" label="Issues" icon={CircleDot} />
           <SidebarNavItem to="/outcomes" label="Outcomes" icon={PackageCheck} />
+          <SidebarNavItem
+            to="/ops"
+            label="Ops"
+            icon={ShieldAlert}
+            badge={opsBadge}
+            badgeTone={opsSummary?.critical ? "danger" : "default"}
+            alert={(opsSummary?.critical ?? 0) > 0}
+          />
           <SidebarNavItem to="/search" label="Search" icon={Search} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
           <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />

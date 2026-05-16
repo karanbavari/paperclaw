@@ -41,6 +41,29 @@ export interface ReplaceToolPermissionPoliciesRequest {
   policies: UpsertToolPermissionPolicyRequest[];
 }
 
+export type UpsertAgentToolPermissionPolicyRequest = Omit<
+  UpsertToolPermissionPolicyRequest,
+  "subjectType" | "subjectId"
+>;
+
+export interface ReplaceAgentToolPermissionPoliciesRequest {
+  policies: UpsertAgentToolPermissionPolicyRequest[];
+}
+
+export interface AgentToolsMdSyncResult {
+  agentId: string;
+  status: "synced" | "skipped_custom" | "skipped_unavailable";
+  path: "TOOLS.md";
+  reason?: string;
+  updatedAt: Date | null;
+}
+
+export interface AgentToolPermissionListResponse {
+  agentId: string;
+  policies: ToolPermissionPolicy[];
+  toolsMdSync?: AgentToolsMdSyncResult;
+}
+
 export interface EffectiveToolPermission {
   companyId: string;
   agentId: string | null;

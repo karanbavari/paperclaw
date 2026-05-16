@@ -13,6 +13,7 @@ import { ProjectDetail } from "./pages/ProjectDetail";
 import { ProjectWorkspaceDetail } from "./pages/ProjectWorkspaceDetail";
 import { Workspaces } from "./pages/Workspaces";
 import { OutcomeCenter } from "./pages/OutcomeCenter";
+import { OpsIncidentCenter } from "./pages/OpsIncidentCenter";
 import { Issues } from "./pages/Issues";
 import { Search } from "./pages/Search";
 import { IssueDetail } from "./pages/IssueDetail";
@@ -105,6 +106,7 @@ function boardRoutes() {
       <Route path="projects/:projectId/configuration" element={<ProjectDetail />} />
       <Route path="projects/:projectId/budget" element={<ProjectDetail />} />
       <Route path="outcomes" element={<OutcomeCenter />} />
+      <Route path="ops" element={<OpsIncidentCenter />} />
       <Route path="workspaces" element={<Workspaces />} />
       <Route path="issues" element={<Issues />} />
       <Route path="search" element={<Search />} />
@@ -309,6 +311,7 @@ export function App() {
           <Route path="meetings/:meetingId" element={<UnprefixedBoardRedirect />} />
           <Route path="memory" element={<UnprefixedBoardRedirect />} />
           <Route path="marketplace" element={<UnprefixedBoardRedirect />} />
+          <Route path="ops" element={<UnprefixedBoardRedirect />} />
           <Route path="u/:userSlug" element={<UnprefixedBoardRedirect />} />
           <Route path="skills/*" element={<UnprefixedBoardRedirect />} />
           <Route path="settings" element={<LegacySettingsRedirect />} />

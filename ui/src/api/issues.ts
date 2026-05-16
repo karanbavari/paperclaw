@@ -93,6 +93,15 @@ export const issuesApi = {
     api.post<Issue>(`/companies/${companyId}/issues`, data),
   update: (id: string, data: Record<string, unknown>) =>
     api.patch<IssueUpdateResponse>(`/issues/${id}`, data),
+  adminForceRelease: (id: string, options: { clearAssignee?: boolean } = {}) => {
+    const params = new URLSearchParams();
+    if (options.clearAssignee) params.set("clearAssignee", "true");
+    const qs = params.toString();
+    return api.post<{ issue: Issue; previous: { checkoutRunId: string | null; executionRunId: string | null } }>(
+      `/issues/${id}/admin/force-release${qs ? `?${qs}` : ""}`,
+      {},
+    );
+  },
   previewTreeControl: (id: string, data: PreviewIssueTreeControl) =>
     api.post<IssueTreeControlPreview>(`/issues/${id}/tree-control/preview`, data),
   createTreeHold: (id: string, data: CreateIssueTreeHold) =>

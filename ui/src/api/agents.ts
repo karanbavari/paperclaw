@@ -12,6 +12,9 @@ import type {
   HeartbeatRun,
   Approval,
   AgentConfigRevision,
+  AgentToolPermissionListResponse,
+  AgentToolsMdSyncResult,
+  ReplaceAgentToolPermissionPoliciesRequest,
 } from "@kesarcloud/shared";
 import type {
   AdapterModelProfileDefinition,
@@ -135,6 +138,15 @@ export const agentsApi = {
     api.patch<Agent>(agentPath(id, companyId), data),
   updatePermissions: (id: string, data: AgentPermissionUpdate, companyId?: string) =>
     api.patch<AgentDetail>(agentPath(id, companyId, "/permissions"), data),
+  toolPermissions: (id: string, companyId?: string) =>
+    api.get<AgentToolPermissionListResponse>(agentPath(id, companyId, "/tool-permissions")),
+  replaceToolPermissions: (
+    id: string,
+    data: ReplaceAgentToolPermissionPoliciesRequest,
+    companyId?: string,
+  ) => api.put<AgentToolPermissionListResponse>(agentPath(id, companyId, "/tool-permissions"), data),
+  syncToolsMd: (id: string, companyId?: string) =>
+    api.post<AgentToolsMdSyncResult>(agentPath(id, companyId, "/tools-md/sync"), {}),
   instructionsBundle: (id: string, companyId?: string) =>
     api.get<AgentInstructionsBundle>(agentPath(id, companyId, "/instructions-bundle")),
   updateInstructionsBundle: (

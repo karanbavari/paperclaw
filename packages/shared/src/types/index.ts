@@ -88,6 +88,17 @@ export type {
   MarketplaceSkillTrustLevel,
 } from "./marketplace.js";
 export type {
+  OpsIncidentAction,
+  OpsIncidentFilters,
+  OpsIncidentItem,
+  OpsIncidentKind,
+  OpsIncidentKindCount,
+  OpsIncidentRef,
+  OpsIncidentSeverity,
+  OpsIncidentStatus,
+  OpsIncidentSummary,
+} from "./ops-incident.js";
+export type {
   DirectChatDetail,
   DirectChatMessage,
   DirectChatMessageAuthorType,
@@ -446,12 +457,16 @@ export type {
   ResearchLabListItem,
 } from "./research-lab.js";
 export type {
+  AgentToolPermissionListResponse,
+  AgentToolsMdSyncResult,
   EffectiveToolPermission,
+  ReplaceAgentToolPermissionPoliciesRequest,
   ReplaceToolPermissionPoliciesRequest,
   ToolPermissionBudgetLimit,
   ToolPermissionDecisionRecord,
   ToolPermissionListResponse,
   ToolPermissionPolicy,
+  UpsertAgentToolPermissionPolicyRequest,
   UpsertToolPermissionPolicyRequest,
 } from "./tool-permissions.js";
 export type {

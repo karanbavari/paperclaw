@@ -42,6 +42,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 vi.mock("../services/index.js", () => ({
   agentService: () => mockAgentService,
   agentInstructionsService: () => ({}),
+  agentToolsMdService: () => ({ syncAgent: vi.fn(), syncCompany: vi.fn() }),
   accessService: () => mockAccessService,
   approvalService: () => ({}),
   companySkillService: () => ({
@@ -58,6 +59,7 @@ vi.mock("../services/index.js", () => ({
   issueService: () => ({}),
   logActivity: vi.fn(),
   syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
+  toolPermissionService: () => ({ listPolicies: vi.fn(), replaceAgentPolicies: vi.fn() }),
   workspaceOperationService: () => ({}),
 }));
 

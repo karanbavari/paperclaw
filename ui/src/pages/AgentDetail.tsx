@@ -1697,6 +1697,7 @@ function PromptsTab({
   onSavingChange: (saving: boolean) => void;
 }) {
   const queryClient = useQueryClient();
+  const { pushToast } = useToastActions();
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
   const [selectedFile, setSelectedFile] = useState<string>("AGENTS.md");
@@ -1824,6 +1825,34 @@ function PromptsTab({
     onError: () => setAwaitingRefresh(false),
   });
 
+  const syncToolsMd = useMutation({
+    mutationFn: () => agentsApi.syncToolsMd(agent.id, companyId),
+    onMutate: () => setAwaitingRefresh(true),
+    onSuccess: (result) => {
+      setSelectedFile("TOOLS.md");
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.instructionsBundle(agent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.instructionsFile(agent.id, "TOOLS.md") });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.toolPermissions(agent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.urlKey) });
+      pushToast({
+        title: result.status === "synced" ? "TOOLS.md synced" : "TOOLS.md not changed",
+        body: result.reason ?? "Tool assignments were refreshed from backend permissions.",
+        tone: result.status === "synced" ? "success" : "info",
+      });
+    },
+    onError: (err) => {
+      setAwaitingRefresh(false);
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Could not sync TOOLS.md";
+      pushToast({ title: "Sync failed", body: message, tone: "error" });
+    },
+  });
+
   const uploadMarkdownImage = useMutation({
     mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
       if (!selectedCompanyId) throw new Error("Select a company to upload images");
@@ -1930,7 +1959,7 @@ function PromptsTab({
   );
   const fileDirty = draft !== null && draft !== currentContent;
   const isDirty = bundleDirty || fileDirty;
-  const isSaving = updateBundle.isPending || saveFile.isPending || deleteFile.isPending || awaitingRefresh;
+  const isSaving = updateBundle.isPending || saveFile.isPending || deleteFile.isPending || syncToolsMd.isPending || awaitingRefresh;
 
   useEffect(() => { onSavingChange(isSaving); }, [onSavingChange, isSaving]);
   useEffect(() => { onDirtyChange(isDirty); }, [onDirtyChange, isDirty]);
@@ -2355,6 +2384,17 @@ function PromptsTab({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => syncToolsMd.mutate()}
+                disabled={syncToolsMd.isPending || fileDirty || bundleDirty}
+                title={fileDirty || bundleDirty ? "Save or cancel pending instruction changes before syncing tools" : undefined}
+              >
+                {syncToolsMd.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="mr-1.5 h-3.5 w-3.5" />}
+                Sync TOOLS.md
+              </Button>
               {!fileLoading && (
                 <CopyText
                   text={displayValue}

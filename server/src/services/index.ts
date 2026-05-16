@@ -35,6 +35,7 @@ export { activityService, type ActivityFilters } from "./activity.js";
 export { approvalService } from "./approvals.js";
 export { budgetService } from "./budgets.js";
 export { secretService } from "./secrets.js";
+export { agentToolsMdService, renderAgentToolsMarkdown } from "./agent-tools-md.js";
 export { toolPermissionService, ToolPermissionBlockedError } from "./tool-permissions.js";
 export { routineService } from "./routines.js";
 export { costService } from "./costs.js";

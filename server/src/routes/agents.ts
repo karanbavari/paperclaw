@@ -24,6 +24,7 @@ import {
   updateAgentInstructionsPathSchema,
   wakeAgentSchema,
   updateAgentSchema,
+  replaceAgentToolPermissionPoliciesSchema,
   supportedEnvironmentDriversForAdapter,
 } from "@kesarcloud/shared";
 import {
@@ -35,6 +36,7 @@ import { validate } from "../middleware/validate.js";
 import {
   agentService,
   agentInstructionsService,
+  agentToolsMdService,
   accessService,
   approvalService,
   companySkillService,
@@ -46,6 +48,7 @@ import {
   logActivity,
   syncInstructionsBundleConfigFromFilePath,
   workspaceOperationService,
+  toolPermissionService,
 } from "../services/index.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { assertBoard, assertCompanyAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
@@ -174,6 +177,8 @@ export function agentRoutes(
   const issueApprovalsSvc = issueApprovalService(db);
   const secretsSvc = secretService(db);
   const instructions = agentInstructionsService();
+  const agentToolsMd = agentToolsMdService(db);
+  const toolPermissions = toolPermissionService(db);
   const companySkills = companySkillService(db);
   const workspaceOperations = workspaceOperationService(db);
   const instanceSettings = instanceSettingsService(db);
@@ -692,6 +697,39 @@ export function agentRoutes(
     );
     if (allowedByGrant || canCreateAgents(actorAgent)) return;
     throw forbidden("Only CEO or agent creators can modify other agents");
+  }
+
+  async function assertCanManageAgentTools(
+    req: Request,
+    targetAgent: { id: string; companyId: string },
+    options?: { allowSelfSync?: boolean },
+  ) {
+    assertCompanyAccess(req, targetAgent.companyId);
+    if (req.actor.type === "board") {
+      await assertBoardCanManageAgentsForCompany(req, targetAgent.companyId);
+      return;
+    }
+    if (!req.actor.agentId) throw forbidden("Agent authentication required");
+
+    const actorAgent = await svc.getById(req.actor.agentId);
+    if (!actorAgent || actorAgent.companyId !== targetAgent.companyId) {
+      throw forbidden("Agent key cannot access another company");
+    }
+
+    if (options?.allowSelfSync && actorAgent.id === targetAgent.id) return;
+    if (actorAgent.role === "ceo") return;
+
+    const chain = await svc.getChainOfCommand(targetAgent.id);
+    if (chain.some((manager) => manager.id === actorAgent.id)) return;
+
+    const allowedByGrant = await access.hasPermission(
+      targetAgent.companyId,
+      "agent",
+      actorAgent.id,
+      "agents:create",
+    );
+    if (allowedByGrant || canCreateAgents(actorAgent)) return;
+    throw forbidden("Only the Board, CEO, manager chain, or agent creators can manage this agent's tools");
   }
 
   async function assertCanReadAgent(req: Request, targetAgent: { companyId: string }) {
@@ -2384,6 +2422,60 @@ export function agentRoutes(
     }
     await assertCanReadAgent(req, existing);
     res.json(await instructions.getBundle(existing));
+  });
+
+  router.get("/agents/:id/tool-permissions", async (req, res) => {
+    const id = req.params.id as string;
+    const existing = await svc.getById(id);
+    if (!existing) {
+      res.status(404).json({ error: "Agent not found" });
+      return;
+    }
+    await assertCanReadAgent(req, existing);
+    const policies = await toolPermissions.listPolicies(existing.companyId);
+    res.json({
+      agentId: existing.id,
+      policies: policies.filter((policy) => policy.subjectType === "agent" && policy.subjectId === existing.id),
+    });
+  });
+
+  router.put(
+    "/agents/:id/tool-permissions",
+    validate(replaceAgentToolPermissionPoliciesSchema),
+    async (req, res) => {
+      const id = req.params.id as string;
+      const existing = await svc.getById(id);
+      if (!existing) {
+        res.status(404).json({ error: "Agent not found" });
+        return;
+      }
+      await assertCanManageAgentTools(req, existing);
+
+      const actor = getActorInfo(req);
+      const policies = await toolPermissions.replaceAgentPolicies(
+        existing.companyId,
+        existing.id,
+        req.body.policies,
+        actor,
+      );
+      const toolsMdSync = await agentToolsMd.syncAgent(existing, actor);
+      res.json({
+        agentId: existing.id,
+        policies: policies.filter((policy) => policy.subjectType === "agent" && policy.subjectId === existing.id),
+        toolsMdSync,
+      });
+    },
+  );
+
+  router.post("/agents/:id/tools-md/sync", async (req, res) => {
+    const id = req.params.id as string;
+    const existing = await svc.getById(id);
+    if (!existing) {
+      res.status(404).json({ error: "Agent not found" });
+      return;
+    }
+    await assertCanManageAgentTools(req, existing, { allowSelfSync: true });
+    res.json(await agentToolsMd.syncAgent(existing, getActorInfo(req)));
   });
 
   router.patch("/agents/:id/instructions-bundle", validate(updateAgentInstructionsBundleSchema), async (req, res) => {

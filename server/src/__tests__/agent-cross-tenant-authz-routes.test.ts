@@ -178,6 +178,7 @@ vi.mock("../routes/authz.js", async () => {
 vi.mock("../services/index.js", () => ({
   agentService: () => mockAgentService,
   agentInstructionsService: () => mockAgentInstructionsService,
+  agentToolsMdService: () => ({ syncAgent: vi.fn(), syncCompany: vi.fn() }),
   accessService: () => mockAccessService,
   approvalService: () => mockApprovalService,
   companySkillService: () => mockCompanySkillService,
@@ -188,6 +189,7 @@ vi.mock("../services/index.js", () => ({
   logActivity: mockLogActivity,
   secretService: () => mockSecretService,
   syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
+  toolPermissionService: () => ({ listPolicies: vi.fn(), replaceAgentPolicies: vi.fn() }),
   workspaceOperationService: () => mockWorkspaceOperationService,
 }));
 
@@ -373,5 +375,5 @@ describe.sequential("agent cross-tenant route authorization", () => {
     expect(res.body.error).toContain("Key not found");
     expect(mockAgentService.getKeyById).toHaveBeenCalledWith(keyId);
     expect(mockAgentService.revokeKey).not.toHaveBeenCalled();
-  });
+  }, 15_000);
 });

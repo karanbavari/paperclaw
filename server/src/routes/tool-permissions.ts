@@ -7,10 +7,12 @@ import {
 import { validate } from "../middleware/validate.js";
 import { assertBoardOrgAccess, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { toolPermissionService } from "../services/tool-permissions.js";
+import { agentToolsMdService } from "../services/agent-tools-md.js";
 
 export function toolPermissionRoutes(db: Db) {
   const router = Router();
   const svc = toolPermissionService(db);
+  const agentToolsMd = agentToolsMdService(db);
 
   router.get("/companies/:companyId/tool-permissions", async (req, res) => {
     assertBoardOrgAccess(req);
@@ -27,8 +29,10 @@ export function toolPermissionRoutes(db: Db) {
       assertBoardOrgAccess(req);
       const companyId = req.params.companyId as string;
       assertCompanyAccess(req, companyId);
-      const policies = await svc.replacePolicies(companyId, req.body.policies, getActorInfo(req));
-      res.json({ companyId, policies, effective: [] });
+      const actor = getActorInfo(req);
+      const policies = await svc.replacePolicies(companyId, req.body.policies, actor);
+      const toolsMdSync = await agentToolsMd.syncCompany(companyId, actor);
+      res.json({ companyId, policies, effective: [], toolsMdSync });
     },
   );
 

@@ -35,6 +35,14 @@ const mockAgentInstructionsService = vi.hoisted(() => ({
   exportFiles: vi.fn(),
   ensureManagedBundle: vi.fn(),
 }));
+const mockAgentToolsMdService = vi.hoisted(() => ({
+  syncAgent: vi.fn(),
+  syncCompany: vi.fn(),
+}));
+const mockToolPermissionService = vi.hoisted(() => ({
+  listPolicies: vi.fn(),
+  replaceAgentPolicies: vi.fn(),
+}));
 
 const mockBudgetService = vi.hoisted(() => ({
   upsertPolicy: vi.fn(),
@@ -62,6 +70,7 @@ const mockLogActivity = vi.hoisted(() => vi.fn());
 vi.mock("../services/index.js", () => ({
   agentService: () => mockAgentService,
   agentInstructionsService: () => mockAgentInstructionsService,
+  agentToolsMdService: () => mockAgentToolsMdService,
   accessService: () => mockAccessService,
   approvalService: () => mockApprovalService,
   companySkillService: () => mockCompanySkillService,
@@ -72,6 +81,7 @@ vi.mock("../services/index.js", () => ({
   logActivity: mockLogActivity,
   secretService: () => mockSecretService,
   syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
+  toolPermissionService: () => mockToolPermissionService,
   workspaceOperationService: () => ({}),
 }));
 
@@ -83,6 +93,7 @@ function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
     agentService: () => mockAgentService,
     agentInstructionsService: () => mockAgentInstructionsService,
+    agentToolsMdService: () => mockAgentToolsMdService,
     accessService: () => mockAccessService,
     approvalService: () => mockApprovalService,
     companySkillService: () => mockCompanySkillService,
@@ -93,6 +104,7 @@ function registerModuleMocks() {
     logActivity: mockLogActivity,
     secretService: () => mockSecretService,
     syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
+    toolPermissionService: () => mockToolPermissionService,
     workspaceOperationService: () => ({}),
   }));
 

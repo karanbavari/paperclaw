@@ -32,6 +32,7 @@ import { activityRoutes } from "./routes/activity.js";
 import { toolPermissionRoutes } from "./routes/tool-permissions.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
 import { outcomeCenterRoutes } from "./routes/outcome-center.js";
+import { opsIncidentRoutes } from "./routes/ops-incidents.js";
 import { userProfileRoutes } from "./routes/user-profiles.js";
 import { sidebarBadgeRoutes } from "./routes/sidebar-badges.js";
 import { sidebarPreferenceRoutes } from "./routes/sidebar-preferences.js";
@@ -219,6 +220,7 @@ export async function createApp(
   api.use(toolPermissionRoutes(db));
   api.use(dashboardRoutes(db));
   api.use(outcomeCenterRoutes(db));
+  api.use(opsIncidentRoutes(db));
   api.use(userProfileRoutes(db));
   api.use(sidebarBadgeRoutes(db));
   api.use(sidebarPreferenceRoutes(db));

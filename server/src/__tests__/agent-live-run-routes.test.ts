@@ -51,6 +51,7 @@ function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
     agentService: () => mockAgentService,
     agentInstructionsService: () => ({}),
+    agentToolsMdService: () => ({ syncAgent: vi.fn(), syncCompany: vi.fn() }),
     accessService: () => ({}),
     approvalService: () => ({}),
     companySkillService: () => ({ listRuntimeSkillEntries: vi.fn() }),
@@ -61,6 +62,7 @@ function registerModuleMocks() {
     logActivity: vi.fn(),
     secretService: () => ({}),
     syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
+    toolPermissionService: () => ({ listPolicies: vi.fn(), replaceAgentPolicies: vi.fn() }),
     workspaceOperationService: () => ({}),
   }));
 

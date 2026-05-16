@@ -12,6 +12,7 @@ import type {
   ToolPermissionDecision,
   ToolPermissionEffect,
   ToolPermissionPolicy,
+  UpsertAgentToolPermissionPolicyRequest,
   UpsertToolPermissionPolicyRequest,
 } from "@kesarcloud/shared";
 import { approvalService } from "./approvals.js";
@@ -197,6 +198,48 @@ export function toolPermissionService(db: Db) {
       action: "tool_permissions.updated",
       entityType: "company",
       entityId: companyId,
+      details: { policyCount: policies.length },
+    });
+    return listPolicies(companyId);
+  }
+
+  async function replaceAgentPolicies(
+    companyId: string,
+    agentId: string,
+    policies: UpsertAgentToolPermissionPolicyRequest[],
+    actor: ActorInfo,
+  ): Promise<ToolPermissionPolicy[]> {
+    const now = new Date();
+    await db.delete(toolPermissionPolicies).where(and(
+      eq(toolPermissionPolicies.companyId, companyId),
+      eq(toolPermissionPolicies.subjectType, "agent"),
+      eq(toolPermissionPolicies.subjectId, agentId),
+    ));
+    if (policies.length > 0) {
+      await db.insert(toolPermissionPolicies).values(policies.map((policy) => ({
+        companyId,
+        subjectType: "agent" as const,
+        subjectId: agentId,
+        pluginKey: policy.pluginKey ?? null,
+        toolName: policy.toolName ?? null,
+        effect: policy.effect,
+        budgetLimit: policy.effect === "budget_limited" ? policy.budgetLimit ?? null : null,
+        enabled: policy.enabled ?? true,
+        createdByUserId: actor.actorType === "user" ? actor.actorId : null,
+        updatedByUserId: actor.actorType === "user" ? actor.actorId : null,
+        createdAt: now,
+        updatedAt: now,
+      })));
+    }
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId ?? null,
+      runId: actor.runId ?? null,
+      action: "tool_permissions.agent_updated",
+      entityType: "agent",
+      entityId: agentId,
       details: { policyCount: policies.length },
     });
     return listPolicies(companyId);
@@ -393,6 +436,7 @@ export function toolPermissionService(db: Db) {
     enforce,
     listDecisions,
     listPolicies,
+    replaceAgentPolicies,
     replacePolicies,
     resolveEffective,
   };

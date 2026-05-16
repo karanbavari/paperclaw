@@ -465,14 +465,25 @@ export {
 } from "./plugin.js";
 export {
   effectiveToolPermissionsQuerySchema,
+  replaceAgentToolPermissionPoliciesSchema,
   replaceToolPermissionPoliciesSchema,
   toolPermissionBudgetLimitSchema,
+  upsertAgentToolPermissionPolicySchema,
   upsertToolPermissionPolicySchema,
   type EffectiveToolPermissionsQuery,
+  type ReplaceAgentToolPermissionPoliciesInput,
   type ReplaceToolPermissionPoliciesInput,
+  type UpsertAgentToolPermissionPolicyInput,
   type UpsertToolPermissionPolicyInput,
 } from "./tool-permissions.js";
 export {
   outcomeCenterQuerySchema,
   type OutcomeCenterQuery,
 } from "./outcome-center.js";
+export {
+  opsIncidentKindSchema,
+  opsIncidentQuerySchema,
+  opsIncidentSeveritySchema,
+  opsIncidentStatusSchema,
+  type OpsIncidentQuery,
+} from "./ops-incident.js";
