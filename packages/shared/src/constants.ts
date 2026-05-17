@@ -672,6 +672,10 @@ export const PLUGIN_CATEGORIES = [
   "connector",
   "workspace",
   "automation",
+  "courier-logistics",
+  "ecommerce",
+  "legal_law",
+  "productivity",
   "ui",
 ] as const;
 export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number];
@@ -739,6 +743,7 @@ export const PLUGIN_CAPABILITIES = [
   "api.routes.register",
   "http.outbound",
   "secrets.read-ref",
+  "secrets.write-ref",
   "environment.drivers.register",
   "local.folders",
   // Agent Tools

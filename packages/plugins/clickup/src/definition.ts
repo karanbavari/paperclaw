@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.clickup",
+  packageName: "@kesarcloud/plugin-clickup",
+  version: "0.1.0",
+  displayName: "ClickUp",
+  routePath: "clickup",
+  description: "Connects PaperClaw agents to ClickUp for teams, spaces, folders, lists, tasks, comments, and custom fields.",
+  apiBaseUrl: "https://api.clickup.com/api/v2",
+  authUrl: "https://app.clickup.com/api",
+  tokenUrl: "https://api.clickup.com/api/v2/oauth/token",
+  tokenAuthStyle: "body",
+  tokenLabel: "ClickUp API Token",
+  oauthLabel: "ClickUp OAuth",
+  connectedLabel: "Connected Team",
+  defaultScopes: ["task:read","task:write","team:read"],
+  rawPathPrefixes: ["/"],
+  endpoints: [
+    { key: "teamsList", displayName: "List ClickUp Teams", description: "List teams.", method: "GET", path: "/team", mutating: false, required: [], queryParams: [] },
+    { key: "spacesList", displayName: "List ClickUp Spaces", description: "List spaces.", method: "GET", path: "/team/{teamId}/space", mutating: false, required: ["teamId"], queryParams: [] },
+    { key: "foldersList", displayName: "List ClickUp Folders", description: "List folders.", method: "GET", path: "/space/{spaceId}/folder", mutating: false, required: ["spaceId"], queryParams: [] },
+    { key: "listsList", displayName: "List ClickUp Lists", description: "List lists.", method: "GET", path: "/folder/{folderId}/list", mutating: false, required: ["folderId"], queryParams: [] },
+    { key: "tasksList", displayName: "List ClickUp Tasks", description: "List tasks.", method: "GET", path: "/list/{listId}/task", mutating: false, required: ["listId"], queryParams: ["page","order_by","reverse"] },
+    { key: "taskGet", displayName: "Get ClickUp Task", description: "Get a task.", method: "GET", path: "/task/{taskId}", mutating: false, required: ["taskId"], queryParams: [] },
+    { key: "taskCreate", displayName: "Create ClickUp Task", description: "Create a task.", method: "POST", path: "/list/{listId}/task", mutating: true, required: ["listId"], queryParams: [], bodyParam: "task" },
+    { key: "taskUpdate", displayName: "Update ClickUp Task", description: "Update a task.", method: "PUT", path: "/task/{taskId}", mutating: true, required: ["taskId"], queryParams: [], bodyParam: "task" },
+    { key: "commentCreate", displayName: "Create ClickUp Comment", description: "Create a task comment.", method: "POST", path: "/task/{taskId}/comment", mutating: true, required: ["taskId"], queryParams: [], bodyParam: "comment" },
+  ],
+};

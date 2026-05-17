@@ -1,0 +1,37 @@
+{
+  "name": "@kesarcloud/plugin-shippo",
+  "version": "0.1.0",
+  "description": "First-party PaperClaw plugin for Shippo logistics API agent tools.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "paperclawPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js",
+    "ui": "./dist/ui/"
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @kesarcloud/plugin-logistics-common build",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "pnpm --filter @kesarcloud/plugin-logistics-common build && cd ../../.. && vitest run packages/plugins/shippo/src/*.test.ts",
+    "typecheck": "pnpm --filter @kesarcloud/plugin-logistics-common build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@kesarcloud/plugin-logistics-common": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "react": "^19.0.8",
+    "react-dom": "^19.0.8",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}

@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.asana",
+  packageName: "@kesarcloud/plugin-asana",
+  version: "0.1.0",
+  displayName: "Asana",
+  routePath: "asana",
+  description: "Connects PaperClaw agents to Asana for workspaces, projects, tasks, subtasks, sections, tags, stories, and users.",
+  apiBaseUrl: "https://app.asana.com/api/1.0",
+  authUrl: "https://app.asana.com/-/oauth_authorize",
+  tokenUrl: "https://app.asana.com/-/oauth_token",
+  tokenAuthStyle: "body",
+  tokenLabel: "Asana Personal Access Token",
+  oauthLabel: "Asana OAuth",
+  connectedLabel: "Connected Workspace",
+  defaultScopes: ["default"],
+  rawPathPrefixes: ["/"],
+  endpoints: [
+    { key: "workspacesList", displayName: "List Asana Workspaces", description: "List workspaces.", method: "GET", path: "/workspaces", mutating: false, required: [], queryParams: ["limit","offset"] },
+    { key: "projectsList", displayName: "List Asana Projects", description: "List projects.", method: "GET", path: "/projects", mutating: false, required: [], queryParams: ["workspace","team","limit","offset"] },
+    { key: "projectGet", displayName: "Get Asana Project", description: "Get a project.", method: "GET", path: "/projects/{projectId}", mutating: false, required: ["projectId"], queryParams: [] },
+    { key: "tasksList", displayName: "List Asana Tasks", description: "List tasks.", method: "GET", path: "/tasks", mutating: false, required: [], queryParams: ["project","workspace","assignee","limit","offset"] },
+    { key: "taskGet", displayName: "Get Asana Task", description: "Get a task.", method: "GET", path: "/tasks/{taskId}", mutating: false, required: ["taskId"], queryParams: [] },
+    { key: "taskCreate", displayName: "Create Asana Task", description: "Create a task.", method: "POST", path: "/tasks", mutating: true, required: [], queryParams: [], bodyParam: "task" },
+    { key: "taskUpdate", displayName: "Update Asana Task", description: "Update a task.", method: "PUT", path: "/tasks/{taskId}", mutating: true, required: ["taskId"], queryParams: [], bodyParam: "task" },
+    { key: "taskDelete", displayName: "Delete Asana Task", description: "Delete a task.", method: "DELETE", path: "/tasks/{taskId}", mutating: true, required: ["taskId"], queryParams: [] },
+    { key: "storyCreate", displayName: "Create Asana Story", description: "Comment on a task.", method: "POST", path: "/tasks/{taskId}/stories", mutating: true, required: ["taskId"], queryParams: [], bodyParam: "story" },
+  ],
+};

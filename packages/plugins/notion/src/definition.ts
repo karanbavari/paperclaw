@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.notion",
+  packageName: "@kesarcloud/plugin-notion",
+  version: "0.1.0",
+  displayName: "Notion",
+  routePath: "notion",
+  description: "Connects PaperClaw agents to Notion workspaces for pages, databases, blocks, comments, and search.",
+  apiBaseUrl: "https://api.notion.com",
+  authUrl: "https://api.notion.com/v1/oauth/authorize",
+  tokenUrl: "https://api.notion.com/v1/oauth/token",
+  tokenAuthStyle: "basic",
+  tokenLabel: "Notion Internal Integration Token",
+  oauthLabel: "Notion OAuth",
+  connectedLabel: "Connected Workspace",
+  defaultScopes: ["read_content","update_content","insert_content"],
+  rawPathPrefixes: ["/v1/"],
+  endpoints: [
+    { key: "usersList", displayName: "List Notion Users", description: "List users.", method: "GET", path: "/v1/users", mutating: false, required: [], queryParams: ["page_size","start_cursor"] },
+    { key: "search", displayName: "Search Notion", description: "Search pages and databases.", method: "POST", path: "/v1/search", mutating: false, required: [], queryParams: [], bodyParam: "body" },
+    { key: "pageGet", displayName: "Get Notion Page", description: "Get a page.", method: "GET", path: "/v1/pages/{pageId}", mutating: false, required: ["pageId"], queryParams: [] },
+    { key: "pageCreate", displayName: "Create Notion Page", description: "Create a page.", method: "POST", path: "/v1/pages", mutating: true, required: [], queryParams: [], bodyParam: "page" },
+    { key: "pageUpdate", displayName: "Update Notion Page", description: "Update page properties.", method: "PATCH", path: "/v1/pages/{pageId}", mutating: true, required: ["pageId"], queryParams: [], bodyParam: "patch" },
+    { key: "databaseQuery", displayName: "Query Notion Database", description: "Query a database.", method: "POST", path: "/v1/databases/{databaseId}/query", mutating: false, required: ["databaseId"], queryParams: [], bodyParam: "body" },
+    { key: "blockChildrenList", displayName: "List Notion Block Children", description: "List block children.", method: "GET", path: "/v1/blocks/{blockId}/children", mutating: false, required: ["blockId"], queryParams: ["page_size","start_cursor"] },
+    { key: "blockChildrenAppend", displayName: "Append Notion Block Children", description: "Append block children.", method: "PATCH", path: "/v1/blocks/{blockId}/children", mutating: true, required: ["blockId"], queryParams: [], bodyParam: "body" },
+    { key: "commentCreate", displayName: "Create Notion Comment", description: "Create a comment.", method: "POST", path: "/v1/comments", mutating: true, required: [], queryParams: [], bodyParam: "comment" },
+  ],
+};

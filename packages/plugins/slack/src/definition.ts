@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.slack",
+  packageName: "@kesarcloud/plugin-slack",
+  version: "0.1.0",
+  displayName: "Slack",
+  routePath: "slack",
+  description: "Connects PaperClaw agents to Slack workspaces for channels, users, messages, reactions, pins, and files metadata.",
+  apiBaseUrl: "https://slack.com/api",
+  authUrl: "https://slack.com/oauth/v2/authorize",
+  tokenUrl: "https://slack.com/api/oauth.v2.access",
+  tokenAuthStyle: "body",
+  tokenLabel: "Slack Bot/User Token",
+  oauthLabel: "Slack OAuth",
+  connectedLabel: "Connected Workspace",
+  defaultScopes: ["channels:read","chat:write","users:read","reactions:write","pins:write","files:read"],
+  rawPathPrefixes: ["/"],
+  endpoints: [
+    { key: "authTest", displayName: "Slack Auth Test", description: "Verify token identity.", method: "POST", path: "/auth.test", mutating: false, required: [], queryParams: [] },
+    { key: "usersList", displayName: "List Slack Users", description: "List users.", method: "GET", path: "/users.list", mutating: false, required: [], queryParams: ["limit","cursor"] },
+    { key: "conversationsList", displayName: "List Slack Conversations", description: "List conversations.", method: "GET", path: "/conversations.list", mutating: false, required: [], queryParams: ["types","limit","cursor"] },
+    { key: "conversationHistory", displayName: "Slack Conversation History", description: "Read channel history.", method: "GET", path: "/conversations.history", mutating: false, required: ["channel"], queryParams: ["limit","cursor","oldest","latest"] },
+    { key: "messagePost", displayName: "Post Slack Message", description: "Post a message.", method: "POST", path: "/chat.postMessage", mutating: true, required: [], queryParams: [], bodyParam: "message" },
+    { key: "messageUpdate", displayName: "Update Slack Message", description: "Update a message.", method: "POST", path: "/chat.update", mutating: true, required: [], queryParams: [], bodyParam: "message" },
+    { key: "messageDelete", displayName: "Delete Slack Message", description: "Delete a message.", method: "POST", path: "/chat.delete", mutating: true, required: [], queryParams: [], bodyParam: "message" },
+    { key: "reactionAdd", displayName: "Add Slack Reaction", description: "Add a reaction.", method: "POST", path: "/reactions.add", mutating: true, required: [], queryParams: [], bodyParam: "reaction" },
+    { key: "pinAdd", displayName: "Add Slack Pin", description: "Pin an item.", method: "POST", path: "/pins.add", mutating: true, required: [], queryParams: [], bodyParam: "pin" },
+  ],
+};

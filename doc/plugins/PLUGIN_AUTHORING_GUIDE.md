@@ -79,7 +79,7 @@ Worker:
 - jobs
 - launchers
 - http
-- secrets
+- secrets (`resolve` with `secrets.read-ref`; plugin-owned `upsert` with `secrets.write-ref`)
 - activity
 - state
 - database namespace via `ctx.db`
@@ -196,7 +196,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Research Plugin",
   description: "Creates a managed research agent and scheduled research routine.",
   author: "Example",
-  categories: ["automation"],
+  categories: ["automation", "productivity"],
   capabilities: [
     "agents.managed",
     "projects.managed",

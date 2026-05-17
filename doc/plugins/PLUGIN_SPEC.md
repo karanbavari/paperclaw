@@ -319,7 +319,7 @@ export interface PaperClawPluginManifestV1 {
   version: string;
   displayName: string;
   description: string;
-  categories: Array<"connector" | "workspace" | "automation" | "ui">;
+  categories: Array<"connector" | "workspace" | "automation" | "ecommerce" | "legal_law" | "productivity" | "ui">;
   minimumPaperClawVersion?: string;
   capabilities: string[];
   entrypoints: {

@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.todoist",
+  packageName: "@kesarcloud/plugin-todoist",
+  version: "0.1.0",
+  displayName: "Todoist",
+  routePath: "todoist",
+  description: "Connects PaperClaw agents to Todoist for projects, sections, tasks, comments, and labels.",
+  apiBaseUrl: "https://api.todoist.com/rest/v2",
+  authUrl: "https://todoist.com/oauth/authorize",
+  tokenUrl: "https://todoist.com/oauth/access_token",
+  tokenAuthStyle: "body",
+  tokenLabel: "Todoist API Token",
+  oauthLabel: "Todoist OAuth",
+  connectedLabel: "Connected User",
+  defaultScopes: ["data:read_write"],
+  rawPathPrefixes: ["/"],
+  endpoints: [
+    { key: "projectsList", displayName: "List Todoist Projects", description: "List projects.", method: "GET", path: "/projects", mutating: false, required: [], queryParams: [] },
+    { key: "projectCreate", displayName: "Create Todoist Project", description: "Create a project.", method: "POST", path: "/projects", mutating: true, required: [], queryParams: [], bodyParam: "project" },
+    { key: "sectionsList", displayName: "List Todoist Sections", description: "List sections.", method: "GET", path: "/sections", mutating: false, required: [], queryParams: ["project_id"] },
+    { key: "tasksList", displayName: "List Todoist Tasks", description: "List tasks.", method: "GET", path: "/tasks", mutating: false, required: [], queryParams: ["project_id","section_id","label","filter"] },
+    { key: "taskGet", displayName: "Get Todoist Task", description: "Get a task.", method: "GET", path: "/tasks/{taskId}", mutating: false, required: ["taskId"], queryParams: [] },
+    { key: "taskCreate", displayName: "Create Todoist Task", description: "Create a task.", method: "POST", path: "/tasks", mutating: true, required: [], queryParams: [], bodyParam: "task" },
+    { key: "taskUpdate", displayName: "Update Todoist Task", description: "Update a task.", method: "POST", path: "/tasks/{taskId}", mutating: true, required: ["taskId"], queryParams: [], bodyParam: "task" },
+    { key: "taskClose", displayName: "Close Todoist Task", description: "Close a task.", method: "POST", path: "/tasks/{taskId}/close", mutating: true, required: ["taskId"], queryParams: [] },
+    { key: "commentCreate", displayName: "Create Todoist Comment", description: "Create a comment.", method: "POST", path: "/comments", mutating: true, required: [], queryParams: [], bodyParam: "comment" },
+  ],
+};

@@ -17,7 +17,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Google Workspace",
   description: "Connects PaperClaw agents to Gmail, Calendar, Drive, Docs, Sheets, Chat, and other Google Workspace APIs through the gws CLI.",
   author: "PaperClaw",
-  categories: ["connector", "automation", "workspace", "ui"],
+  categories: ["connector", "automation", "workspace", "productivity", "ui"],
   capabilities: [
     "agent.tools.register",
     "plugin.state.read",

@@ -36,9 +36,10 @@
 import { eq, and, desc } from "drizzle-orm";
 import type { Db } from "@kesarcloud/db";
 import { companySecrets, companySecretVersions, pluginConfig } from "@kesarcloud/db";
-import type { SecretProvider } from "@kesarcloud/shared";
+import { SECRET_PROVIDERS, type SecretProvider } from "@kesarcloud/shared";
 import { getSecretProvider } from "../secrets/provider-registry.js";
 import { pluginRegistryService } from "./plugin-registry.js";
+import { secretService } from "./secrets.js";
 import {
   collectSecretRefPaths,
   isUuidSecretRef,
@@ -133,6 +134,14 @@ export interface PluginSecretsResolveParams {
   secretRef: string;
 }
 
+export interface PluginSecretsUpsertParams {
+  companyId: string;
+  name: string;
+  value: string;
+  description?: string | null;
+  externalRef?: string | null;
+}
+
 /**
  * Options for creating the plugin secrets handler.
  */
@@ -145,6 +154,8 @@ export interface PluginSecretsHandlerOptions {
    * that reach the plugin worker.
    */
   pluginId: string;
+  /** Stable manifest plugin key. Used to namespace plugin-owned secrets. */
+  pluginKey: string;
 }
 
 /**
@@ -160,6 +171,19 @@ export interface PluginSecretsService {
    *   the provider fails to resolve
    */
   resolve(params: PluginSecretsResolveParams): Promise<string>;
+
+  /**
+   * Create or rotate a plugin-owned company secret.
+   *
+   * Plugin-created secrets are namespaced with the manifest plugin key so the
+   * resolve path can authorize them without requiring the raw token reference
+   * to be placed in operator-visible plugin config.
+   */
+  upsert(params: PluginSecretsUpsertParams): Promise<{
+    secretRef: string;
+    name: string;
+    latestVersion: number;
+  }>;
 }
 
 /**
@@ -171,7 +195,7 @@ export interface PluginSecretsService {
  *
  * @example
  * ```ts
- * const secretsHandler = createPluginSecretsHandler({ db, pluginId });
+ * const secretsHandler = createPluginSecretsHandler({ db, pluginId, pluginKey });
  * const handlers = createHostClientHandlers({
  *   pluginId,
  *   capabilities: manifest.capabilities,
@@ -205,8 +229,15 @@ function createRateLimiter(maxAttempts: number, windowMs: number) {
 export function createPluginSecretsHandler(
   options: PluginSecretsHandlerOptions,
 ): PluginSecretsService {
-  const { db, pluginId } = options;
+  const { db, pluginId, pluginKey } = options;
   const registry = pluginRegistryService(db);
+  const secrets = secretService(db);
+  const provider = (
+    process.env.PAPERCLAW_SECRETS_PROVIDER &&
+    SECRET_PROVIDERS.includes(process.env.PAPERCLAW_SECRETS_PROVIDER as SecretProvider)
+      ? process.env.PAPERCLAW_SECRETS_PROVIDER
+      : "local_encrypted"
+  ) as SecretProvider;
 
   // Rate limit: max 30 resolution attempts per plugin per minute
   const rateLimiter = createRateLimiter(30, 60_000);
@@ -242,7 +273,8 @@ export function createPluginSecretsHandler(
       }
 
       // ---------------------------------------------------------------
-      // 1b. Scope check — only allow secrets referenced in this plugin's config
+      // 1b. Scope check — allow operator-authorized config refs and
+      // plugin-owned refs created through secrets.upsert.
       // ---------------------------------------------------------------
       const now = Date.now();
       if (!cachedAllowedRefs || now > cachedAllowedRefsExpiry) {
@@ -261,11 +293,6 @@ export function createPluginSecretsHandler(
         cachedAllowedRefsExpiry = now + CONFIG_CACHE_TTL_MS;
       }
 
-      if (!cachedAllowedRefs.has(trimmedRef)) {
-        // Return "not found" to avoid leaking whether the secret exists
-        throw secretNotFound(trimmedRef);
-      }
-
       // ---------------------------------------------------------------
       // 2. Look up the secret record by UUID
       // ---------------------------------------------------------------
@@ -276,6 +303,12 @@ export function createPluginSecretsHandler(
         .then((rows) => rows[0] ?? null);
 
       if (!secret) {
+        throw secretNotFound(trimmedRef);
+      }
+
+      const pluginSecretPrefix = `plugin:${pluginKey}:`;
+      if (!cachedAllowedRefs.has(trimmedRef) && !secret.name.startsWith(pluginSecretPrefix)) {
+        // Return "not found" to avoid leaking whether the secret exists.
         throw secretNotFound(trimmedRef);
       }
 
@@ -307,6 +340,44 @@ export function createPluginSecretsHandler(
       });
 
       return resolved;
+    },
+
+    async upsert(params: PluginSecretsUpsertParams) {
+      if (!rateLimiter.check(`${pluginId}:write`)) {
+        const err = new Error("Rate limit exceeded for secret writes");
+        err.name = "RateLimitExceededError";
+        throw err;
+      }
+      const companyId = typeof params.companyId === "string" ? params.companyId.trim() : "";
+      const requestedName = typeof params.name === "string" ? params.name.trim() : "";
+      const value = typeof params.value === "string" ? params.value : "";
+      if (!companyId) throw invalidSecretRef("<missing-company>");
+      if (!requestedName) throw invalidSecretRef("<missing-name>");
+      if (!value) throw invalidSecretRef("<empty-value>");
+
+      const safeName = requestedName
+        .replace(/[^a-zA-Z0-9._:-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 120) || "secret";
+      const name = `plugin:${pluginKey}:${safeName}`;
+      const description = params.description ?? `Secret managed by plugin ${pluginKey}.`;
+      const existing = await secrets.getByName(companyId, name);
+      const actor = { userId: `plugin:${pluginKey}`, agentId: null };
+      const secret = existing
+        ? await secrets.rotate(existing.id, { value, externalRef: params.externalRef ?? existing.externalRef ?? null }, actor)
+        : await secrets.create(companyId, {
+            name,
+            provider,
+            value,
+            description,
+            externalRef: params.externalRef ?? null,
+          }, actor);
+
+      return {
+        secretRef: secret.id,
+        name: secret.name,
+        latestVersion: secret.latestVersion,
+      };
     },
   };
 }

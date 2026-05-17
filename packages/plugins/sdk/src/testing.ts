@@ -666,6 +666,14 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
         requireCapability(manifest, capabilitySet, "secrets.read-ref");
         return `resolved:${secretRef}`;
       },
+      async upsert(input) {
+        requireCapability(manifest, capabilitySet, "secrets.write-ref");
+        return {
+          secretRef: randomUUID(),
+          name: input.name,
+          latestVersion: 1,
+        };
+      },
     },
     activity: {
       async log(entry) {

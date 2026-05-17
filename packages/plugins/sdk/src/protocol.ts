@@ -708,6 +708,16 @@ export interface WorkerToHostMethods {
     params: { secretRef: string },
     result: string,
   ];
+  "secrets.upsert": [
+    params: {
+      companyId: string;
+      name: string;
+      value: string;
+      description?: string | null;
+      externalRef?: string | null;
+    },
+    result: { secretRef: string; name: string; latestVersion: number },
+  ];
 
   // Activity
   "activity.log": [

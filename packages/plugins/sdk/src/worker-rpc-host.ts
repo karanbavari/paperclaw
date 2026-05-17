@@ -532,6 +532,9 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         async resolve(secretRef: string): Promise<string> {
           return callHost("secrets.resolve", { secretRef });
         },
+        async upsert(input): Promise<{ secretRef: string; name: string; latestVersion: number }> {
+          return callHost("secrets.upsert", input);
+        },
       },
 
       activity: {

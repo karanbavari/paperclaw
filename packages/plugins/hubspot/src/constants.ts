@@ -1,0 +1,126 @@
+export const PLUGIN_ID = "paperclaw.hubspot";
+export const PLUGIN_VERSION = "0.1.0";
+export const PAGE_ROUTE = "hubspot";
+
+export const EXPORT_NAMES = {
+  page: "HubSpotPage",
+  settingsPage: "HubSpotSettingsPage",
+  dashboardWidget: "HubSpotDashboardWidget",
+} as const;
+
+export const SLOT_IDS = {
+  page: "hubspot-page",
+  settingsPage: "hubspot-settings-page",
+  dashboardWidget: "hubspot-dashboard-widget",
+} as const;
+
+export const DATA_KEYS = {
+  status: "status",
+  recentCommands: "recent-commands",
+} as const;
+
+export const ACTION_KEYS = {
+  savePrivateAccessToken: "save-private-access-token",
+  saveClientSecret: "save-client-secret",
+  startOauth: "start-oauth",
+  completeOauth: "complete-oauth",
+  disconnect: "disconnect",
+} as const;
+
+export const TOOL_NAMES = {
+  objectGet: "hubspot.objectGet",
+  objectList: "hubspot.objectList",
+  objectSearch: "hubspot.objectSearch",
+  objectCreate: "hubspot.objectCreate",
+  objectUpdate: "hubspot.objectUpdate",
+  objectArchive: "hubspot.objectArchive",
+  batchRead: "hubspot.batchRead",
+  batchCreate: "hubspot.batchCreate",
+  batchUpdate: "hubspot.batchUpdate",
+  batchArchive: "hubspot.batchArchive",
+  contactsList: "hubspot.contactsList",
+  contactsSearch: "hubspot.contactsSearch",
+  contactGet: "hubspot.contactGet",
+  contactCreate: "hubspot.contactCreate",
+  contactUpdate: "hubspot.contactUpdate",
+  contactArchive: "hubspot.contactArchive",
+  companiesList: "hubspot.companiesList",
+  companiesSearch: "hubspot.companiesSearch",
+  companyGet: "hubspot.companyGet",
+  companyCreate: "hubspot.companyCreate",
+  companyUpdate: "hubspot.companyUpdate",
+  companyArchive: "hubspot.companyArchive",
+  dealsList: "hubspot.dealsList",
+  dealsSearch: "hubspot.dealsSearch",
+  dealGet: "hubspot.dealGet",
+  dealCreate: "hubspot.dealCreate",
+  dealUpdate: "hubspot.dealUpdate",
+  dealArchive: "hubspot.dealArchive",
+  ticketsList: "hubspot.ticketsList",
+  ticketsSearch: "hubspot.ticketsSearch",
+  ticketGet: "hubspot.ticketGet",
+  ticketCreate: "hubspot.ticketCreate",
+  ticketUpdate: "hubspot.ticketUpdate",
+  ticketArchive: "hubspot.ticketArchive",
+  noteCreate: "hubspot.noteCreate",
+  noteGet: "hubspot.noteGet",
+  noteUpdate: "hubspot.noteUpdate",
+  noteArchive: "hubspot.noteArchive",
+  taskCreate: "hubspot.taskCreate",
+  taskGet: "hubspot.taskGet",
+  taskUpdate: "hubspot.taskUpdate",
+  taskArchive: "hubspot.taskArchive",
+  propertiesList: "hubspot.propertiesList",
+  propertyGet: "hubspot.propertyGet",
+  propertyCreate: "hubspot.propertyCreate",
+  propertyUpdate: "hubspot.propertyUpdate",
+  ownersList: "hubspot.ownersList",
+  pipelinesList: "hubspot.pipelinesList",
+  pipelineGet: "hubspot.pipelineGet",
+  associationsList: "hubspot.associationsList",
+  associationCreateDefault: "hubspot.associationCreateDefault",
+  associationCreateLabeled: "hubspot.associationCreateLabeled",
+  associationRemove: "hubspot.associationRemove",
+  apiRequest: "hubspot.apiRequest",
+} as const;
+
+export const DEFAULT_SCOPES = [
+  "crm.objects.contacts.read",
+  "crm.objects.contacts.write",
+  "crm.objects.companies.read",
+  "crm.objects.companies.write",
+  "crm.objects.deals.read",
+  "crm.objects.deals.write",
+  "crm.objects.tickets.read",
+  "crm.objects.tickets.write",
+  "crm.objects.notes.read",
+  "crm.objects.notes.write",
+  "crm.objects.tasks.read",
+  "crm.objects.tasks.write",
+  "crm.schemas.contacts.read",
+  "crm.schemas.contacts.write",
+  "crm.schemas.companies.read",
+  "crm.schemas.companies.write",
+  "crm.schemas.deals.read",
+  "crm.schemas.deals.write",
+  "crm.schemas.tickets.read",
+  "crm.schemas.tickets.write",
+  "crm.objects.owners.read",
+] as const;
+
+export const DEFAULT_CONFIG = {
+  authMode: "private_token",
+  privateAccessTokenSecretRef: "",
+  clientId: "",
+  clientSecretRef: "",
+  refreshTokenSecretRef: "",
+  connectedCompanyId: "",
+  connectedAt: "",
+  portalId: "",
+  redirectUri: "",
+  enabledScopes: [...DEFAULT_SCOPES],
+  dryRun: true,
+  enableRawApiTool: false,
+  requestTimeoutMs: 30_000,
+  maxOutputBytes: 80_000,
+} as const;

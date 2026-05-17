@@ -603,6 +603,21 @@ export interface PluginSecretsClient {
    * @returns The resolved secret value
    */
   resolve(secretRef: string): Promise<string>;
+
+  /**
+   * Create or rotate a plugin-owned company secret and return its reference.
+   *
+   * Requires `secrets.write-ref`. The host namespaces the persisted secret name
+   * to the current plugin so other plugins cannot resolve it just by guessing
+   * the returned UUID.
+   */
+  upsert(input: {
+    companyId: string;
+    name: string;
+    value: string;
+    description?: string | null;
+    externalRef?: string | null;
+  }): Promise<{ secretRef: string; name: string; latestVersion: number }>;
 }
 
 /**

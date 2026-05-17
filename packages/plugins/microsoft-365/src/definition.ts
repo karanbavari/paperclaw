@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.microsoft-365",
+  packageName: "@kesarcloud/plugin-microsoft-365",
+  version: "0.1.0",
+  displayName: "Microsoft 365",
+  routePath: "microsoft-365",
+  description: "Connects PaperClaw agents to Microsoft Graph for profile, mail, calendar, OneDrive, Planner, and To Do.",
+  apiBaseUrl: "https://graph.microsoft.com/v1.0",
+  authUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+  tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+  tokenAuthStyle: "body",
+  tokenLabel: "Microsoft Graph Access Token",
+  oauthLabel: "Microsoft Graph OAuth",
+  connectedLabel: "Connected Tenant/User",
+  defaultScopes: ["offline_access","User.Read","Mail.ReadWrite","Calendars.ReadWrite","Files.ReadWrite","Tasks.ReadWrite","Group.ReadWrite.All"],
+  rawPathPrefixes: ["/me","/users","/groups","/planner"],
+  endpoints: [
+    { key: "profileGet", displayName: "Get Microsoft Profile", description: "Get current profile.", method: "GET", path: "/me", mutating: false, required: [], queryParams: [] },
+    { key: "messagesList", displayName: "List Outlook Messages", description: "List mail messages.", method: "GET", path: "/me/messages", mutating: false, required: [], queryParams: ["$top","$filter","$select"] },
+    { key: "messageSend", displayName: "Send Outlook Mail", description: "Send mail.", method: "POST", path: "/me/sendMail", mutating: true, required: [], queryParams: [], bodyParam: "message" },
+    { key: "eventsList", displayName: "List Calendar Events", description: "List calendar events.", method: "GET", path: "/me/events", mutating: false, required: [], queryParams: ["$top","$filter","$select"] },
+    { key: "eventCreate", displayName: "Create Calendar Event", description: "Create an event.", method: "POST", path: "/me/events", mutating: true, required: [], queryParams: [], bodyParam: "event" },
+    { key: "driveChildrenList", displayName: "List OneDrive Children", description: "List drive items.", method: "GET", path: "/me/drive/root/children", mutating: false, required: [], queryParams: ["$top","$select"] },
+    { key: "todoListsList", displayName: "List Microsoft To Do Lists", description: "List To Do lists.", method: "GET", path: "/me/todo/lists", mutating: false, required: [], queryParams: [] },
+    { key: "todoTaskCreate", displayName: "Create Microsoft To Do Task", description: "Create a To Do task.", method: "POST", path: "/me/todo/lists/{listId}/tasks", mutating: true, required: ["listId"], queryParams: [], bodyParam: "task" },
+    { key: "plannerTasksList", displayName: "List Planner Tasks", description: "List Planner tasks.", method: "GET", path: "/planner/plans/{planId}/tasks", mutating: false, required: ["planId"], queryParams: [] },
+  ],
+};

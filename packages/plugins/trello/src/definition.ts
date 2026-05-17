@@ -1,0 +1,30 @@
+import type { ProductivityDefinition } from "@kesarcloud/plugin-productivity-core";
+
+export const definition: ProductivityDefinition = {
+  id: "paperclaw.trello",
+  packageName: "@kesarcloud/plugin-trello",
+  version: "0.1.0",
+  displayName: "Trello",
+  routePath: "trello",
+  description: "Connects PaperClaw agents to Trello for boards, lists, cards, checklists, labels, comments, and members.",
+  apiBaseUrl: "https://api.trello.com/1",
+  authUrl: "https://trello.com/1/authorize",
+  tokenUrl: "https://trello.com/1/OAuthGetAccessToken",
+  tokenAuthStyle: "body",
+  tokenLabel: "Trello API Token",
+  oauthLabel: "Trello OAuth",
+  connectedLabel: "Connected Member",
+  defaultScopes: ["read","write"],
+  rawPathPrefixes: ["/"],
+  endpoints: [
+    { key: "memberGet", displayName: "Get Trello Member", description: "Get a member.", method: "GET", path: "/members/{memberId}", mutating: false, required: ["memberId"], queryParams: [] },
+    { key: "memberBoards", displayName: "List Trello Member Boards", description: "List member boards.", method: "GET", path: "/members/{memberId}/boards", mutating: false, required: ["memberId"], queryParams: [] },
+    { key: "boardGet", displayName: "Get Trello Board", description: "Get a board.", method: "GET", path: "/boards/{boardId}", mutating: false, required: ["boardId"], queryParams: [] },
+    { key: "boardLists", displayName: "List Trello Lists", description: "List board lists.", method: "GET", path: "/boards/{boardId}/lists", mutating: false, required: ["boardId"], queryParams: [] },
+    { key: "cardsList", displayName: "List Trello Cards", description: "List cards on a board.", method: "GET", path: "/boards/{boardId}/cards", mutating: false, required: ["boardId"], queryParams: [] },
+    { key: "cardGet", displayName: "Get Trello Card", description: "Get a card.", method: "GET", path: "/cards/{cardId}", mutating: false, required: ["cardId"], queryParams: [] },
+    { key: "cardCreate", displayName: "Create Trello Card", description: "Create a card.", method: "POST", path: "/cards", mutating: true, required: [], queryParams: [], bodyParam: "card" },
+    { key: "cardUpdate", displayName: "Update Trello Card", description: "Update a card.", method: "PUT", path: "/cards/{cardId}", mutating: true, required: ["cardId"], queryParams: [], bodyParam: "card" },
+    { key: "cardComment", displayName: "Comment Trello Card", description: "Add a card comment.", method: "POST", path: "/cards/{cardId}/actions/comments", mutating: true, required: ["cardId"], queryParams: [], bodyParam: "comment" },
+  ],
+};

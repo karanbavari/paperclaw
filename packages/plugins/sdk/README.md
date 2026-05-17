@@ -102,6 +102,8 @@ runWorker(plugin, import.meta.url);
 
 **Context (`ctx`) in setup:** `config`, `localFolders`, `events`, `jobs`, `launchers`, `http`, `secrets`, `activity`, `state`, `entities`, `projects`, `companies`, `issues`, `agents`, `goals`, `data`, `actions`, `streams`, `tools`, `metrics`, `logger`, `manifest`. Worker-side host APIs are capability-gated; declare capabilities in the manifest.
 
+**Secrets:** `ctx.secrets.resolve(secretRef)` requires `secrets.read-ref` and resolves only operator-authorized config refs or plugin-owned refs. `ctx.secrets.upsert({ companyId, name, value })` requires `secrets.write-ref`; the host stores or rotates a company secret under a plugin-prefixed name and returns the secret ref.
+
 **Agents:** `ctx.agents.invoke(agentId, companyId, opts)` for one-shot invocation. `ctx.agents.sessions` for two-way chat: `create`, `list`, `sendMessage` (with streaming `onEvent` callback), `close`. See the [Plugin Authoring Guide](../../doc/plugins/PLUGIN_AUTHORING_GUIDE.md#agent-sessions-two-way-chat) for details.
 
 **Jobs:** Declare in `manifest.jobs` with `jobKey`, `displayName`, `schedule` (cron). Register handler with `ctx.jobs.register(jobKey, fn)`. **Webhooks:** Declare in `manifest.webhooks` with `endpointKey`; handle in `onWebhook(input)`. **State:** `ctx.state.get/set/delete(scopeKey)`; scope kinds: `instance`, `company`, `project`, `project_workspace`, `agent`, `issue`, `goal`, `run`.
@@ -344,6 +346,7 @@ Declare in `manifest.capabilities`. Grouped by scope:
 | | `api.routes.register` |
 | | `http.outbound` |
 | | `secrets.read-ref` |
+| | `secrets.write-ref` |
 | | `environment.drivers.register` |
 | | `local.folders` |
 | **Agent** | `agent.tools.register` |
