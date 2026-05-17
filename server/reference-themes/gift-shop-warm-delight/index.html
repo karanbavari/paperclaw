@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WarmDelight — Gift Shop for Every Occasion</title>
+  <meta name="description" content="WarmDelight offers handpicked gifts for every occasion — birthdays, anniversaries, festivals, and corporate gifting with love and care.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">W</span>
+        <span>WarmDelight</span>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html" class="navbar-link active">Home</a>
+        <a href="pages/products.html" class="navbar-link">Gifts</a>
+        <a href="pages/about.html" class="navbar-link">About Us</a>
+        <a href="pages/contact.html" class="navbar-link">Contact</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="pages/products.html" class="btn btn-primary btn-sm">
+          <i class="ph-bold ph-gift"></i>
+          Shop Now
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="animated-gradient">
+      <div class="mesh-circle"></div>
+      <div class="mesh-circle"></div>
+      <div class="mesh-circle"></div>
+    </div>
+    <div class="hero-gradient"></div>
+    <div class="container hero-content">
+      <span class="section-label">
+        <i class="ph-bold ph-sparkle"></i>
+        नए सीज़न के उपहार
+      </span>
+      <h1>हर ख़ुशी के लिए<br>सही तोहफ़ा</h1>
+      <p>WarmDelight brings you handpicked gifts crafted with love for every occasion. From birthdays to festivals, find the perfect present that speaks from the heart.</p>
+      <div class="hero-actions">
+        <a href="pages/products.html" class="btn btn-primary btn-lg">
+          <i class="ph-bold ph-gift"></i>
+          Explore Gifts
+        </a>
+        <a href="pages/contact.html" class="btn btn-secondary btn-lg">
+          <i class="ph-bold ph-chat-teardrop"></i>
+          Get in Touch
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-value">5K+</div>
+          <div class="stat-label">Happy Customers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">200+</div>
+          <div class="stat-label">Unique Gifts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">4.9<i class="ph-fill ph-star" style="color:#f59e0b;font-size:1.25rem;vertical-align:middle"></i></div>
+          <div class="stat-label">Customer Rating</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-squares-four"></i>
+          Gift Categories
+        </span>
+        <h2>हर अवसर के लिए कुछ ख़ास</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">Browse our carefully curated categories and discover gifts that bring smiles. Whether it's a festival, birthday, or just because — we've got you covered.</p>
+      </div>
+      <div class="categories-grid">
+        <div class="category-card">
+          <div class="category-icon"><i class="ph-bold ph-cake"></i></div>
+          <h3>Birthdays</h3>
+          <p>Celebrate another trip around the sun with personalized birthday surprises.</p>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><i class="ph-bold ph-heart"></i></div>
+          <h3>Anniversaries</h3>
+          <p>Mark milestones of love with elegant and timeless anniversary gifts.</p>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><i class="ph-bold ph-stars"></i></div>
+          <h3>Festivals</h3>
+          <p>Spread joy this festive season with our special festival collection.</p>
+        </div>
+        <div class="category-card">
+          <div class="category-icon"><i class="ph-bold ph-briefcase"></i></div>
+          <h3>Corporate</h3>
+          <p>Impress clients and teams with premium corporate gifting solutions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="section" style="background:var(--color-neutral-100)">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-star"></i>
+          Featured Collection
+        </span>
+        <h2>इस मौसम के ख़ास तोहफ़े</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">Our team picks the most loved gifts of the season. Each item is handpicked for quality, meaning, and that special warmth.</p>
+      </div>
+      <div class="products-grid">
+        <div class="product-card">
+          <div class="product-image">
+            <i class="ph-bold ph-gift"></i>
+            <span class="product-badge badge badge-accent">Best Seller</span>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Festival</div>
+            <h3>Diwali Hamper Deluxe</h3>
+            <p>A premium collection of dry fruits, sweets, and handcrafted decor for a truly festive experience.</p>
+            <div class="product-footer">
+              <div class="product-price">₹2,499 <span class="original">₹3,499</span></div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-image">
+            <i class="ph-bold ph-heart"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Anniversary</div>
+            <h3>Personalized Photo Frame</h3>
+            <p>An elegant wooden frame engraved with your favorite memory. A timeless keepsake for loved ones.</p>
+            <div class="product-footer">
+              <div class="product-price">₹899</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-image">
+            <i class="ph-bold ph-cake"></i>
+            <span class="product-badge badge badge-primary">New</span>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Birthday</div>
+            <h3>Custom Gift Box</h3>
+            <p>Build your own birthday box with chocolates, candles, mini plants, and a handwritten note card.</p>
+            <div class="product-footer">
+              <div class="product-price">₹1,299</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center" style="margin-top:var(--spacing-xl)">
+        <a href="pages/products.html" class="btn btn-secondary btn-lg">
+          <i class="ph-bold ph-arrow-right"></i>
+          View All Gifts
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-heart-straight"></i>
+          Why WarmDelight
+        </span>
+        <h2>प्यार से चुने, ख़ास बनाए</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">We believe every gift tells a story. Here is why thousands trust us for their most meaningful moments.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-hand-heart"></i></div>
+          <h3>Handpicked with Care</h3>
+          <p>Every item in our collection is personally selected by our curation team for quality, meaning, and delight.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-truck"></i></div>
+          <h3>Free Gift Wrapping</h3>
+          <p>Every order comes beautifully wrapped with premium paper, ribbons, and a personalized message card — at no extra cost.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-arrows-clockwise"></i></div>
+          <h3>Easy Returns</h3>
+          <p>Not quite right? We offer hassle-free returns within 7 days. Your happiness is our promise.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-rocket"></i></div>
+          <h3>Pan-India Delivery</h3>
+          <p>Express delivery to 500+ cities across India. Same-day delivery available in select metro cities.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-wallet"></i></div>
+          <h3>Secure Payments</h3>
+          <p>100% secure checkout with UPI, cards, net banking, and COD options. Your data is always protected.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-headset"></i></div>
+          <h3>24/7 Support</h3>
+          <p>Our gifting experts are available round the clock to help you pick the perfect present or track your order.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" style="background:var(--color-neutral-100)">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-chats"></i>
+          Customer Stories
+        </span>
+        <h2>खुशियों भरी कहानियाँ</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">Here is what our customers have to say about their WarmDelight experience.</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <p class="testimonial-text">I ordered the Diwali hamper for my family back in Lucknow and they were overjoyed! The packaging was beautiful and everything was so fresh. WarmDelight made the distance feel small.</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AK</div>
+            <div>
+              <div class="testimonial-name">Ananya Kapoor</div>
+              <div class="testimonial-role">Bengaluru, Karnataka</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p class="testimonial-text">The personalized photo frame I ordered for my parents' anniversary brought tears to their eyes. The engraving was perfect and the quality is outstanding. Thank you WarmDelight!</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">RJ</div>
+            <div>
+              <div class="testimonial-name">Rahul Joshi</div>
+              <div class="testimonial-role">Mumbai, Maharashtra</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p class="testimonial-text">We ordered 50 corporate gift boxes for our clients and everyone loved them. The customization options, the quality, and the timely delivery exceeded our expectations. Highly recommend!</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">PM</div>
+            <div>
+              <div class="testimonial-name">Priya Mehta</div>
+              <div class="testimonial-role">Delhi, NCR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gift Banner -->
+  <section class="section">
+    <div class="container">
+      <div class="gift-banner">
+        <h3>🎁 Corporate Gifting Made Easy</h3>
+        <p>Delight your employees, partners, and clients with premium corporate gifts. Bulk orders with personalized branding and pan-India delivery.</p>
+        <a href="pages/contact.html" class="btn btn-lg">
+          <i class="ph-bold ph-chat-teardrop"></i>
+          Enquire Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="section">
+    <div class="container">
+      <div class="newsletter-section">
+        <h2>गिफ्ट आइडियाज़ पाएँ अपने इनबॉक्स में</h2>
+        <p>Subscribe to our newsletter and be the first to know about new arrivals, exclusive offers, and gifting inspiration for every occasion.</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault();alert('Thank you for subscribing!');">
+          <input type="email" placeholder="Enter your email address" required>
+          <button type="submit" class="btn">
+            <i class="ph-bold ph-paper-plane-right"></i>
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">W</span>
+            <span>WarmDelight</span>
+          </a>
+          <p>WarmDelight brings you handpicked gifts for every occasion. We believe every gift tells a story, and we are here to help you tell yours beautifully.</p>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <a href="pages/products.html">All Gifts</a>
+          <a href="pages/products.html">Birthday</a>
+          <a href="pages/products.html">Anniversary</a>
+          <a href="pages/products.html">Festival</a>
+          <a href="pages/products.html">Corporate</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="pages/about.html">About Us</a>
+          <a href="pages/contact.html">Contact</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Returns Policy</a>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <a href="#"><i class="ph-bold ph-map-pin"></i> Mumbai, India</a>
+          <a href="#"><i class="ph-bold ph-phone"></i> +91 1800 123 4567</a>
+          <a href="#"><i class="ph-bold ph-envelope"></i> hello@warmdelight.in</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 WarmDelight Gift Shop. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><i class="ph-bold ph-instagram-logo"></i></a>
+          <a href="#" aria-label="Facebook"><i class="ph-bold ph-facebook-logo"></i></a>
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  var icon = document.querySelector('.theme-toggle i');
+  if (icon) {
+    icon.className = isDark ? 'ph-bold ph-sun' : 'ph-bold ph-moon';
+  }
+}
+
+function toggleMobileMenu() {
+  var links = document.querySelector('.navbar-links');
+  if (links) {
+    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+  }
+}
+</script>
+</body>
+</html>

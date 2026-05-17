@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gifts — WarmDelight Gift Shop</title>
+  <meta name="description" content="Browse our curated collection of gifts for every occasion — birthdays, anniversaries, festivals, and corporate gifting.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">W</span>
+        <span>WarmDelight</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="products.html" class="navbar-link active">Gifts</a>
+        <a href="about.html" class="navbar-link">About Us</a>
+        <a href="contact.html" class="navbar-link">Contact</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="products.html" class="btn btn-primary btn-sm">
+          <i class="ph-bold ph-gift"></i>
+          Shop Now
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-gift"></i>
+        Our Collection
+      </span>
+      <h1>सभी उपहार</h1>
+      <p>Explore our complete collection of handpicked gifts. Filter by occasion, price, or category to find the perfect present.</p>
+    </div>
+  </section>
+
+  <!-- Search & Filter -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="search-filter-bar">
+        <div class="search-box">
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <input type="text" placeholder="Search gifts..." oninput="filterProducts(this.value)">
+        </div>
+        <div class="filter-chips" id="filterChips">
+          <span class="filter-chip active" data-category="all" onclick="setCategory('all', this)">All</span>
+          <span class="filter-chip" data-category="birthday" onclick="setCategory('birthday', this)">Birthday</span>
+          <span class="filter-chip" data-category="anniversary" onclick="setCategory('anniversary', this)">Anniversary</span>
+          <span class="filter-chip" data-category="festival" onclick="setCategory('festival', this)">Festival</span>
+          <span class="filter-chip" data-category="corporate" onclick="setCategory('corporate', this)">Corporate</span>
+        </div>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <div class="product-card" data-category="festival">
+          <div class="product-image">
+            <i class="ph-bold ph-gift"></i>
+            <span class="product-badge badge badge-accent">Best Seller</span>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Festival</div>
+            <h3>Diwali Hamper Deluxe</h3>
+            <p>A premium collection of dry fruits, sweets, and handcrafted decor for a truly festive experience.</p>
+            <div class="product-footer">
+              <div class="product-price">₹2,499 <span class="original">₹3,499</span></div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="anniversary">
+          <div class="product-image">
+            <i class="ph-bold ph-heart"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Anniversary</div>
+            <h3>Personalized Photo Frame</h3>
+            <p>An elegant wooden frame engraved with your favorite memory. A timeless keepsake for loved ones.</p>
+            <div class="product-footer">
+              <div class="product-price">₹899</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="birthday">
+          <div class="product-image">
+            <i class="ph-bold ph-cake"></i>
+            <span class="product-badge badge badge-primary">New</span>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Birthday</div>
+            <h3>Custom Gift Box</h3>
+            <p>Build your own birthday box with chocolates, candles, mini plants, and a handwritten note card.</p>
+            <div class="product-footer">
+              <div class="product-price">₹1,299</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="corporate">
+          <div class="product-image">
+            <i class="ph-bold ph-briefcase"></i>
+            <span class="product-badge badge badge-neutral">Bulk</span>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Corporate</div>
+            <h3>Premium Corporate Hamper</h3>
+            <p>Branded gift hampers with premium products. Customize with your company logo and message.</p>
+            <div class="product-footer">
+              <div class="product-price">₹1,999 <span class="original">₹2,499</span></div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="festival">
+          <div class="product-image">
+            <i class="ph-bold ph-sparkle"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Festival</div>
+            <h3>Rakhi Gift Set</h3>
+            <p>A beautiful rakhi set with sweets, dry fruits, and a personalized letter for your sibling.</p>
+            <div class="product-footer">
+              <div class="product-price">₹799</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="birthday">
+          <div class="product-image">
+            <i class="ph-bold ph-balloon"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Birthday</div>
+            <h3>Birthday Surprise Box</h3>
+            <p>A curated box of balloons, confetti, chocolates, a candle set, and a surprise mini gift inside.</p>
+            <div class="product-footer">
+              <div class="product-price">₹999</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="anniversary">
+          <div class="product-image">
+            <i class="ph-bold ph-flower-lotus"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Anniversary</div>
+            <h3>Couple's Spa Kit</h3>
+            <p>A luxurious spa kit with essential oils, bath salts, scented candles, and matching robes for two.</p>
+            <div class="product-footer">
+              <div class="product-price">₹2,999</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="corporate">
+          <div class="product-image">
+            <i class="ph-bold ph-buildings"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Corporate</div>
+            <h3>Executive Gift Set</h3>
+            <p>A premium set featuring a leather journal, pen, metal bookmark, and a box of gourmet chocolates.</p>
+            <div class="product-footer">
+              <div class="product-price">₹1,499</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card" data-category="festival">
+          <div class="product-image">
+            <i class="ph-bold ph-tree"></i>
+          </div>
+          <div class="product-body">
+            <div class="product-category">Festival</div>
+            <h3>Pongal Celebration Box</h3>
+            <p>Traditional Pongal gift box with sugarcane, clay pot, til oil, and a selection of traditional sweets.</p>
+            <div class="product-footer">
+              <div class="product-price">₹1,199</div>
+              <a href="#" class="btn btn-primary btn-sm">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination" id="pagination">
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn"><i class="ph-bold ph-caret-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">W</span>
+            <span>WarmDelight</span>
+          </a>
+          <p>WarmDelight brings you handpicked gifts for every occasion. We believe every gift tells a story, and we are here to help you tell yours beautifully.</p>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <a href="products.html">All Gifts</a>
+          <a href="products.html">Birthday</a>
+          <a href="products.html">Anniversary</a>
+          <a href="products.html">Festival</a>
+          <a href="products.html">Corporate</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="contact.html">Contact</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Returns Policy</a>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <a href="#"><i class="ph-bold ph-map-pin"></i> Mumbai, India</a>
+          <a href="#"><i class="ph-bold ph-phone"></i> +91 1800 123 4567</a>
+          <a href="#"><i class="ph-bold ph-envelope"></i> hello@warmdelight.in</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 WarmDelight Gift Shop. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><i class="ph-bold ph-instagram-logo"></i></a>
+          <a href="#" aria-label="Facebook"><i class="ph-bold ph-facebook-logo"></i></a>
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      var icon = document.querySelector('.theme-toggle i');
+      if (icon) {
+        icon.className = isDark ? 'ph-bold ph-sun' : 'ph-bold ph-moon';
+      }
+    }
+
+    function toggleMobileMenu() {
+      var links = document.querySelector('.navbar-links');
+      if (links) {
+        links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+      }
+    }
+
+    function filterProducts(query) {
+      var cards = document.querySelectorAll('.product-card');
+      query = query.toLowerCase();
+      cards.forEach(function(card) {
+        var title = card.querySelector('h3').textContent.toLowerCase();
+        var desc = card.querySelector('p').textContent.toLowerCase();
+        card.style.display = title.includes(query) || desc.includes(query) ? '' : 'none';
+      });
+    }
+
+    function setCategory(category, el) {
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      var cards = document.querySelectorAll('.product-card');
+      cards.forEach(function(card) {
+        card.style.display = category === 'all' || card.getAttribute('data-category') === category ? '' : 'none';
+      });
+    }
+  </script>
+
+</body>
+</html>

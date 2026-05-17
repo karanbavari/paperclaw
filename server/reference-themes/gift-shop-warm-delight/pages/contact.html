@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — WarmDelight Gift Shop</title>
+  <meta name="description" content="Get in touch with WarmDelight. We are here to help you find the perfect gift.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">W</span>
+        <span>WarmDelight</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="products.html" class="navbar-link">Gifts</a>
+        <a href="about.html" class="navbar-link">About Us</a>
+        <a href="contact.html" class="navbar-link active">Contact</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="products.html" class="btn btn-primary btn-sm">
+          <i class="ph-bold ph-gift"></i>
+          Shop Now
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-chat-teardrop"></i>
+        Get in Touch
+      </span>
+      <h1>संपर्क करें</h1>
+      <p>Have a question about our products, need gifting advice, or want to discuss a bulk corporate order? We would love to hear from you.</p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section">
+    <div class="container">
+      <div class="contact-grid">
+        <div>
+          <h2 style="margin-bottom:var(--spacing-md)">हमें संदेश भेजें</h2>
+          <form class="contact-form" onsubmit="event.preventDefault();alert('Thank you for your message! We will get back to you within 24 hours.');">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="name">Full Name</label>
+                <input class="form-input" type="text" id="name" placeholder="Your name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input class="form-input" type="email" id="email" placeholder="you@example.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="subject">Subject</label>
+              <input class="form-input" type="text" id="subject" placeholder="How can we help?" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="message">Message</label>
+              <textarea class="form-textarea" id="message" placeholder="Tell us more about what you are looking for..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="ph-bold ph-paper-plane-right"></i>
+              Send Message
+            </button>
+          </form>
+        </div>
+        <div class="contact-info">
+          <h2 style="margin-bottom:var(--spacing-md)">हमसे मिलें</h2>
+          <div class="contact-card">
+            <div class="contact-card-icon"><i class="ph-bold ph-map-pin"></i></div>
+            <div>
+              <h4>Our Address</h4>
+              <p>42, Gift Lane, Bandra West,<br>Mumbai — 400050, Maharashtra, India</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon"><i class="ph-bold ph-phone"></i></div>
+            <div>
+              <h4>Phone</h4>
+              <p>+91 1800 123 4567 (Toll Free)<br>Mon–Sat, 9 AM – 8 PM IST</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon"><i class="ph-bold ph-envelope"></i></div>
+            <div>
+              <h4>Email</h4>
+              <p>hello@warmdelight.in<br>corporate@warmdelight.in</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon"><i class="ph-bold ph-chat-circle-dots"></i></div>
+            <div>
+              <h4>Live Chat</h4>
+              <p>Available 24/7. Click the chat icon in the bottom right corner to start a conversation with our gifting experts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">W</span>
+            <span>WarmDelight</span>
+          </a>
+          <p>WarmDelight brings you handpicked gifts for every occasion. We believe every gift tells a story, and we are here to help you tell yours beautifully.</p>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <a href="products.html">All Gifts</a>
+          <a href="products.html">Birthday</a>
+          <a href="products.html">Anniversary</a>
+          <a href="products.html">Festival</a>
+          <a href="products.html">Corporate</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="contact.html">Contact</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Returns Policy</a>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <a href="#"><i class="ph-bold ph-map-pin"></i> Mumbai, India</a>
+          <a href="#"><i class="ph-bold ph-phone"></i> +91 1800 123 4567</a>
+          <a href="#"><i class="ph-bold ph-envelope"></i> hello@warmdelight.in</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 WarmDelight Gift Shop. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><i class="ph-bold ph-instagram-logo"></i></a>
+          <a href="#" aria-label="Facebook"><i class="ph-bold ph-facebook-logo"></i></a>
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  var icon = document.querySelector('.theme-toggle i');
+  if (icon) {
+    icon.className = isDark ? 'ph-bold ph-sun' : 'ph-bold ph-moon';
+  }
+}
+
+function toggleMobileMenu() {
+  var links = document.querySelector('.navbar-links');
+  if (links) {
+    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+  }
+}
+</script>
+</body>
+</html>

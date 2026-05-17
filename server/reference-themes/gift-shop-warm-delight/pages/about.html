@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — WarmDelight Gift Shop</title>
+  <meta name="description" content="Learn about WarmDelight's story — our passion for handpicked gifts, our values, and the team behind every smile.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="navbar-inner">
+      <a href="../index.html" class="navbar-logo">
+        <span class="navbar-logo-icon">W</span>
+        <span>WarmDelight</span>
+      </a>
+      <div class="navbar-links">
+        <a href="../index.html" class="navbar-link">Home</a>
+        <a href="products.html" class="navbar-link">Gifts</a>
+        <a href="about.html" class="navbar-link active">About Us</a>
+        <a href="contact.html" class="navbar-link">Contact</a>
+      </div>
+      <div class="navbar-actions">
+        <a href="products.html" class="btn btn-primary btn-sm">
+          <i class="ph-bold ph-gift"></i>
+          Shop Now
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i class="ph-bold ph-sun"></i>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+          <i class="ph-bold ph-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+      <span class="section-label">
+        <i class="ph-bold ph-heart-straight"></i>
+        Our Story
+      </span>
+      <h1>हमारे बारे में</h1>
+      <p>Discover the story behind WarmDelight — our passion for thoughtful gifting and the journey that brought us here.</p>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section class="section">
+    <div class="container">
+      <div class="about-story">
+        <p>WarmDelight was born in 2020 from a simple belief: every gift should feel personal. What started as a small home-run shop in Mumbai, with hand-wrapped gifts delivered by our founder herself, has blossomed into a pan-India gifting destination loved by thousands.</p>
+        <p>We noticed that in a world of quick online shopping, the warmth of gift-giving was getting lost. Mass-produced items, generic packaging, and delayed deliveries were becoming the norm. We wanted to change that — to bring back the joy of receiving something made with care.</p>
+        <p>Today, we curate every item in our collection with love. Our team personally tests each product, designs every box, and ensures that your gift arrives as beautifully as you imagined it. From a handwritten note to our signature double-wrapping, every detail matters to us.</p>
+        <p>We are proud to have served over 5,000 happy customers across 500+ cities in India. Whether it is a festival, a birthday, an anniversary, or just a random Tuesday — we believe every day is a good day to make someone smile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="section" style="background:var(--color-neutral-100)">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-heart"></i>
+          Our Values
+        </span>
+        <h2>हम क्या मानते हैं</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">These core principles guide everything we do at WarmDelight.</p>
+      </div>
+      <div class="about-values">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-hand-heart"></i></div>
+          <h3>Quality First</h3>
+          <p>We never compromise on quality. Every product is personally reviewed by our curation team before it reaches your doorstep.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-leaf"></i></div>
+          <h3>Sustainable Gifting</h3>
+          <p>We use eco-friendly packaging materials and minimize plastic. Our gift boxes are designed to be reused and cherished.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="ph-bold ph-users-three"></i></div>
+          <h3>Customer First</h3>
+          <p>Your happiness is our priority. From personalized recommendations to hassle-free returns, we put you at the center.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom:var(--spacing-2xl)">
+        <span class="section-label">
+          <i class="ph-bold ph-users"></i>
+          Our Team
+        </span>
+        <h2>प्यार से चुनने वाली टीम</h2>
+        <p style="max-width:550px;margin:var(--spacing-md) auto 0">Meet the people behind WarmDelight who make every gift special.</p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar">AK</div>
+          <h4>Anika Kapoor</h4>
+          <p>Founder &amp; CEO</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">RJ</div>
+          <h4>Rahul Joshi</h4>
+          <p>Head of Curation</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">PM</div>
+          <h4>Priya Mehta</h4>
+          <p>Operations Lead</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">VK</div>
+          <h4>Vikram Khanna</h4>
+          <p>Creative Director</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="navbar-logo" style="color:white">
+            <span class="navbar-logo-icon">W</span>
+            <span>WarmDelight</span>
+          </a>
+          <p>WarmDelight brings you handpicked gifts for every occasion. We believe every gift tells a story, and we are here to help you tell yours beautifully.</p>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <a href="products.html">All Gifts</a>
+          <a href="products.html">Birthday</a>
+          <a href="products.html">Anniversary</a>
+          <a href="products.html">Festival</a>
+          <a href="products.html">Corporate</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="about.html">About Us</a>
+          <a href="contact.html">Contact</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Returns Policy</a>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <a href="#"><i class="ph-bold ph-map-pin"></i> Mumbai, India</a>
+          <a href="#"><i class="ph-bold ph-phone"></i> +91 1800 123 4567</a>
+          <a href="#"><i class="ph-bold ph-envelope"></i> hello@warmdelight.in</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 WarmDelight Gift Shop. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><i class="ph-bold ph-instagram-logo"></i></a>
+          <a href="#" aria-label="Facebook"><i class="ph-bold ph-facebook-logo"></i></a>
+          <a href="#" aria-label="X"><i class="ph-bold ph-twitter-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-bold ph-youtube-logo"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  var icon = document.querySelector('.theme-toggle i');
+  if (icon) {
+    icon.className = isDark ? 'ph-bold ph-sun' : 'ph-bold ph-moon';
+  }
+}
+
+function toggleMobileMenu() {
+  var links = document.querySelector('.navbar-links');
+  if (links) {
+    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+  }
+}
+</script>
+</body>
+</html>
