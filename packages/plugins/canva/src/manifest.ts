@@ -20,7 +20,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Canva",
   description: "Connects PaperClaw agents to Canva Connect APIs for designs, assets, brand templates, exports, folders, comments, imports, and resizes.",
   author: "PaperClaw",
-  categories: ["connector", "automation", "workspace", "ui"],
+  categories: ["connector", "automation", "developer", "workspace", "ui"],
   capabilities: [
     "http.outbound",
     "secrets.read-ref",

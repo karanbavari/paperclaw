@@ -24,7 +24,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Razorpay",
   description: "Connects PaperClaw agents to Razorpay merchant APIs for orders, payments, refunds, payment links, customers, and webhooks.",
   author: "PaperClaw",
-  categories: ["connector", "automation", "workspace", "ui"],
+  categories: ["finance", "connector", "automation", "workspace", "ui"],
   capabilities: [
     "agent.tools.register",
     "http.outbound",

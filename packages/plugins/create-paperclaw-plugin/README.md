@@ -18,7 +18,7 @@ npx @kesarcloud/create-paperclaw-plugin @acme/my-plugin \
 ```
 
 Supported templates: `default`, `connector`, `workspace`  
-Supported categories: `connector`, `workspace`, `automation`, `ecommerce`, `legal_law`, `productivity`, `ui`
+Supported categories: `connector`, `workspace`, `automation`, `communication`, `developer`, `ecommerce`, `finance`, `legal_law`, `productivity`, `real-estate`, `ui`
 
 Generates:
 - typed manifest + worker entrypoint

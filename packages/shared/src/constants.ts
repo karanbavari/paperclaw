@@ -672,10 +672,14 @@ export const PLUGIN_CATEGORIES = [
   "connector",
   "workspace",
   "automation",
+  "communication",
   "courier-logistics",
+  "developer",
   "ecommerce",
+  "finance",
   "legal_law",
   "productivity",
+  "real-estate",
   "ui",
 ] as const;
 export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number];

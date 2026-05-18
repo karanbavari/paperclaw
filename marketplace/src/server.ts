@@ -10,6 +10,7 @@ type Skill = {
   description: string | null;
   categorySlug: string;
   categoryName: string;
+  categorySlugs?: string[];
   sourceUrl: string | null;
   installSource: string | null;
   trustLevel: "markdown_only" | "assets" | "scripts_executables" | "unknown";
@@ -26,6 +27,7 @@ type Plugin = {
   description: string | null;
   categorySlug: string;
   categoryName: string;
+  categorySlugs?: string[];
   packageName: string;
   version: string | null;
   sourceType: "bundled" | "npm";
@@ -56,6 +58,7 @@ type Pack = {
   description: string | null;
   categorySlug: string;
   categoryName: string;
+  categorySlugs?: string[];
   tags: string[];
   plugin: Component | null;
   skills: Component[];
@@ -91,8 +94,12 @@ function readSkillMarkdown(slug: string, category = "tools") {
 
 const categoryNames: Record<string, string> = {
   tools: "Tools",
+  communication: "Communication",
   "courier-logistics": "Courier & Logistics",
+  developer: "Developer",
   ecommerce: "Ecommerce",
+  "real-estate": "Real Estate",
+  finance: "Finance",
   "legal-law": "Legal & Law",
   legal_law: "Legal & Law",
   productivity: "Productivity",
@@ -102,6 +109,9 @@ const categoryAliases: Record<string, string> = {
   "legal-law": "legal_law",
   legal: "legal_law",
   "legal-and-law": "legal_law",
+  dev: "developer",
+  "developer-tools": "developer",
+  fintech: "finance",
 };
 
 function normalizeCategorySlug(category: string | null) {
@@ -308,6 +318,45 @@ const legalDefinitions = [
   },
 ] as const;
 
+const financeDefinitions = [
+  { slug: "quickbooks-online", name: "QuickBooks Online", description: "QuickBooks Online finance connector for customers, vendors, invoices, bills, payments, reports, and company data.", packageName: "@kesarcloud/plugin-quickbooks-online", tags: ["quickbooks", "accounting", "invoices", "finance"], capabilities: ["customers", "vendors", "invoices", "bills", "reports"] },
+  { slug: "xero", name: "Xero", description: "Xero Accounting connector for tenants, contacts, invoices, bills, payments, accounts, items, and reports.", packageName: "@kesarcloud/plugin-xero", tags: ["xero", "accounting", "invoices", "finance"], capabilities: ["contacts", "invoices", "payments", "accounts", "reports"] },
+  { slug: "zoho-books", name: "Zoho Books", description: "Zoho Books connector for organizations, contacts, invoices, bills, expenses, payments, items, and reports.", packageName: "@kesarcloud/plugin-zoho-books", tags: ["zoho-books", "accounting", "expenses", "finance"], capabilities: ["contacts", "invoices", "bills", "expenses", "payments"] },
+  { slug: "freshbooks", name: "FreshBooks", description: "FreshBooks connector for clients, invoices, expenses, payments, estimates, projects, and reports.", packageName: "@kesarcloud/plugin-freshbooks", tags: ["freshbooks", "accounting", "invoices", "finance"], capabilities: ["clients", "invoices", "expenses", "payments", "projects"] },
+  { slug: "bill", name: "BILL", description: "BILL connector for vendors, bills, payments, invoices, customers, chart of accounts, and AP/AR workflows.", packageName: "@kesarcloud/plugin-bill", tags: ["bill", "accounts-payable", "payments", "finance"], capabilities: ["vendors", "bills", "payments", "invoices", "customers"] },
+  { slug: "netsuite", name: "NetSuite", description: "NetSuite connector for REST records, SuiteQL, customers, vendors, invoices, bills, payments, and journals.", packageName: "@kesarcloud/plugin-netsuite", tags: ["netsuite", "erp", "suiteql", "finance"], capabilities: ["suiteql", "records", "invoices", "bills", "journals"] },
+  { slug: "plaid", name: "Plaid", description: "Plaid connector for accounts, balances, transactions, identity, institutions, Link tokens, and item status.", packageName: "@kesarcloud/plugin-plaid", tags: ["plaid", "banking", "transactions", "finance"], capabilities: ["accounts", "balances", "transactions", "identity", "institutions"] },
+  { slug: "wise", name: "Wise", description: "Wise Platform connector for profiles, balances, rates, quotes, recipients, transfers, and statements.", packageName: "@kesarcloud/plugin-wise", tags: ["wise", "transfers", "fx", "finance"], capabilities: ["profiles", "balances", "rates", "quotes", "transfers"] },
+  { slug: "brex", name: "Brex", description: "Brex connector for transactions, expenses, cards, vendors, payments, users, and budgets.", packageName: "@kesarcloud/plugin-brex", tags: ["brex", "cards", "expenses", "finance"], capabilities: ["transactions", "expenses", "cards", "vendors", "payments"] },
+  { slug: "paypal", name: "PayPal", description: "PayPal REST connector for invoices, orders, payments, captures, refunds, payouts, and webhooks.", packageName: "@kesarcloud/plugin-paypal", tags: ["paypal", "payments", "invoices", "finance"], capabilities: ["invoices", "orders", "payments", "refunds", "payouts"] },
+  { slug: "adyen", name: "Adyen", description: "Adyen connector for payments, captures, refunds, payouts, transfers, balance platform, and reporting data.", packageName: "@kesarcloud/plugin-adyen", tags: ["adyen", "payments", "payouts", "finance"], capabilities: ["payments", "captures", "refunds", "payouts", "transfers"] },
+  { slug: "expensify", name: "Expensify", description: "Expensify connector for expense reports, users, policies, exports, and reimbursement workflows.", packageName: "@kesarcloud/plugin-expensify", tags: ["expensify", "expenses", "reports", "finance"], capabilities: ["reports", "expenses", "policies", "employees", "reimbursements"] },
+] as const;
+
+const developerDefinitions = [
+  { slug: "figma", name: "Figma", description: "Figma developer connector for files, projects, comments, components, styles, variables, dev resources, and webhooks.", packageName: "@kesarcloud/plugin-figma", tags: ["figma", "design", "ui", "handoff"], capabilities: ["files", "projects", "comments", "components", "variables"] },
+  { slug: "miro", name: "Miro", description: "Miro developer connector for boards, board items, frames, comments, tags, and collaborative design planning.", packageName: "@kesarcloud/plugin-miro", tags: ["miro", "whiteboard", "design", "collaboration"], capabilities: ["boards", "items", "comments", "frames"] },
+  { slug: "webflow", name: "Webflow", description: "Webflow developer connector for sites, pages, collections, items, assets, forms, and publish workflows.", packageName: "@kesarcloud/plugin-webflow", tags: ["webflow", "cms", "website", "design"], capabilities: ["sites", "pages", "collections", "items", "assets"] },
+  { slug: "github", name: "GitHub", description: "GitHub developer connector for repositories, issues, pull requests, branches, actions, releases, and code search.", packageName: "@kesarcloud/plugin-github", tags: ["github", "git", "ci", "code"], capabilities: ["repositories", "issues", "pull-requests", "actions", "releases"] },
+  { slug: "gitlab", name: "GitLab", description: "GitLab developer connector for projects, issues, merge requests, pipelines, jobs, releases, and repository files.", packageName: "@kesarcloud/plugin-gitlab", tags: ["gitlab", "git", "ci", "code"], capabilities: ["projects", "issues", "merge-requests", "pipelines", "releases"] },
+  { slug: "bitbucket", name: "Bitbucket", description: "Bitbucket Cloud developer connector for workspaces, repositories, pull requests, issues, pipelines, and deployments.", packageName: "@kesarcloud/plugin-bitbucket", tags: ["bitbucket", "git", "pipelines", "code"], capabilities: ["repositories", "pull-requests", "issues", "pipelines"] },
+  { slug: "azure-devops", name: "Azure DevOps", description: "Azure DevOps connector for projects, repositories, work items, pull requests, builds, releases, and pipelines.", packageName: "@kesarcloud/plugin-azure-devops", tags: ["azure-devops", "git", "pipelines", "work-items"], capabilities: ["projects", "repositories", "work-items", "pull-requests", "builds"] },
+  { slug: "vercel", name: "Vercel", description: "Vercel developer connector for teams, projects, deployments, aliases, environment variables, domains, and checks.", packageName: "@kesarcloud/plugin-vercel", tags: ["vercel", "deploy", "frontend", "hosting"], capabilities: ["projects", "deployments", "env-vars", "domains", "aliases"] },
+  { slug: "netlify", name: "Netlify", description: "Netlify developer connector for sites, deploys, forms, functions, environment variables, domains, and build hooks.", packageName: "@kesarcloud/plugin-netlify", tags: ["netlify", "deploy", "jamstack", "hosting"], capabilities: ["sites", "deploys", "forms", "env-vars", "hooks"] },
+  { slug: "render", name: "Render", description: "Render developer connector for services, deploys, environment variables, custom domains, jobs, and service events.", packageName: "@kesarcloud/plugin-render", tags: ["render", "deploy", "backend", "hosting"], capabilities: ["services", "deploys", "env-vars", "domains", "jobs"] },
+  { slug: "supabase", name: "Supabase", description: "Supabase developer connector for organizations, projects, branches, API keys, functions, and storage.", packageName: "@kesarcloud/plugin-supabase", tags: ["supabase", "backend", "database", "edge-functions"], capabilities: ["organizations", "projects", "branches", "functions", "storage"] },
+  { slug: "cloudflare", name: "Cloudflare", description: "Cloudflare developer connector for accounts, zones, DNS, Workers, Pages, KV, R2, and firewall rules.", packageName: "@kesarcloud/plugin-cloudflare", tags: ["cloudflare", "workers", "dns", "edge"], capabilities: ["accounts", "zones", "dns", "workers", "pages"] },
+  { slug: "digitalocean", name: "DigitalOcean", description: "DigitalOcean developer connector for apps, droplets, databases, domains, Kubernetes clusters, images, and projects.", packageName: "@kesarcloud/plugin-digitalocean", tags: ["digitalocean", "cloud", "apps", "kubernetes"], capabilities: ["apps", "droplets", "databases", "domains", "kubernetes"] },
+  { slug: "hasura", name: "Hasura", description: "Hasura developer connector for metadata, query execution, sources, actions, events, and permissions.", packageName: "@kesarcloud/plugin-hasura", tags: ["hasura", "graphql", "backend", "metadata"], capabilities: ["metadata", "graphql", "sources", "actions", "events"] },
+  { slug: "appwrite", name: "Appwrite", description: "Appwrite developer connector for projects, databases, collections, documents, users, teams, functions, and storage.", packageName: "@kesarcloud/plugin-appwrite", tags: ["appwrite", "backend", "database", "functions"], capabilities: ["databases", "collections", "documents", "users", "functions"] },
+  { slug: "postman", name: "Postman", description: "Postman developer connector for workspaces, collections, environments, APIs, monitors, mocks, and test runs.", packageName: "@kesarcloud/plugin-postman", tags: ["postman", "api", "testing", "collections"], capabilities: ["workspaces", "collections", "environments", "monitors", "mocks"] },
+  { slug: "sentry", name: "Sentry", description: "Sentry developer connector for organizations, projects, issues, events, releases, teams, alerts, and performance data.", packageName: "@kesarcloud/plugin-sentry", tags: ["sentry", "errors", "observability", "releases"], capabilities: ["organizations", "projects", "issues", "events", "releases"] },
+  { slug: "grafana", name: "Grafana", description: "Grafana developer connector for dashboards, folders, datasources, alerts, annotations, and service accounts.", packageName: "@kesarcloud/plugin-grafana", tags: ["grafana", "observability", "dashboards", "alerts"], capabilities: ["dashboards", "folders", "datasources", "alerts", "annotations"] },
+  { slug: "snyk", name: "Snyk", description: "Snyk developer connector for organizations, projects, targets, issues, dependencies, reporting, and vulnerability workflows.", packageName: "@kesarcloud/plugin-snyk", tags: ["snyk", "security", "vulnerabilities", "dependencies"], capabilities: ["organizations", "projects", "targets", "issues", "reports"] },
+  { slug: "sonarcloud", name: "SonarCloud", description: "SonarCloud developer connector for projects, issues, quality gates, measures, components, and analysis status.", packageName: "@kesarcloud/plugin-sonarcloud", tags: ["sonarcloud", "quality", "static-analysis", "code"], capabilities: ["projects", "issues", "quality-gates", "measures", "components"] },
+  { slug: "browserstack", name: "BrowserStack", description: "BrowserStack developer connector for browser/device capability discovery, sessions, builds, projects, app uploads, and test observability.", packageName: "@kesarcloud/plugin-browserstack", tags: ["browserstack", "testing", "browsers", "devices"], capabilities: ["sessions", "builds", "projects", "devices", "test-observability"] },
+] as const;
+
 const logisticsDefinitions = [
   {
     slug: "shippo",
@@ -391,6 +440,575 @@ const logisticsDefinitions = [
   },
 ] as const;
 
+
+
+const communicationDefinitions = [
+  {
+    "slug": "sendgrid",
+    "name": "SendGrid",
+    "description": "SendGrid connector for transactional email, templates, suppressions, sender identities, and email activity workflows.",
+    "packageName": "@kesarcloud/plugin-sendgrid",
+    "tags": [
+      "sendgrid",
+      "email",
+      "transactional",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "templates",
+      "suppressions",
+      "sender-identities"
+    ]
+  },
+  {
+    "slug": "mailgun",
+    "name": "Mailgun",
+    "description": "Mailgun connector for email sending, validation, domains, suppressions, templates, and events.",
+    "packageName": "@kesarcloud/plugin-mailgun",
+    "tags": [
+      "mailgun",
+      "email",
+      "transactional",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "domains",
+      "templates",
+      "events",
+      "suppressions"
+    ]
+  },
+  {
+    "slug": "postmark",
+    "name": "Postmark",
+    "description": "Postmark connector for transactional email, templates, servers, sender signatures, suppressions, and message activity.",
+    "packageName": "@kesarcloud/plugin-postmark",
+    "tags": [
+      "postmark",
+      "email",
+      "transactional",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "templates",
+      "servers",
+      "suppressions"
+    ]
+  },
+  {
+    "slug": "resend",
+    "name": "Resend",
+    "description": "Resend connector for email sending, domains, API keys, audiences, contacts, and broadcast workflows.",
+    "packageName": "@kesarcloud/plugin-resend",
+    "tags": [
+      "resend",
+      "email",
+      "broadcasts",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "domains",
+      "contacts",
+      "audiences",
+      "broadcasts"
+    ]
+  },
+  {
+    "slug": "amazon-ses",
+    "name": "Amazon SES",
+    "description": "Amazon SES v2 connector for email send, templates, identities, suppression lists, and account sending status.",
+    "packageName": "@kesarcloud/plugin-amazon-ses",
+    "tags": [
+      "amazon-ses",
+      "email",
+      "aws",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "templates",
+      "identities",
+      "suppression-list"
+    ]
+  },
+  {
+    "slug": "brevo",
+    "name": "Brevo",
+    "description": "Brevo connector for transactional email, contacts, campaigns, senders, templates, and WhatsApp campaign workflows.",
+    "packageName": "@kesarcloud/plugin-brevo",
+    "tags": [
+      "brevo",
+      "email",
+      "marketing",
+      "communication"
+    ],
+    "capabilities": [
+      "email-send",
+      "contacts",
+      "campaigns",
+      "templates",
+      "senders"
+    ]
+  },
+  {
+    "slug": "meta-whatsapp-cloud",
+    "name": "Meta WhatsApp Cloud API",
+    "description": "Meta WhatsApp Cloud API connector for messages, templates, media, phone numbers, and business profile workflows.",
+    "packageName": "@kesarcloud/plugin-meta-whatsapp-cloud",
+    "tags": [
+      "whatsapp",
+      "meta",
+      "cloud-api",
+      "communication"
+    ],
+    "capabilities": [
+      "whatsapp-send",
+      "templates",
+      "media",
+      "business-profile"
+    ]
+  },
+  {
+    "slug": "twilio",
+    "name": "Twilio",
+    "description": "Twilio connector for SMS, WhatsApp, RCS-capable Messaging, calls, conferences, recordings, and message services.",
+    "packageName": "@kesarcloud/plugin-twilio",
+    "tags": [
+      "twilio",
+      "sms",
+      "whatsapp",
+      "voice",
+      "rcs"
+    ],
+    "capabilities": [
+      "sms",
+      "whatsapp",
+      "voice-calls",
+      "messaging-services",
+      "recordings"
+    ]
+  },
+  {
+    "slug": "google-rcs-business-messaging",
+    "name": "Google RCS Business Messaging",
+    "description": "Google RCS Business Messaging connector for RBM messages, events, files, testers, and agent launch workflows.",
+    "packageName": "@kesarcloud/plugin-google-rcs-business-messaging",
+    "tags": [
+      "google",
+      "rcs",
+      "rbm",
+      "communication"
+    ],
+    "capabilities": [
+      "rcs-send",
+      "events",
+      "files",
+      "testers",
+      "agents"
+    ]
+  },
+  {
+    "slug": "sinch",
+    "name": "Sinch",
+    "description": "Sinch Conversation API connector for WhatsApp, RCS, SMS, channels, contacts, messages, and webhooks.",
+    "packageName": "@kesarcloud/plugin-sinch",
+    "tags": [
+      "sinch",
+      "whatsapp",
+      "rcs",
+      "sms",
+      "communication"
+    ],
+    "capabilities": [
+      "conversation-api",
+      "whatsapp",
+      "rcs",
+      "sms",
+      "webhooks"
+    ]
+  },
+  {
+    "slug": "infobip",
+    "name": "Infobip",
+    "description": "Infobip connector for WhatsApp, RCS, SMS, email, voice, messages, reports, templates, and senders.",
+    "packageName": "@kesarcloud/plugin-infobip",
+    "tags": [
+      "infobip",
+      "whatsapp",
+      "rcs",
+      "sms",
+      "email",
+      "voice"
+    ],
+    "capabilities": [
+      "whatsapp",
+      "rcs",
+      "sms",
+      "email",
+      "voice",
+      "reports"
+    ]
+  },
+  {
+    "slug": "vonage",
+    "name": "Vonage",
+    "description": "Vonage connector for Messages API, WhatsApp, SMS, Viber, Messenger, voice calls, and verification workflows.",
+    "packageName": "@kesarcloud/plugin-vonage",
+    "tags": [
+      "vonage",
+      "whatsapp",
+      "sms",
+      "voice",
+      "communication"
+    ],
+    "capabilities": [
+      "messages-api",
+      "whatsapp",
+      "sms",
+      "voice",
+      "verify"
+    ]
+  },
+  {
+    "slug": "gupshup",
+    "name": "Gupshup",
+    "description": "Gupshup connector for WhatsApp Business messaging, templates, app management, opt-ins, and message status workflows.",
+    "packageName": "@kesarcloud/plugin-gupshup",
+    "tags": [
+      "gupshup",
+      "whatsapp",
+      "india",
+      "communication"
+    ],
+    "capabilities": [
+      "whatsapp-send",
+      "templates",
+      "opt-ins",
+      "status"
+    ]
+  },
+  {
+    "slug": "plivo",
+    "name": "Plivo",
+    "description": "Plivo connector for SMS, WhatsApp, voice calls, numbers, message logs, recordings, and compliance workflows.",
+    "packageName": "@kesarcloud/plugin-plivo",
+    "tags": [
+      "plivo",
+      "sms",
+      "whatsapp",
+      "voice",
+      "communication"
+    ],
+    "capabilities": [
+      "sms",
+      "whatsapp",
+      "voice",
+      "numbers",
+      "recordings"
+    ]
+  },
+  {
+    "slug": "vapi",
+    "name": "Vapi",
+    "description": "Vapi connector for AI voice assistants, phone calls, phone numbers, call logs, and campaign-style voice workflows.",
+    "packageName": "@kesarcloud/plugin-vapi",
+    "tags": [
+      "vapi",
+      "ai-calling",
+      "voice",
+      "communication"
+    ],
+    "capabilities": [
+      "ai-calls",
+      "assistants",
+      "phone-numbers",
+      "call-logs"
+    ]
+  },
+  {
+    "slug": "retell-ai",
+    "name": "Retell AI",
+    "description": "Retell AI connector for AI phone calls, agents, phone numbers, call analysis, and voice automation workflows.",
+    "packageName": "@kesarcloud/plugin-retell-ai",
+    "tags": [
+      "retell-ai",
+      "ai-calling",
+      "voice",
+      "communication"
+    ],
+    "capabilities": [
+      "ai-calls",
+      "agents",
+      "phone-numbers",
+      "call-analysis"
+    ]
+  },
+  {
+    "slug": "bland-ai",
+    "name": "Bland AI",
+    "description": "Bland AI connector for AI phone calls, pathways, campaigns, phone numbers, transcripts, and call analysis.",
+    "packageName": "@kesarcloud/plugin-bland-ai",
+    "tags": [
+      "bland-ai",
+      "ai-calling",
+      "voice",
+      "communication"
+    ],
+    "capabilities": [
+      "ai-calls",
+      "campaigns",
+      "pathways",
+      "transcripts"
+    ]
+  },
+  {
+    "slug": "exotel",
+    "name": "Exotel",
+    "description": "Exotel connector for Indian voice calls, SMS, WhatsApp, call details, recordings, and virtual number workflows.",
+    "packageName": "@kesarcloud/plugin-exotel",
+    "tags": [
+      "exotel",
+      "india",
+      "voice",
+      "sms",
+      "whatsapp"
+    ],
+    "capabilities": [
+      "voice-calls",
+      "sms",
+      "whatsapp",
+      "recordings",
+      "numbers"
+    ]
+  }
+] as const;
+
+const realEstateDefinitions = [
+  {
+    "slug": "rentcast",
+    "name": "RentCast",
+    "description": "RentCast connector for US property records, sale/rental listings, AVM values, and market data.",
+    "packageName": "@kesarcloud/plugin-rentcast",
+    "tags": [
+      "rentcast",
+      "usa",
+      "property-data",
+      "avm"
+    ],
+    "capabilities": [
+      "properties",
+      "listings",
+      "avm",
+      "markets"
+    ]
+  },
+  {
+    "slug": "attom",
+    "name": "ATTOM",
+    "description": "ATTOM connector for US property profiles, sales, valuation, and assessment workflows.",
+    "packageName": "@kesarcloud/plugin-attom",
+    "tags": [
+      "attom",
+      "usa",
+      "property-data",
+      "valuation"
+    ],
+    "capabilities": [
+      "property-profiles",
+      "sales",
+      "assessment",
+      "valuation"
+    ]
+  },
+  {
+    "slug": "realie",
+    "name": "Realie",
+    "description": "Realie AI connector for property intelligence, comparables, valuation, and enrichment workflows.",
+    "packageName": "@kesarcloud/plugin-realie",
+    "tags": [
+      "realie",
+      "property-intelligence",
+      "ai",
+      "global"
+    ],
+    "capabilities": [
+      "property-search",
+      "comparables",
+      "valuation",
+      "enrichment"
+    ]
+  },
+  {
+    "slug": "anyprop",
+    "name": "AnyProp RESO",
+    "description": "AnyProp RESO connector for MLS-compatible property, member, office, and metadata resources.",
+    "packageName": "@kesarcloud/plugin-anyprop",
+    "tags": [
+      "anyprop",
+      "reso",
+      "mls",
+      "listings"
+    ],
+    "capabilities": [
+      "reso-property",
+      "members",
+      "offices",
+      "metadata"
+    ]
+  },
+  {
+    "slug": "reapit",
+    "name": "Reapit Foundations",
+    "description": "Reapit Foundations connector for UK agency properties, applicants, contacts, appointments, and offers.",
+    "packageName": "@kesarcloud/plugin-reapit",
+    "tags": [
+      "reapit",
+      "uk",
+      "agency",
+      "property-crm"
+    ],
+    "capabilities": [
+      "properties",
+      "applicants",
+      "contacts",
+      "appointments",
+      "offers"
+    ]
+  },
+  {
+    "slug": "homedata-uk",
+    "name": "Homedata UK",
+    "description": "Homedata UK connector for UK residential property, valuation, planning, and local market data.",
+    "packageName": "@kesarcloud/plugin-homedata-uk",
+    "tags": [
+      "homedata",
+      "uk",
+      "property-data",
+      "valuation"
+    ],
+    "capabilities": [
+      "property-data",
+      "valuation",
+      "planning",
+      "market-data"
+    ]
+  },
+  {
+    "slug": "hm-land-registry",
+    "name": "HM Land Registry",
+    "description": "HM Land Registry connector for UK title, price paid, ownership, and property data workflows.",
+    "packageName": "@kesarcloud/plugin-hm-land-registry",
+    "tags": [
+      "hm-land-registry",
+      "uk",
+      "land-registry",
+      "title"
+    ],
+    "capabilities": [
+      "title-data",
+      "price-paid",
+      "ownership",
+      "property-data"
+    ]
+  },
+  {
+    "slug": "idealista",
+    "name": "Idealista",
+    "description": "Idealista connector for Spain, Italy, and Portugal property search and listing detail workflows.",
+    "packageName": "@kesarcloud/plugin-idealista",
+    "tags": [
+      "idealista",
+      "eu",
+      "spain",
+      "italy",
+      "portugal"
+    ],
+    "capabilities": [
+      "property-search",
+      "listings",
+      "detail",
+      "market-data"
+    ]
+  },
+  {
+    "slug": "geoiq",
+    "name": "GeoIQ",
+    "description": "GeoIQ connector for Indian location intelligence, catchment analysis, scores, and geospatial enrichment.",
+    "packageName": "@kesarcloud/plugin-geoiq",
+    "tags": [
+      "geoiq",
+      "india",
+      "location-intelligence",
+      "geospatial"
+    ],
+    "capabilities": [
+      "places",
+      "catchments",
+      "scores",
+      "geospatial"
+    ]
+  },
+  {
+    "slug": "legiscore",
+    "name": "LegiScore",
+    "description": "LegiScore connector for Indian property due diligence, title, ownership, encumbrance, and compliance workflows.",
+    "packageName": "@kesarcloud/plugin-legiscore",
+    "tags": [
+      "legiscore",
+      "india",
+      "due-diligence",
+      "title"
+    ],
+    "capabilities": [
+      "title-search",
+      "ownership",
+      "encumbrance",
+      "compliance"
+    ]
+  },
+  {
+    "slug": "follow-up-boss",
+    "name": "Follow Up Boss",
+    "description": "Follow Up Boss connector for real-estate leads, people, events, notes, tasks, and CRM workflows.",
+    "packageName": "@kesarcloud/plugin-follow-up-boss",
+    "tags": [
+      "follow-up-boss",
+      "crm",
+      "leads",
+      "real-estate"
+    ],
+    "capabilities": [
+      "people",
+      "leads",
+      "events",
+      "tasks",
+      "notes"
+    ]
+  },
+  {
+    "slug": "lofty",
+    "name": "Lofty",
+    "description": "Lofty connector for real-estate CRM leads, properties, tasks, activities, and agent workflows.",
+    "packageName": "@kesarcloud/plugin-lofty",
+    "tags": [
+      "lofty",
+      "crm",
+      "leads",
+      "real-estate"
+    ],
+    "capabilities": [
+      "leads",
+      "properties",
+      "tasks",
+      "activities"
+    ]
+  }
+] as const;
+
 const skills: Skill[] = [
   {
     id: "tools/research-protocol-tools",
@@ -414,6 +1032,7 @@ const skills: Skill[] = [
     description: "Use the browser automation plugin for navigation, screenshots, extraction, and task completion.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     sourceUrl: null,
     installSource: skillPath("browser-automation-tools"),
     trustLevel: "markdown_only",
@@ -474,6 +1093,7 @@ const skills: Skill[] = [
     description: "Operate Canva Connect API workflows through plugin-backed tools and dry-run guardrails.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     sourceUrl: null,
     installSource: skillPath("canva-tools"),
     trustLevel: "markdown_only",
@@ -622,8 +1242,8 @@ const skills: Skill[] = [
     slug: "razorpay-tools",
     name: "Razorpay Tools",
     description: "Operate Razorpay merchant payment workflows through plugin-backed tools and dry-run guardrails.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     sourceUrl: null,
     installSource: skillPath("razorpay-tools"),
     trustLevel: "markdown_only",
@@ -637,8 +1257,8 @@ const skills: Skill[] = [
     slug: "stripe-tools",
     name: "Stripe Tools",
     description: "Operate Stripe Merchant Core workflows through plugin-backed tools and dry-run guardrails.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     sourceUrl: null,
     installSource: skillPath("stripe-tools"),
     trustLevel: "markdown_only",
@@ -654,6 +1274,7 @@ const skills: Skill[] = [
     description: `Use the PaperClaw ${item.name} productivity plugin through guarded agent tools.`,
     categorySlug: "productivity",
     categoryName: "Productivity",
+    ...(["jira", "linear", "confluence"].includes(item.slug) ? { categorySlugs: ["productivity", "developer"] } : {}),
     sourceUrl: null,
     installSource: skillPath(`${item.slug}-tools`),
     trustLevel: "markdown_only",
@@ -677,6 +1298,36 @@ const skills: Skill[] = [
     markdown: readSkillMarkdown(`${item.slug}-tools`),
     installNotes: `Requires ${item.name} plugin credentials before live legal operations.`,
   })),
+  ...financeDefinitions.map<Skill>((item) => ({
+    id: `finance/${item.slug}-tools`,
+    slug: `${item.slug}-tools`,
+    name: `${item.name} Tools`,
+    description: `Use the PaperClaw ${item.name} Finance plugin through guarded agent tools.`,
+    categorySlug: "finance",
+    categoryName: "Finance",
+    sourceUrl: null,
+    installSource: skillPath(`${item.slug}-tools`, "finance"),
+    trustLevel: "markdown_only",
+    tags: [...item.tags],
+    installedSkillId: null,
+    markdown: readSkillMarkdown(`${item.slug}-tools`, "finance"),
+    installNotes: `Requires ${item.name} plugin credentials before live finance operations.`,
+  })),
+  ...developerDefinitions.map<Skill>((item) => ({
+    id: `developer/${item.slug}-tools`,
+    slug: `${item.slug}-tools`,
+    name: `${item.name} Tools`,
+    description: `Use the PaperClaw ${item.name} Developer plugin through guarded agent tools.`,
+    categorySlug: "developer",
+    categoryName: "Developer",
+    sourceUrl: null,
+    installSource: skillPath(`${item.slug}-tools`, "developer"),
+    trustLevel: "markdown_only",
+    tags: [...item.tags],
+    installedSkillId: null,
+    markdown: readSkillMarkdown(`${item.slug}-tools`, "developer"),
+    installNotes: `Requires ${item.name} plugin credentials before live developer-platform operations.`,
+  })),
   ...logisticsDefinitions.map<Skill>((item) => ({
     id: `courier-logistics/${item.slug}-tools`,
     slug: `${item.slug}-tools`,
@@ -692,6 +1343,36 @@ const skills: Skill[] = [
     markdown: readSkillMarkdown(`${item.slug}-tools`, "courier-logistics"),
     installNotes: `Requires ${item.name} plugin credentials before live courier and logistics operations.`,
   })),
+  ...realEstateDefinitions.map<Skill>((item) => ({
+    id: `real-estate/${item.slug}-tools`,
+    slug: `${item.slug}-tools`,
+    name: `${item.name} Tools`,
+    description: `Use the PaperClaw ${item.name} Real Estate plugin through guarded agent tools.`,
+    categorySlug: "real-estate",
+    categoryName: "Real Estate",
+    sourceUrl: null,
+    installSource: skillPath(`${item.slug}-tools`, "real-estate"),
+    trustLevel: "markdown_only",
+    tags: [...item.tags],
+    installedSkillId: null,
+    markdown: readSkillMarkdown(`${item.slug}-tools`, "real-estate"),
+    installNotes: `Requires ${item.name} plugin credentials before live real-estate operations.`,
+  })),
+  ...communicationDefinitions.map<Skill>((item) => ({
+    id: `communication/${item.slug}-tools`,
+    slug: `${item.slug}-tools`,
+    name: `${item.name} Tools`,
+    description: `Use the PaperClaw ${item.name} Communication plugin through guarded agent tools.`,
+    categorySlug: "communication",
+    categoryName: "Communication",
+    sourceUrl: null,
+    installSource: skillPath(`${item.slug}-tools`, "communication"),
+    trustLevel: "markdown_only",
+    tags: [...item.tags],
+    installedSkillId: null,
+    markdown: readSkillMarkdown(`${item.slug}-tools`, "communication"),
+    installNotes: `Requires ${item.name} plugin credentials before live communication operations.`,
+  })),
 ];
 
 const plugins: Plugin[] = [
@@ -702,6 +1383,7 @@ const plugins: Plugin[] = [
     description: "Playwright MCP powered browser automation tools for agent research and web task execution.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     packageName: "@kesarcloud/plugin-playwright-mcp",
     version: "0.1.0",
     sourceType: "bundled",
@@ -790,6 +1472,7 @@ const plugins: Plugin[] = [
     description: "Canva Connect API tools for designs, assets, exports, brand templates, folders, comments, imports, and resizes.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     packageName: "@kesarcloud/plugin-canva",
     version: "0.1.0",
     sourceType: "bundled",
@@ -1008,8 +1691,8 @@ const plugins: Plugin[] = [
     slug: "razorpay",
     name: "Razorpay",
     description: "Razorpay merchant API connector for orders, payments, refunds, payment links, customers, and webhooks.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     packageName: "@kesarcloud/plugin-razorpay",
     version: "0.1.0",
     sourceType: "bundled",
@@ -1030,8 +1713,8 @@ const plugins: Plugin[] = [
     slug: "stripe",
     name: "Stripe",
     description: "Stripe Merchant Core connector for PaymentIntents, refunds, Checkout Sessions, customers, products, prices, and webhooks.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     packageName: "@kesarcloud/plugin-stripe",
     version: "0.1.0",
     sourceType: "bundled",
@@ -1054,6 +1737,7 @@ const plugins: Plugin[] = [
     description: item.description,
     categorySlug: "productivity",
     categoryName: "Productivity",
+    ...(["jira", "linear", "confluence"].includes(item.slug) ? { categorySlugs: ["productivity", "developer"] } : {}),
     packageName: item.packageName,
     version: "0.1.0",
     sourceType: "bundled",
@@ -1091,6 +1775,50 @@ const plugins: Plugin[] = [
     markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for mutating legal operations. These tools do not provide legal advice.`,
     installNotes: `Configure ${item.name} credentials and any required tenant/region host before assigning live legal work.`,
   })),
+  ...financeDefinitions.map<Plugin>((item) => ({
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    categorySlug: "finance",
+    categoryName: "Finance",
+    packageName: item.packageName,
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: pluginPath(item.slug),
+    tags: [...item.tags],
+    capabilities: [...item.capabilities],
+    toolCount: 9,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    installedPluginId: null,
+    installedStatus: null,
+    markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for mutating finance operations. These tools do not provide accounting, tax, investment, or legal advice.`,
+    installNotes: `Configure ${item.name} credentials and any required tenant/account identifiers before assigning live finance work.`,
+  })),
+  ...developerDefinitions.map<Plugin>((item) => ({
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    categorySlug: "developer",
+    categoryName: "Developer",
+    packageName: item.packageName,
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: pluginPath(item.slug),
+    tags: [...item.tags],
+    capabilities: [...item.capabilities],
+    toolCount: 9,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    installedPluginId: null,
+    installedStatus: null,
+    markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for production-impacting developer-platform operations.`,
+    installNotes: `Configure ${item.name} credentials and any required org/project/tenant identifiers before assigning live developer work.`,
+  })),
   ...logisticsDefinitions.map<Plugin>((item) => ({
     id: item.slug,
     slug: item.slug,
@@ -1113,10 +1841,58 @@ const plugins: Plugin[] = [
     markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for shipment creation, label purchase, and pickup operations.`,
     installNotes: `Configure ${item.name} credentials and keep dry-run enabled before assigning live logistics work.`,
   })),
+  ...realEstateDefinitions.map<Plugin>((item) => ({
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    categorySlug: "real-estate",
+    categoryName: "Real Estate",
+    packageName: item.packageName,
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: pluginPath(item.slug),
+    tags: [...item.tags],
+    capabilities: [...item.capabilities],
+    toolCount: 9,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 0,
+    installedPluginId: null,
+    installedStatus: null,
+    markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for mutating real-estate operations. Use official APIs only.`,
+    installNotes: `Configure ${item.name} credentials and confirm local licensing/compliance before assigning live real-estate work.`,
+  })),
+  ...communicationDefinitions.map<Plugin>((item) => ({
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    categorySlug: "communication",
+    categoryName: "Communication",
+    packageName: item.packageName,
+    version: "0.1.0",
+    sourceType: "bundled",
+    localPath: pluginPath(item.slug),
+    tags: [...item.tags],
+    capabilities: [...item.capabilities],
+    toolCount: 9,
+    uiSlotCount: 3,
+    jobCount: 0,
+    webhookCount: 1,
+    installedPluginId: null,
+    installedStatus: null,
+    markdown: `# ${item.name}\n\n${item.description} Dry-run guardrails are enabled for sends, calls, campaigns, templates, and other communication mutations.`,
+    installNotes: `Configure ${item.name} credentials and verify consent, opt-out, templates, recording disclosure, and local telecom/channel rules before live use.`,
+  })),
 ];
 
 function component(id: string, name: string): Component {
   return { id, name, installedId: null, status: null };
+}
+
+function itemCategorySlugs(item: { categorySlug: string; categorySlugs?: string[] }) {
+  return item.categorySlugs?.length ? item.categorySlugs : [item.categorySlug];
 }
 
 const packs: Pack[] = [
@@ -1204,6 +1980,7 @@ const packs: Pack[] = [
     description: "Browser automation plugin plus practical browser-use skill instructions.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     tags: ["browser", "automation", "playwright"],
     plugin: component("playwright-mcp", "Browser Automation"),
     skills: [component("tools/browser-automation-tools", "Browser Automation Tools")],
@@ -1221,6 +1998,7 @@ const packs: Pack[] = [
     description: "Canva plugin plus creative operations skill for governed design, asset, export, and template workflows.",
     categorySlug: "tools",
     categoryName: "Tools",
+    categorySlugs: ["tools", "developer"],
     tags: ["canva", "design", "creative", "assets"],
     plugin: component("canva", "Canva"),
     skills: [component("tools/canva-tools", "Canva Tools")],
@@ -1389,8 +2167,8 @@ const packs: Pack[] = [
     slug: "razorpay-payments-capability-pack",
     name: "Razorpay Payments Capability Pack",
     description: "Razorpay plugin plus payment operations skill for governed orders, captures, refunds, payment links, customers, and webhooks.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     tags: ["razorpay", "payments", "refunds", "orders"],
     plugin: component("razorpay", "Razorpay"),
     skills: [component("tools/razorpay-tools", "Razorpay Tools")],
@@ -1406,8 +2184,8 @@ const packs: Pack[] = [
     slug: "stripe-payments-capability-pack",
     name: "Stripe Payments Capability Pack",
     description: "Stripe plugin plus payment operations skill for governed PaymentIntents, refunds, Checkout Sessions, customers, products, prices, and webhooks.",
-    categorySlug: "tools",
-    categoryName: "Tools",
+    categorySlug: "finance",
+    categoryName: "Finance",
     tags: ["stripe", "payments", "refunds", "checkout"],
     plugin: component("stripe", "Stripe"),
     skills: [component("tools/stripe-tools", "Stripe Tools")],
@@ -1425,6 +2203,7 @@ const packs: Pack[] = [
     description: `${item.name} plugin plus productivity operating skill for governed agent workflows.`,
     categorySlug: "productivity",
     categoryName: "Productivity",
+    ...(["jira", "linear", "confluence"].includes(item.slug) ? { categorySlugs: ["productivity", "developer"] } : {}),
     tags: [...item.tags],
     plugin: component(item.slug, item.name),
     skills: [component(`productivity/${item.slug}-tools`, `${item.name} Tools`)],
@@ -1452,6 +2231,57 @@ const packs: Pack[] = [
     installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live mutations.`,
     checklist: [],
   })),
+  ...financeDefinitions.map<Pack>((item) => ({
+    id: `finance/${item.slug}-capability-pack`,
+    slug: `${item.slug}-capability-pack`,
+    name: `${item.name} Capability Pack`,
+    description: `${item.name} plugin plus Finance operating skill for governed agent workflows.`,
+    categorySlug: "finance",
+    categoryName: "Finance",
+    tags: [...item.tags],
+    plugin: component(item.slug, item.name),
+    skills: [component(`finance/${item.slug}-tools`, `${item.name} Tools`)],
+    defaultAssignMode: "ceo",
+    installed: false,
+    needsSetup: true,
+    markdown: `# ${item.name} Capability Pack\n\nInstalls the ${item.name} connector and Finance operating skill.`,
+    installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live finance mutations.`,
+    checklist: [],
+  })),
+  {
+    id: "developer/developer-suite-capability-pack",
+    slug: "developer-suite-capability-pack",
+    name: "Developer Suite Capability Pack",
+    description: "Broad developer platform plugin suite for design, code hosting, deploy, backend, API tooling, observability, testing, and security workflows.",
+    categorySlug: "developer",
+    categoryName: "Developer",
+    tags: ["developer", "design", "devops", "backend", "observability"],
+    plugin: null,
+    skills: developerDefinitions.map((item) => component(`developer/${item.slug}-tools`, `${item.name} Tools`)),
+    defaultAssignMode: "ceo",
+    installed: false,
+    needsSetup: true,
+    markdown: "# Developer Suite Capability Pack\n\nInstalls the developer-platform operating skills for the bundled Developer plugin suite.",
+    installNotes: "Install the required Developer plugins, configure credentials, keep dry-run enabled, then assign skills to engineering agents.",
+    checklist: [],
+  },
+  ...developerDefinitions.map<Pack>((item) => ({
+    id: `developer/${item.slug}-capability-pack`,
+    slug: `${item.slug}-capability-pack`,
+    name: `${item.name} Capability Pack`,
+    description: `${item.name} plugin plus Developer operating skill for governed agent workflows.`,
+    categorySlug: "developer",
+    categoryName: "Developer",
+    tags: [...item.tags],
+    plugin: component(item.slug, item.name),
+    skills: [component(`developer/${item.slug}-tools`, `${item.name} Tools`)],
+    defaultAssignMode: "ceo",
+    installed: false,
+    needsSetup: true,
+    markdown: `# ${item.name} Capability Pack\n\nInstalls the ${item.name} connector and Developer operating skill.`,
+    installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live developer-platform mutations.`,
+    checklist: [],
+  })),
   ...logisticsDefinitions.map<Pack>((item) => ({
     id: `courier-logistics/${item.slug}-capability-pack`,
     slug: `${item.slug}-capability-pack`,
@@ -1469,15 +2299,49 @@ const packs: Pack[] = [
     installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live labels or pickups.`,
     checklist: [],
   })),
+  ...realEstateDefinitions.map<Pack>((item) => ({
+    id: `real-estate/${item.slug}-capability-pack`,
+    slug: `${item.slug}-capability-pack`,
+    name: `${item.name} Capability Pack`,
+    description: `${item.name} plugin plus Real Estate operating skill for governed property workflows.`,
+    categorySlug: "real-estate",
+    categoryName: "Real Estate",
+    tags: [...item.tags],
+    plugin: component(item.slug, item.name),
+    skills: [component(`real-estate/${item.slug}-tools`, `${item.name} Tools`)],
+    defaultAssignMode: "ceo",
+    installed: false,
+    needsSetup: true,
+    markdown: `# ${item.name} Capability Pack\n\nInstalls the ${item.name} connector and Real Estate operating skill.`,
+    installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live real-estate mutations.`,
+    checklist: [],
+  })),
+  ...communicationDefinitions.map<Pack>((item) => ({
+    id: `communication/${item.slug}-capability-pack`,
+    slug: `${item.slug}-capability-pack`,
+    name: `${item.name} Capability Pack`,
+    description: `${item.name} plugin plus Communication operating skill for governed messaging and voice workflows.`,
+    categorySlug: "communication",
+    categoryName: "Communication",
+    tags: [...item.tags],
+    plugin: component(item.slug, item.name),
+    skills: [component(`communication/${item.slug}-tools`, `${item.name} Tools`)],
+    defaultAssignMode: "ceo",
+    installed: false,
+    needsSetup: true,
+    markdown: `# ${item.name} Capability Pack\n\nInstalls the ${item.name} connector and Communication operating skill.`,
+    installNotes: `Configure ${item.name} credentials after installation. Keep dry-run enabled until board approval for live sends, calls, templates, or campaign mutations.`,
+    checklist: [],
+  })),
 ];
 
-function page<T extends { name: string; description: string | null; categorySlug: string; slug: string; tags: string[] }>(items: T[], url: URL) {
+function page<T extends { name: string; description: string | null; categorySlug: string; categorySlugs?: string[]; slug: string; tags: string[] }>(items: T[], url: URL) {
   const category = normalizeCategorySlug(url.searchParams.get("category"));
   const query = url.searchParams.get("q")?.toLowerCase().trim();
   const limit = Math.max(1, Math.min(200, Number.parseInt(url.searchParams.get("limit") ?? "60", 10) || 60));
   const offset = Math.max(0, Number.parseInt(url.searchParams.get("cursor") ?? "0", 10) || 0);
   const filtered = items.filter((item) => {
-    if (category && item.categorySlug !== category) return false;
+    if (category && !itemCategorySlugs(item).includes(category)) return false;
     if (!query) return true;
     return [item.name, item.description, item.slug, ...item.tags]
       .filter(Boolean)
@@ -1502,19 +2366,21 @@ function listItem<T extends Skill | Plugin | Pack>(item: T) {
   return item;
 }
 
-function categoryList<T extends { categorySlug: string; categoryName: string }>(items: T[], countKey: string) {
+function categoryList<T extends { categorySlug: string; categoryName: string; categorySlugs?: string[] }>(items: T[], countKey: string) {
   const categories = new Map<string, { id: string; slug: string; name: string; count: number }>();
   for (const item of items) {
-    const existing = categories.get(item.categorySlug);
-    if (existing) {
-      existing.count += 1;
-    } else {
-      categories.set(item.categorySlug, {
-        id: item.categorySlug,
-        slug: item.categorySlug,
-        name: categoryNames[item.categorySlug] ?? item.categoryName,
-        count: 1,
-      });
+    for (const slug of itemCategorySlugs(item)) {
+      const existing = categories.get(slug);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        categories.set(slug, {
+          id: slug,
+          slug,
+          name: categoryNames[slug] ?? (slug === item.categorySlug ? item.categoryName : slug),
+          count: 1,
+        });
+      }
     }
   }
   return [...categories.values()]

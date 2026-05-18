@@ -24,7 +24,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Stripe",
   description: "Connects PaperClaw agents to Stripe merchant APIs for PaymentIntents, refunds, Checkout Sessions, customers, products, prices, and webhooks.",
   author: "PaperClaw",
-  categories: ["connector", "automation", "workspace", "ui"],
+  categories: ["finance", "connector", "automation", "workspace", "ui"],
   capabilities: [
     "agent.tools.register",
     "http.outbound",

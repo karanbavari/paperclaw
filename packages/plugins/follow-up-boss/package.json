@@ -1,0 +1,38 @@
+{
+  "name": "@kesarcloud/plugin-follow-up-boss",
+  "version": "0.1.0",
+  "description": "First-party PaperClaw plugin for Follow Up Boss real estate tools.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "paperclawPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js",
+    "ui": "./dist/ui/"
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @kesarcloud/plugin-sdk ensure-build-deps",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "cd ../../.. && vitest run --project @kesarcloud/plugin-follow-up-boss",
+    "typecheck": "pnpm --filter @kesarcloud/plugin-sdk ensure-build-deps && tsc --noEmit"
+  },
+  "dependencies": {
+    "@kesarcloud/plugin-real-estate-core": "workspace:*",
+    "@kesarcloud/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "react": "^19.0.8",
+    "react-dom": "^19.0.8",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}

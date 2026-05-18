@@ -24,7 +24,7 @@ const manifest: PaperClawPluginManifestV1 = {
   displayName: "Playwright MCP Browser Automation",
   description: "Gives PaperClaw agents browser automation through the official Microsoft Playwright MCP server.",
   author: "PaperClaw",
-  categories: ["connector", "automation", "workspace", "ui"],
+  categories: ["connector", "automation", "developer", "workspace", "ui"],
   capabilities: [
     "agent.tools.register",
     "plugin.state.read",
