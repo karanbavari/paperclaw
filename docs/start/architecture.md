@@ -18,9 +18,8 @@ PaperClaw is a monorepo with four main layers.
 │  PostgreSQL (Drizzle ORM)           │
 │  Schema, migrations, embedded mode  │
 ├─────────────────────────────────────┤
-│  Adapters                           │
-│  Claude Local, Codex Local,         │
-│  Process, HTTP                      │
+│  Adapters and Plugins               │
+│  Local CLIs, process, HTTP, tools   │
 └─────────────────────────────────────┘
 ```
 
@@ -32,7 +31,7 @@ PaperClaw is a monorepo with four main layers.
 | Backend | Node.js 20+, Express.js 5, TypeScript |
 | Database | PostgreSQL 17 (or embedded PGlite), Drizzle ORM |
 | Auth | Better Auth (sessions + API keys) |
-| Adapters | Claude Code CLI, Codex CLI, shell process, HTTP webhook |
+| Adapters | Claude Code CLI, Codex CLI, Gemini, OpenCode, Pi, Cursor, shell process, HTTP webhook, OpenClaw gateway, external adapter plugins |
 | Package manager | pnpm 9 with workspaces |
 
 ## Repository Structure
@@ -55,9 +54,8 @@ paperclaw/
 │   ├── db/                      # Drizzle schema + migrations
 │   ├── shared/                  # API types, constants, validators
 │   ├── adapter-utils/           # Adapter interfaces and helpers
-│   └── adapters/
-│       ├── claude-local/        # Claude Code adapter
-│       └── codex-local/         # OpenAI Codex adapter
+│   ├── adapters/                # Built-in local and gateway adapters
+│   └── plugins/                 # Plugin SDK and first-party plugins
 │
 ├── skills/                      # Agent skills
 │   └── paperclaw/               # Core PaperClaw skill (heartbeat protocol)
@@ -87,7 +85,7 @@ Adapters are the bridge between PaperClaw and agent runtimes. Each adapter is a 
 - **UI module** — stdout parser for the run viewer, config form fields for agent creation
 - **CLI module** — terminal formatter for `paperclaw run --watch`
 
-Built-in adapters: `claude_local`, `codex_local`, `process`, `http`. You can create custom adapters for any runtime.
+Built-in adapters include local CLI/session adapters, process, HTTP, and OpenClaw gateway support. External adapter plugins can add runtimes without modifying PaperClaw core.
 
 ## Key Design Decisions
 

@@ -66,7 +66,7 @@
   },
   {
     "dir": "cli",
-    "name": "paperclaw",
+    "name": "@kesarcloud/paperclaw",
     "publishFromCi": true
   },
   {

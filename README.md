@@ -1,466 +1,223 @@
-<h1 align="center">PaperClaw</h1>
+# PaperClaw
 
-<p align="center">
-  <strong>Open-source orchestration for AI-agent companies, maintained by KesarCloud.</strong>
-</p>
-
-<p align="center">
-  <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="docs"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/karanbavari/paperclaw"><strong>GitHub</strong></a> &middot;
-  <a href="https://github.com/karanbavari/paperclaw/issues"><strong>Issues</strong></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/karanbavari/paperclaw/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/karanbavari/paperclaw/stargazers"><img src="https://img.shields.io/github/stars/karanbavari/paperclaw?style=flat" alt="Stars" /></a>
-</p>
-
-<br/>
-
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/773bdfb2-6d1e-4e30-8c5f-3487d5b70c8f" width="600" controls></video>
-</div>
-
-<br/>
-
-## What is PaperClaw?
-
-# Open-source orchestration for zero-human companies
-
-**If OpenClaw is an _employee_, PaperClaw is the _company_**
-
-PaperClaw is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track your agents' work and costs from one dashboard.
-
-It looks like a task manager — but under the hood it has org charts, budgets, governance, goal alignment, and agent coordination.
-
-PaperClaw is owned and maintained by **KesarCloud**. Its initial project structure is based on the MIT-licensed open-source Paperclip AI project by Paperclip AI, with this fork rebranded and evolved as a new open-source project.
-
-**Manage business goals, not pull requests.**
-
-|        | Step            | Example                                                            |
-| ------ | --------------- | ------------------------------------------------------------------ |
-| **01** | Define the goal | _"Build the #1 AI note-taking app to $1M MRR."_                    |
-| **02** | Hire the team   | CEO, CTO, engineers, designers, marketers — any bot, any provider. |
-| **03** | Approve and run | Review strategy. Set budgets. Hit go. Monitor from the dashboard.  |
-
-<br/>
-
-> **COMING SOON: Clipmart** — Download and run entire companies with one click. Browse pre-built company templates — full org structures, agent configs, and skills — and import them into your PaperClaw instance in seconds.
-
-<br/>
-
-<div align="center">
-<table>
-  <tr>
-    <td align="center"><strong>Works<br/>with</strong></td>
-    <td align="center"><img src="doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
-    <td align="center"><img src="doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
-    <td align="center"><img src="doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
-    <td align="center"><img src="doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
-    <td align="center"><img src="doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
-    <td align="center"><img src="doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
-  </tr>
-</table>
-
-<em>If it can receive a heartbeat, it's hired.</em>
-
-</div>
-
-<br/>
-
-## PaperClaw is right for you if
-
-- ✅ You want to build **autonomous AI companies**
-- ✅ You **coordinate many different agents** (OpenClaw, Codex, Claude, Cursor) toward a common goal
-- ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
-- ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
-- ✅ You want to **monitor costs** and enforce budgets
-- ✅ You want a process for managing agents that **feels like using a task manager**
-- ✅ You want to manage your autonomous businesses **from your phone**
-
-<br/>
-
-## Features
-
-<table>
-<tr>
-<td align="center" width="33%">
-<h3>🔌 Bring Your Own Agent</h3>
-Any agent, any runtime, one org chart. If it can receive a heartbeat, it's hired.
-</td>
-<td align="center" width="33%">
-<h3>🎯 Goal Alignment</h3>
-Every task traces back to the company mission. Agents know <em>what</em> to do and <em>why</em>.
-</td>
-<td align="center" width="33%">
-<h3>💓 Heartbeats</h3>
-Agents wake on a schedule, check work, and act. Delegation flows up and down the org chart.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>💰 Cost Control</h3>
-Monthly budgets per agent. When they hit the limit, they stop. No runaway costs.
-</td>
-<td align="center">
-<h3>🏢 Multi-Company</h3>
-One deployment, many companies. Complete data isolation. One control plane for your portfolio.
-</td>
-<td align="center">
-<h3>🎫 Ticket System</h3>
-Every conversation traced. Every decision explained. Full tool-call tracing and immutable audit log.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>🛡️ Governance</h3>
-You're the board. Approve hires, override strategy, pause or terminate any agent — at any time.
-</td>
-<td align="center">
-<h3>📊 Org Chart</h3>
-Hierarchies, roles, reporting lines. Your agents have a boss, a title, and a job description.
-</td>
-<td align="center">
-<h3>📱 Mobile Ready</h3>
-Monitor and manage your autonomous businesses from anywhere.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>🧠 Company Memory</h3>
-Company profiles, short-term notes, long-term knowledge, language, currency, and timezone context shared safely across agents.
-</td>
-<td align="center">
-<h3>🔬 Research Lab</h3>
-Isolated R&D workspaces for research, prototypes, demos, reports, CEO review, and board approval.
-</td>
-<td align="center">
-<h3>🧩 Skills Marketplace</h3>
-Browse remote skills, preview them, and install only what a company or selected agents need.
-</td>
-</tr>
-</table>
-
-<br/>
-
-## Problems PaperClaw solves
-
-| Without PaperClaw                                                                                                                     | With PaperClaw                                                                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| ❌ You have 20 Claude Code tabs open and can't track which one does what. On reboot you lose everything.                              | ✅ Tasks are ticket-based, conversations are threaded, sessions persist across reboots.                                                |
-| ❌ You manually gather context from several places to remind your bot what you're actually doing.                                     | ✅ Context flows from the task up through the project and company goals — your agent always knows what to do and why.                  |
-| ❌ Folders of agent configs are disorganized and you're re-inventing task management, communication, and coordination between agents. | ✅ PaperClaw gives you org charts, ticketing, delegation, and governance out of the box — so you run a company, not a pile of scripts. |
-| ❌ Runaway loops waste hundreds of dollars of tokens and max your quota before you even know what happened.                           | ✅ Cost tracking surfaces token budgets and throttles agents when they're out. Management prioritizes with budgets.                    |
-| ❌ You have recurring jobs (customer support, social, reports) and have to remember to manually kick them off.                        | ✅ Heartbeats handle regular work on a schedule. Management supervises.                                                                |
-| ❌ You have an idea, you have to find your repo, fire up Claude Code, keep a tab open, and babysit it.                                | ✅ Add a task in PaperClaw. Your coding agent works on it until it's done. Management reviews their work.                              |
-| ❌ Research, prototypes, demos, and final reports are scattered across random folders and chats.                                      | ✅ Research Lab keeps isolated workspace context, demo URLs, agent access, CEO review, and board approval in one governed flow.        |
-
-<br/>
-
-## Why PaperClaw is special
-
-PaperClaw handles the hard orchestration details correctly.
-
-|                                   |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Atomic execution.**             | Task checkout and budget enforcement are atomic, so no double-work and no runaway spend.                      |
-| **Persistent agent state.**       | Agents resume the same task context across heartbeats instead of restarting from scratch.                     |
-| **Runtime skill injection.**      | Agents can learn PaperClaw workflows and project context at runtime, without retraining.                      |
-| **Governance with rollback.**     | Approval gates are enforced, config changes are revisioned, and bad changes can be rolled back safely.        |
-| **Goal-aware execution.**         | Tasks carry full goal ancestry so agents consistently see the "why," not just a title.                        |
-| **Portable company templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
-| **True multi-company isolation.** | Every entity is company-scoped, so one deployment can run many companies with separate data and audit trails. |
-
-<br/>
-
-## What's Under the Hood
-
-PaperClaw is a full control plane, not a wrapper. Before you build any of this yourself, know that it already exists:
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                       PAPERCLAW SERVER                       │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │Identity & │  │  Work &   │  │ Heartbeat │  │Governance │  │
-│  │  Access   │  │   Tasks   │  │ Execution │  │& Approvals│  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │ Org Chart │  │Workspaces │  │  Plugins  │  │  Budget   │  │
-│  │ & Agents  │  │ & Runtime │  │           │  │ & Costs   │  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │ Routines  │  │ Research  │  │  Memory   │  │  Company  │  │
-│  │& Schedules│  │   Lab     │  │& Knowledge│  │Portability│  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-└──────────────────────────────────────────────────────────────┘
-         ▲              ▲              ▲              ▲
-   ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐
-   │  Claude   │  │   Codex   │  │   CLI     │  │ HTTP/web  │
-   │   Code    │  │           │  │  agents   │  │   bots    │
-   └───────────┘  └───────────┘  └───────────┘  └───────────┘
-```
-
-### The Systems
-
-<table>
-<tr>
-<td width="50%">
-
-**Identity & Access** — Two deployment modes (trusted local or authenticated), board users, agent API keys, short-lived run JWTs, company memberships, invite flows, and OpenClaw onboarding. Every mutating request is traced to an actor.
-
-</td>
-<td width="50%">
-
-**Org Chart & Agents** — Agents have roles, titles, reporting lines, permissions, and budgets. Adapter examples match the diagram: Claude Code, Codex, CLI agents such as Cursor/Gemini/bash, HTTP/webhook bots such as OpenClaw, and external adapter plugins. If it can receive a heartbeat, it's hired.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Work & Task System** — Issues carry company/project/goal/parent links, atomic checkout with execution locks, first-class blocker dependencies, comments, documents, attachments, work products, labels, and inbox state. No double-work, no lost context.
-
-</td>
-<td>
-
-**Heartbeat Execution** — DB-backed wakeup queue with coalescing, budget checks, workspace resolution, secret injection, skill loading, and adapter invocation. Runs produce structured logs, cost events, session state, and audit trails. Recovery handles orphaned runs automatically.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Workspaces & Runtime** — Project workspaces, isolated execution workspaces (git worktrees, operator branches), and runtime services (dev servers, preview URLs). Agents work in the right directory with the right context every time.
-
-</td>
-<td>
-
-**Governance & Approvals** — Board approval workflows, execution policies with review/approval stages, decision tracking, budget hard-stops, agent pause/resume/terminate, and full audit logging. You're the board — nothing ships without your sign-off.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Budget & Cost Control** — Token and cost tracking by company, agent, project, goal, issue, provider, and model. Scoped budget policies with warning thresholds and hard stops. Overspend pauses agents and cancels queued work automatically.
-
-</td>
-<td>
-
-**Routines & Schedules** — Recurring tasks with cron, webhook, and API triggers. Concurrency and catch-up policies. Each routine execution creates a tracked issue and wakes the assigned agent — no manual kick-offs needed.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Plugins** — Instance-wide plugin system with out-of-process workers, capability-gated host services, job scheduling, tool exposure, and UI contributions. Extend PaperClaw without forking it.
-
-</td>
-<td>
-
-**Secrets & Storage** — Instance and company secrets, encrypted local storage, provider-backed object storage, attachments, and work products. Sensitive values stay out of prompts unless a scoped run explicitly needs them.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Activity & Events** — Mutating actions, heartbeat state changes, cost events, approvals, comments, and work products are recorded as durable activity so operators can audit what happened and why.
-
-</td>
-<td>
-
-**Research Lab, Memory & Marketplace** — Company memory keeps profile and knowledge context isolated per company. Meeting rooms coordinate board/agent discussions. Research Lab links isolated workspaces, demo URLs, final reports, CEO review, and board approvals. Marketplace lets operators or CEOs install only the remote skills each company needs.
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-## What PaperClaw is not
-
-|                              |                                                                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Not a chatbot.**           | Agents have jobs, not chat windows.                                                                                  |
-| **Not an agent framework.**  | We don't tell you how to build agents. We tell you how to run a company made of them.                                |
-| **Not a workflow builder.**  | No drag-and-drop pipelines. PaperClaw models companies — with org charts, goals, budgets, and governance.            |
-| **Not a prompt manager.**    | Agents bring their own prompts, models, and runtimes. PaperClaw manages the organization they work in.               |
-| **Not a single-agent tool.** | This is for teams. If you have one agent, you probably don't need PaperClaw. If you have twenty — you definitely do. |
-| **Not a code review tool.**  | PaperClaw orchestrates work, not pull requests. Bring your own review process.                                       |
-
-<br/>
+**Production-oriented automation for AI-agent companies.**
+
+PaperClaw is a new KesarCloud-maintained open-source project for running teams of AI agents with company structure, governance, budgets, approvals, memory, tools, and visible outcomes. It is based on the MIT-licensed Paperclip AI open-source framework/project structure, and has evolved into a distinct control plane for production-grade AI-agent company automation.
+
+[Quickstart](#quickstart) | [Docs](docs) | [Architecture](docs/start/architecture.md) | [Roadmap](ROADMAP.md) | [Issues](https://github.com/karanbavari/paperclaw/issues)
+
+![MIT License](https://img.shields.io/badge/license-MIT-blue)
+
+## What PaperClaw Is
+
+PaperClaw is the operating layer for human-governed AI-agent companies.
+
+Instead of scattering work across chat windows, terminal sessions, and disconnected automation scripts, PaperClaw gives each company a structured control plane:
+
+- companies with goals, context, and operating preferences
+- AI employees with roles, managers, capabilities, budgets, and adapter configs
+- issue-based work with comments, documents, artifacts, blockers, and review states
+- scheduled and event-driven heartbeats for agent execution
+- board approvals, activity logs, cost tracking, and budget hard stops
+- company memory, meeting rooms, Research Lab, skills, plugins, and tool permissions
+
+PaperClaw does not try to be the agent runtime. It coordinates the agents you already use, such as local CLI agents, process/HTTP agents, OpenClaw-style workers, and external adapter plugins.
+
+## Why It Exists
+
+AI agents are getting better at doing work, but most teams still lack the management layer around them. Once you have more than one agent, you need to know:
+
+- who owns each task
+- why the task matters
+- what the agent did
+- what it cost
+- what needs approval
+- what actually shipped
+- what failed and needs attention
+
+PaperClaw makes those answers visible in one place.
+
+## Operating Model
+
+1. **Create a company** - define the business goal and operating context.
+2. **Hire agents** - add a CEO, CTO, researchers, engineers, marketers, support agents, or custom roles.
+3. **Configure execution** - connect each agent through an adapter such as Codex, Claude Code, process, HTTP, OpenClaw gateway, or an external adapter plugin.
+4. **Approve strategy** - let leadership agents propose plans while the board keeps control of sensitive decisions.
+5. **Delegate work** - agents create issues, subtasks, comments, reports, artifacts, demos, and follow-up work.
+6. **Control risk and spend** - budgets, approvals, tool permissions, and audit logs keep autonomy accountable.
+7. **Review outcomes** - dashboards, Outcome Center, Research Lab reports, work products, and incident surfaces show what happened.
+
+## Core Capabilities
+
+| Capability | What it provides |
+| --- | --- |
+| Multi-company control plane | Run multiple companies from one deployment with company-scoped data and workflows. |
+| Agent org charts | Model AI agents as employees with roles, reporting lines, budgets, and capabilities. |
+| Goal-linked issues | Keep work tied to company goals through projects, issues, sub-issues, comments, and artifacts. |
+| Heartbeat execution | Wake agents on schedules, assignments, mentions, approvals, or manual invokes. |
+| Adapter-neutral runtime | Bring Codex, Claude Code, OpenCode, Gemini, Pi, Cursor, shell/process agents, HTTP webhooks, OpenClaw gateway, or external adapter plugins. |
+| Governance and approvals | Route hiring, strategy, tool execution, and review handoffs through board-controlled approval flows. |
+| Cost controls | Track token/cost events and enforce monthly budgets with warning thresholds and hard-stop behavior. |
+| Company memory | Store company profile, operating context, localization preferences, short-term notes, and long-term knowledge. |
+| Research Lab | Run governed R&D spaces for research, prototypes, demos, reports, CEO review, and board decisions. |
+| Plugin and skills marketplace | Discover and install company or agent capabilities without hardcoding every integration into core. |
+| Tool permissions | Control which agents can use plugin tools, when approval is required, and how tool activity is audited. |
+| Outcome and incident centers | See shipped work products and operational failures without digging through raw logs. |
+
+## Production Use Cases
+
+PaperClaw is useful when AI agents need to do real business work as a team, with goals, budgets, approvals, and visible outcomes.
+
+| Sector | Example workflows |
+| --- | --- |
+| Software and SaaS teams | Run engineering, QA, release, research, incident follow-up, docs, and product experiments through agent teams connected to GitHub, Linear/Jira, Vercel, Sentry, Grafana, Postman, and cloud tools. |
+| Ecommerce operators | Coordinate product updates, inventory checks, order research, landing-page experiments, catalog diagnostics, customer messaging, payment/refund workflows, and campaign analysis across Shopify/WooCommerce, Stripe, Meta Ads, logistics, and email tools. |
+| Agencies and growth teams | Create repeatable client-company templates for research, content, ads, CRM cleanup, reporting, creative production, outbound follow-up, and weekly account reviews. |
+| Finance and revenue operations | Give agents governed access to payment, billing, expense, accounting, and CRM workflows using tools such as Stripe, Razorpay, Brex, Plaid, Xero, QuickBooks, NetSuite, HubSpot, and Zoho Books. |
+| Legal and document-heavy teams | Organize review, discovery, document management, matter research, contract workflows, and client intake using legal, document, and signature integrations. |
+| Logistics and courier operations | Track shipment workflows, delivery status research, exception handling, customer updates, and carrier comparisons with logistics tool integrations. |
+| Real estate teams | Support lead follow-up, property research, market comparisons, listing operations, CRM updates, and transaction coordination. |
+| Internal operations | Run recurring reports, inbox triage, research labs, meeting follow-ups, knowledge capture, task routing, and cross-functional execution with budgets and approval gates. |
+
+PaperClaw is not a compliance certification by itself. For regulated use cases, treat it as an orchestration and audit layer that must be deployed and governed according to your own legal, security, and compliance requirements.
 
 ## Quickstart
 
-Open source. Self-hosted. No PaperClaw account required.
+Install and run the CLI with `npx`:
 
-```bash
-npx paperclaw onboard --yes
+```sh
+npx @kesarcloud/paperclaw onboard --yes
+npx @kesarcloud/paperclaw run
 ```
 
-That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
+The CLI installs a `paperclaw` command and starts PaperClaw in trusted local loopback mode by default. It uses embedded PostgreSQL when `DATABASE_URL` is not set, so a local install does not require Docker or a separate database.
 
-```bash
-npx paperclaw onboard --yes --bind lan
-# or:
-npx paperclaw onboard --yes --bind tailnet
+Private-network modes are available when you want login-required access from a LAN or tailnet:
+
+```sh
+npx @kesarcloud/paperclaw onboard --yes --bind lan
+npx @kesarcloud/paperclaw run --bind tailnet
 ```
 
-If you already have PaperClaw configured, rerunning `onboard` keeps the existing config in place. Use `paperclaw configure` to edit settings.
+For local development on PaperClaw itself:
 
-Or manually:
-
-```bash
+```sh
 git clone https://github.com/karanbavari/paperclaw.git
 cd paperclaw
 pnpm install
 pnpm dev
 ```
 
-This starts the API server at `http://localhost:3100`. An embedded PostgreSQL database is created automatically — no setup required.
+This starts the API and UI at [http://localhost:3100](http://localhost:3100).
 
-> **Requirements:** Node.js 20+, pnpm 9.15+
+Requirements:
 
-<br/>
+- Node.js 20+
+- pnpm 9+ for repository development
 
-## FAQ
+More setup options:
 
-**What does a typical setup look like?**
-Locally, a single Node.js process manages an embedded Postgres and local file storage. For production, point it at your own Postgres and deploy however you like. Configure projects, agents, and goals — the agents take care of the rest.
+- [Quickstart](docs/start/quickstart.md)
+- [Local development](doc/DEVELOPING.md)
+- [Database setup](doc/DATABASE.md)
+- [Docker](doc/DOCKER.md)
+- [Deployment modes](doc/DEPLOYMENT-MODES.md)
 
-If you're a solo-entreprenuer you can use Tailscale to access PaperClaw on the go. Then later you can deploy to e.g. Vercel when you need it.
+## How It Works
 
-**Can I run multiple companies?**
-Yes. A single deployment can run an unlimited number of companies with complete data isolation.
+PaperClaw has four main layers:
 
-**How is PaperClaw different from agents like OpenClaw or Claude Code?**
-PaperClaw _uses_ those agents. It orchestrates them into a company — with org charts, budgets, goals, governance, and accountability.
+```text
+React UI
+  Board dashboard, agents, org chart, issues, approvals, labs, marketplace
 
-**Why should I use PaperClaw instead of just pointing my OpenClaw to Asana or Trello?**
-Agent orchestration has subtleties in how you coordinate who has work checked out, how to maintain sessions, monitoring costs, establishing governance - PaperClaw does this for you.
+Express REST API
+  Company model, auth, services, scheduling, approvals, plugins, adapters
 
-(Bring-your-own-ticket-system is on the Roadmap)
+PostgreSQL + Drizzle
+  Durable company state, issues, runs, costs, memory, plugins, and audit data
 
-**Do agents run continuously?**
-By default, agents run on scheduled heartbeats and event-based triggers (task assignment, @-mentions). You can also hook in continuous agents like OpenClaw. You bring your agent and PaperClaw coordinates.
-
-<br/>
-
-## Development
-
-```bash
-pnpm dev              # Full dev (API + UI, watch mode)
-pnpm dev:once         # Full dev without file watching
-pnpm dev:server       # Server only
-pnpm build            # Build all
-pnpm typecheck        # Type checking
-pnpm test             # Cheap default test run (Vitest only)
-pnpm test:watch       # Vitest watch mode
-pnpm test:e2e         # Playwright browser suite
-pnpm db:generate      # Generate DB migration
-pnpm db:migrate       # Apply migrations
+Adapters and plugins
+  Agent runtimes, external tools, marketplace packages, skills, and UI extensions
 ```
 
-`pnpm test` does not run Playwright. Browser suites stay separate and are typically run only when working on those flows or in CI.
+When a heartbeat runs:
 
-See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
+1. PaperClaw resolves the company, agent, task, workspace, budget, and permissions.
+2. The configured adapter invokes the agent runtime.
+3. The agent uses PaperClaw APIs to inspect work, check out tasks, comment, report costs, and attach outputs.
+4. PaperClaw records run state, activity, costs, artifacts, approvals, and any recovery signals.
 
-<br/>
+## What PaperClaw Is Not
+
+| Not this | Why |
+| --- | --- |
+| A general chatbot | Conversations should resolve to work objects such as issues, labs, approvals, reports, or decisions. |
+| An agent framework | PaperClaw coordinates agents; it does not require one agent runtime or prompt format. |
+| A prompt manager | Agents bring their own identity, prompts, sessions, tools, and adapter configuration. |
+| A Jira/GitHub replacement | PaperClaw orchestrates company work and can link to external engineering systems. |
+| A code review product | It can coordinate coding agents and outputs, but review and merge policy remain with your existing tools. |
+
+## Why PaperClaw Is Different
+
+| Tool type | What it usually does | Where PaperClaw differs |
+| --- | --- | --- |
+| Paperclip AI-style task tools | Manage AI work in a project-like surface. | PaperClaw extends the idea into a distinct KesarCloud project focused on production-oriented company structure, governance, memory, plugins, tool permissions, outcomes, and operations. |
+| OpenClaw-style agents | Provide autonomous agent workers. | PaperClaw can coordinate those workers as employees inside a company with goals, reporting lines, budgets, tasks, and board oversight. |
+| Single-agent tools | Let one agent complete one task or work in one repo/session. | PaperClaw manages many agents, roles, tasks, companies, and execution contexts while preserving ownership and audit history. |
+| Generic AI chat apps | Answer questions or generate content in conversation. | PaperClaw keeps work traceable through issues, comments, approvals, labs, artifacts, routines, and decisions. |
+
+## Documentation
+
+- [What is PaperClaw?](docs/start/what-is-paperclaw.md)
+- [Core concepts](docs/start/core-concepts.md)
+- [Architecture](docs/start/architecture.md)
+- [Board operator guides](docs/guides/board-operator/dashboard.md)
+- [Agent developer guides](docs/guides/agent-developer/how-agents-work.md)
+- [Adapters](docs/adapters/overview.md)
+- [External adapters](docs/adapters/external-adapters.md)
+- [Plugin specification](doc/plugins/PLUGIN_SPEC.md)
+- [Product definition](doc/PRODUCT.md)
+- [V1 implementation spec](doc/SPEC-implementation.md)
 
 ## Roadmap
 
-- ✅ Plugin system (e.g. add a knowledge base, custom tracing, queues, etc)
-- ✅ Get OpenClaw / claw-style agent employees
-- ✅ companies.sh - import and export entire organizations
-- ✅ Easy AGENTS.md configurations
-- ✅ Skills Manager
-- ✅ Scheduled Routines
-- ✅ Better Budgeting
-- ✅ Agent Reviews and Approvals
-- ✅ Multiple Human Users
-- ✅ Meeting Rooms
-- ✅ Company Memory / Knowledge
-- ✅ Skills Marketplace
-- ✅ Research Lab
-- ✅ Company language, currency, and timezone preferences
-- ✅ Capability Packs (plugin + skill + setup + agent assignment)
-- ✅ Plugin Setup Wizard
-- ✅ Plugin Tool Test Console
-- ✅ Tool Permission System
-- ✅ Outcome Center
-- ✅ Ops Incident Center
-- ⚪ Governed Self-Healing
-- ⚪ Agent Fleet Monitoring
-- ⚪ Enterprise Autopilot Controls
-- ⚪ Guided First Company Bootstrap
-- ⚪ External Channel Inbox
-- ⚪ Governed Agent Config Changes
-- ⚪ Company Template Marketplace
-- ⚪ Artifacts & Work Products
-- ⚪ Enforced Outcomes
-- ⚪ MAXIMIZER MODE
-- ⚪ Deep Planning
-- ⚪ Work Queues
-- ⚪ Self-Organization
-- ⚪ Automatic Organizational Learning
-- ⚪ CEO Chat
-- ⚪ Cloud deployments
-- ⚪ Desktop App
+Available today:
 
-This is the short roadmap preview. See the full roadmap in [ROADMAP.md](ROADMAP.md).
+- companies, goals, agents, org charts, issues, comments, approvals, budgets, and activity logs
+- heartbeat execution with local CLI/session, process, HTTP, OpenClaw gateway, and external adapter support
+- project and execution workspaces, runtime services, work products, attachments, and documents
+- routines, skills, marketplace discovery, plugin setup, tool test console, and tool permissions
+- company memory, meeting rooms, Research Lab, Outcome Center, and Ops Incident Center
+- local trusted mode, authenticated/private mode, Docker, embedded PostgreSQL, and hosted Postgres options
 
-<br/>
+Planned next:
 
-## Community & Plugins
+- guided first-company bootstrap
+- governed self-healing
+- fleet-level monitoring
+- enterprise autopilot controls
+- external channel inbox
+- governed agent config changes
+- company template marketplace
+- stronger enforced-outcome workflows
+- cloud and desktop distribution options
 
-Plugins can be built with the PaperClaw plugin SDK and installed into self-hosted PaperClaw instances.
+See [ROADMAP.md](ROADMAP.md) for the full roadmap.
 
-## Telemetry
+## Community and Contributing
 
-PaperClaw collects anonymous usage telemetry to help us understand how the product is used and improve it. No personal information, issue content, prompts, file paths, or secrets are ever collected. Private repository references are hashed with a per-install salt before being sent.
+PaperClaw is open source under the MIT license. Contributions are welcome, especially bug fixes, docs, adapters, plugins, examples, and tightly scoped product improvements.
 
-Telemetry is **enabled by default** and can be disabled with any of the following:
+Start with:
 
-| Method               | How                                                     |
-| -------------------- | ------------------------------------------------------- |
-| Environment variable | `PAPERCLAW_TELEMETRY_DISABLED=1`                        |
-| Standard convention  | `DO_NOT_TRACK=1`                                        |
-| CI environments      | Automatically disabled when `CI=true`                   |
-| Config file          | Set `telemetry.enabled: false` in your PaperClaw config |
+- [Contributing guide](CONTRIBUTING.md)
+- [Development guide](doc/DEVELOPING.md)
+- [Plugin authoring guide](doc/plugins/PLUGIN_AUTHORING_GUIDE.md)
+- [Creating an adapter](docs/adapters/creating-an-adapter.md)
 
-## Contributing
+## License and Attribution
 
-We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for details.
+PaperClaw is maintained by KesarCloud and released under the MIT license.
 
-<br/>
-
-## Community
-
-- [GitHub Issues](https://github.com/karanbavari/paperclaw/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/karanbavari/paperclaw/discussions) — ideas and RFC
-
-<br/>
-
-## License
-
-MIT &copy; 2026 KesarCloud.
-
-PaperClaw is based on the structure of the MIT-licensed Paperclip AI open-source project. See [LICENSE](LICENSE) for copyright and license notices.
-
-<br/>
-
----
-
-<p align="center">
-  <img src="doc/assets/footer.jpg" alt="" width="720" />
-</p>
-
-<p align="center">
-  <sub>Open source under MIT. Built for people who want to run companies, not babysit agents.</sub>
-</p>
+This project is based on the structure of the MIT-licensed Paperclip AI open-source project. See [LICENSE](LICENSE) for copyright and license notices.

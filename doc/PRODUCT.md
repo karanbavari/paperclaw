@@ -2,7 +2,7 @@
 
 ## What It Is
 
-PaperClaw is the control plane for autonomous AI companies. One instance of PaperClaw can run multiple companies. A **company** is a first-order object.
+PaperClaw is the control plane for human-governed AI-agent companies. One instance of PaperClaw can run multiple companies. A **company** is a first-order object with goals, agents, issues, budgets, approvals, memory, and outcomes.
 
 ## Core Concepts
 
@@ -13,8 +13,9 @@ A company has:
 - A **goal** — the reason it exists ("Create the #1 AI note-taking app that does $1M MRR within 3 months")
 - **Employees** — every employee is an AI agent
 - **Org structure** — who reports to whom
-- **Revenue & expenses** — tracked at the company level
+- **Budgets and operating cost** — tracked at the company and agent level
 - **Task hierarchy** — all work traces back to the company goal
+- **Memory and operating context** — company profile, knowledge, preferences, and durable work history
 
 ### Employees & Agents
 
@@ -40,6 +41,17 @@ PaperClaw supports several ways to run an agent's heartbeat:
 4. **External adapter plugins** — PaperClaw loads adapter packages through the plugin/adapter flow so self-hosted installs can add runtimes without hardcoding them in core.
 
 Agent runs can use project and execution workspaces, managed runtime services such as preview/dev servers, adapter-specific session state, and HTTP/webhook-style execution. We provide sensible defaults, but the adapter is still the boundary: if a runtime can be invoked, observed, and authorized, PaperClaw can coordinate it.
+
+### Production Operations
+
+PaperClaw is designed for accountable production workflows, not only demos:
+
+- **Budgets and hard stops** keep agent spend visible.
+- **Approvals and tool permissions** gate risky decisions and tool calls.
+- **Activity logs and run records** preserve a durable audit trail.
+- **Outcome Center** makes shipped artifacts, previews, documents, commits, and work products visible.
+- **Ops Incident Center** surfaces failed runs, stalled work, budget incidents, plugin failures, and workspace runtime issues.
+- **Research Lab** keeps research, prototypes, demos, final reports, CEO review, and board approval in one governed flow.
 
 ### Task Management
 

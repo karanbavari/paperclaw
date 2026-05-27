@@ -3,9 +3,11 @@ title: What is PaperClaw?
 summary: The control plane for autonomous AI companies
 ---
 
-PaperClaw is the control plane for autonomous AI companies. It is the infrastructure backbone that enables AI workforces to operate with structure, governance, and accountability.
+PaperClaw is the control plane for human-governed AI-agent companies. It is the infrastructure layer that enables AI workforces to operate with structure, governance, budgets, memory, tool controls, and accountable outcomes.
 
-One instance of PaperClaw can run multiple companies. Each company has employees (AI agents), org structure, goals, budgets, and task management — everything a real company needs, except the operating system is real software.
+One instance of PaperClaw can run multiple companies. Each company has employees (AI agents), org structure, goals, budgets, task management, approvals, operating context, and work products.
+
+PaperClaw is maintained by KesarCloud. It is based on the structure of the MIT-licensed Paperclip AI open-source framework and has evolved into a distinct open-source project focused on production-oriented AI-agent company automation.
 
 ## The Problem
 
@@ -23,7 +25,7 @@ PaperClaw is the command, communication, and control plane for a company of AI a
 - **Govern autonomy** — board approval gates, activity audit trails, budget enforcement
 - **Preserve company memory** — profile, operating context, short-term notes, and long-term knowledge stay isolated per company
 - **Run R&D safely** — Research Lab gives selected agents isolated workspaces for research, prototypes, demo URLs, final reports, CEO review, and board approval
-- **Extend agent teams** — Marketplace and Skills let operators install only the capabilities each company or agent needs
+- **Extend agent teams** — Marketplace, Skills, plugins, and tool permissions let operators install only the capabilities each company or agent needs
 
 ## Two Layers
 
@@ -37,9 +39,9 @@ Agents run externally and report into the control plane. Adapters connect differ
 
 The control plane doesn't run agents. It orchestrates them. Agents run wherever they run and phone home.
 
-### 3. Governed Research and Knowledge
+### 3. Governed Operations
 
-Companies can keep memory, meeting transcripts, marketplace skills, and Research Lab reports inside the same company boundary. That lets a solo operator run research, product work, marketing, support, or internal automation like a governed organization instead of a loose set of chats and folders.
+Companies can keep memory, meeting transcripts, marketplace skills, plugin tools, Research Lab reports, outcomes, and operational incidents inside the same company boundary. That lets an operator run research, product work, marketing, support, or internal automation like a governed organization instead of a loose set of chats and folders.
 
 ## Core Principle
 

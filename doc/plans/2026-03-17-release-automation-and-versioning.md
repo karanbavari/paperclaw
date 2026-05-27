@@ -19,7 +19,7 @@ Today the model is:
 4. publish one or more canaries from that release branch
 5. publish stable from that same branch
 6. push tag + create GitHub Release
-7. merge the release branch back to `master`
+7. merge the release branch back to `main`
 
 That is workable, but it creates friction in exactly the places that should be cheap:
 
@@ -31,7 +31,7 @@ That is workable, but it creates friction in exactly the places that should be c
 
 The target state from this discussion is simpler:
 
-- every push to `master` publishes a canary automatically
+- every push to `main` publishes a canary automatically
 - stable releases are promoted deliberately from a vetted commit
 - versioning is date-driven instead of semantics-driven
 - stable publishing is secure even in a public open-source repository
@@ -39,7 +39,7 @@ The target state from this discussion is simpler:
 
 ## Recommendation In One Sentence
 
-Move PaperClaw to semver-compatible calendar versioning, auto-publish canaries from `master`, promote stable from a chosen tested commit, and use npm trusted publishing plus GitHub environments so no long-lived npm or LLM token needs to live in Actions.
+Move PaperClaw to semver-compatible calendar versioning, auto-publish canaries from `main`, promote stable from a chosen tested commit, and use npm trusted publishing plus GitHub environments so no long-lived npm or LLM token needs to live in Actions.
 
 ## Core Decisions
 
@@ -89,13 +89,13 @@ This is especially relevant for public library packages like `@kesarcloud/shared
 
 ### 3. Drop release branches for normal publishing
 
-If every merge to `master` publishes a canary, the current `release/X.Y.Z` train model becomes more ceremony than value.
+If every merge to `main` publishes a canary, the current `release/X.Y.Z` train model becomes more ceremony than value.
 
 Recommended replacement:
 
-- `master` is the only canary train
-- every push to `master` can publish a canary
-- stable is published from a chosen commit or canary tag on `master`
+- `main` is the only canary train
+- every push to `main` can publish a canary
+- stable is published from a chosen commit or canary tag on `main`
 
 This matches the workflow you actually want:
 
@@ -181,10 +181,10 @@ Recommended environments:
 Recommended policy:
 
 - `npm-canary`
-  - allowed branch: `master`
+  - allowed branch: `main`
   - no human reviewer required
 - `npm-stable`
-  - allowed branch: `master`
+  - allowed branch: `main`
   - required reviewer enabled
   - prevent self-review enabled
   - admin bypass disabled
@@ -262,11 +262,11 @@ That is phase-two hardening work, not a phase-one requirement.
 
 Trigger:
 
-- `push` on `master`
+- `push` on `main`
 
 Steps:
 
-1. checkout the merged `master` commit
+1. checkout the merged `main` commit
 2. run verification on that exact commit
 3. compute canary version for current UTC date
 4. version public packages to `YYYY.MDD.P-canary.N`
@@ -346,7 +346,7 @@ These current invariants should be removed from the happy path:
 
 Replace them with:
 
-- canary must run from `master`
+- canary must run from `main`
 - stable may run from a pinned `source_ref`
 
 ### 3. Keep Changesets only if it stays helpful
@@ -416,7 +416,7 @@ That is more complex operationally, so I would not start there unless package co
 
 ### 3. Auto-canary means more publish traffic
 
-Publishing on every `master` merge means:
+Publishing on every `main` merge means:
 
 - more npm versions
 - more git tags
@@ -441,7 +441,7 @@ That is acceptable if canaries stay clearly separate:
 
 ### Phase 2: Canary automation
 
-1. Add canary workflow on `push` to `master`
+1. Add canary workflow on `push` to `main`
 2. Add explicit calendar-version computation
 3. Add canary git tagging
 4. Remove changelog requirement from canaries
@@ -468,7 +468,7 @@ PaperClaw should adopt this model:
 
 - stable versions: `YYYY.MDD.P`
 - canary versions: `YYYY.MDD.P-canary.N`
-- canaries auto-published on every push to `master`
+- canaries auto-published on every push to `main`
 - stables manually promoted from a chosen tested commit or canary tag
 - no release branches in the default path
 - no canary changelog files

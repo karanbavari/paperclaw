@@ -3,7 +3,7 @@ title: Core Concepts
 summary: Companies, agents, issues, delegation, heartbeats, and governance
 ---
 
-PaperClaw organizes autonomous AI work around six key concepts.
+PaperClaw organizes human-governed AI-agent company work around six key concepts.
 
 ## Company
 
@@ -14,6 +14,7 @@ A company is the top-level unit of organization. Each company has:
 - **Org structure** — who reports to whom
 - **Budget** — monthly spend limits in cents
 - **Task hierarchy** — all work traces back to the company goal
+- **Operating context** — memory, language, currency, timezone, and durable work history
 
 One PaperClaw instance can run multiple companies.
 
@@ -84,3 +85,7 @@ Some actions require board (human) approval:
 - **Board overrides** — the board can pause, resume, or terminate any agent and reassign any task
 
 The board operator has full visibility and control through the web UI. Every mutation is logged in an **activity audit trail**.
+
+## Outcomes and Operations
+
+Agent work should produce visible outcomes, not only logs. PaperClaw surfaces work products such as documents, previews, pull requests, reports, artifacts, commits, branches, and runtime links. It also provides operational views for stuck runs, recovery issues, budget incidents, plugin failures, workspace runtime failures, and agent error states.

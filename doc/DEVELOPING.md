@@ -21,7 +21,7 @@ GitHub Actions owns `pnpm-lock.yaml`.
 
 - Do not commit `pnpm-lock.yaml` in pull requests.
 - Pull request CI validates dependency resolution when manifests change.
-- Pushes to `master` regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only --no-frozen-lockfile`, commit it back if needed, and then run verification with `--frozen-lockfile`.
+- Pushes to `main` regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only --no-frozen-lockfile`, commit it back if needed, and then run verification with `--frozen-lockfile`.
 
 ## Start Dev
 
@@ -336,7 +336,7 @@ For an already-created worktree where you want to keep the existing repo-local c
 Examples:
 
 ```sh
-# From the main repo, reseed a worktree from the current default/master instance.
+# From the main repo, reseed a worktree from the current default instance.
 cd /path/to/paperclaw
 pnpm paperclaw worktree reseed \
   --from current \

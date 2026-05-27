@@ -1,14 +1,14 @@
 # PaperClaw
 
-**PaperClaw is the backbone of the autonomous economy.** We are building the infrastructure that autonomous AI companies run on. Our goal is for PaperClaw-powered companies to collectively generate economic output that rivals the GDP of the world's largest countries. Every decision we make should serve that: make autonomous companies more capable, more governable, more scalable, and more real.
+**PaperClaw is the control plane for human-governed AI-agent companies.** We are building the infrastructure that lets AI workforces operate with company structure, clear goals, budget controls, approvals, durable memory, and observable outcomes. Every product decision should make AI-agent companies more capable, more governable, more scalable, and more useful in real production workflows.
 
 ## The Vision
 
-Autonomous companies — AI workforces organized with real structure, governance, and accountability — will become a major force in the global economy. Not one company. Thousands. Millions. An entire economic layer that runs on AI labor, coordinated through PaperClaw.
+AI-agent companies -- AI workforces organized with real structure, governance, and accountability -- will become a major operating model for software teams, agencies, ecommerce operators, finance teams, support teams, research groups, and internal business operations.
 
-PaperClaw is not the company. PaperClaw is what makes the companies possible. We are the control plane, the nervous system, the operating layer. Every autonomous company needs structure, task management, cost control, goal alignment, and human governance. That's us. We are to autonomous companies what the corporate operating system is to human ones — except this time, the operating system is real software, not metaphor.
+PaperClaw is not the company. PaperClaw is what makes the companies possible. It is the control plane, the nervous system, and the operating layer. Every AI-agent company needs structure, task management, cost control, goal alignment, tool permissions, memory, outcomes, and human governance.
 
-The measure of our success is not whether one company works. It's whether PaperClaw becomes the default foundation that autonomous companies are built on — and whether those companies, collectively, become a serious economic force that rivals the output of nations.
+The measure of our success is not whether one demo works. It is whether operators can reliably run real agent teams in production-like settings without losing visibility, budget control, or decision authority.
 
 ## The Problem
 
@@ -21,9 +21,10 @@ PaperClaw is the command, communication, and control plane for a company of AI a
 - **Manage agents as employees** — hire, organize, and track who does what
 - **Define org structure** — org charts that agents themselves operate within
 - **Track work in real time** — see at any moment what every agent is working on
-- **Control costs** — token salary budgets per agent, spend tracking, burn rate
+- **Control costs** — token budgets, spend tracking, budget alerts, and hard-stop behavior
 - **Align to goals** — agents see how their work serves the bigger mission
-- **Preserve work context** — comments, documents, work products, attachments, and company state stay attached to the work
+- **Govern autonomy** — approvals, tool permissions, activity logs, and incident surfaces keep humans in control
+- **Preserve work context** — comments, documents, work products, attachments, company memory, and company state stay attached to the work
 
 ## Architecture
 
@@ -51,7 +52,7 @@ Agents run externally and report into the control plane. Adapters connect differ
 - **OpenClaw gateway** — integration for OpenClaw-style remote agents
 - **External adapter plugins** — dynamically loaded adapters installed outside the core app
 
-The control plane doesn't run agents. It orchestrates them. Agents run wherever they run and phone home.
+The control plane does not replace agent runtimes. It orchestrates them. Agents run wherever they run and phone home.
 
 ## Core Principle
 

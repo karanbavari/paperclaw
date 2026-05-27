@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 IMAGE_NAME="${IMAGE_NAME:-paperclaw-onboard-smoke}"
 HOST_PORT="${HOST_PORT:-3131}"
-PAPERCLAWAI_VERSION="${PAPERCLAWAI_VERSION:-latest}"
+PAPERCLAW_VERSION="${PAPERCLAW_VERSION:-latest}"
 DATA_DIR="${DATA_DIR:-$REPO_ROOT/data/docker-onboard-smoke}"
 HOST_UID="${HOST_UID:-$(id -u)}"
 SMOKE_DETACH="${SMOKE_DETACH:-false}"
@@ -79,7 +79,7 @@ write_metadata_file() {
     printf 'SMOKE_CONTAINER_NAME=%q\n' "$CONTAINER_NAME"
     printf 'SMOKE_DATA_DIR=%q\n' "$DATA_DIR"
     printf 'SMOKE_IMAGE_NAME=%q\n' "$IMAGE_NAME"
-    printf 'SMOKE_PAPERCLAWAI_VERSION=%q\n' "$PAPERCLAWAI_VERSION"
+    printf 'SMOKE_PAPERCLAW_VERSION=%q\n' "$PAPERCLAW_VERSION"
   } >"$SMOKE_METADATA_FILE"
 }
 
@@ -93,7 +93,7 @@ generate_bootstrap_invite_url() {
       -e PAPERCLAW_PUBLIC_URL="$PAPERCLAW_PUBLIC_URL" \
       -e PAPERCLAW_HOME="/paperclaw" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "paperclaw@${PAPERCLAWAI_VERSION}" auth bootstrap-ceo --data-dir "$PAPERCLAW_HOME" --base-url "$PAPERCLAW_PUBLIC_URL"' \
+      'timeout 20s npx --yes "@kesarcloud/paperclaw@${PAPERCLAW_VERSION}" auth bootstrap-ceo --data-dir "$PAPERCLAW_HOME" --base-url "$PAPERCLAW_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0
@@ -240,7 +240,7 @@ auto_bootstrap_authenticated_smoke() {
 
 echo "==> Building onboard smoke image"
 docker build \
-  --build-arg PAPERCLAWAI_VERSION="$PAPERCLAWAI_VERSION" \
+  --build-arg PAPERCLAW_VERSION="$PAPERCLAW_VERSION" \
   --build-arg HOST_UID="$HOST_UID" \
   -f "$REPO_ROOT/docker/Dockerfile.onboard-smoke" \
   -t "$IMAGE_NAME" \

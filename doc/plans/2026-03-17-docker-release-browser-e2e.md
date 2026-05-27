@@ -5,15 +5,15 @@
 Today release smoke testing for published PaperClaw packages is manual and shell-driven:
 
 ```sh
-HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLAWAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
-HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLAWAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLAW_VERSION=canary ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 That is useful because it exercises the same public install surface users hit:
 
 - Docker
-- `npx paperclaw@canary`
-- `npx paperclaw@latest`
+- `npx @kesarcloud/paperclaw@canary`
+- `npx @kesarcloud/paperclaw@latest`
 - authenticated bootstrap flow
 
 But it still leaves the most important release questions to a human with a browser:
@@ -65,7 +65,7 @@ That is a good base, but it does not validate the public npm package, Docker pat
 `scripts/docker-onboard-smoke.sh` already does useful setup work:
 
 - builds `Dockerfile.onboard-smoke`
-- runs `paperclaw@${PAPERCLAWAI_VERSION}` inside Docker
+- runs `@kesarcloud/paperclaw@${PAPERCLAW_VERSION}` inside Docker
 - waits for health
 - signs up or signs in a smoke admin user
 - generates and accepts the bootstrap CEO invite in authenticated mode
@@ -78,7 +78,7 @@ That means the hard bootstrap problem is mostly solved already. The main gap is 
 The repo already has:
 
 - `.github/workflows/e2e.yml` for manual Playwright runs against local source
-- `.github/workflows/release.yml` for canary publish on `master` and manual stable promotion
+- `.github/workflows/release.yml` for canary publish on `main` and manual stable promotion
 
 So the right move is to extend the current test/release system, not create a parallel one.
 
@@ -328,8 +328,8 @@ Tasks:
 Acceptance:
 
 - the suite passes locally against both:
-  - `PAPERCLAWAI_VERSION=canary`
-  - `PAPERCLAWAI_VERSION=latest`
+  - `PAPERCLAW_VERSION=canary`
+  - `PAPERCLAW_VERSION=latest`
 
 ## Phase 3: GitHub Actions workflow
 
@@ -384,8 +384,8 @@ This should stay optional until the token-free lane is trustworthy.
 
 The plan is complete when the implemented system can demonstrate all of the following:
 
-1. A published `paperclaw@canary` Docker install can be smoke-tested by Playwright in CI.
-2. A published `paperclaw@latest` Docker install can be smoke-tested by Playwright in CI.
+1. A published `@kesarcloud/paperclaw@canary` Docker install can be smoke-tested by Playwright in CI.
+2. A published `@kesarcloud/paperclaw@latest` Docker install can be smoke-tested by Playwright in CI.
 3. The test logs into authenticated mode with the smoke credentials.
 4. The test sees onboarding for a fresh instance.
 5. The test completes onboarding in the browser.

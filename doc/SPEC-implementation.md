@@ -13,7 +13,7 @@ When there is a conflict, `SPEC-implementation.md` controls V1 behavior.
 
 ## 2. V1 Outcomes
 
-PaperClaw V1 must provide a full control-plane loop for autonomous agents:
+PaperClaw V1 must provide a full control-plane loop for human-governed autonomous agents:
 
 1. A human board creates a company and defines goals.
 2. The board creates and manages agents in an org tree.

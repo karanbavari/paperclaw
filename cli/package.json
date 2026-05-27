@@ -1,7 +1,7 @@
 {
-  "name": "paperclaw",
+  "name": "@kesarcloud/paperclaw",
   "version": "0.3.1",
-  "description": "PaperClaw CLI — orchestrate AI agent teams to run a business",
+  "description": "PaperClaw CLI - orchestrate AI agent teams to run governed companies",
   "type": "module",
   "bin": {
     "paperclaw": "./dist/index.js"

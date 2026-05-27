@@ -17,7 +17,7 @@ PaperClaw no longer uses release branches or Changesets for publishing.
 
 ## Why the CLI needs special packaging
 
-The CLI package, `paperclaw`, imports code from workspace packages such as:
+The CLI package, `@kesarcloud/paperclaw`, imports code from workspace packages such as:
 
 - `@kesarcloud/server`
 - `@kesarcloud/db`
@@ -111,7 +111,7 @@ Notes:
 If the first real publish returns npm `E404`, check npm-side prerequisites before retrying:
 
 - `npm whoami` must succeed first. An expired or missing npm login will block the publish.
-- For an organization-scoped package like `@kesarcloud/ui`, the `paperclaw` npm organization must exist and the publisher must be a member with permission to publish to that scope.
+- For an organization-scoped package like `@kesarcloud/ui`, the `kesarcloud` npm organization must exist and the publisher must be a member with permission to publish to that scope.
 - The initial publish must include `--access public` for a public scoped package.
 - npm also requires either account 2FA for publishing or a granular token that is allowed to bypass 2FA.
 
@@ -135,12 +135,12 @@ Canaries publish under the npm dist-tag `canary`.
 
 Example:
 
-- `paperclaw@2026.318.1-canary.2`
+- `@kesarcloud/paperclaw@2026.318.1-canary.2`
 
 This keeps the default install path unchanged while allowing explicit installs with:
 
 ```bash
-npx paperclaw@canary onboard
+npx @kesarcloud/paperclaw@canary onboard
 ```
 
 The release script now verifies two things after a canary publish:
@@ -156,7 +156,7 @@ Stable publishes use the npm dist-tag `latest`.
 
 Example:
 
-- `paperclaw@2026.318.0`
+- `@kesarcloud/paperclaw@2026.318.0`
 
 Stable publishes do not create a release commit. Instead:
 
@@ -188,7 +188,7 @@ When you add a new public package:
 3. if CI should not publish it yet, keep `"publishFromCi": false`
 4. only enable `"publishFromCi": true` after npm trusted publishing is configured for that package
 
-PR CI now checks changed release-enabled package manifests against npm. That catches a missing first-publish bootstrap before the change reaches `master`.
+PR CI now checks changed release-enabled package manifests against npm. That catches a missing first-publish bootstrap before the change reaches `main`.
 
 ### One-time bootstrap sequence for a new package
 

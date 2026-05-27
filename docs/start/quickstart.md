@@ -8,7 +8,7 @@ Get PaperClaw running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx paperclaw onboard --yes
+npx @kesarcloud/paperclaw onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets PaperClaw running.
@@ -18,10 +18,10 @@ If you already have a PaperClaw install, rerunning `onboard` keeps your current 
 To start PaperClaw again later:
 
 ```sh
-npx paperclaw run
+npx @kesarcloud/paperclaw run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx paperclaw` to run commands. The `pnpm paperclaw` form only works inside a cloned copy of the PaperClaw repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx @kesarcloud/paperclaw` to run commands. The package installs a `paperclaw` binary, but the `pnpm paperclaw` form only works inside a cloned copy of the PaperClaw repository (see Local Development below).
 
 ## Local Development
 

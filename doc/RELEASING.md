@@ -4,7 +4,7 @@ Maintainer runbook for shipping PaperClaw across npm, GitHub, and the website-fa
 
 The release model is now commit-driven:
 
-1. Every push to `master` publishes a canary automatically.
+1. Every push to `main` publishes a canary automatically.
 2. Stable releases are manually promoted from a chosen tested commit or canary tag.
 3. Stable release notes live in `releases/vYYYY.MDD.P.md`.
 4. Only stable releases get GitHub Releases.
@@ -35,7 +35,7 @@ Important constraints:
 Every stable release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `paperclaw` and public workspace packages are published
+2. **npm** — `@kesarcloud/paperclaw` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -45,7 +45,7 @@ Canaries only cover the first two surfaces plus an internal traceability tag.
 
 ## Core Invariants
 
-- canaries publish from `master`
+- canaries publish from `main`
 - stables publish from an explicitly chosen source ref
 - tags point at the original source commit, not a generated release commit
 - stable notes are always `releases/vYYYY.MDD.P.md`
@@ -56,7 +56,7 @@ Canaries only cover the first two surfaces plus an internal traceability tag.
 
 ### Canary
 
-Every push to `master` runs the canary path inside [`.github/workflows/release.yml`](../.github/workflows/release.yml).
+Every push to `main` runs the canary path inside [`.github/workflows/release.yml`](../.github/workflows/release.yml).
 
 It:
 
@@ -70,9 +70,9 @@ It:
 Users install canaries with:
 
 ```bash
-npx paperclaw@canary onboard
+npx @kesarcloud/paperclaw@canary onboard
 # or
-npx paperclaw@canary onboard --data-dir "$(mktemp -d /tmp/paperclaw-canary.XXXXXX)"
+npx @kesarcloud/paperclaw@canary onboard --data-dir "$(mktemp -d /tmp/paperclaw-canary.XXXXXX)"
 ```
 
 ### Stable
@@ -100,7 +100,7 @@ Before running stable:
 
 Example:
 
-- `source_ref`: `master`
+- `source_ref`: `main`
 - `stable_date`: `2026-03-18`
 - resulting stable version: `2026.318.0`
 
@@ -162,20 +162,20 @@ The repo intentionally does not run this through GitHub Actions because:
 For a canary:
 
 ```bash
-PAPERCLAWAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
+PAPERCLAW_VERSION=canary ./scripts/docker-onboard-smoke.sh
 ```
 
 For the current stable:
 
 ```bash
-PAPERCLAWAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 Useful isolated variants:
 
 ```bash
-HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLAWAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
-HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLAWAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLAW_VERSION=canary ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 Automated browser smoke is also available:
@@ -187,7 +187,7 @@ gh workflow run release-smoke.yml -f paperclaw_version=latest
 
 Minimum checks:
 
-- `npx paperclaw@canary onboard` installs
+- `npx @kesarcloud/paperclaw@canary onboard` installs
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance
@@ -216,7 +216,7 @@ Do not run stable.
 
 Instead:
 
-1. fix the issue on `master`
+1. fix the issue on `main`
 2. merge the fix
 3. wait for the next automatic canary
 4. rerun smoke testing

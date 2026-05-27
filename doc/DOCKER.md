@@ -216,7 +216,7 @@ systemctl --user stop paperclaw-pod      # Stop all
 
 Use this when you want to mimic a fresh machine that only has Ubuntu + npm and verify:
 
-- `npx paperclaw onboard --yes` completes
+- `npx @kesarcloud/paperclaw onboard --yes` completes
 - the server binds to `0.0.0.0:3100` so host access works
 - onboard/run banners and startup logs are visible in your terminal
 
@@ -231,9 +231,9 @@ Open: `http://localhost:3131` (default smoke host port)
 Useful overrides:
 
 ```sh
-HOST_PORT=3200 PAPERCLAWAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3200 PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
 PAPERCLAW_DEPLOYMENT_MODE=authenticated PAPERCLAW_DEPLOYMENT_EXPOSURE=private ./scripts/docker-onboard-smoke.sh
-SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/paperclaw-smoke.env PAPERCLAWAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/paperclaw-smoke.env PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 Notes:

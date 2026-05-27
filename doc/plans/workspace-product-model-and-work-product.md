@@ -4,7 +4,7 @@
 
 PaperClaw needs to support two very different but equally valid ways of working:
 
-- a solo developer working directly on `master`, or in a folder that is not even a git repo
+- a solo developer working directly on `main`, or in a folder that is not even a git repo
 - a larger engineering workflow with isolated branches, previews, pull requests, and cleanup automation
 
 Today, PaperClaw already has the beginnings of this model:
@@ -328,7 +328,7 @@ Examples:
 
 - a tiny fix can run in the shared workspace
 - three related issues may intentionally share one integration branch
-- a solo operator may be working directly on `master`
+- a solo operator may be working directly on `main`
 
 ### Proposed fields on `issues`
 
