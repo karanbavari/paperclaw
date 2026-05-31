@@ -1452,10 +1452,10 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
   previousSessionParams: Record<string, unknown> | null;
   resolvedWorkspace: ResolvedWorkspaceForRun;
 }) {
-  const { agentId, previousSessionParams, resolvedWorkspace } = input;
+  const { previousSessionParams, resolvedWorkspace } = input;
   const previousSessionId = readNonEmptyString(previousSessionParams?.sessionId);
   const previousCwd = readNonEmptyString(previousSessionParams?.cwd);
-  if (!previousSessionId || !previousCwd) {
+  if (!previousSessionParams || !previousCwd) {
     return {
       sessionParams: previousSessionParams,
       warning: null as string | null,
@@ -1474,25 +1474,7 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
       warning: null as string | null,
     };
   }
-  const fallbackAgentHomeCwd = resolveDefaultAgentWorkspaceDir(agentId);
-  if (path.resolve(previousCwd) !== path.resolve(fallbackAgentHomeCwd)) {
-    return {
-      sessionParams: previousSessionParams,
-      warning: null as string | null,
-    };
-  }
   if (path.resolve(projectCwd) === path.resolve(previousCwd)) {
-    return {
-      sessionParams: previousSessionParams,
-      warning: null as string | null,
-    };
-  }
-  const previousWorkspaceId = readNonEmptyString(previousSessionParams?.workspaceId);
-  if (
-    previousWorkspaceId &&
-    resolvedWorkspace.workspaceId &&
-    previousWorkspaceId !== resolvedWorkspace.workspaceId
-  ) {
     return {
       sessionParams: previousSessionParams,
       warning: null as string | null,
@@ -1509,9 +1491,11 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
 
   return {
     sessionParams: migratedSessionParams,
-    warning:
-      `Project workspace "${projectCwd}" is now available. ` +
-      `Attempting to resume session "${previousSessionId}" that was previously saved in fallback workspace "${previousCwd}".`,
+    warning: previousSessionId
+      ? `Project workspace "${projectCwd}" is required for this project-scoped run. ` +
+        `Attempting to resume session "${previousSessionId}" with the saved workspace "${previousCwd}" replaced.`
+      : `Project workspace "${projectCwd}" is required for this project-scoped run. ` +
+        `Replacing saved session workspace "${previousCwd}".`,
   };
 }
 
@@ -3377,7 +3361,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       issueProjectRef?.projectWorkspaceId ?? contextProjectWorkspaceId ?? null;
     const resolvedProjectId = issueProjectId ?? contextProjectId;
     const useProjectWorkspace = opts?.useProjectWorkspace !== false;
-    const workspaceProjectId = useProjectWorkspace ? resolvedProjectId : null;
+    const isProjectScopedRun = Boolean(resolvedProjectId);
+    const workspaceProjectId = (useProjectWorkspace || isProjectScopedRun) ? resolvedProjectId : null;
 
     const unorderedProjectWorkspaceRows = workspaceProjectId
       ? await db
@@ -3416,13 +3401,20 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       }
       for (const workspace of projectWorkspaceRows) {
         let projectCwd = readNonEmptyString(workspace.cwd);
+        const projectRepoUrl = readNonEmptyString(workspace.repoUrl);
         let managedWorkspaceWarning: string | null = null;
         if (!projectCwd || projectCwd === REPO_ONLY_CWD_SENTINEL) {
+          if (!projectRepoUrl) {
+            if (preferredWorkspace?.id === workspace.id) {
+              preferredWorkspaceWarning = "Selected project workspace has no local cwd or repoUrl configured.";
+            }
+            continue;
+          }
           try {
             const managedWorkspace = await ensureManagedProjectWorkspace({
               companyId: agent.companyId,
               projectId: workspaceProjectId ?? resolvedProjectId ?? workspace.projectId,
-              repoUrl: readNonEmptyString(workspace.repoUrl),
+              repoUrl: projectRepoUrl,
             });
             projectCwd = managedWorkspace.cwd;
             managedWorkspaceWarning = managedWorkspace.warning;
@@ -3511,21 +3503,25 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     if (workspaceProjectId) {
-      const managedWorkspace = await ensureManagedProjectWorkspace({
-        companyId: agent.companyId,
-        projectId: workspaceProjectId,
-        repoUrl: null,
-      });
-      return {
-        cwd: managedWorkspace.cwd,
-        source: "project_primary" as const,
-        projectId: resolvedProjectId,
-        workspaceId: null,
-        repoUrl: null,
-        repoRef: null,
-        workspaceHints,
-        warnings: managedWorkspace.warning ? [managedWorkspace.warning] : [],
-      };
+      if (isRecoveryIssue) {
+        const fallbackCwd = resolveDefaultAgentWorkspaceDir(agent.id);
+        await fs.mkdir(fallbackCwd, { recursive: true });
+        return {
+          cwd: fallbackCwd,
+          source: "agent_home" as const,
+          projectId: resolvedProjectId,
+          workspaceId: null,
+          repoUrl: null,
+          repoRef: null,
+          workspaceHints,
+          warnings: [
+            `Project has no configured workspace. Using recovery fallback workspace "${fallbackCwd}" for diagnostic recovery work only.`,
+          ],
+        };
+      }
+      throw new ProjectWorkspaceUnavailableError(
+        `Project has no configured workspace directory. PaperClaw will not run project-scoped issue work in a fallback workspace.`,
+      );
     }
 
     const sessionCwd = readNonEmptyString(previousSessionParams?.cwd);

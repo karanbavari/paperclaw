@@ -1,4 +1,7 @@
 import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { and, eq, or, inArray } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -1423,6 +1426,232 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       ))
       .then((rows) => rows[0] ?? null);
     expect(recovery?.assigneeAgentId).toBe(agentId);
+  });
+
+  it("blocks project-scoped issue work when the project has no workspace rows", async () => {
+    const { companyId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const projectId = randomUUID();
+    const adapterRunIds: string[] = [];
+    mockAdapterExecute.mockImplementation(async (ctx: { runId: string }) => {
+      adapterRunIds.push(ctx.runId);
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Should not run without a project workspace.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(projects).values({
+      id: projectId,
+      companyId,
+      name: "External app without workspace",
+      status: "in_progress",
+    });
+    await db
+      .update(issues)
+      .set({ projectId })
+      .where(eq(issues.id, issueId));
+    await db
+      .update(heartbeatRuns)
+      .set({
+        contextSnapshot: {
+          issueId,
+          taskId: issueId,
+          projectId,
+          wakeReason: "issue_assigned",
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    const settledRun = await waitForRunToSettle(heartbeat, runId, 5_000);
+
+    expect(settledRun?.status).toBe("failed");
+    expect(settledRun?.errorCode).toBe("project_workspace_unavailable");
+    expect(settledRun?.error).toContain("Project has no configured workspace directory");
+    expect(adapterRunIds).not.toContain(runId);
+  });
+
+  it("blocks project-scoped issue work when the workspace row has no local cwd or repo", async () => {
+    const { companyId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const projectId = randomUUID();
+    const projectWorkspaceId = randomUUID();
+    const adapterRunIds: string[] = [];
+    mockAdapterExecute.mockImplementation(async (ctx: { runId: string }) => {
+      adapterRunIds.push(ctx.runId);
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Should not run without a usable project workspace.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(projects).values({
+      id: projectId,
+      companyId,
+      name: "Unusable workspace project",
+      status: "in_progress",
+    });
+    await db.insert(projectWorkspaces).values({
+      id: projectWorkspaceId,
+      companyId,
+      projectId,
+      name: "Remote ref only",
+      sourceType: "remote_managed",
+      visibility: "default",
+      isPrimary: true,
+      remoteWorkspaceRef: "remote-1",
+      cwd: null,
+      repoUrl: null,
+    });
+    await db
+      .update(issues)
+      .set({ projectId, projectWorkspaceId })
+      .where(eq(issues.id, issueId));
+    await db
+      .update(heartbeatRuns)
+      .set({
+        contextSnapshot: {
+          issueId,
+          taskId: issueId,
+          projectId,
+          projectWorkspaceId,
+          wakeReason: "issue_assigned",
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    const settledRun = await waitForRunToSettle(heartbeat, runId, 5_000);
+
+    expect(settledRun?.status).toBe("failed");
+    expect(settledRun?.errorCode).toBe("project_workspace_unavailable");
+    expect(settledRun?.error).toContain("no local cwd or repoUrl configured");
+    expect(adapterRunIds).not.toContain(runId);
+  });
+
+  it("does not let agent-default workspace mode bypass a project workspace", async () => {
+    const { companyId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const projectId = randomUUID();
+    const adapterRunIds: string[] = [];
+    mockAdapterExecute.mockImplementation(async (ctx: { runId: string }) => {
+      adapterRunIds.push(ctx.runId);
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Should not run in agent default workspace.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(projects).values({
+      id: projectId,
+      companyId,
+      name: "Agent default bypass project",
+      status: "in_progress",
+    });
+    await db
+      .update(issues)
+      .set({
+        projectId,
+        assigneeAdapterOverrides: { useProjectWorkspace: false },
+      })
+      .where(eq(issues.id, issueId));
+    await db
+      .update(heartbeatRuns)
+      .set({
+        contextSnapshot: {
+          issueId,
+          taskId: issueId,
+          projectId,
+          wakeReason: "issue_assigned",
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    const settledRun = await waitForRunToSettle(heartbeat, runId, 5_000);
+
+    expect(settledRun?.status).toBe("failed");
+    expect(settledRun?.errorCode).toBe("project_workspace_unavailable");
+    expect(adapterRunIds).not.toContain(runId);
+  });
+
+  it("passes the exact configured project workspace cwd to the adapter", async () => {
+    const { companyId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const projectId = randomUUID();
+    const projectWorkspaceId = randomUUID();
+    const projectCwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-project-workspace-"));
+    const adapterWorkspaces: Array<{ cwd?: string; workspaceId?: string | null; source?: string }> = [];
+    mockAdapterExecute.mockImplementationOnce(async (ctx: { context: Record<string, unknown> }) => {
+      adapterWorkspaces.push(ctx.context.paperclawWorkspace as { cwd?: string; workspaceId?: string | null; source?: string });
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        errorMessage: null,
+        summary: "Ran in the configured project workspace.",
+        provider: "test",
+        model: "test-model",
+      };
+    });
+
+    await db.insert(projects).values({
+      id: projectId,
+      companyId,
+      name: "Configured external workspace",
+      status: "in_progress",
+    });
+    await db.insert(projectWorkspaces).values({
+      id: projectWorkspaceId,
+      companyId,
+      projectId,
+      name: "External cwd",
+      sourceType: "local_path",
+      visibility: "default",
+      isPrimary: true,
+      cwd: projectCwd,
+    });
+    await db
+      .update(issues)
+      .set({ projectId, projectWorkspaceId })
+      .where(eq(issues.id, issueId));
+    await db
+      .update(heartbeatRuns)
+      .set({
+        contextSnapshot: {
+          issueId,
+          taskId: issueId,
+          projectId,
+          projectWorkspaceId,
+          wakeReason: "issue_assigned",
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    await waitForRunToSettle(heartbeat, runId, 5_000);
+
+    expect(adapterWorkspaces[0]).toMatchObject({
+      cwd: projectCwd,
+      workspaceId: projectWorkspaceId,
+      source: "project_primary",
+    });
   });
 
   it("requeues a missing-disposition handoff when the previous corrective wake was cancelled", async () => {

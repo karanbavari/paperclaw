@@ -82,7 +82,7 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
     expect(result.warning).toContain("Attempting to resume session");
   });
 
-  it("does not migrate when previous session cwd is not the fallback workspace", () => {
+  it("replaces stale session cwd with the project workspace", () => {
     const result = resolveRuntimeSessionParamsForWorkspace({
       agentId: "agent-123",
       previousSessionParams: {
@@ -95,13 +95,13 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
 
     expect(result.sessionParams).toEqual({
       sessionId: "session-1",
-      cwd: "/tmp/some-other-cwd",
+      cwd: "/tmp/new-project-cwd",
       workspaceId: "workspace-1",
     });
-    expect(result.warning).toBeNull();
+    expect(result.warning).toContain("required for this project-scoped run");
   });
 
-  it("does not migrate when resolved workspace id differs from previous session workspace id", () => {
+  it("replaces stale session workspace id with the resolved project workspace id", () => {
     const agentId = "agent-123";
     const fallbackCwd = resolveDefaultAgentWorkspaceDir(agentId);
 
@@ -120,10 +120,10 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
 
     expect(result.sessionParams).toEqual({
       sessionId: "session-1",
-      cwd: fallbackCwd,
-      workspaceId: "workspace-1",
+      cwd: "/tmp/new-project-cwd",
+      workspaceId: "workspace-2",
     });
-    expect(result.warning).toBeNull();
+    expect(result.warning).toContain("saved workspace");
   });
 });
 
