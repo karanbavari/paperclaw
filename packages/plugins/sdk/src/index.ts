@@ -1,13 +1,13 @@
 /**
- * `@kesarcloud/plugin-sdk` — PaperClaw plugin worker-side SDK.
+ * `@paperclipai/plugin-sdk` — Paperclip plugin worker-side SDK.
  *
  * This is the main entrypoint for plugin worker code.  For plugin UI bundles,
- * import from `@kesarcloud/plugin-sdk/ui` instead.
+ * import from `@paperclipai/plugin-sdk/ui` instead.
  *
  * @example
  * ```ts
  * // Plugin worker entrypoint (dist/worker.ts)
- * import { definePlugin, runWorker, z } from "@kesarcloud/plugin-sdk";
+ * import { definePlugin, runWorker, z } from "@paperclipai/plugin-sdk";
  *
  * const plugin = definePlugin({
  *   async setup(ctx) {
@@ -58,6 +58,7 @@ export {
   createHostClientHandlers,
   getRequiredCapability,
   CapabilityDeniedError,
+  InvocationScopeDeniedError,
 } from "./host-client-factory.js";
 
 // JSON-RPC protocol helpers and constants
@@ -81,6 +82,12 @@ export {
   parseMessage,
   JsonRpcParseError,
   JsonRpcCallError,
+  LOGIN_PTY_OUTPUT_NOTIFICATION,
+  LOGIN_PTY_EXIT_NOTIFICATION,
+  DUPLEX_CHANNEL_DATA_NOTIFICATION,
+  DUPLEX_CHANNEL_EXIT_NOTIFICATION,
+  encodeChannelBytes,
+  decodeChannelBytes,
   _resetIdCounter,
 } from "./protocol.js";
 
@@ -91,8 +98,9 @@ export {
 // Plugin definition and lifecycle types
 export type {
   PluginDefinition,
-  PaperClawPlugin,
+  PaperclipPlugin,
   PluginHealthDiagnostics,
+  PluginConfigChangeContext,
   PluginConfigValidationResult,
   PluginWebhookInput,
   PluginApiRequestInput,
@@ -128,6 +136,8 @@ export type {
 // JSON-RPC protocol types
 export type {
   JsonRpcId,
+  JsonRpcInvocationScope,
+  JsonRpcInvocationContext,
   JsonRpcRequest,
   JsonRpcSuccessResponse,
   JsonRpcError,
@@ -137,6 +147,9 @@ export type {
   JsonRpcMessage,
   JsonRpcErrorCode,
   PluginRpcErrorCode,
+  PluginInvocationScope,
+  PluginInvocationContext,
+  WorkerHostCallContext,
   InitializeParams,
   InitializeResult,
   ConfigChangedParams,
@@ -145,7 +158,21 @@ export type {
   RunJobParams,
   GetDataParams,
   PerformActionParams,
+  PluginPerformActionActorType,
+  PluginPerformActionActorContext,
+  PluginPerformActionContext,
   ExecuteToolParams,
+  PluginExternalObjectUrlCandidate,
+  PluginExternalObjectSourceContext,
+  DetectExternalObjectsParams,
+  PluginExternalObjectDetection,
+  DetectExternalObjectsResult,
+  PluginExternalObjectRecordSnapshot,
+  ResolveExternalObjectParams,
+  PluginExternalObjectResolvedSnapshot,
+  PluginExternalObjectResolveResult,
+  RefreshExternalObjectsParams,
+  RefreshExternalObjectsResult,
   PluginEnvironmentDiagnostic,
   PluginEnvironmentDriverBaseParams,
   PluginEnvironmentValidateConfigParams,
@@ -156,11 +183,34 @@ export type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentReleaseLeaseParams,
+  PluginEnvironmentTerminationReceipt,
   PluginEnvironmentDestroyLeaseParams,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentRealizeWorkspaceResult,
   PluginEnvironmentExecuteParams,
   PluginEnvironmentExecuteResult,
+  PluginEnvironmentRunnerIngressEndpointParams,
+  PluginEnvironmentRunnerIngressEndpoint,
+  PluginSyncFileMapping,
+  PluginPostUploadCommand,
+  PluginSyncOperation,
+  PluginEnvironmentSyncInParams,
+  PluginEnvironmentSyncOutParams,
+  PluginEnvironmentSyncResult,
+  PluginEnvironmentInteractiveSetupStatus,
+  PluginEnvironmentInteractiveSetupConnectionType,
+  PluginEnvironmentTemplateRefKind,
+  PluginEnvironmentInteractiveSetupConnectionSummary,
+  PluginEnvironmentInteractiveSetupConnectionPayload,
+  PluginEnvironmentInteractiveSetupSession,
+  PluginEnvironmentStartInteractiveSetupParams,
+  PluginEnvironmentGetInteractiveSetupParams,
+  PluginEnvironmentCaptureTemplateParams,
+  PluginEnvironmentCaptureTemplateResult,
+  PluginEnvironmentCancelInteractiveSetupParams,
+  PluginEnvironmentCancelInteractiveSetupResult,
+  PluginEnvironmentDeleteTemplateParams,
+  PluginEnvironmentDeleteTemplateResult,
   PluginModalBoundsRequest,
   PluginRenderCloseEvent,
   PluginLauncherRenderContextSnapshot,
@@ -197,6 +247,8 @@ export type {
   PluginStateClient,
   PluginEntitiesClient,
   PluginProjectsClient,
+  PluginExecutionWorkspacesClient,
+  PluginSkillsClient,
   PluginCompaniesClient,
   PluginIssuesClient,
   PluginIssueMutationActor,
@@ -216,6 +268,17 @@ export type {
   PluginIssueSubtree,
   PluginIssueSummariesClient,
   PluginAgentsClient,
+  PluginAccessClient,
+  PluginAccessMembersClient,
+  PluginAccessInvitesClient,
+  PluginAccessMember,
+  PluginAccessInvite,
+  PluginAuthorizationClient,
+  PluginAuthorizationPolicySummary,
+  PluginAuthorizationPolicyRecord,
+  PluginAssignmentPreviewInput,
+  PluginAuthorizationDecisionResult,
+  PluginAuthorizationAuditEntry,
   PluginAgentSessionsClient,
   AgentSession,
   AgentSessionEvent,
@@ -228,7 +291,12 @@ export type {
   PluginMetricsClient,
   PluginTelemetryClient,
   PluginLogger,
+  PluginTracer,
+  PluginSpan,
 } from "./types.js";
+
+// Tracer no-op default (a value, so it re-exports here, not in the type block).
+export { NOOP_PLUGIN_TRACER, NOOP_PLUGIN_SPAN } from "./types.js";
 
 // Supporting types for context clients
 export type {
@@ -243,6 +311,7 @@ export type {
   PluginEntityRecord,
   PluginEntityQuery,
   PluginWorkspace,
+  PluginExecutionWorkspaceMetadata,
   Company,
   Project,
   Issue,
@@ -250,24 +319,35 @@ export type {
   IssueDocumentSummary,
   Agent,
   Goal,
+  PermissionKey,
+  PrincipalPermissionGrant,
+  PrincipalType,
   PluginDatabaseClient,
+  HumanCompanyMembershipRole,
+  MembershipStatus,
+  EnvSecretRefBinding,
 } from "./types.js";
 
-// Manifest and constant types re-exported from @kesarcloud/shared
+// Manifest and constant types re-exported from @paperclipai/shared
 // Plugin authors import manifest types from here so they have a single
-// dependency (@kesarcloud/plugin-sdk) for all plugin authoring needs.
+// dependency (@paperclipai/plugin-sdk) for all plugin authoring needs.
 export type {
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginJobDeclaration,
   PluginWebhookDeclaration,
   PluginToolDeclaration,
   PluginEnvironmentDriverDeclaration,
+  PluginEnvironmentTemplateConfigBinding,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
   PluginManagedProjectDeclaration,
   PluginManagedProjectResolution,
   PluginManagedRoutineDeclaration,
   PluginManagedRoutineResolution,
+  PluginManagedSkillDeclaration,
+  PluginManagedSkillFileDeclaration,
+  PluginManagedSkillResolution,
+  CompanySkill,
   PluginManagedResourceKind,
   PluginManagedResourceRef,
   PluginUiSlotDeclaration,
@@ -281,6 +361,8 @@ export type {
   PluginApiRouteDeclaration,
   PluginLocalFolderDeclaration,
   PluginCompanySettings,
+  PluginObjectReferenceRefreshPolicy,
+  PluginObjectReferenceProviderDeclaration,
   PluginRecord,
   PluginDatabaseNamespaceRecord,
   PluginMigrationRecord,
@@ -309,6 +391,12 @@ export type {
   PluginApiRouteMethod,
   PluginEventType,
   PluginBridgeErrorCode,
+  ConnectionIntentInteraction,
+  ConnectionIntentPayload,
+  ConnectionIntentResult,
+  ConnectionIntentSetupOptions,
+  ConnectionRequestResult,
+  ConnectionsSearchResult,
 } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -325,7 +413,7 @@ export type {
  *
  * @example
  * ```ts
- * import { z } from "@kesarcloud/plugin-sdk";
+ * import { z } from "@paperclipai/plugin-sdk";
  *
  * const configSchema = z.object({
  *   apiKey: z.string().describe("Your API key"),
@@ -346,6 +434,7 @@ export {
   PLUGIN_CAPABILITIES,
   PLUGIN_UI_SLOT_TYPES,
   PLUGIN_UI_SLOT_ENTITY_TYPES,
+  PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS,
   PLUGIN_STATE_SCOPE_KINDS,
   PLUGIN_JOB_STATUSES,
   PLUGIN_JOB_RUN_STATUSES,
@@ -353,4 +442,9 @@ export {
   PLUGIN_WEBHOOK_DELIVERY_STATUSES,
   PLUGIN_EVENT_TYPES,
   PLUGIN_BRIDGE_ERROR_CODES,
-} from "@kesarcloud/shared";
+  PERMISSION_KEYS,
+  HUMAN_COMPANY_MEMBERSHIP_ROLES,
+  HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
+  MEMBERSHIP_STATUSES,
+  PRINCIPAL_TYPES,
+} from "@paperclipai/shared";

@@ -7,15 +7,18 @@ import {
   agents,
   companies,
   createDb,
+  documentRevisions,
+  documents,
   issues,
   pluginManagedResources,
   plugins,
   projects,
+  routineDocuments,
   routineRuns,
   routineTriggers,
   routines,
-} from "@kesarcloud/db";
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/shared";
+} from "@paperclipai/db";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -41,14 +44,14 @@ function issuePrefix(id: string) {
   return `T${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-function manifest(): PaperClawPluginManifestV1 {
+function manifest(): PaperclipPluginManifestV1 {
   return {
-    id: "paperclaw.managed-routines-test",
+    id: "paperclip.managed-routines-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Routines Test",
     description: "Test plugin",
-    author: "PaperClaw",
+    author: "Paperclip",
     categories: ["automation"],
     capabilities: ["agents.managed", "projects.managed", "routines.managed"],
     entrypoints: { worker: "./dist/worker.js" },
@@ -75,6 +78,8 @@ function manifest(): PaperClawPluginManifestV1 {
       priority: "medium",
       concurrencyPolicy: "coalesce_if_active",
       catchUpPolicy: "skip_missed",
+      activityGatePolicy: "require_external_activity",
+      activityGateScope: "project",
       triggers: [{
         kind: "schedule",
         label: "Nightly",
@@ -101,14 +106,17 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-plugin-managed-routines-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-routines-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
   afterEach(async () => {
     await db.delete(routineRuns);
     await db.delete(routineTriggers);
+    await db.delete(routineDocuments);
     await db.delete(routines);
+    await db.delete(documentRevisions);
+    await db.delete(documents);
     await db.delete(issues);
     await db.delete(agentConfigRevisions);
     await db.delete(activityLog);
@@ -128,13 +136,14 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     const pluginId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: issuePrefix(companyId),
+      defaultResponsibleUserId: "responsible-user",
     });
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@kesarcloud/plugin-managed-routines-test",
+      packageName: "@paperclipai/plugin-managed-routines-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,
@@ -160,8 +169,10 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
       title: "Nightly lint",
       assigneeAgentId: agent.agentId,
       projectId: project.projectId,
+      activityGatePolicy: "require_external_activity",
+      activityGateScope: "project",
       managedByPlugin: expect.objectContaining({
-        pluginKey: "paperclaw.managed-routines-test",
+        pluginKey: "paperclip.managed-routines-test",
         resourceKind: "routine",
         resourceKey: "nightly-lint",
       }),
@@ -236,7 +247,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     expect(run.status).toBe("issue_created");
     const [issue] = await db.select().from(issues).where(eq(issues.id, run.linkedIssueId!));
     expect(issue).toMatchObject({
-      originKind: "plugin:paperclaw.managed-routines-test:operation",
+      originKind: "plugin:paperclip.managed-routines-test:operation",
       originId: "operation:nightly-lint",
       billingCode: "plugin-test:nightly-lint",
       projectId: project.projectId,

@@ -5,7 +5,7 @@ Date: 2026-02-23
 
 ## 1. Purpose
 
-PaperClaw supports two runtime modes:
+Paperclip supports two runtime modes:
 
 1. `local_trusted`
 2. `authenticated`
@@ -17,7 +17,7 @@ PaperClaw supports two runtime modes:
 
 This keeps one authenticated auth stack while still separating low-friction private-network defaults from internet-facing hardening requirements.
 
-PaperClaw now treats **bind** as a separate concern from auth:
+Paperclip now treats **bind** as a separate concern from auth:
 
 - auth model: `local_trusted` vs `authenticated`, plus `private/public`
 - reachability model: `server.bind = loopback | lan | tailnet | custom`
@@ -52,6 +52,7 @@ PaperClaw now treats **bind** as a separate concern from auth:
 - login required
 - low-friction URL handling (`auto` base URL mode)
 - private-host trust policy required
+- Better Auth request rate limiting is off by default for private mode to keep local/LAN repair loops from locking out the operator; set `PAPERCLIP_AUTH_RATE_LIMIT_ENABLED=true` to opt in
 - bind can be `loopback`, `lan`, `tailnet`, or `custom`
 
 ## `authenticated + public`
@@ -59,14 +60,34 @@ PaperClaw now treats **bind** as a separate concern from auth:
 - login required
 - explicit public URL required
 - stricter deployment checks and failures in doctor
+- Better Auth request rate limiting is on by default; set `PAPERCLIP_AUTH_RATE_LIMIT_ENABLED=false` only when an explicit front-door limiter covers the deployment
 - recommended bind is `loopback` behind a reverse proxy; direct `lan/custom` is advanced
+- local stdio MCP runtime slots fail closed by default; set `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` only when a trusted worker/runtime host is configured to supervise those processes. Remote HTTP MCP remains the preferred public-hosted path.
+
+### Paperclip Cloud warm-pool identity
+
+A Cloud-managed warm-pool process initially boots under a `pool-*` origin. It
+receives only Cloud's public verification set in
+`PAPERCLIP_CLOUD_RUNTIME_IDENTITY_JWKS`. Before Cloud activates a claimed stack,
+the existing server-to-server health request carries a short-lived Ed25519 JWS
+that binds the immutable `PAPERCLIP_CLOUD_STACK_ID`, pool claim, previous
+origin, canonical HTTPS origin, and slug. Paperclip verifies and persists that
+one-time assertion, updates its live public/API URL provider, and acknowledges
+the exact origin in `/api/health` before the first user request is admitted.
+
+The Harness signing private key is never present in Paperclip, browsers, or
+other tenant stacks. A different claim or destination cannot replace the
+persisted identity. On restart, the durable identity is loaded before auth,
+routes, and child-runtime configuration, even when provider variables are
+temporarily stale. Self-hosted deployments continue to use their configured
+`PAPERCLIP_PUBLIC_URL` and do not participate in this protocol.
 
 ## 4. Onboarding UX Contract
 
 Default onboarding remains interactive and flagless:
 
 ```sh
-pnpm paperclaw onboard
+pnpm paperclipai onboard
 ```
 
 Server prompt behavior:
@@ -83,9 +104,9 @@ Server prompt behavior:
 Examples:
 
 ```sh
-pnpm paperclaw onboard --yes
-pnpm paperclaw onboard --yes --bind lan
-pnpm paperclaw run --bind tailnet
+pnpm paperclipai onboard --yes
+npx paperclipai onboard --yes --bind lan
+npx paperclipai run --bind tailnet
 ```
 
 `configure --section server` follows the same interactive behavior.
@@ -95,7 +116,7 @@ pnpm paperclaw run --bind tailnet
 Default doctor remains flagless:
 
 ```sh
-pnpm paperclaw doctor
+pnpm paperclipai doctor
 ```
 
 Doctor reads configured mode/exposure and applies mode-aware checks. Optional override flags are secondary.
@@ -114,7 +135,7 @@ This is required because user assignment paths validate active membership for `a
 
 ## 7. Local Trusted -> Authenticated Claim Flow
 
-When running `authenticated` mode, if the only instance admin is `local-board`, PaperClaw emits a startup warning with a one-time high-entropy claim URL.
+When running `authenticated` mode, if the only instance admin is `local-board`, Paperclip emits a startup warning with a one-time high-entropy claim URL.
 
 - URL format: `/board-claim/<token>?code=<code>`
 - intended use: signed-in human claims board ownership
@@ -125,21 +146,58 @@ When running `authenticated` mode, if the only instance admin is `local-board`, 
 
 This prevents lockout when a user migrates from long-running local trusted usage to authenticated mode.
 
-## 8. Current Code Reality (As Of 2026-02-23)
+## 8. First Admin Setup For Fresh Authenticated Installs
+
+Fresh authenticated installs start in `bootstrap_pending` until the first
+`instance_admin` exists.
+
+For `authenticated/private`, Paperclip supports a browser-first setup path:
+
+1. open the Paperclip URL from the private network or appliance UI
+2. sign in or create a Paperclip account
+3. choose `Claim this instance` on the setup screen
+
+That browser claim promotes the signed-in session user to the first instance
+admin and then falls through to normal onboarding. The endpoint is available
+only to real browser session actors in `authenticated/private`; unauthenticated
+requests, agent keys, board API keys, and local implicit board actors are
+rejected.
+
+This is intentionally a first-claim bootstrap contract: before an instance
+admin exists, the first authenticated browser session that completes the claim
+wins. Operators must keep a `bootstrap_pending` private deployment on a trusted
+network and complete setup before admitting untrusted users. This behavior is
+not an account-recovery or public-deployment mechanism.
+
+The CLI fallback remains supported in all authenticated setup states:
+
+```sh
+pnpm paperclipai auth bootstrap-ceo
+```
+
+That command prints a one-time first-admin invite URL. Browser claim and
+bootstrap invite acceptance share the same first-admin transaction, so whichever
+path wins first makes later attempts return a conflict.
+
+For `authenticated/public`, browser first-admin claim is intentionally disabled.
+Public deployments must use the high-entropy bootstrap invite path unless a
+future public-hosted setup design explicitly changes this policy.
+
+## 9. Current Code Reality (As Of 2026-02-23)
 
 - runtime values are `local_trusted | authenticated`
 - `authenticated` uses Better Auth sessions and bootstrap invite flow
 - `local_trusted` ensures a real local Board user principal in `authUsers` with `instance_user_roles` admin access
 - company creation ensures creator membership in `company_memberships` so user assignment/access flows remain consistent
 
-## 9. Naming and Compatibility Policy
+## 10. Naming and Compatibility Policy
 
 - canonical naming is `local_trusted` and `authenticated` with `private/public` exposure
 - no long-term compatibility alias layer for discarded naming variants
 
-## 10. Relationship to Other Docs
+## 11. Relationship to Other Docs
 
-- implementation plan: `doc/plans/deployment-auth-mode-consolidation.md`
+- implementation plan: `doc/plans/2026-02-23-deployment-auth-mode-consolidation.md`
 - V1 contract: `doc/SPEC-implementation.md`
 - operator workflows: `doc/DEVELOPING.md` and `doc/CLI.md`
 - invite/join state map: `doc/spec/invite-flow.md`

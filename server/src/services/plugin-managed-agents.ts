@@ -1,30 +1,34 @@
-import { and, eq, ne } from "drizzle-orm";
-import type { Db } from "@kesarcloud/db";
+import { and, eq, isNull, ne } from "drizzle-orm";
+import type { Db } from "@paperclipai/db";
 import {
   agents,
   companies,
   pluginEntities,
   pluginManagedResources,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import type {
   Agent,
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { notFound } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";
 import { logActivity } from "./activity-log.js";
-import { agentInstructionsService } from "./agent-instructions.js";
+import { agentInstructionsBundleMode, agentInstructionsService } from "./agent-instructions.js";
 
 const MANAGED_AGENT_ENTITY_TYPE = "managed_agent";
 const DEFAULT_MANAGED_AGENT_ADAPTER_TYPE = "process";
 
+function managedAgentPauseReason(pluginKey: string) {
+  return `Provisioned paused by plugin ${pluginKey}; requires explicit activation.`;
+}
+
 interface PluginManagedAgentServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: PaperClawPluginManifestV1 | null;
+  manifest?: PaperclipPluginManifestV1 | null;
   instructionTemplateVariables?: (companyId: string) => Promise<Record<string, string | null | undefined>>;
 }
 
@@ -40,7 +44,7 @@ function managedMetadata(
 ) {
   return {
     ...(existing ?? {}),
-    paperclawManagedResource: {
+    paperclipManagedResource: {
       pluginId,
       pluginKey,
       resourceKind: "agent",
@@ -126,6 +130,33 @@ function applyInstructionTemplateVariables(
   return next;
 }
 
+function declaredInstructionFiles(
+  declaration: PluginManagedAgentDeclaration,
+  variables: Record<string, string | null | undefined>,
+) {
+  const instructionDeclaration = declaration.instructions;
+  if (!instructionDeclaration?.content && !instructionDeclaration?.files) return null;
+
+  const entryFile = instructionDeclaration.entryFile ?? "AGENTS.md";
+  const files = { ...(instructionDeclaration.files ?? {}) };
+  if (instructionDeclaration.content !== undefined) {
+    files[entryFile] = instructionDeclaration.content;
+  }
+  if (files[entryFile] === undefined) {
+    files[entryFile] = "";
+  }
+
+  return {
+    entryFile,
+    files: Object.fromEntries(
+      Object.entries(files).map(([filePath, content]) => [
+        filePath,
+        applyInstructionTemplateVariables(content, variables),
+      ]),
+    ),
+  };
+}
+
 function rowIsManagedAgent(
   row: typeof agents.$inferSelect,
   pluginKey: string,
@@ -133,7 +164,7 @@ function rowIsManagedAgent(
 ) {
   const metadata = row.metadata;
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return false;
-  const marker = (metadata as Record<string, unknown>).paperclawManagedResource;
+  const marker = (metadata as Record<string, unknown>).paperclipManagedResource;
   if (!marker || typeof marker !== "object" || Array.isArray(marker)) return false;
   const record = marker as Record<string, unknown>;
   return (
@@ -299,19 +330,18 @@ export function pluginManagedAgentService(
     companyId: string,
     agent: Agent,
     declaration: PluginManagedAgentDeclaration,
-    options: { replaceExisting: boolean },
+    materializeOptions: { replaceExisting: boolean },
   ): Promise<Agent> {
-    const instructionDeclaration = declaration.instructions;
-    if (!instructionDeclaration?.content) return agent;
-
-    const entryFile = instructionDeclaration.entryFile ?? "AGENTS.md";
     const variables = await optionsForInstructionVariables(companyId);
+    const declared = declaredInstructionFiles(declaration, variables);
+    if (!declared) return agent;
+
     const materialized = await instructions.materializeManagedBundle(
       agent,
-      { [entryFile]: applyInstructionTemplateVariables(instructionDeclaration.content, variables) },
+      declared.files,
       {
-        entryFile,
-        replaceExisting: options.replaceExisting,
+        entryFile: declared.entryFile,
+        replaceExisting: materializeOptions.replaceExisting,
         clearLegacyPromptTemplate: true,
       },
     );
@@ -325,6 +355,36 @@ export function pluginManagedAgentService(
     return (updated as Agent | null) ?? { ...agent, adapterConfig: materialized.adapterConfig };
   }
 
+  async function managedInstructionDefaultDrift(
+    companyId: string,
+    agent: Agent | null,
+    declaration: PluginManagedAgentDeclaration,
+  ): Promise<PluginManagedAgentResolution["defaultDrift"]> {
+    if (!agent) return null;
+    const variables = await optionsForInstructionVariables(companyId);
+    const declared = declaredInstructionFiles(declaration, variables);
+    if (!declared) return null;
+    if (agentInstructionsBundleMode(agent) === "external") {
+      return { entryFile: declared.entryFile, changedFiles: [declared.entryFile] };
+    }
+
+    let exported: Awaited<ReturnType<typeof instructions.exportFiles>>;
+    try {
+      exported = await instructions.exportFiles(agent);
+    } catch {
+      return { entryFile: declared.entryFile, changedFiles: [declared.entryFile] };
+    }
+
+    const paths = new Set([...Object.keys(declared.files), ...Object.keys(exported.files)]);
+    const changedFiles = [...paths]
+      .filter((filePath) => (exported.files[filePath] ?? null) !== (declared.files[filePath] ?? null))
+      .sort((left, right) => left.localeCompare(right));
+    if (exported.entryFile !== declared.entryFile && !changedFiles.includes(declared.entryFile)) {
+      changedFiles.unshift(declared.entryFile);
+    }
+    return changedFiles.length > 0 ? { entryFile: declared.entryFile, changedFiles } : null;
+  }
+
   async function optionsForInstructionVariables(companyId: string) {
     return options.instructionTemplateVariables ? options.instructionTemplateVariables(companyId) : {};
   }
@@ -333,13 +393,13 @@ export function pluginManagedAgentService(
     return options.pluginKey;
   }
 
-  function resolution(
+  async function resolution(
     companyId: string,
     declaration: PluginManagedAgentDeclaration,
     agent: Agent | null,
     status: PluginManagedAgentResolution["status"],
     approvalId?: string | null,
-  ): PluginManagedAgentResolution {
+  ): Promise<PluginManagedAgentResolution> {
     return {
       pluginKey: options.pluginKey,
       resourceKind: "agent",
@@ -349,6 +409,7 @@ export function pluginManagedAgentService(
       agent,
       status,
       approvalId: approvalId ?? null,
+      defaultDrift: await managedInstructionDefaultDrift(companyId, agent, declaration),
     };
   }
 
@@ -362,9 +423,12 @@ export function pluginManagedAgentService(
 
     const requiresApproval = company.requireBoardApprovalForNewAgents;
     const adapterType = await resolveManagedAdapterType(companyId, declaration);
+    const initialStatus = requiresApproval ? "pending_approval" : declaration.status ?? "idle";
     let created = await agentSvc.create(companyId, {
       ...declarationPatch(declaration, { adapterType }),
-      status: requiresApproval ? "pending_approval" : declaration.status ?? "idle",
+      status: initialStatus,
+      pauseReason: initialStatus === "paused" ? managedAgentPauseReason(options.pluginKey) : null,
+      pausedAt: initialStatus === "paused" ? new Date() : null,
       metadata: managedMetadata(options.pluginId, options.pluginKey, declaration),
       spentMonthlyCents: 0,
       lastHeartbeatAt: null,
@@ -436,6 +500,57 @@ export function pluginManagedAgentService(
     return resolution(companyId, declaration, created as Agent, "created", approvalId);
   }
 
+  async function backfillManagedPauseReason(
+    companyId: string,
+    declaration: PluginManagedAgentDeclaration,
+    agent: Agent,
+  ) {
+    if (
+      declaration.status !== "paused"
+      || agent.status !== "paused"
+      || agent.pauseReason !== null
+    ) {
+      return agent;
+    }
+
+    const updated = await db
+      .update(agents)
+      .set({
+        pauseReason: managedAgentPauseReason(options.pluginKey),
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(agents.id, agent.id),
+        eq(agents.companyId, companyId),
+        eq(agents.status, "paused"),
+        isNull(agents.pauseReason),
+      ))
+      .returning({ id: agents.id })
+      .then((rows) => rows[0] ?? null);
+
+    if (!updated) {
+      const current = await agentSvc.getById(agent.id) as Agent | null;
+      return current ?? agent;
+    }
+
+    await logActivity(db, {
+      companyId,
+      actorType: "plugin",
+      actorId: options.pluginId,
+      action: "plugin.managed_agent.pause_reason_backfilled",
+      entityType: "agent",
+      entityId: updated.id,
+      details: {
+        sourcePluginKey: options.pluginKey,
+        managedResourceKey: declaration.agentKey,
+        pauseReason: managedAgentPauseReason(options.pluginKey),
+      },
+    });
+
+    const refreshed = await agentSvc.getById(updated.id) as Agent | null;
+    return refreshed ?? agent;
+  }
+
   async function get(agentKey: string, companyId: string) {
       const declaration = declarationFor(agentKey);
       const binding = await getBinding(companyId, agentKey);
@@ -452,15 +567,22 @@ export function pluginManagedAgentService(
       const declaration = declarationFor(agentKey);
       const current = await get(agentKey, companyId);
       if (current.agent) {
-        await upsertBinding(companyId, declaration, current.agent.id);
-        return current;
+        const agent = await backfillManagedPauseReason(companyId, declaration, current.agent);
+        await upsertBinding(companyId, declaration, agent.id);
+        return resolution(companyId, declaration, agent, current.status, current.approvalId);
       }
 
       const relinkCandidate = await findRelinkCandidate(companyId, declaration);
       if (relinkCandidate) {
         await upsertBinding(companyId, declaration, relinkCandidate.id);
-        const agent = await agentSvc.getById(relinkCandidate.id);
-        return resolution(companyId, declaration, agent as Agent, "relinked");
+        const relinkedAgent = await agentSvc.getById(relinkCandidate.id) as Agent | null;
+        if (!relinkedAgent) throw notFound("Managed agent not found");
+        const agent = await backfillManagedPauseReason(
+          companyId,
+          declaration,
+          relinkedAgent,
+        );
+        return resolution(companyId, declaration, agent, "relinked");
       }
 
       return createManagedAgent(companyId, declaration);

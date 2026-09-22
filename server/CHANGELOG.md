@@ -1,4 +1,10 @@
-# @kesarcloud/server
+# @paperclipai/server
+
+## Unreleased
+
+### Patch Changes
+
+- Bound full-tree workspace Git scans with process-wide concurrency, queue, timeout, cancellation, coalescing, and short-lived changed-file caching. Saturated or timed-out changed-file requests now return a retryable degraded response, and hidden file-browser panels no longer initiate scans.
 
 ## 0.3.1
 
@@ -6,16 +12,16 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @kesarcloud/adapter-utils@0.3.1
-  - @kesarcloud/adapter-claude-local@0.3.1
-  - @kesarcloud/adapter-codex-local@0.3.1
-  - @kesarcloud/adapter-cursor-local@0.3.1
-  - @kesarcloud/adapter-gemini-local@0.3.1
-  - @kesarcloud/adapter-openclaw-gateway@0.3.1
-  - @kesarcloud/adapter-opencode-local@0.3.1
-  - @kesarcloud/adapter-pi-local@0.3.1
-  - @kesarcloud/db@0.3.1
-  - @kesarcloud/shared@0.3.1
+  - @paperclipai/adapter-utils@0.3.1
+  - @paperclipai/adapter-claude-local@0.3.1
+  - @paperclipai/adapter-codex-local@0.3.1
+  - @paperclipai/adapter-cursor-local@0.3.1
+  - @paperclipai/adapter-gemini-local@0.3.1
+  - @paperclipai/adapter-openclaw-gateway@0.3.1
+  - @paperclipai/adapter-opencode-local@0.3.1
+  - @paperclipai/adapter-pi-local@0.3.1
+  - @paperclipai/db@0.3.1
+  - @paperclipai/shared@0.3.1
 
 ## 0.3.0
 
@@ -27,15 +33,15 @@
 
 - Updated dependencies [6077ae6]
 - Updated dependencies
-  - @kesarcloud/shared@0.3.0
-  - @kesarcloud/adapter-utils@0.3.0
-  - @kesarcloud/adapter-claude-local@0.3.0
-  - @kesarcloud/adapter-codex-local@0.3.0
-  - @kesarcloud/adapter-cursor-local@0.3.0
-  - @kesarcloud/adapter-openclaw-gateway@0.3.0
-  - @kesarcloud/adapter-opencode-local@0.3.0
-  - @kesarcloud/adapter-pi-local@0.3.0
-  - @kesarcloud/db@0.3.0
+  - @paperclipai/shared@0.3.0
+  - @paperclipai/adapter-utils@0.3.0
+  - @paperclipai/adapter-claude-local@0.3.0
+  - @paperclipai/adapter-codex-local@0.3.0
+  - @paperclipai/adapter-cursor-local@0.3.0
+  - @paperclipai/adapter-openclaw-gateway@0.3.0
+  - @paperclipai/adapter-opencode-local@0.3.0
+  - @paperclipai/adapter-pi-local@0.3.0
+  - @paperclipai/db@0.3.0
 
 ## 0.2.7
 
@@ -43,12 +49,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.7
-  - @kesarcloud/adapter-utils@0.2.7
-  - @kesarcloud/db@0.2.7
-  - @kesarcloud/adapter-claude-local@0.2.7
-  - @kesarcloud/adapter-codex-local@0.2.7
-  - @kesarcloud/adapter-openclaw@0.2.7
+  - @paperclipai/shared@0.2.7
+  - @paperclipai/adapter-utils@0.2.7
+  - @paperclipai/db@0.2.7
+  - @paperclipai/adapter-claude-local@0.2.7
+  - @paperclipai/adapter-codex-local@0.2.7
+  - @paperclipai/adapter-openclaw@0.2.7
 
 ## 0.2.6
 
@@ -56,12 +62,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.6
-  - @kesarcloud/adapter-utils@0.2.6
-  - @kesarcloud/db@0.2.6
-  - @kesarcloud/adapter-claude-local@0.2.6
-  - @kesarcloud/adapter-codex-local@0.2.6
-  - @kesarcloud/adapter-openclaw@0.2.6
+  - @paperclipai/shared@0.2.6
+  - @paperclipai/adapter-utils@0.2.6
+  - @paperclipai/db@0.2.6
+  - @paperclipai/adapter-claude-local@0.2.6
+  - @paperclipai/adapter-codex-local@0.2.6
+  - @paperclipai/adapter-openclaw@0.2.6
 
 ## 0.2.5
 
@@ -69,12 +75,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.5
-  - @kesarcloud/adapter-utils@0.2.5
-  - @kesarcloud/db@0.2.5
-  - @kesarcloud/adapter-claude-local@0.2.5
-  - @kesarcloud/adapter-codex-local@0.2.5
-  - @kesarcloud/adapter-openclaw@0.2.5
+  - @paperclipai/shared@0.2.5
+  - @paperclipai/adapter-utils@0.2.5
+  - @paperclipai/db@0.2.5
+  - @paperclipai/adapter-claude-local@0.2.5
+  - @paperclipai/adapter-codex-local@0.2.5
+  - @paperclipai/adapter-openclaw@0.2.5
 
 ## 0.2.4
 
@@ -82,12 +88,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.4
-  - @kesarcloud/adapter-utils@0.2.4
-  - @kesarcloud/db@0.2.4
-  - @kesarcloud/adapter-claude-local@0.2.4
-  - @kesarcloud/adapter-codex-local@0.2.4
-  - @kesarcloud/adapter-openclaw@0.2.4
+  - @paperclipai/shared@0.2.4
+  - @paperclipai/adapter-utils@0.2.4
+  - @paperclipai/db@0.2.4
+  - @paperclipai/adapter-claude-local@0.2.4
+  - @paperclipai/adapter-codex-local@0.2.4
+  - @paperclipai/adapter-openclaw@0.2.4
 
 ## 0.2.3
 
@@ -95,12 +101,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.3
-  - @kesarcloud/adapter-utils@0.2.3
-  - @kesarcloud/db@0.2.3
-  - @kesarcloud/adapter-claude-local@0.2.3
-  - @kesarcloud/adapter-codex-local@0.2.3
-  - @kesarcloud/adapter-openclaw@0.2.3
+  - @paperclipai/shared@0.2.3
+  - @paperclipai/adapter-utils@0.2.3
+  - @paperclipai/db@0.2.3
+  - @paperclipai/adapter-claude-local@0.2.3
+  - @paperclipai/adapter-codex-local@0.2.3
+  - @paperclipai/adapter-openclaw@0.2.3
 
 ## 0.2.2
 
@@ -108,12 +114,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.2
-  - @kesarcloud/adapter-utils@0.2.2
-  - @kesarcloud/db@0.2.2
-  - @kesarcloud/adapter-claude-local@0.2.2
-  - @kesarcloud/adapter-codex-local@0.2.2
-  - @kesarcloud/adapter-openclaw@0.2.2
+  - @paperclipai/shared@0.2.2
+  - @paperclipai/adapter-utils@0.2.2
+  - @paperclipai/db@0.2.2
+  - @paperclipai/adapter-claude-local@0.2.2
+  - @paperclipai/adapter-codex-local@0.2.2
+  - @paperclipai/adapter-openclaw@0.2.2
 
 ## 0.2.1
 
@@ -121,9 +127,9 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @kesarcloud/shared@0.2.1
-  - @kesarcloud/adapter-utils@0.2.1
-  - @kesarcloud/db@0.2.1
-  - @kesarcloud/adapter-claude-local@0.2.1
-  - @kesarcloud/adapter-codex-local@0.2.1
-  - @kesarcloud/adapter-openclaw@0.2.1
+  - @paperclipai/shared@0.2.1
+  - @paperclipai/adapter-utils@0.2.1
+  - @paperclipai/db@0.2.1
+  - @paperclipai/adapter-claude-local@0.2.1
+  - @paperclipai/adapter-codex-local@0.2.1
+  - @paperclipai/adapter-openclaw@0.2.1

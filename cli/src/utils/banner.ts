@@ -1,6 +1,6 @@
 import pc from "picocolors";
 
-const PAPERCLAW_ART = [
+const PAPERCLIP_ART = [
   "██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ",
   "██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗",
   "██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝",
@@ -9,12 +9,12 @@ const PAPERCLAW_ART = [
   "╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ",
 ] as const;
 
-const TAGLINE = "Open-source orchestration for zero-human companies";
+const TAGLINE = "The app people use to manage AI agents for work";
 
-export function printPaperClawCliBanner(): void {
+export function printPaperclipCliBanner(): void {
   const lines = [
     "",
-    ...PAPERCLAW_ART.map((line) => pc.cyan(line)),
+    ...PAPERCLIP_ART.map((line) => pc.cyan(line)),
     pc.blue("  ───────────────────────────────────────────────────────"),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",

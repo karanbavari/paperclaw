@@ -1,6 +1,6 @@
 # 2026-03-14 Adapter Skill Sync Rollout
 
-Status: Proposed
+Status: Implemented for local adapters; gateway remains unsupported
 Date: 2026-03-14
 Audience: Product and engineering
 Related:
@@ -10,23 +10,25 @@ Related:
 
 ## 1. Purpose
 
-This document defines the rollout plan for adapter-wide skill support in PaperClaw.
+This document defines the rollout plan for adapter-wide skill support in Paperclip.
 
 The goal is not just “show a skills tab.” The goal is:
 
 - every adapter has a deliberate skill-sync truth model
 - the UI tells the truth for that adapter
-- PaperClaw stores desired skill state consistently even when the adapter cannot fully reconcile it
+- Paperclip stores desired skill state consistently even when the adapter cannot fully reconcile it
 - unsupported adapters degrade clearly and safely
 
 ## 2. Current Adapter Matrix
 
-PaperClaw currently has these adapters:
+Paperclip currently has these adapters:
 
 - `claude_local`
 - `codex_local`
-- `cursor_local`
+- `cursor`
 - `gemini_local`
+- `grok_local`
+- `acpx_local`
 - `opencode_local`
 - `pi_local`
 - `openclaw_gateway`
@@ -39,17 +41,19 @@ The current skill API supports:
 
 Current implementation state:
 
-- `codex_local`: implemented, `persistent`
+- `codex_local`: implemented, `ephemeral`
 - `claude_local`: implemented, `ephemeral`
-- `cursor_local`: not yet implemented, but technically suited to `persistent`
-- `gemini_local`: not yet implemented, but technically suited to `persistent`
-- `pi_local`: not yet implemented, but technically suited to `persistent`
-- `opencode_local`: not yet implemented; likely `persistent`, but with special handling because it currently injects into Claude’s shared skills home
+- `cursor`: implemented, `persistent`
+- `gemini_local`: implemented, `persistent`
+- `pi_local`: implemented, `persistent`
+- `opencode_local`: implemented, `persistent`, with shared Claude skills home caveats
+- `acpx_local`: implemented, `ephemeral` for Claude/Codex sub-agents and `unsupported` for custom commands
+- `grok_local`: implemented, `ephemeral`
 - `openclaw_gateway`: not yet implemented; blocked on gateway protocol support, so `unsupported` for now
 
 ## 3. Product Principles
 
-1. Desired skills live in PaperClaw for every adapter.
+1. Desired skills live in Paperclip for every adapter.
 2. Adapters may expose different truth models, and the UI must reflect that honestly.
 3. Persistent adapters should read and reconcile actual installed state.
 4. Ephemeral adapters should report effective runtime state, not pretend they own a persistent install.
@@ -60,12 +64,11 @@ Current implementation state:
 
 ### 4.1 Persistent local-home adapters
 
-These adapters have a stable local skills directory that PaperClaw can read and manage.
+These adapters have a stable local skills directory that Paperclip can read and manage.
 
 Candidates:
 
-- `codex_local`
-- `cursor_local`
+- `cursor`
 - `gemini_local`
 - `pi_local`
 - `opencode_local` with caveats
@@ -80,15 +83,18 @@ Expected UX:
 
 ### 4.2 Ephemeral mount adapters
 
-These adapters do not have a meaningful PaperClaw-owned persistent install state.
+These adapters do not have a meaningful Paperclip-owned persistent install state.
 
 Current adapter:
 
+- `codex_local`
 - `claude_local`
+- `acpx_local` when configured for Claude or Codex
+- `grok_local`
 
 Expected UX:
 
-- show desired PaperClaw skills
+- show desired Paperclip skills
 - show any discoverable external dirs if available
 - say “mounted on next run” instead of “installed”
 - do not imply a persistent adapter-owned install state
@@ -99,6 +105,7 @@ These adapters cannot support skill sync without new external capabilities.
 
 Current adapter:
 
+- `acpx_local` when configured for custom commands
 - `openclaw_gateway`
 
 Expected UX:
@@ -114,7 +121,7 @@ Expected UX:
 
 Target mode:
 
-- `persistent`
+- `ephemeral`
 
 Current state:
 
@@ -122,15 +129,15 @@ Current state:
 
 Requirements to finish:
 
-- keep as reference implementation
-- tighten tests around external custom skills and stale removal
-- ensure imported company skills can be attached and synced without manual path work
+- keep runtime-mounted snapshots separate from persistent install snapshots
+- ensure imported company skills can be attached and mounted without manual path work
+- keep `CODEX_HOME/skills` mutation scoped to heartbeat execution, not `skills/sync`
 
 Success criteria:
 
-- list installed managed and external skills
-- sync desired skills into `CODEX_HOME/skills`
-- preserve external user-managed skills
+- desired skills are stored in Paperclip
+- selected skills are linked into the effective `CODEX_HOME/skills` during runs
+- no persistent installed/stale state is reported from `skills/sync`
 
 ### 5.2 Claude Local
 
@@ -150,7 +157,7 @@ Requirements to finish:
 
 Success criteria:
 
-- desired skills stored in PaperClaw
+- desired skills stored in Paperclip
 - selected skills mounted per run
 - no misleading “installed” language
 
@@ -162,18 +169,11 @@ Target mode:
 
 Technical basis:
 
-- runtime already injects PaperClaw skills into `~/.cursor/skills`
+- Paperclip reconciles desired skills into `~/.cursor/skills`
 
-Implementation work:
+Current state:
 
-1. Add `listSkills` for Cursor.
-2. Add `syncSkills` for Cursor.
-3. Reuse the same managed-symlink pattern as Codex.
-4. Distinguish:
-   - managed PaperClaw skills
-   - external skills already present
-   - missing desired skills
-   - stale managed skills
+- implemented
 
 Testing:
 
@@ -194,14 +194,11 @@ Target mode:
 
 Technical basis:
 
-- runtime already injects PaperClaw skills into `~/.gemini/skills`
+- Paperclip reconciles desired skills into `~/.gemini/skills`
 
-Implementation work:
+Current state:
 
-1. Add `listSkills` for Gemini.
-2. Add `syncSkills` for Gemini.
-3. Reuse managed-symlink conventions from Codex/Cursor.
-4. Verify auth remains untouched while skills are reconciled.
+- implemented
 
 Potential caveat:
 
@@ -219,19 +216,16 @@ Target mode:
 
 Technical basis:
 
-- runtime already injects PaperClaw skills into `~/.pi/agent/skills`
+- Paperclip reconciles desired skills into `~/.pi/agent/skills`
 
-Implementation work:
+Current state:
 
-1. Add `listSkills` for Pi.
-2. Add `syncSkills` for Pi.
-3. Reuse managed-symlink helpers.
-4. Verify session-file behavior remains independent from skill sync.
+- implemented
 
 Success criteria:
 
 - Pi agents expose actual installed skill state
-- PaperClaw can sync desired skills into Pi’s persistent home
+- Paperclip can sync desired skills into Pi’s persistent home
 
 ### 5.6 OpenCode Local
 
@@ -241,21 +235,19 @@ Target mode:
 
 Special case:
 
-- OpenCode currently injects PaperClaw skills into `~/.claude/skills`
+- OpenCode currently injects Paperclip skills into `~/.claude/skills`
 
 This is product-risky because:
 
 - it shares state with Claude
-- PaperClaw may accidentally imply the skills belong only to OpenCode when the home is shared
+- Paperclip may accidentally imply the skills belong only to OpenCode when the home is shared
 
 Plan:
 
-Phase 1:
-
-- implement `listSkills` and `syncSkills`
+- implemented `listSkills` and `syncSkills`
 - treat it as `persistent`
 - explicitly label the home as shared in UI copy
-- only remove stale managed PaperClaw skills that are clearly marked as PaperClaw-managed
+- only remove stale managed Paperclip skills that are clearly marked as Paperclip-managed
 
 Phase 2:
 
@@ -281,7 +273,7 @@ Required external work:
 
 Until then:
 
-- PaperClaw stores desired skills only
+- Paperclip stores desired skills only
 - UI shows unsupported actual state
 - no fake sync implementation
 
@@ -289,6 +281,30 @@ Future target:
 
 - likely a fourth truth model eventually, such as remote-managed persistent state
 - for now, keep the current API and treat gateway as unsupported
+
+### 5.8 ACPX Local
+
+Target mode:
+
+- `ephemeral` for built-in Claude/Codex ACPX sub-agents
+- `unsupported` for custom ACP commands
+
+Success criteria:
+
+- Claude/Codex ACPX snapshots show skills as configured for the next session
+- custom command snapshots keep desired skills tracked only and do not imply runtime sync
+
+### 5.9 Grok Local
+
+Target mode:
+
+- `ephemeral`
+
+Success criteria:
+
+- desired skills are stored in Paperclip
+- selected skills are copied into the execution workspace for the next run
+- no persistent installed/stale state is reported from `skills/sync`
 
 ## 6. API Plan
 
@@ -325,7 +341,7 @@ The agent-level Skills tab must become adapter-aware by copy and status:
 Additional UI requirement for shared-home adapters:
 
 - show a small warning that the adapter uses a shared user skills home
-- avoid destructive wording unless PaperClaw can prove a skill is PaperClaw-managed
+- avoid destructive wording unless Paperclip can prove a skill is Paperclip-managed
 
 ## 8. Rollout Phases
 
@@ -333,14 +349,13 @@ Additional UI requirement for shared-home adapters:
 
 Ship:
 
-- `cursor_local`
+- `cursor`
 - `gemini_local`
 - `pi_local`
 
-Rationale:
+Status:
 
-- these are the closest to Codex in architecture
-- they already inject into stable local skill homes
+- implemented
 
 ### Phase 2: OpenCode shared-home support
 
@@ -348,10 +363,9 @@ Ship:
 
 - `opencode_local`
 
-Rationale:
+Status:
 
-- technically feasible now
-- needs slightly more careful product language because of the shared Claude skills home
+- implemented with shared Claude skills-home warning
 
 ### Phase 3: Gateway support decision
 
@@ -390,10 +404,10 @@ Adapter-wide skill support is ready when all are true:
 
 The recommended immediate order is:
 
-1. `cursor_local`
+1. `cursor`
 2. `gemini_local`
 3. `pi_local`
 4. `opencode_local`
 5. defer `openclaw_gateway`
 
-That gets PaperClaw from “skills work for Codex and Claude” to “skills work for the whole local-adapter family,” which is the meaningful V1 milestone.
+The local-adapter family now has explicit truth models. The remaining V1 boundary is `openclaw_gateway`, which should stay unsupported until the gateway protocol can report real remote skill state.

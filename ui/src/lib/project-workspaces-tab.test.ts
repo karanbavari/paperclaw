@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@kesarcloud/shared";
+import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@paperclipai/shared";
 import { buildProjectWorkspaceSummaries } from "./project-workspaces-tab";
 
 function createProjectWorkspace(overrides: Partial<ProjectWorkspace>): ProjectWorkspace {
@@ -7,7 +7,7 @@ function createProjectWorkspace(overrides: Partial<ProjectWorkspace>): ProjectWo
     id: overrides.id ?? "workspace-default",
     companyId: overrides.companyId ?? "company-1",
     projectId: overrides.projectId ?? "project-1",
-    name: overrides.name ?? "paperclaw",
+    name: overrides.name ?? "paperclip",
     sourceType: overrides.sourceType ?? "local_path",
     cwd: overrides.cwd ?? "/repo",
     repoUrl: overrides.repoUrl ?? null,
@@ -76,6 +76,7 @@ function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace>): Execu
     strategyType: overrides.strategyType ?? "git_worktree",
     name: overrides.name ?? "PAP-893",
     status: overrides.status ?? "active",
+    deliveryState: overrides.deliveryState ?? "unknown",
     cwd: overrides.cwd ?? "/repo/.worktrees/PAP-893",
     repoUrl: overrides.repoUrl ?? null,
     baseRef: overrides.baseRef ?? "public-gh/master",
@@ -133,7 +134,7 @@ describe("buildProjectWorkspaceSummaries", () => {
   const primaryWorkspace = createProjectWorkspace({
     id: "workspace-default",
     isPrimary: true,
-    name: "paperclaw",
+    name: "paperclip",
   });
   const featureWorkspace = createProjectWorkspace({
     id: "workspace-feature",

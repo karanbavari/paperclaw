@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { pluginManifestV1Schema, type PaperClawPluginManifestV1 } from "@kesarcloud/shared";
+import { pluginManifestV1Schema, type PaperclipPluginManifestV1 } from "@paperclipai/shared";
 
 const mockRegistry = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -38,14 +38,14 @@ vi.mock("../services/live-events.js", () => ({
   publishGlobalLiveEvent: vi.fn(),
 }));
 
-function manifest(apiRoutes: NonNullable<PaperClawPluginManifestV1["apiRoutes"]>): PaperClawPluginManifestV1 {
+function manifest(apiRoutes: NonNullable<PaperclipPluginManifestV1["apiRoutes"]>): PaperclipPluginManifestV1 {
   return {
-    id: "paperclaw.scoped-api-test",
+    id: "paperclip.scoped-api-test",
     apiVersion: 1,
     version: "1.0.0",
     displayName: "Scoped API Test",
     description: "Test plugin for scoped API routes",
-    author: "PaperClaw",
+    author: "Paperclip",
     categories: ["automation"],
     capabilities: ["api.routes.register"],
     entrypoints: { worker: "dist/worker.js" },

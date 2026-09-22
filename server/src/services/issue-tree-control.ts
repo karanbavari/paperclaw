@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
-import type { Db } from "@kesarcloud/db";
+import type { Db } from "@paperclipai/db";
 import {
   agentWakeupRequests,
   heartbeatRuns,
@@ -7,7 +7,7 @@ import {
   issueTreeHoldMembers,
   issueTreeHolds,
   issues,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import {
   ISSUE_STATUSES,
   type IssueStatus,
@@ -20,8 +20,9 @@ import {
   type IssueTreePreviewIssue,
   type IssueTreePreviewRun,
   type IssueTreePreviewWarning,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
+import type { IssuePostCommitAction } from "./issues.js";
 
 type IssueRow = typeof issues.$inferSelect;
 type HoldRow = typeof issueTreeHolds.$inferSelect;
@@ -713,6 +714,12 @@ export function issueTreeControlService(db: Db) {
     preview: IssueTreeControlPreview;
     resumedPauseHoldIds?: string[];
   }> {
+    if (input.mode === "cancel") {
+      const [conversation] = await db.select({ id: issues.id }).from(issues).where(and(
+        eq(issues.id, rootIssueId), eq(issues.companyId, companyId), sql`${issues.conversationAgentId} is not null`,
+      ));
+      if (conversation) throw unprocessable("Stop the active reply instead of cancelling the persistent conversation");
+    }
     const holdReleasePolicy = normalizeReleasePolicy(input.releasePolicy);
     const holdPreview = await preview(companyId, rootIssueId, {
       mode: input.mode,
@@ -869,30 +876,40 @@ export function issueTreeControlService(db: Db) {
     if (issueIds.length === 0) return { updatedIssueIds: [], updatedIssues: [] };
 
     const now = new Date();
-    const updated = await db
-      .update(issues)
-      .set({
-        status: "cancelled",
-        cancelledAt: now,
-        completedAt: null,
-        checkoutRunId: null,
-        executionRunId: null,
-        executionAgentNameKey: null,
-        executionLockedAt: null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(issues.companyId, companyId),
-          inArray(issues.id, issueIds),
-          notInArray(issues.status, ["done", "cancelled"]),
-        ),
-      )
-      .returning({
-        id: issues.id,
-        status: issues.status,
-        assigneeAgentId: issues.assigneeAgentId,
-      });
+    const postCommitIssueActions: IssuePostCommitAction[] = [];
+    const { executeIssuePostCommitActions, issueService } = await import("./issues.js");
+    const svc = issueService(db);
+    const updated = await db.transaction(async (tx) => {
+      const eligibleIssues = await tx
+        .select({ id: issues.id })
+        .from(issues)
+        .where(
+          and(
+            eq(issues.companyId, companyId),
+            inArray(issues.id, issueIds),
+            notInArray(issues.status, ["done", "cancelled"]),
+          ),
+        );
+
+      const rows = [];
+      for (const issue of eligibleIssues) {
+        const updatedIssue = await svc.update(
+          issue.id,
+          {
+            status: "cancelled",
+            cancelledAt: now,
+            actorAgentId: hold.createdByAgentId,
+            actorUserId: hold.createdByUserId,
+          },
+          tx,
+          undefined,
+          postCommitIssueActions,
+        );
+        if (updatedIssue) rows.push(updatedIssue);
+      }
+      return rows;
+    });
+    await executeIssuePostCommitActions(db, postCommitIssueActions);
 
     return {
       updatedIssueIds: updated.map((issue) => issue.id),

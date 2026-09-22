@@ -5,15 +5,18 @@ import {
   agents,
   companies,
   createDb,
+  documentRevisions,
+  documents,
   executionWorkspaces,
   heartbeatRuns,
   issues,
   projectWorkspaces,
   projects,
+  routineDocuments,
   routineRuns,
   routines,
   routineTriggers,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -26,9 +29,9 @@ vi.mock("../telemetry.js", () => ({
   getTelemetryClient: () => mockTelemetryClient,
 }));
 
-vi.mock("@kesarcloud/shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@kesarcloud/shared/telemetry")>(
-    "@kesarcloud/shared/telemetry",
+vi.mock("@paperclipai/shared/telemetry", async () => {
+  const actual = await vi.importActual<typeof import("@paperclipai/shared/telemetry")>(
+    "@paperclipai/shared/telemetry",
   );
   return {
     ...actual,
@@ -46,7 +49,7 @@ describeEmbeddedPostgres("routine run telemetry", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-routine-telemetry-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-routine-telemetry-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -54,7 +57,10 @@ describeEmbeddedPostgres("routine run telemetry", () => {
     vi.clearAllMocks();
     await db.delete(routineRuns);
     await db.delete(routineTriggers);
+    await db.delete(routineDocuments);
     await db.delete(routines);
+    await db.delete(documents);
+    await db.delete(documentRevisions);
     await db.delete(heartbeatRuns);
     await db.delete(issues);
     await db.delete(executionWorkspaces);
@@ -75,9 +81,10 @@ describeEmbeddedPostgres("routine run telemetry", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
+      defaultResponsibleUserId: "responsible-user",
     });
 
     await db.insert(agents).values({

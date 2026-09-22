@@ -1,8 +1,8 @@
 # Release Automation Setup
 
-This document covers the GitHub and npm setup required for the current PaperClaw release model:
+This document covers the GitHub and npm setup required for the current Paperclip release model:
 
-- automatic canaries from `main`
+- automatic canaries from `master`
 - manual stable promotion from a chosen source ref
 - npm trusted publishing via GitHub OIDC
 - protected release infrastructure in a public repository
@@ -15,7 +15,7 @@ Repo-side files that depend on this setup:
 Note:
 
 - the release workflows intentionally use `pnpm install --no-frozen-lockfile`
-- this matches the repo's current policy where `pnpm-lock.yaml` is refreshed by GitHub automation after manifest changes land on `main`
+- this matches the repo's current policy where `pnpm-lock.yaml` is refreshed by GitHub automation after manifest changes land on `master`
 - the publish jobs then restore `pnpm-lock.yaml` before running `scripts/release.sh`, so the release script still sees a clean worktree
 
 ## 1. Merge the Repo Changes First
@@ -29,13 +29,13 @@ Required files:
 
 ## 2. Configure npm Trusted Publishing
 
-Do this for every public package that PaperClaw publishes.
+Do this for every public package that Paperclip publishes.
 
 At minimum that includes:
 
-- `@kesarcloud/paperclaw`
-- `@kesarcloud/server`
-- `@kesarcloud/ui`
+- `paperclipai`
+- `@paperclipai/server`
+- `@paperclipai/ui`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page
@@ -44,7 +44,7 @@ For each package:
 
 1. open npm as an owner of the package
 2. go to the package settings / publishing access area
-3. add a trusted publisher for the GitHub repository `karanbavari/paperclaw`
+3. add a trusted publisher for the GitHub repository `paperclipai/paperclip`
 
 ### 2.2. Add one trusted publisher entry per package
 
@@ -56,7 +56,7 @@ Configure:
 
 Repository:
 
-- `karanbavari/paperclaw`
+- `paperclipai/paperclip`
 
 Environment name:
 
@@ -82,11 +82,11 @@ Repo policy:
 Bootstrap sequence for a new package:
 
 1. publish the package once from a trusted maintainer machine using normal npm auth
-2. open that package on npm and add the `karanbavari/paperclaw` trusted publisher for `.github/workflows/release.yml`
+2. open that package on npm and add the `paperclipai/paperclip` trusted publisher for `.github/workflows/release.yml`
 3. rerun or dry-run the release flow as needed to confirm CI publishing now works
 4. only then enable `"publishFromCi": true`
 
-PR CI enforces this by checking changed release-enabled package manifests against npm. That keeps `main` canary publishing healthy while preserving the no-long-lived-token model for normal CI releases.
+PR CI enforces this by checking changed release-enabled package manifests against npm. That keeps `master` canary publishing healthy while preserving the no-long-lived-token model for normal CI releases.
 
 ### 2.3. Verify trusted publishing before removing old auth
 
@@ -104,7 +104,7 @@ Only after that should you remove old token-based access.
 After trusted publishing works:
 
 1. revoke any repository or organization `NPM_TOKEN` secrets used for publish
-2. revoke any personal automation token that used to publish PaperClaw
+2. revoke any personal automation token that used to publish Paperclip
 3. if npm offers a package-level setting to restrict publishing to trusted publishers, enable it
 
 Goal:
@@ -113,9 +113,10 @@ Goal:
 
 ## 4. Create GitHub Environments
 
-Create two environments in the GitHub repository:
+Create three environments in the GitHub repository:
 
 - `npm-canary`
+- `npm-beta`
 - `npm-stable`
 
 Path:
@@ -134,12 +135,41 @@ Recommended settings for `npm-canary`:
 - wait timer: none
 - deployment branches and tags:
   - selected branches only
-  - allow `main`
+  - allow `master`
 
 Reasoning:
 
-- every push to `main` should be able to publish a canary automatically
+- every push to `master` should be able to publish a canary automatically
 - no human approval should be required for canaries
+
+The scheduled nightly lane also publishes under `npm-canary`: it is the same
+trust level (fully automated, no human gate), its runs execute on `master` so
+the branch rule is satisfied, and reusing the environment means the nightly
+lane required no new environments and no npm trusted-publisher changes
+(publishing still happens from `release.yml`, see section 2.2).
+
+## 5.1. Configure `npm-beta`
+
+Recommended settings for `npm-beta`:
+
+- environment name: `npm-beta`
+- required reviewers: at least one maintainer
+- prevent self-review: enabled when your team size allows it
+- wait timer: none
+- deployment branches and tags:
+  - selected branches only
+  - allow `master`
+
+Reasoning:
+
+- beta promotions are deliberate human decisions; the required reviewer on
+  this environment is the promotion gate
+- create this environment before the first `channel: beta` dispatch. If the
+  workflow runs first, GitHub auto-creates the environment with no
+  protection rules, and that first beta would publish without approval
+
+Like nightly, beta publishing lives in `release.yml`, so no npm
+trusted-publisher changes are needed (see section 2.2).
 
 ## 6. Configure `npm-stable`
 
@@ -152,16 +182,16 @@ Recommended settings for `npm-stable`:
 - wait timer: optional
 - deployment branches and tags:
   - selected branches only
-  - allow `main`
+  - allow `master`
 
 Reasoning:
 
 - stable publishes should require an explicit human approval gate
 - the workflow is manual, but the environment should still be the real control point
 
-## 7. Protect `main`
+## 7. Protect `master`
 
-Open the branch protection settings for `main`.
+Open the branch protection settings for `master`.
 
 Recommended rules:
 
@@ -169,7 +199,7 @@ Recommended rules:
 2. require status checks to pass before merging
 3. require review from code owners
 4. dismiss stale approvals when new commits are pushed
-5. restrict who can push directly to `main`
+5. restrict who can push directly to `master`
 
 At minimum, make sure workflow and release script changes cannot land without review.
 
@@ -177,7 +207,7 @@ At minimum, make sure workflow and release script changes cannot land without re
 
 This repo now includes `.github/CODEOWNERS`, but GitHub only enforces it if branch protection requires code owner reviews.
 
-In branch protection for `main`, enable:
+In branch protection for `master`, enable:
 
 - `Require review from Code Owners`
 
@@ -222,7 +252,7 @@ This keeps LLM spending intentional and avoids a high-value token sitting in Act
 
 After setup:
 
-1. merge a harmless commit to `main`
+1. merge a harmless commit to `master`
 2. open the `Release` workflow run triggered by that push
 3. confirm it passes verification
 4. confirm publish succeeds under the `npm-canary` environment
@@ -232,8 +262,12 @@ After setup:
 Install-path check:
 
 ```bash
-npx @kesarcloud/paperclaw@canary onboard
+npm install --prefix "$(mktemp -d)" paperclipai@canary --no-audit --no-fund
 ```
+
+The release script runs this clean-prefix install after publishing every workspace
+package dependency-first and publishing `paperclipai` last. A package that is not
+yet registry-visible stops the train before the channel entrypoint can advance.
 
 ## 12. Verify the Stable Workflow
 
@@ -293,7 +327,7 @@ Check:
 Check:
 
 1. `.github/CODEOWNERS` is on the default branch
-2. branch protection on `main` requires code owner review
+2. branch protection on `master` requires code owner review
 3. the owner identities in the file are valid reviewers with repository access
 
 ## Related Docs
@@ -301,3 +335,82 @@ Check:
 - [doc/RELEASING.md](RELEASING.md)
 - [doc/PUBLISHING.md](PUBLISHING.md)
 - [doc/plans/2026-03-17-release-automation-and-versioning.md](plans/2026-03-17-release-automation-and-versioning.md)
+
+## Runner verification dependency cache
+
+`release-verify.yml` runs `Verify Paperclip Runner` on two independent runners.
+The protocol lane runs `check:eval-kernel` and `check:protocol`. The Rust lane
+runs `check:runner` and `check:api-authority`. Together they retain every check
+in `check:all`; both lanes must pass before Cloud source verification or
+readiness can succeed. A failed lane does not cancel the other lane.
+
+Both lanes restore Cargo dependencies with the pinned Rust Cache action. The
+compiler comes from the Runner package's `rust-toolchain.toml` before the action
+computes its key. Compiler and Cargo metadata changes select a new cache. The
+existing `release-runner-v1` shared key avoids separate copies for these lanes.
+Only the Rust lane saves this cache. After verification it also runs `build:rust`
+to warm the debug dependencies used by the protocol lane; its own tests already
+warm release dependencies. The cache writer is shorter than the protocol lane.
+
+Workspace crates and installed Cargo binaries are excluded. Every run rebuilds
+workspace code and runs all assigned checks, including on a cache hit. Only an
+own-repository master-push run verifying that push's exact SHA can restore the
+cache, and only a successful Rust lane saves it. PR, tag, and manual candidate
+verification compile without this cache. A miss or eviction costs compilation
+time but does not change the checks. To discard old dependency caches, increment
+the shared-key version and let the next successful master verification warm it.
+
+The trust boundary is the protected master branch, not the cache-key text.
+GitHub does not let master restore caches created by a child branch, sibling
+branch, tag, or PR merge ref. Both permitted restore scopes (current branch and
+default branch) are master here. A workflow with authority to execute arbitrary
+code on master can affect verification directly and is already trusted. The
+cache contains dependency build artifacts, not credentials or workspace output.
+See [GitHub cache access restrictions](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching#restrictions-for-accessing-a-cache).
+
+## Chat integration test shards
+
+Release verification runs the large chat integration file on three independent
+runners. Five other server shards cover every remaining general server file.
+The ordinary local test command and trusted PR workflow keep their complete
+`general-server` group. Each chat case shuts down its services, pauses its own
+still-active endpoints, and retires its active/waiting conversations after
+assertions. This keeps workers in later cases from claiming earlier
+fixtures in the shared test database. Application assertions stay unchanged.
+
+Each chat job collects active tests with Vitest, groups cases by source line,
+and balances those groups by case count. Parameterized cases and loop-generated
+cases on one line stay together. The job re-collects with the exact line filters
+it will execute and fails if the selected case identities differ. Hooks and test
+execution remain sequential inside each runner with its own temporary home.
+
+Run one shard locally with:
+
+```sh
+pnpm test:run:general -- --group general-chat --shard-index 0 --shard-count 3
+```
+
+Use indexes 0, 1, and 2 to run the complete chat suite. The CLI validates that
+each shard has work and that collection includes usable source locations. A
+Vitest collection or filtering change fails verification instead of dropping
+tests. Splitting adds three release-verification jobs and repeats collection and
+fixture setup; it does not make a single test faster.
+
+The file-duration manifest also records the native Codex Runner integration
+suite's measured import and execution cost, so the existing file balancer
+accounts for it in both ordinary PR and release verification.
+
+
+## Cloud readiness runner placement
+
+When AWS routing is enabled, Cloud image builds use `paperclip-cloud-build-x64`
+and source verification uses `paperclip-post-merge-x64`. The artifact wait and
+the `Cloud source verified v1` and `Cloud deployable v1` marker jobs run on
+GitHub-hosted runners. These small jobs must not hold or wait for capacity in
+the source-verification fleet. During a merge
+burst, even a completed build must wait for its marker before consumers can
+recognize readiness.
+
+Runner placement does not change readiness requirements: exact-source artifacts,
+all source checks, and the image verification must still pass. The versioned
+markers and their dependency gates are unchanged.

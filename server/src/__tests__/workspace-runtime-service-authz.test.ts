@@ -1,14 +1,17 @@
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
   companies,
   createDb,
   executionWorkspaces,
+  heartbeatRuns,
   issues,
   projectWorkspaces,
   projects,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
+import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -32,7 +35,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-workspace-runtime-authz-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-authz-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -41,6 +44,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     await db.delete(executionWorkspaces);
     await db.delete(projectWorkspaces);
     await db.delete(projects);
+    await db.delete(heartbeatRuns);
     await db.delete(agents);
     await db.delete(companies);
   });
@@ -53,7 +57,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     const companyId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `PAP-${companyId.slice(0, 8)}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -75,7 +79,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
       projectId,
       name: "Primary",
       sourceType: "local_path",
-      cwd: "/tmp/paperclaw-authz-project",
+      cwd: "/tmp/paperclip-authz-project",
       isPrimary: true,
     });
     return { projectId, projectWorkspaceId };
@@ -93,7 +97,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
       name: "Execution workspace",
       status: "active",
       providerType: "local_fs",
-      cwd: "/tmp/paperclaw-authz-execution",
+      cwd: "/tmp/paperclip-authz-execution",
     });
     return executionWorkspaceId;
   }
@@ -147,6 +151,144 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
       companyId,
       projectWorkspaceId,
     })).resolves.toBeUndefined();
+  });
+
+  it("rejects low-trust CEO runtime service mutations unless runtime.manage is granted", async () => {
+    const companyId = await seedCompany();
+    const { projectId, projectWorkspaceId } = await seedProjectWorkspace(companyId);
+    const ceoAgentId = await seedAgent(companyId, { role: "ceo", name: "CEO" });
+    await db
+      .update(agents)
+      .set({
+        permissions: {
+          trustPreset: LOW_TRUST_REVIEW_PRESET,
+          authorizationPolicy: {
+            trustBoundary: {
+              mode: LOW_TRUST_REVIEW_PRESET,
+              companyId,
+              projectIds: [projectId],
+            },
+          },
+        },
+      })
+      .where(eq(agents.id, ceoAgentId));
+
+    await db.insert(issues).values({
+      id: randomUUID(),
+      companyId,
+      projectId,
+      projectWorkspaceId,
+      title: "Low-trust workspace",
+      status: "todo",
+      priority: "medium",
+      assigneeAgentId: ceoAgentId,
+    });
+
+    await expect(assertCanManageProjectWorkspaceRuntimeServices(db, {
+      actor: {
+        type: "agent",
+        agentId: ceoAgentId,
+        companyId,
+        source: "agent_key",
+      },
+    } as any, {
+      companyId,
+      projectWorkspaceId,
+    })).rejects.toMatchObject({
+      status: 403,
+      message: "Low-trust runs cannot manage workspace runtime services unless the boundary grants runtime.manage",
+    });
+  });
+
+  it("allows standard CEO runtime service mutations for low-trust workspace issues", async () => {
+    const companyId = await seedCompany();
+    const { projectId, projectWorkspaceId } = await seedProjectWorkspace(companyId);
+    const ceoAgentId = await seedAgent(companyId, { role: "ceo", name: "CEO" });
+
+    await db.insert(issues).values({
+      id: randomUUID(),
+      companyId,
+      projectId,
+      projectWorkspaceId,
+      title: "Issue-scoped low-trust workspace",
+      status: "todo",
+      priority: "medium",
+      assigneeAgentId: ceoAgentId,
+      executionPolicy: {
+        authorizationPolicy: {
+          trustBoundary: {
+            mode: LOW_TRUST_REVIEW_PRESET,
+            companyId,
+            projectIds: [projectId],
+          },
+        },
+      },
+    });
+
+    await expect(assertCanManageProjectWorkspaceRuntimeServices(db, {
+      actor: {
+        type: "agent",
+        agentId: ceoAgentId,
+        companyId,
+        source: "agent_key",
+      },
+    } as any, {
+      companyId,
+      projectWorkspaceId,
+    })).resolves.toBeUndefined();
+  });
+
+  it("rejects runtime service mutations when only the run policy is low-trust without runtime.manage", async () => {
+    const companyId = await seedCompany();
+    const { projectId, projectWorkspaceId } = await seedProjectWorkspace(companyId);
+    const ceoAgentId = await seedAgent(companyId, { role: "ceo", name: "CEO" });
+    const issueId = randomUUID();
+    const runId = randomUUID();
+
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      projectId,
+      projectWorkspaceId,
+      title: "Run-scoped low-trust workspace",
+      status: "in_progress",
+      priority: "medium",
+      assigneeAgentId: ceoAgentId,
+    });
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId,
+      agentId: ceoAgentId,
+      status: "running",
+      contextSnapshot: {
+        issueId,
+        executionPolicy: {
+          authorizationPolicy: {
+            trustBoundary: {
+              mode: LOW_TRUST_REVIEW_PRESET,
+              companyId,
+              projectIds: [projectId],
+            },
+          },
+        },
+      },
+    });
+
+    await expect(assertCanManageProjectWorkspaceRuntimeServices(db, {
+      actor: {
+        type: "agent",
+        agentId: ceoAgentId,
+        companyId,
+        runId,
+        source: "agent_key",
+      },
+    } as any, {
+      companyId,
+      projectWorkspaceId,
+    })).rejects.toMatchObject({
+      status: 403,
+      message: "Low-trust runs cannot manage workspace runtime services unless the boundary grants runtime.manage",
+    });
   });
 
   it("allows agents with a non-terminal assigned issue in the target project workspace", async () => {
@@ -207,7 +349,11 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     } as any, {
       companyId,
       executionWorkspaceId,
-    })).resolves.toBeUndefined();
+    })).resolves.toMatchObject({
+      actorType: "agent",
+      agentId: managerId,
+      issueId: null,
+    });
   });
 
   it("rejects unrelated same-company agents without matching workspace assignments", async () => {

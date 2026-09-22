@@ -20,10 +20,10 @@
  */
 
 import type {
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginToolDeclaration,
-} from "@kesarcloud/shared";
-import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@kesarcloud/plugin-sdk";
+} from "@paperclipai/shared";
+import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@paperclipai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { logger } from "../middleware/logger.js";
 
@@ -107,12 +107,15 @@ export interface PluginToolRegistry {
    * Called when a plugin worker starts and its manifest is loaded. Any
    * previously registered tools for the same plugin are replaced (idempotent).
    *
-   * @param pluginId - The plugin's unique identifier (e.g. `"acme.linear"`)
-   * @param manifest - The plugin manifest containing the `tools` array
+   * @param pluginId - The plugin's unique identifier (e.g. `"acme.linear"`).
+   * @param manifest - The plugin manifest containing the `tools` array.
    * @param pluginDbId - The plugin's database UUID, used for worker routing
-   *   and availability checks. If omitted, `pluginId` is used (backwards-compat).
+   *   and availability checks. Required — `workerManager` keys live workers
+   *   by the DB UUID, so omitting this guarantees that every subsequent
+   *   `workerManager.isRunning(pluginDbId)` call returns false and every tool
+   *   dispatch fails with `worker for plugin X is not running`.
    */
-  registerPlugin(pluginId: string, manifest: PaperClawPluginManifestV1, pluginDbId?: string): void;
+  registerPlugin(pluginId: string, manifest: PaperclipPluginManifestV1, pluginDbId: string): void;
 
   /**
    * Remove all tool registrations for a plugin.
@@ -295,8 +298,17 @@ export function createPluginToolRegistry(
   // -----------------------------------------------------------------------
 
   return {
-    registerPlugin(pluginId: string, manifest: PaperClawPluginManifestV1, pluginDbId?: string): void {
-      const dbId = pluginDbId ?? pluginId;
+    registerPlugin(pluginId: string, manifest: PaperclipPluginManifestV1, pluginDbId: string): void {
+      // Guard at the registry boundary so a missing UUID surfaces as an
+      // explicit contract error instead of a downstream
+      // `worker for plugin X is not running`.
+      if (!pluginDbId) {
+        throw new Error(
+          `plugin-tool-registry.registerPlugin: pluginDbId is required (pluginId="${pluginId}"). ` +
+            `Workers are keyed by DB UUID; omitting this guarantees worker-lookup failure.`,
+        );
+      }
+      const dbId = pluginDbId;
 
       // Remove any previously registered tools for this plugin (idempotent)
       const previousCount = removePluginTools(pluginId);

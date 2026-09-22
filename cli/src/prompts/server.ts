@@ -1,11 +1,11 @@
 import * as p from "@clack/prompts";
-import { isLoopbackHost, type BindMode } from "@kesarcloud/shared";
+import { isLoopbackHost, type BindMode } from "@paperclipai/shared";
 import type { AuthConfig, ServerConfig } from "../config/schema.js";
 import { parseHostnameCsv } from "../config/hostnames.js";
 import { buildCustomServerConfig, buildPresetServerConfig, inferConfiguredBind } from "../config/server-bind.js";
 
 const TAILNET_BIND_WARNING =
-  "No Tailscale address was detected during setup. The saved config will stay on loopback until Tailscale is available or PAPERCLAW_TAILNET_BIND_HOST is set.";
+  "No Tailscale address was detected during setup. The saved config will stay on loopback until Tailscale is available or PAPERCLIP_TAILNET_BIND_HOST is set.";
 
 function cancelled(): never {
   p.cancel("Setup cancelled.");
@@ -84,7 +84,7 @@ export async function promptServer(opts?: {
           : "dotta-macbook-pro, host.docker.internal",
       validate: (val) => {
         try {
-          parseHostnameCsv(val);
+          parseHostnameCsv(val ?? "");
           return;
         } catch (err) {
           return err instanceof Error ? err.message : "Invalid hostname list";
@@ -156,7 +156,7 @@ export async function promptServer(opts?: {
     defaultValue: defaultHost,
     placeholder: defaultHost,
     validate: (val) => {
-      if (!val.trim()) return "Host is required";
+      if (!val || !val.trim()) return "Host is required";
       if (deploymentMode === "local_trusted" && !isLoopbackHost(val.trim())) {
         return "Local trusted mode requires a loopback host such as 127.0.0.1";
       }
@@ -173,7 +173,7 @@ export async function promptServer(opts?: {
       placeholder: "dotta-macbook-pro, your-host.tailnet.ts.net",
       validate: (val) => {
         try {
-          parseHostnameCsv(val);
+          parseHostnameCsv(val ?? "");
           return;
         } catch (err) {
           return err instanceof Error ? err.message : "Invalid hostname list";
@@ -190,9 +190,9 @@ export async function promptServer(opts?: {
     const urlInput = await p.text({
       message: "Public base URL",
       defaultValue: currentAuth?.publicBaseUrl ?? "",
-      placeholder: "https://paperclaw.example.com",
+      placeholder: "https://paperclip.example.com",
       validate: (val) => {
-        const candidate = val.trim();
+        const candidate = val?.trim() ?? "";
         if (!candidate) return "Public base URL is required for public exposure";
         try {
           const url = new URL(candidate);

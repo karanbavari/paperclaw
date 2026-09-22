@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Company } from "@kesarcloud/shared";
+import type { Company } from "@paperclipai/shared";
 import { assertDeleteConfirmation, resolveCompanyForDeletion } from "../commands/client/company.js";
 
 function makeCompany(overrides: Partial<Company>): Company {
@@ -14,20 +14,18 @@ function makeCompany(overrides: Partial<Company>): Company {
     issueCounter: 1,
     budgetMonthlyCents: 0,
     spentMonthlyCents: 0,
-    maxConcurrentAgentRuns: 10,
-    attachmentMaxBytes: 10 * 1024 * 1024,
     requireBoardApprovalForNewAgents: false,
-    requireBoardApprovalForCeoSkillInstalls: false,
     feedbackDataSharingEnabled: false,
     feedbackDataSharingConsentAt: null,
     feedbackDataSharingConsentByUserId: null,
     feedbackDataSharingTermsVersion: null,
-    brandColor: null,
     logoAssetId: null,
     logoUrl: null,
+    defaultResponsibleUserId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
+    interactionResolverGovernance: overrides.interactionResolverGovernance ?? {},
   };
 }
 
@@ -40,7 +38,7 @@ describe("resolveCompanyForDeletion", () => {
     }),
     makeCompany({
       id: "22222222-2222-2222-2222-222222222222",
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: "PAP",
     }),
   ];

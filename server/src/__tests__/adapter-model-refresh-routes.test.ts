@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { models as openCodeFallbackModels } from "@kesarcloud/adapter-opencode-local";
+import { models as openCodeFallbackModels } from "@paperclipai/adapter-opencode-local";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
 vi.mock("acpx/runtime", () => ({
@@ -67,8 +67,8 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 const mockLogActivity = vi.hoisted(() => vi.fn());
 
 function registerModuleMocks() {
-  vi.doMock("@kesarcloud/adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@kesarcloud/adapter-opencode-local/server")>("@kesarcloud/adapter-opencode-local/server");
+  vi.doMock("@paperclipai/adapter-opencode-local/server", async () => {
+    const actual = await vi.importActual<typeof import("@paperclipai/adapter-opencode-local/server")>("@paperclipai/adapter-opencode-local/server");
     return {
       ...actual,
       listOpenCodeModels: mockListOpenCodeModels,
@@ -78,9 +78,9 @@ function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
     agentService: () => ({}),
     agentInstructionsService: () => mockAgentInstructionsService,
-    agentToolsMdService: () => ({ syncAgent: vi.fn(), syncCompany: vi.fn() }),
     accessService: () => mockAccessService,
     approvalService: () => mockApprovalService,
+    builtInAgentService: () => ({ ensureCompanyDefaultAgentGrants: vi.fn() }),
     companySkillService: () => mockCompanySkillService,
     budgetService: () => mockBudgetService,
     heartbeatService: () => mockHeartbeatService,
@@ -89,7 +89,6 @@ function registerModuleMocks() {
     logActivity: mockLogActivity,
     secretService: () => mockSecretService,
     syncInstructionsBundleConfigFromFilePath: vi.fn((_agent, config) => config),
-    toolPermissionService: () => ({ listPolicies: vi.fn(), replaceAgentPolicies: vi.fn() }),
     workspaceOperationService: () => ({}),
   }));
 

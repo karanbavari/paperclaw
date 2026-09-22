@@ -11,8 +11,8 @@ import {
   issueComments,
   issueDocuments,
   issues,
-} from "@kesarcloud/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@kesarcloud/shared";
+} from "@paperclipai/db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -52,7 +52,7 @@ describeEmbeddedPostgres("activity service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-activity-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-activity-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -77,7 +77,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -125,7 +125,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -158,6 +158,7 @@ describeEmbeddedPostgres("activity service", () => {
         enormousBlob: "x".repeat(256_000),
       },
       resultJson: {
+        conversationReset: true,
         billing_type: "metered",
         total_cost_usd: 0.42,
         stopReason: "timeout",
@@ -180,6 +181,7 @@ describeEmbeddedPostgres("activity service", () => {
       runId,
       agentId,
       invocationSource: "assignment",
+      contextIssueId: issueId,
     });
     expect(runs[0]?.usageJson).toEqual({
       inputTokens: 11,
@@ -196,6 +198,7 @@ describeEmbeddedPostgres("activity service", () => {
       total_cost_usd: 0.42,
     });
     expect(runs[0]?.resultJson).toEqual({
+      conversationReset: true,
       billingType: "metered",
       billing_type: "metered",
       costUsd: 0.42,
@@ -212,6 +215,7 @@ describeEmbeddedPostgres("activity service", () => {
       lastUsefulActionAt: new Date("2026-04-18T19:59:00.000Z"),
       nextAction: "Review the completed output.",
     });
+    expect(runs[0]).not.toHaveProperty("contextSnapshot");
   });
 
   it("backfills missing liveness for completed issue runs before returning the ledger", async () => {
@@ -223,7 +227,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -317,7 +321,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -440,7 +444,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

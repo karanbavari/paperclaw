@@ -1,19 +1,35 @@
 ---
 title: External Adapters
-summary: Build, package, and distribute adapters as plugins without modifying PaperClaw source
+summary: Build, package, and distribute adapters as plugins without modifying Paperclip source
 ---
 
-PaperClaw supports external adapter plugins that can be installed from npm packages or local directories. External adapters work exactly like built-in adapters — they execute agents, parse output, and render transcripts — but they live in their own package and don't require changes to PaperClaw's source code.
+Paperclip supports external adapter plugins that can be installed from npm packages or local directories. External adapters work exactly like built-in adapters — they execute agents, parse output, and render transcripts — but they live in their own package and don't require changes to Paperclip's source code.
 
 ## Built-in vs External
 
 | | Built-in | External |
 |---|---|---|
-| Source location | Inside `paperclaw-fork/packages/adapters/` | Separate npm package or local directory |
+| Source location | Inside `paperclip-fork/packages/adapters/` | Separate npm package or local directory |
 | Registration | Hardcoded in three registries | Loaded at startup via plugin system |
 | UI parser | Static import at build time | Dynamically loaded from API (see [UI Parser](/adapters/adapter-ui-parser)) |
-| Distribution | Ships with PaperClaw | Published to npm or linked via `file:` |
-| Updates | Requires PaperClaw release | Independent versioning |
+| Distribution | Ships with Paperclip | Published to npm or linked via `file:` |
+| Updates | Requires Paperclip release | Independent versioning |
+
+### Built-in Hermes compatibility note
+
+Hermes is built in with two stable adapter type keys:
+
+- `hermes_local` starts the local Hermes CLI from
+  `@paperclipai/hermes-paperclip-adapter`.
+- `hermes_gateway` calls an already-running Hermes API server through
+  `@paperclipai/hermes-paperclip-adapter/gateway`.
+
+The legacy `@paperclipai/adapter-hermes-gateway` package is a deprecated
+compatibility shim for one release. It preserves the old gateway exports while
+forwarding to the unified Hermes package. New external override packages should
+depend on or link `@paperclipai/hermes-paperclip-adapter` and declare the type
+they override (`hermes_local` or `hermes_gateway`); the type keys did not
+change.
 
 ## Quick Start
 
@@ -37,11 +53,11 @@ my-adapter/
 
 ```json
 {
-  "name": "my-paperclaw-adapter",
+  "name": "my-paperclip-adapter",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "paperclaw": {
+  "paperclip": {
     "adapterUiParser": "1.0.0"
   },
   "exports": {
@@ -54,11 +70,11 @@ my-adapter/
     "build": "tsc"
   },
   "dependencies": {
-    "@kesarcloud/adapter-utils": "^2026.325.0",
+    "@paperclipai/adapter-utils": "^2026.325.0",
     "picocolors": "^1.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.7.0"
   }
 }
@@ -70,7 +86,7 @@ Key fields:
 |-------|---------|
 | `exports["."]` | Entry point — must export `createServerAdapter` |
 | `exports["./ui-parser"]` | Self-contained UI parser module (optional but recommended) |
-| `paperclaw.adapterUiParser` | Contract version for the UI parser (`"1.0.0"`) |
+| `paperclip.adapterUiParser` | Contract version for the UI parser (`"1.0.0"`) |
 | `files` | Limits what gets published — only `dist/` |
 
 ### tsconfig.json
@@ -100,7 +116,7 @@ The plugin loader calls `createServerAdapter()` from your package root. This fun
 
 ```ts
 export const type = "my_adapter";     // snake_case, globally unique
-export const label = "My Agent (local)";
+export const label = "My Agent";
 
 export const models = [
   { id: "model-a", label: "Model A" },
@@ -118,7 +134,7 @@ export { createServerAdapter } from "./server/index.js";
 ### src/server/index.ts
 
 ```ts
-import type { ServerAdapterModule } from "@kesarcloud/adapter-utils";
+import type { ServerAdapterModule } from "@paperclipai/adapter-utils";
 import { type, models, agentConfigurationDoc } from "../index.js";
 import { execute } from "./execute.js";
 import { testEnvironment } from "./test.js";
@@ -142,13 +158,13 @@ The core execution function. Receives an `AdapterExecutionContext` and returns a
 import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@kesarcloud/adapter-utils";
+} from "@paperclipai/adapter-utils";
 
 import {
   runChildProcess,
-  buildPaperClawEnv,
+  buildPaperclipEnv,
   renderTemplate,
-} from "@kesarcloud/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils/server-utils";
 
 export async function execute(
   ctx: AdapterExecutionContext,
@@ -160,8 +176,8 @@ export async function execute(
   const command = String(config.command ?? "my-agent");
   const timeoutSec = Number(config.timeoutSec ?? 300);
 
-  // 2. Build environment with PaperClaw vars injected
-  const env = buildPaperClawEnv(agent);
+  // 2. Build environment with Paperclip vars injected
+  const env = buildPaperclipEnv(agent);
 
   // 3. Render prompt template
   const prompt = config.promptTemplate
@@ -196,12 +212,12 @@ export async function execute(
 }
 ```
 
-#### Available Helpers from `@kesarcloud/adapter-utils`
+#### Available Helpers from `@paperclipai/adapter-utils`
 
 | Helper | Purpose |
 |--------|---------|
 | `runChildProcess(command, opts)` | Spawn a child process with timeout, grace period, and streaming callbacks |
-| `buildPaperClawEnv(agent)` | Inject `PAPERCLAW_*` environment variables |
+| `buildPaperclipEnv(agent)` | Inject `PAPERCLIP_*` environment variables |
 | `renderTemplate(template, data)` | `{{variable}}` substitution in prompt templates |
 | `asString(v)`, `asNumber(v)`, `asBoolean(v)` | Safe config value extraction |
 
@@ -213,7 +229,7 @@ Validates the adapter configuration before running. Returns structured diagnosti
 import type {
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@kesarcloud/adapter-utils";
+} from "@paperclipai/adapter-utils";
 
 export async function testEnvironment(
   ctx: AdapterEnvironmentTestContext,
@@ -260,14 +276,14 @@ Check levels:
 ### From npm
 
 ```sh
-# Via the PaperClaw UI
-# Settings → Adapters → Install from npm → "my-paperclaw-adapter"
+# Via the Paperclip UI
+# Settings → Adapters → Install from npm → "my-paperclip-adapter"
 
 # Or via API
 curl -X POST http://localhost:3102/api/adapters \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"packageName": "my-paperclaw-adapter"}'
+  -d '{"packageName": "my-paperclip-adapter"}'
 ```
 
 ### From local directory
@@ -279,16 +295,16 @@ curl -X POST http://localhost:3102/api/adapters \
   -d '{"localPath": "/home/user/my-adapter"}'
 ```
 
-Local adapters are symlinked into PaperClaw's adapter directory. Changes to the source are picked up on server restart.
+Local adapters are symlinked into Paperclip's adapter directory. Changes to the source are picked up on server restart.
 
 ### Via adapter-plugins.json
 
-For development, you can also edit `~/.paperclaw/adapter-plugins.json` directly:
+For development, you can also edit `~/.paperclip/adapter-plugins.json` directly:
 
 ```json
 [
   {
-    "packageName": "my-paperclaw-adapter",
+    "packageName": "my-paperclip-adapter",
     "localPath": "/home/user/my-adapter",
     "type": "my_adapter",
     "installedAt": "2026-03-30T12:00:00.000Z"
@@ -301,7 +317,7 @@ For development, you can also edit `~/.paperclaw/adapter-plugins.json` directly:
 If your agent runtime supports sessions (conversation continuity across heartbeats), implement a session codec:
 
 ```ts
-import type { AdapterSessionCodec } from "@kesarcloud/adapter-utils";
+import type { AdapterSessionCodec } from "@paperclipai/adapter-utils";
 
 export const sessionCodec: AdapterSessionCodec = {
   deserialize(raw) {
@@ -375,7 +391,7 @@ npm run build
 npm publish
 ```
 
-Other PaperClaw users can then install your adapter by package name from the UI or API.
+Other Paperclip users can then install your adapter by package name from the UI or API.
 
 ## Security
 

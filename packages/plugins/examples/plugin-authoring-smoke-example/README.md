@@ -1,6 +1,6 @@
 # Plugin Authoring Smoke Example
 
-A PaperClaw plugin
+A Paperclip plugin
 
 ## Development
 
@@ -11,13 +11,13 @@ pnpm dev:ui         # local dev server with hot-reload events
 pnpm test
 ```
 
-## Install Into PaperClaw
+## Install Into Paperclip
 
 ```bash
-pnpm paperclaw plugin install ./
+npx paperclipai plugin install ./
 ```
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@kesarcloud/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@paperclipai/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

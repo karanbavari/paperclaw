@@ -1,5 +1,6 @@
 #!/usr/bin/env -S node --import tsx
 import { listLocalServiceRegistryRecords, removeLocalServiceRegistryRecord, terminateLocalService } from "../server/src/services/local-service-supervisor.ts";
+import { applyDevRunnerOptions } from "./dev-runner-options.ts";
 import { repoRoot } from "./dev-service-profile.ts";
 
 function toDisplayLines(records: Awaited<ReturnType<typeof listLocalServiceRegistryRecords>>) {
@@ -11,14 +12,28 @@ function toDisplayLines(records: Awaited<ReturnType<typeof listLocalServiceRegis
 }
 
 const command = process.argv[2] ?? "list";
+try {
+  const { forwardedArgs } = applyDevRunnerOptions(
+    process.argv.slice(3),
+    process.env,
+    repoRoot,
+  );
+  if (forwardedArgs.length > 0) {
+    throw new Error(`Unknown dev-service option: ${forwardedArgs[0]}`);
+  }
+} catch (error) {
+  console.error(`[paperclip] ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
 const records = await listLocalServiceRegistryRecords({
-  profileKind: "paperclaw-dev",
+  profileKind: "paperclip-dev",
   metadata: { repoRoot },
 });
 
 if (command === "list") {
   if (records.length === 0) {
-    console.log("No PaperClaw dev services registered for this repo.");
+    console.log("No Paperclip dev services registered for this repo.");
     process.exit(0);
   }
   for (const line of toDisplayLines(records)) {
@@ -29,7 +44,7 @@ if (command === "list") {
 
 if (command === "stop") {
   if (records.length === 0) {
-    console.log("No PaperClaw dev services registered for this repo.");
+    console.log("No Paperclip dev services registered for this repo.");
     process.exit(0);
   }
   for (const record of records) {

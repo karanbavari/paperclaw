@@ -1,12 +1,12 @@
-import type { ActivityEvent, Issue, SuccessfulRunHandoffState } from "@kesarcloud/shared";
+import type { ActivityEvent, Issue, SuccessfulRunHandoffState } from "@paperclipai/shared";
 
 export const SUCCESSFUL_RUN_HANDOFF_REQUIRED_ACTION = "issue.successful_run_handoff_required";
 export const SUCCESSFUL_RUN_HANDOFF_RESOLVED_ACTION = "issue.successful_run_handoff_resolved";
 export const SUCCESSFUL_RUN_HANDOFF_ESCALATED_ACTION = "issue.successful_run_handoff_escalated";
 export const SUCCESSFUL_RUN_HANDOFF_REQUIRED_NOTICE_BODY =
-  "PaperClaw needs a disposition before this issue can continue.";
+  "Paperclip needs a disposition before this issue can continue.";
 export const SUCCESSFUL_RUN_HANDOFF_EXHAUSTED_NOTICE_BODY =
-  "PaperClaw could not resolve this issue's missing disposition automatically. The issue is blocked on a recovery owner.";
+  "Paperclip could not resolve this issue's missing disposition automatically. The source assignment is unchanged and a board decision is required.";
 
 export function isSuccessfulRunHandoffActivity(action: string) {
   return action === SUCCESSFUL_RUN_HANDOFF_REQUIRED_ACTION
@@ -14,8 +14,17 @@ export function isSuccessfulRunHandoffActivity(action: string) {
     || action === SUCCESSFUL_RUN_HANDOFF_ESCALATED_ACTION;
 }
 
-export function isSuccessfulRunHandoffRequired(issue: Pick<Issue, "successfulRunHandoff">) {
-  return issue.successfulRunHandoff?.required === true;
+export function isSuccessfulRunHandoffRequired(
+  issue: Pick<Issue, "successfulRunHandoff"> & Partial<Pick<Issue, "scheduledRetry">>,
+) {
+  const handoff = issue.successfulRunHandoff;
+  if (handoff?.required !== true) return false;
+  // A live continuation (running/queued run or queued wake) means an agent is
+  // already on the issue — only complain when nothing is moving. The one
+  // carve-out is a not-yet-promoted scheduled retry: the notice stays visible
+  // there so the "Retry now" control remains reachable.
+  if (!handoff.hasLiveContinuation) return true;
+  return issue.scheduledRetry?.status === "scheduled_retry";
 }
 
 function readString(value: unknown) {
@@ -34,6 +43,7 @@ export function successfulRunHandoffFromActivity(event: ActivityEvent): Successf
   return {
     state,
     required: state === "required",
+    hasLiveContinuation: false,
     sourceRunId:
       readString(details.sourceRunId)
       ?? readString(details.source_run_id)
@@ -67,7 +77,7 @@ export function isSuccessfulRunHandoffComment(text: string) {
 export function isSuccessfulRunHandoffEscalationComment(text: string) {
   const trimmed = text.trim();
   return trimmed === SUCCESSFUL_RUN_HANDOFF_EXHAUSTED_NOTICE_BODY
-    || /^PaperClaw exhausted the bounded successful-run handoff correction\b/i.test(trimmed);
+    || /^Paperclip exhausted the bounded successful-run handoff correction\b/i.test(trimmed);
 }
 
 export function successfulRunHandoffActivityTone(action: string) {

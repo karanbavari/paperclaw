@@ -1,8 +1,8 @@
-# PaperClaw Plugin System Specification
+# Paperclip Plugin System Specification
 
 Status: proposed complete spec for the post-V1 plugin system
 
-This document is the complete specification for PaperClaw's plugin and extension architecture.
+This document is the complete specification for Paperclip's plugin and extension architecture.
 It expands the brief plugin notes in [doc/SPEC.md](../SPEC.md) and should be read alongside the comparative analysis in [doc/plugins/ideas-from-opencode.md](./ideas-from-opencode.md).
 
 This is not part of the V1 implementation contract in [doc/SPEC-implementation.md](../SPEC-implementation.md).
@@ -20,14 +20,14 @@ Today, the practical deployment model is:
 
 Current limitations to keep in mind:
 
-- Plugin UI bundles currently run as same-origin JavaScript inside the main PaperClaw app. Treat plugin UI as trusted code, not a sandboxed frontend capability boundary.
-- Manifest capabilities currently gate worker-side host RPC calls. They do not prevent plugin UI code from calling ordinary PaperClaw HTTP APIs directly.
+- Plugin UI bundles currently run as same-origin JavaScript inside the main Paperclip app. Treat plugin UI as trusted code, not a sandboxed frontend capability boundary.
+- Manifest capabilities currently gate worker-side host RPC calls. They do not prevent plugin UI code from calling ordinary Paperclip HTTP APIs directly.
 - Runtime installs assume a writable local filesystem for the plugin package directory and plugin data directory.
 - Runtime npm installs assume `npm` is available in the running environment and that the host can reach the configured package registry.
 - Published npm packages are the intended install artifact for deployed plugins.
 - The repo example plugins under `packages/plugins/examples/` are development conveniences. They work from a source checkout and should not be assumed to exist in a generic published build unless they are explicitly shipped with that build.
 - Dynamic plugin install is not yet cloud-ready for horizontally scaled or ephemeral deployments. There is no shared artifact store, install coordination, or cross-node distribution layer yet.
-- The current runtime ships a small host-provided plugin UI component kit through `@kesarcloud/plugin-sdk/ui`, but does not support plugin asset uploads/reads yet. Treat plugin asset APIs as future-scope ideas, not current implementation promises.
+- The current runtime ships a small host-provided plugin UI component kit through `@paperclipai/plugin-sdk/ui`, but does not support plugin asset uploads/reads yet. Treat plugin asset APIs as future-scope ideas, not current implementation promises.
 - Scoped plugin API routes are JSON-only and must be declared in `apiRoutes`.
   They mount under `/api/plugins/:pluginId/api/*`; plugins cannot shadow core
   API routes.
@@ -65,12 +65,12 @@ This spec does not cover:
 
 ## 2. Core Assumptions
 
-PaperClaw plugin design is based on the following assumptions:
+Paperclip plugin design is based on the following assumptions:
 
-1. PaperClaw is single-tenant and self-hosted.
+1. Paperclip is single-tenant and self-hosted.
 2. Plugin installation is global to the instance.
-3. "Companies" remain core PaperClaw business objects, but they are not plugin trust boundaries.
-4. Board governance, approval gates, budget hard-stops, and core task invariants remain owned by PaperClaw core.
+3. "Companies" remain core Paperclip business objects, but they are not plugin trust boundaries.
+4. Board governance, approval gates, budget hard-stops, and core task invariants remain owned by Paperclip core.
 5. Projects already have a real workspace model via `project_workspaces`, and local/runtime plugins should build on that instead of inventing a separate workspace abstraction.
 
 ## 3. Goals
@@ -78,7 +78,7 @@ PaperClaw plugin design is based on the following assumptions:
 The plugin system must:
 
 1. Let operators install global instance-wide plugins.
-2. Let plugins add major capabilities without editing PaperClaw core.
+2. Let plugins add major capabilities without editing Paperclip core.
 3. Keep core governance and auditing intact.
 4. Support both local/runtime plugins and external SaaS connectors.
 5. Support future plugin categories such as:
@@ -98,18 +98,18 @@ The first plugin system must not:
 1. Allow arbitrary plugins to override core routes or core invariants.
 2. Allow arbitrary plugins to mutate approval, auth, issue checkout, or budget enforcement logic.
 3. Allow arbitrary third-party plugins to run free-form DB migrations.
-4. Depend on project-local plugin folders such as `.paperclaw/plugins`.
+4. Depend on project-local plugin folders such as `.paperclip/plugins`.
 5. Depend on automatic install-and-execute behavior at server startup from arbitrary config files.
 
 ## 5. Terminology
 
 ### 5.1 Instance
 
-The single PaperClaw deployment an operator installs and controls.
+The single Paperclip deployment an operator installs and controls.
 
 ### 5.2 Company
 
-A first-class PaperClaw business object inside the instance.
+A first-class Paperclip business object inside the instance.
 
 ### 5.3 Project Workspace
 
@@ -118,7 +118,7 @@ Plugins resolve workspace paths from this model to locate local directories for 
 
 ### 5.4 Platform Module
 
-A trusted in-process extension loaded directly by PaperClaw core.
+A trusted in-process extension loaded directly by Paperclip core.
 
 Examples:
 
@@ -129,7 +129,7 @@ Examples:
 
 ### 5.5 Plugin
 
-An installable instance-wide extension package loaded through the PaperClaw plugin runtime.
+An installable instance-wide extension package loaded through the Paperclip plugin runtime.
 
 Examples:
 
@@ -153,7 +153,7 @@ Plugins may only call host APIs that are covered by granted capabilities.
 
 ## 6. Extension Classes
 
-PaperClaw has two extension classes.
+Paperclip has two extension classes.
 
 ## 6.1 Platform Modules
 
@@ -201,7 +201,7 @@ A plugin may declare more than one category.
 
 ## 7. Project Workspaces
 
-PaperClaw already has a concrete workspace model:
+Paperclip already has a concrete workspace model:
 
 - projects expose `workspaces`
 - projects expose `primaryWorkspace`
@@ -227,14 +227,14 @@ Examples:
 
 ## 8.1 On-Disk Layout
 
-Plugins live under the PaperClaw instance directory.
+Plugins live under the Paperclip instance directory.
 
 Suggested layout:
 
-- `~/.paperclaw/instances/default/plugins/package.json`
-- `~/.paperclaw/instances/default/plugins/node_modules/`
-- `~/.paperclaw/instances/default/plugins/.cache/`
-- `~/.paperclaw/instances/default/data/plugins/<plugin-id>/`
+- `~/.paperclip/instances/default/plugins/package.json`
+- `~/.paperclip/instances/default/plugins/node_modules/`
+- `~/.paperclip/instances/default/plugins/.cache/`
+- `~/.paperclip/instances/default/data/plugins/<plugin-id>/`
 
 The package install directory and the plugin data directory are separate.
 
@@ -242,13 +242,13 @@ This on-disk model is the reason the current implementation expects a persistent
 
 ## 8.2 Operator Commands
 
-PaperClaw should add CLI commands:
+Paperclip should add CLI commands:
 
-- `pnpm paperclaw plugin list`
-- `pnpm paperclaw plugin install <package[@version]>`
-- `pnpm paperclaw plugin uninstall <plugin-id>`
-- `pnpm paperclaw plugin upgrade <plugin-id> [version]`
-- `pnpm paperclaw plugin doctor <plugin-id>`
+- `pnpm paperclipai plugin list`
+- `npx paperclipai plugin install <package[@version]>`
+- `npx paperclipai plugin uninstall <plugin-id>`
+- `npx paperclipai plugin upgrade <plugin-id> [version]`
+- `npx paperclipai plugin doctor <plugin-id>`
 
 These commands are instance-level operations.
 
@@ -281,7 +281,7 @@ Rules:
 
 - plugin contributions are additive by default
 - plugins may not override core routes or core actions by name collision
-- UI slot IDs are automatically namespaced by plugin ID (e.g. `@kesarcloud/plugin-linear:sync-health-widget`), so cross-plugin collisions are structurally impossible
+- UI slot IDs are automatically namespaced by plugin ID (e.g. `@paperclip/plugin-linear:sync-health-widget`), so cross-plugin collisions are structurally impossible
 - if a single plugin declares duplicate slot IDs within its own manifest, the host must reject at install time
 
 ## 10. Package Contract
@@ -298,9 +298,9 @@ Suggested `package.json` keys:
 
 ```json
 {
-  "name": "@kesarcloud/plugin-linear",
+  "name": "@paperclip/plugin-linear",
   "version": "0.1.0",
-  "paperclawPlugin": {
+  "paperclipPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
@@ -313,14 +313,17 @@ Suggested `package.json` keys:
 Normative manifest shape:
 
 ```ts
-export interface PaperClawPluginManifestV1 {
+export interface PaperclipPluginManifestV1 {
   id: string;
   apiVersion: 1;
   version: string;
   displayName: string;
   description: string;
-  categories: Array<"connector" | "workspace" | "automation" | "communication" | "developer" | "ecommerce" | "finance" | "legal_law" | "productivity" | "real-estate" | "ui">;
-  minimumPaperClawVersion?: string;
+  author: string;
+  categories: Array<"connector" | "workspace" | "automation" | "ui">;
+  minimumHostVersion?: string;
+  /** @deprecated Use `minimumHostVersion` instead. Retained for backwards compatibility. */
+  minimumPaperclipVersion?: string;
   capabilities: string[];
   entrypoints: {
     worker: string;
@@ -335,15 +338,42 @@ export interface PaperClawPluginManifestV1 {
     description: string;
     parametersSchema: JsonSchema;
   }>;
+  database?: PluginDatabaseDeclaration;
+  apiRoutes?: PluginApiRouteDeclaration[];
+  environmentDrivers?: PluginEnvironmentDriverDeclaration[];
+  agents?: PluginManagedAgentDeclaration[];
+  projects?: PluginManagedProjectDeclaration[];
+  routines?: PluginManagedRoutineDeclaration[];
+  skills?: PluginManagedSkillDeclaration[];
+  localFolders?: PluginLocalFolderDeclaration[];
+  /** Legacy top-level launcher declarations. Prefer `ui.launchers` for new manifests. */
+  launchers?: PluginLauncherDeclaration[];
   ui?: {
+    launchers?: PluginLauncherDeclaration[];
     slots: Array<{
-      type: "page" | "detailTab" | "dashboardWidget" | "sidebar" | "settingsPage";
+      type: "page"
+        | "detailTab"
+        | "taskDetailView"
+        | "dashboardWidget"
+        | "sidebar"
+        | "routeSidebar"
+        | "sidebarPanel"
+        | "projectSidebarItem"
+        | "globalToolbarButton"
+        | "toolbarButton"
+        | "contextMenuItem"
+        | "commentAnnotation"
+        | "commentContextMenuItem"
+        | "settingsPage"
+        | "companySettingsPage";
       id: string;
       displayName: string;
       /** Which export name in the UI bundle provides this component */
       exportName: string;
       /** For detailTab: which entity types this tab appears on */
       entityTypes?: Array<"project" | "issue" | "agent" | "goal" | "run">;
+      /** For page and companySettingsPage: single route segment */
+      routePath?: string;
     }>;
   };
 }
@@ -354,14 +384,26 @@ Rules:
 - `id` must be globally unique
 - `id` should normally equal the npm package name
 - `apiVersion` must match the host-supported plugin API version
+- `minimumHostVersion` is preferred, with `minimumPaperclipVersion` retained for
+  backwards compatibility
 - `capabilities` must be static and install-time visible
 - config schema must be JSON Schema compatible
 - `entrypoints.ui` points to the directory containing the built UI bundle
 - `ui.slots` declares which extension slots the plugin fills, so the host knows what to mount without loading the bundle eagerly; each slot references an `exportName` from the UI bundle
+- declare managed declarations with the matching `*.managed` capability:
+  - `agents` → `agents.managed`
+  - `projects` → `projects.managed`
+  - `routines` → `routines.managed`
+  - `skills` → `skills.managed`
+- an `environmentDrivers` entry with `kind: "sandbox_provider"` declares sandbox
+  capabilities through `sandboxCapabilities`. See the
+  [sandbox provider capability contract](./SANDBOX_PROVIDER_CAPABILITIES.md) for
+  the supported keys, the worker-method prerequisites, and the narrowing and
+  failure rules.
 
 ## 11. Agent Tools
 
-Plugins may contribute tools that PaperClaw agents can use during runs.
+Plugins may contribute tools that Paperclip agents can use during runs.
 
 ### 11.1 Tool Declaration
 
@@ -377,10 +419,6 @@ tools?: Array<{
 ```
 
 Tool names are automatically namespaced by plugin ID at runtime (e.g. `linear:search-issues`), so plugins cannot shadow core tools or each other's tools.
-
-The board UI also exposes a Plugin Tool Test Console for installed plugins. Console invocations use the same registered tool handlers as agent runs, include `invocationKind: "board_console"` and an `invocationId` in the run context, and write a `plugin.tool.tested` activity entry without storing raw parameter values.
-
-Plugin tool execution is governed by the Tool Permission System. Operators can set company defaults, company tool rules, and per-agent overrides with `allow`, `deny`, `approval_required`, or `budget_limited` effects. The host enforces these policies before dispatching `executeTool`; approval-required calls create a `tool_execution` approval that stores only tool identity, context, parameter keys, and a parameter hash.
 
 ### 11.2 Tool Execution
 
@@ -411,7 +449,7 @@ Third-party plugins run out-of-process by default.
 
 Default runtime:
 
-- PaperClaw server starts one worker process per installed plugin
+- Paperclip server starts one worker process per installed plugin
 - the worker process is a Node process
 - host and worker communicate over JSON-RPC on stdio
 
@@ -457,6 +495,7 @@ If a worker fails:
 - keep the rest of the instance running
 - retry start with bounded backoff
 - do not drop other plugins or core services
+- a bundled plugin (shipped with the release image) that is still `error` at the next server boot is moved back to `ready` once per boot, so the startup loader gets a fresh activation attempt; an operator-`disabled` plugin is never touched
 
 ## 12.5 Graceful Shutdown Policy
 
@@ -523,17 +562,18 @@ Returns:
 
 ### 13.4 `configChanged`
 
-Called when the operator updates the plugin's instance config at runtime.
+Called when the operator updates a plugin config for a specific company at runtime.
 
 Input includes:
 
 - new resolved config
+- `companyId` for the company-scoped config row
 
 If the worker implements this method, it applies the new config without restarting. If the worker does not implement this method, the host restarts the worker process with the new config (graceful shutdown then restart).
 
 ### 13.5 `onEvent`
 
-Receives one typed PaperClaw domain event.
+Receives one typed Paperclip domain event.
 
 Delivery semantics:
 
@@ -633,7 +673,23 @@ Plugins that need filesystem, git, terminal, or process operations handle those 
 
 ## 14.1 Issue Orchestration APIs
 
-Trusted orchestration plugins can create and update PaperClaw issues through `ctx.issues` instead of importing server internals. The public issue contract includes parent/project/goal links, board or agent assignees, blocker IDs, labels, billing code, request depth, execution workspace inheritance, and plugin origin metadata.
+Trusted orchestration plugins can create and update Paperclip issues through `ctx.issues` instead of importing server internals. The public issue contract includes parent/project/goal links, board or agent assignees, blocker IDs, labels, billing code, request depth, execution workspace inheritance, and plugin origin metadata.
+
+Plugins that perform durable work should declare managed Paperclip resources rather than using private plugin state:
+
+- `agents` + `ctx.agents.managed.*` for named, invokable operators (`agents.managed` required)
+- `projects` + `ctx.projects.managed.*` for stable, scoped issue/workspace ownership (`projects.managed` required)
+- `routines` + `ctx.routines.managed.*` for schedule/webhook/manual execution with issue trails (`routines.managed` required)
+- `skills` + `ctx.skills.managed.*` for reusable agent capabilities (`skills.managed` required)
+
+The LLM Wiki plugin is the current reference for this pattern: it declares managed
+agents, projects, routines, and skills in manifest, reconciles them per company,
+and uses managed routines for periodic wiki maintenance and ingest operations.
+Content-oriented plugins should follow the same model instead of running
+unmanaged background loops: make the LLM-facing worker an operator-visible
+managed agent, attach reusable prompt/tool guidance as managed skills, keep
+operation issues in a managed project, and drive recurring work through managed
+routines.
 
 Origin rules:
 
@@ -656,6 +712,7 @@ Governance helpers:
 - `ctx.issues.assertCheckoutOwner({ issueId, companyId, actorAgentId, actorRunId })` lets plugin actions preserve agent-run checkout ownership.
 - `ctx.issues.requestWakeup(issueId, companyId, options)` requests assignment wakeups through host heartbeat semantics, including terminal-status, blocker, assignee, and budget hard-stop checks.
 - `ctx.issues.requestWakeups(issueIds, companyId, options)` applies the same host-owned wakeup semantics to a batch and may use an idempotency key prefix for stable coordinator retries.
+- `ctx.issues.createComment(issueId, body, companyId, options)` posts a comment attributed to the plugin's own agent by default (`options.authorAgentId`). Passing `options.actorUserId` instead attributes the comment to that human company member — this requires `issue.comments.create_human_attributed` in addition to `issue.comments.create`, and the host independently verifies `actorUserId` is an active human member of the company before applying it, so a plugin can never forge attribution to an arbitrary or inactive user. A human-attributed comment on a non-terminal-status issue with an assignee also triggers the same assignee wakeup a board user's comment gets.
 
 Plugin-originated issue, relation, document, comment, and wakeup mutations must write activity entries with `actorType: "plugin"` and details fields for `sourcePluginId`, `sourcePluginKey`, `initiatingActorType`, `initiatingActorId`, and `initiatingRunId` when a user or agent run initiated the plugin work.
 
@@ -674,15 +731,18 @@ Scoped API routes:
 
 ```ts
 /** Top-level helper for defining a plugin with type checking */
-export function definePlugin(definition: PluginDefinition): PaperClawPlugin;
+export function definePlugin(definition: PluginDefinition): PaperclipPlugin;
 
 /** Re-exported from Zod for config schema definitions */
 export { z } from "zod";
 
 export interface PluginContext {
-  manifest: PaperClawPluginManifestV1;
+  manifest: PaperclipPluginManifestV1;
   config: {
-    get(): Promise<Record<string, unknown>>;
+    get(companyId: string): Promise<Record<string, unknown>>;
+  };
+  secrets: {
+    resolve(secretRef: { type: "secret_ref"; secretId: string; version?: number | "latest" }, options: { companyId: string; configPath?: string }): Promise<string>;
   };
   events: {
     on(name: string, fn: (event: unknown) => Promise<void>): void;
@@ -750,20 +810,39 @@ The host enforces capabilities in the SDK layer and refuses calls outside the gr
 - `activity.read`
 - `costs.read`
 - `issues.orchestration.read`
+- `database.namespace.read`
 
 ### Data Write
 
 - `issues.create`
 - `issues.update`
 - `issue.comments.create`
+- `issue.comments.create_human_attributed`
+- `issue.interactions.create`
 - `issue.documents.write`
 - `issue.relations.write`
 - `issues.checkout`
 - `issues.wakeup`
-- `assets.write`
-- `assets.read`
 - `activity.log.write`
 - `metrics.write`
+- `telemetry.track`
+- `assets.read`
+- `assets.write`
+- `database.namespace.migrate`
+- `database.namespace.write`
+- `goals.create`
+- `goals.update`
+- `projects.managed`
+- `routines.managed`
+- `skills.managed`
+- `agents.managed`
+- `agents.pause`
+- `agents.resume`
+- `agents.invoke`
+- `agent.sessions.create`
+- `agent.sessions.list`
+- `agent.sessions.send`
+- `agent.sessions.close`
 
 ### Plugin State
 
@@ -776,8 +855,10 @@ The host enforces capabilities in the SDK layer and refuses calls outside the gr
 - `events.emit`
 - `jobs.schedule`
 - `webhooks.receive`
+- `local.folders`
 - `http.outbound`
 - `secrets.read-ref`
+- `environment.drivers.register`
 
 ### Agent Tools
 
@@ -790,6 +871,7 @@ The host enforces capabilities in the SDK layer and refuses calls outside the gr
 - `ui.page.register`
 - `ui.detailTab.register`
 - `ui.dashboardWidget.register`
+- `ui.commentAnnotation.register`
 - `ui.action.register`
 
 ## 15.2 Forbidden Capabilities
@@ -875,7 +957,7 @@ Plugins may emit custom events using `ctx.events.emit(name, payload)`. Plugin-em
 Other plugins may subscribe to these events using the same `ctx.events.on()` API:
 
 ```ts
-ctx.events.on("plugin.@kesarcloud/plugin-git.push-detected", async (event) => {
+ctx.events.on("plugin.@paperclip/plugin-git.push-detected", async (event) => {
   // react to the git plugin detecting a push
 });
 ```
@@ -898,6 +980,7 @@ Job rules:
 3. The host prevents overlapping execution of the same plugin/job combination unless explicitly allowed later.
 4. Every job run is recorded in Postgres.
 5. Failed jobs are retryable.
+6. For recurring business workflows that should create visible Paperclip work, prefer managed routines and managed resources over jobs. Jobs remain useful for private plugin-runtime maintenance tasks.
 
 ## 18. Webhooks
 
@@ -936,7 +1019,7 @@ The plugin's UI bundle exports:
 
 ```tsx
 // dist/ui/index.tsx
-import { usePluginData, usePluginAction, MetricCard, StatusBadge } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginData, usePluginAction, MetricCard, StatusBadge } from "@paperclipai/plugin-sdk/ui";
 
 export function DashboardWidget({ context }: PluginWidgetProps) {
   const { data, loading } = usePluginData("sync-health", { companyId: context.companyId });
@@ -968,7 +1051,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 - The host decides **where** plugin components appear (which slots exist and when they mount).
 - The host provides the **bridge** — plugin UI cannot make arbitrary network requests or access host internals directly.
 - The host enforces **capability gates** — if a plugin's worker does not have a capability, the bridge rejects the call even if the UI requests it.
-- The host provides **design tokens and shared components** via `@kesarcloud/plugin-sdk/ui` so plugins can match the host's visual language without being forced to.
+- The host provides **design tokens and shared components** via `@paperclipai/plugin-sdk/ui` so plugins can match the host's visual language without being forced to.
 
 **What the plugin controls:**
 
@@ -976,7 +1059,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 - The plugin decides **what data** to fetch and **what actions** to expose.
 - The plugin can use any React patterns (hooks, context, third-party component libraries) inside its bundle.
 
-### 19.0.1 Plugin UI SDK (`@kesarcloud/plugin-sdk/ui`)
+### 19.0.1 Plugin UI SDK (`@paperclipai/plugin-sdk/ui`)
 
 The SDK includes a `ui` subpath export that plugin frontends import. This subpath provides:
 
@@ -988,14 +1071,14 @@ The SDK includes a `ui` subpath export that plugin frontends import. This subpat
 Plugins are encouraged but not required to use the shared components. A plugin may render entirely custom UI as long as it communicates through the bridge.
 
 `useHostNavigation()` is the supported way for plugin UI to navigate to
-PaperClaw-internal pages. It exposes `resolveHref(to)`, `navigate(to,
+Paperclip-internal pages. It exposes `resolveHref(to)`, `navigate(to,
 options?)`, and `linkProps(to, options?)`. Plugin links should prefer
 `linkProps()` so anchors keep real `href` values for copy-link, modifier-click,
 middle-click, and open-in-new-tab behavior while plain left-clicks route through
 the host SPA router. The host resolves company-scoped paths against the active
 company prefix without double-prefixing already-prefixed paths. Plugin UI should
 not use raw same-origin `href`s or `window.location.assign()` for internal
-PaperClaw navigation because those can force a full document reload.
+Paperclip navigation because those can force a full document reload.
 
 ### 19.0.2 Bundle Isolation
 
@@ -1003,7 +1086,7 @@ Plugin UI bundles are loaded as standard ES modules, not iframed. This gives plu
 
 Isolation rules:
 
-- Plugin bundles must not import from host internals. They may only import from `@kesarcloud/plugin-sdk/ui` and their own dependencies.
+- Plugin bundles must not import from host internals. They may only import from `@paperclipai/plugin-sdk/ui` and their own dependencies.
 - Plugin bundles must not access `window.fetch` or `XMLHttpRequest` directly for host API calls. All host communication goes through the bridge.
 - The host may enforce Content Security Policy rules that restrict plugin network access to the bridge endpoint only.
 - Plugin bundles must be statically analyzable — no dynamic `import()` of URLs outside the plugin's own bundle.
@@ -1060,7 +1143,28 @@ Plugins may add sidebar links to:
 - global plugin settings
 - company-context plugin pages
 
-## 19.6 Shared Components In `@kesarcloud/plugin-sdk/ui`
+### 19.5.1 Route Sidebars (`routeSidebar`)
+
+A `routeSidebar` slot supplies a contextual sidebar for a plugin page route
+(matched by `routePath`). It **coexists** with the main app sidebar rather than
+replacing it: while the route is active the host collapses the app `<Sidebar/>`
+to its 64px icon rail (still hover/peek-able) and renders the plugin's
+`routeSidebar` in a secondary pane, producing the layout
+`[ app rail ][ route sidebar ][ content ]`. The same model applies to the
+host's own company-settings sidebar.
+
+The host owns the collapse. Plugins must not mount `RequestCollapsedSidebar` or
+otherwise attempt to collapse the app sidebar from a `routeSidebar` — the host
+applies the collapse while the route is mounted and restores the previous state
+on navigation away. The collapse is a **hard invariant**: while a secondary
+sidebar is shown the app rail is forced collapsed and its expand/toggle
+affordance is hidden, *overriding* any user pin. Crucially, this force is
+ephemeral — it never mutates the user's persisted expanded/collapsed preference,
+so navigating back to a normal route restores exactly what the user chose.
+Precedence is therefore: secondary-sidebar force > explicit user pin >
+route-requested collapse (`RequestCollapsedSidebar`) > default expanded.
+
+## 19.6 Shared Components In `@paperclipai/plugin-sdk/ui`
 
 The host SDK ships shared components that plugins can import to quickly build UIs that match the host's look and feel. These are convenience building blocks, not a requirement.
 
@@ -1119,24 +1223,26 @@ Error codes:
 - `TIMEOUT` — the worker did not respond within the configured timeout
 - `UNKNOWN` — unexpected bridge-level failure
 
-The `@kesarcloud/plugin-sdk/ui` subpath should also export an `ErrorBoundary` component that plugin authors can use to catch rendering errors without crashing the host page.
+The `@paperclipai/plugin-sdk/ui` subpath should also export an `ErrorBoundary` component that plugin authors can use to catch rendering errors without crashing the host page.
 
 ## 19.8 Plugin Settings UI
 
-Each plugin that declares an `instanceConfigSchema` in its manifest gets an auto-generated settings form at `/settings/plugins/:pluginId`. The host renders the form from the JSON Schema.
+Each plugin that declares an `instanceConfigSchema` in its manifest gets an auto-generated company-scoped settings form at `/settings/plugins/:pluginId`. The host renders the form from the JSON Schema for the selected company.
 
 The auto-generated form supports:
 
 - text inputs, number inputs, toggles, select dropdowns derived from schema types and enums
 - nested objects rendered as fieldsets
 - arrays rendered as repeatable field groups with add/remove controls
-- secret ref fields: any schema property annotated with `"format": "secret-ref"` renders as a secret picker that resolves through the PaperClaw secret provider system rather than a plain text input
+- secret ref fields: any schema property annotated with `"format": "secret-ref"` renders as a secret picker that stores the shared `{ type: "secret_ref", secretId, version? }` object shape and resolves through the Paperclip secret provider system rather than a plain text input
 - validation messages derived from schema constraints (`required`, `minLength`, `pattern`, `minimum`, etc.)
 - a "Test Connection" action if the plugin declares a `validateConfig` RPC method — the host calls it and displays the result inline
 
 For plugins that need richer settings UX beyond what JSON Schema can express, the plugin may declare a `settingsPage` slot in `ui.slots`. When present, the host renders the plugin's own React component instead of the auto-generated form. The plugin component communicates with its worker through the standard bridge to read and write config.
 
 Both approaches coexist: a plugin can use the auto-generated form for simple config and add a custom settings page slot for advanced configuration or operational dashboards.
+
+For plugins that need a company-scoped settings surface, declare a `companySettingsPage` slot with a `routePath`. The host renders a sidebar item under Company Settings and mounts the component at `/:companyPrefix/company/settings/:routePath`. The page receives `companyId` and `companyPrefix` in its host context. Core settings routes such as `access`, `invites`, `environments`, and `secrets` are reserved and cannot be shadowed by plugin declarations.
 
 ## 20. Local Tooling
 
@@ -1150,19 +1256,19 @@ This keeps the host lean — it does not need to maintain a parallel API surface
 
 ## 21.1 Database Principles
 
-1. Core PaperClaw data stays in first-party tables.
+1. Core Paperclip data stays in first-party tables.
 2. Most plugin-owned data starts in generic extension tables.
-3. Plugin data should scope to existing PaperClaw objects before new tables are introduced.
+3. Plugin data should scope to existing Paperclip objects before new tables are introduced.
 4. Arbitrary third-party schema migrations are out of scope for the first plugin system.
 
 ## 21.2 Core Table Reuse
 
-If data becomes part of the actual PaperClaw product model, it should become a first-party table.
+If data becomes part of the actual Paperclip product model, it should become a first-party table.
 
 Examples:
 
 - `project_workspaces` is already first-party
-- if PaperClaw later decides git state is core product data, it should become a first-party table too
+- if Paperclip later decides git state is core product data, it should become a first-party table too
 
 ## 21.3 Required Tables
 
@@ -1189,11 +1295,16 @@ Indexes:
 ### `plugin_config`
 
 - `id` uuid pk
-- `plugin_id` uuid fk `plugins.id` unique not null
+- `plugin_id` uuid fk `plugins.id` not null
+- `company_id` uuid fk `companies.id` not null
 - `config_json` jsonb not null
 - `created_at` timestamptz not null
 - `updated_at` timestamptz not null
 - `last_error` text null
+
+Constraints:
+
+- unique `(plugin_id, company_id)`
 
 ### `plugin_state`
 
@@ -1331,10 +1442,11 @@ Plugin config must never persist raw secret values.
 
 Rules:
 
-1. Plugin config stores secret refs only.
-2. Secret refs resolve through the existing PaperClaw secret provider system.
-3. Plugin workers receive resolved secrets only at execution time.
-4. Secret values must never be written to:
+1. Plugin config stores shared `{ type: "secret_ref", secretId, version? }` refs only. Legacy UUID string refs are rejected.
+2. Save-time validation rejects refs to secrets outside the selected company.
+3. Secret refs resolve through the existing Paperclip secret provider system using explicit `companyId`.
+4. Plugin workers receive resolved secrets only at execution time, and resolution writes `secret_access_events` with `consumerType: "plugin_worker"`.
+5. Secret values must never be written to:
    - plugin config JSON
    - activity logs
    - webhook delivery rows
@@ -1387,6 +1499,14 @@ Each plugin may expose a company-context main page:
 
 This page is where board users do most day-to-day work.
 
+## 24.4 Company Settings Plugin Page
+
+Each ready plugin may expose a company settings page:
+
+- `/:companyPrefix/company/settings/:routePath`
+
+The host adds a matching Company Settings sidebar item using the slot `displayName`. Plugin settings route segments are single-segment slugs and must not collide with core company settings pages.
+
 ## 25. Uninstall And Data Lifecycle
 
 When a plugin is uninstalled, the host must handle plugin-owned data explicitly.
@@ -1398,7 +1518,7 @@ When a plugin is uninstalled, the host must handle plugin-owned data explicitly.
 3. Plugin-owned data (`plugin_state`, `plugin_entities`, `plugin_jobs`, `plugin_job_runs`, `plugin_webhook_deliveries`, `plugin_config`) is retained for a configurable grace period (default: 30 days).
 4. During the grace period, the operator can reinstall the same plugin and recover its state.
 5. After the grace period, the host purges all plugin-owned data for the uninstalled plugin.
-6. The operator may force-purge immediately via CLI: `pnpm paperclaw plugin purge <plugin-id>`.
+6. The operator may force-purge immediately via CLI: `npx paperclipai plugin purge <plugin-id>`.
 
 ### 25.2 Upgrade Data Considerations
 
@@ -1420,7 +1540,7 @@ When upgrading a plugin:
 
 ### 25.4 Hot Plugin Lifecycle
 
-Plugin install, uninstall, upgrade, and config changes **must** take effect without restarting the PaperClaw server. This is a normative requirement, not optional.
+Plugin install, uninstall, upgrade, and config changes **must** take effect without restarting the Paperclip server. This is a normative requirement, not optional.
 
 The architecture already supports this — plugins run as out-of-process workers with dynamic ESM imports, IPC bridges, and host-managed routing tables. This section makes the requirement explicit so implementations do not regress.
 
@@ -1458,12 +1578,13 @@ When a plugin is upgraded at runtime:
 
 #### 25.4.4 Hot Config Change
 
-When an operator updates a plugin's instance config at runtime:
+When an operator updates a plugin config for a company at runtime:
 
-1. The host writes the new config to `plugin_config`.
-2. The host sends a `configChanged` notification to the running worker via IPC.
-3. The worker receives the new config through `ctx.config` and applies it without restarting. If the plugin needs to re-initialize connections (e.g. a new API token), it does so internally.
-4. If the plugin does not handle `configChanged`, the host restarts the worker process with the new config (graceful shutdown then restart).
+1. The host validates that any shared `{ type: "secret_ref", secretId, version? }` refs belong to that company, then writes the new config to `plugin_config`.
+2. The host syncs plugin secret bindings in `company_secret_bindings` under `(company_id, target_type = "plugin", target_id = plugin_id)`.
+3. The host sends a `configChanged` notification with `companyId` to the running worker via IPC.
+4. The worker reads the config through `ctx.config.get(companyId)` and applies it without restarting. If the plugin needs to re-initialize connections (e.g. a new API token), it does so internally.
+5. If the plugin does not handle `configChanged`, the host restarts the worker process; the worker must still request company-scoped config explicitly.
 
 #### 25.4.5 Frontend Cache Invalidation
 
@@ -1521,7 +1642,7 @@ These events can be consumed by other plugins (e.g. a notification plugin) or su
 
 ## 27. Plugin Development And Testing
 
-### 27.1 `@kesarcloud/plugin-test-harness`
+### 27.1 `@paperclipai/plugin-test-harness`
 
 The host should publish a test harness package that plugin authors use for local development and testing.
 
@@ -1538,7 +1659,7 @@ The test harness provides:
 Example usage:
 
 ```ts
-import { createTestHarness } from "@kesarcloud/plugin-test-harness";
+import { createTestHarness } from "@paperclipai/plugin-test-harness";
 import manifest from "../dist/manifest.js";
 import { register } from "../dist/worker.js";
 
@@ -1559,18 +1680,18 @@ expect(data.syncedCount).toBeGreaterThan(0);
 
 ### 27.2 Local Plugin Development
 
-For developing a plugin against a running PaperClaw instance:
+For developing a plugin against a running Paperclip instance:
 
-- The operator installs the plugin from a local path: `pnpm paperclaw plugin install ./path/to/plugin`
+- The operator installs the plugin from a local path: `npx paperclipai plugin install ./path/to/plugin`
 - The host watches the plugin directory for changes and restarts the worker on rebuild.
 - `devUiUrl` in plugin config can point to a local Vite dev server for UI hot-reload.
 - The plugin settings page shows real-time logs from the worker for debugging.
 
 ### 27.3 Plugin Starter Template
 
-The host should publish a starter template (`create-paperclaw-plugin`) that scaffolds:
+The host should publish a starter template (`create-paperclip-plugin`) that scaffolds:
 
-- `package.json` with correct `paperclawPlugin` keys
+- `package.json` with correct `paperclipPlugin` keys
 - manifest with placeholder values
 - worker entry with SDK type imports and example event handler
 - UI entry with example `DashboardWidget` using bridge hooks
@@ -1582,14 +1703,14 @@ The host should publish a starter template (`create-paperclaw-plugin`) that scaf
 
 This spec directly supports the following plugin types:
 
-- `@kesarcloud/plugin-workspace-files`
-- `@kesarcloud/plugin-terminal`
-- `@kesarcloud/plugin-git`
-- `@kesarcloud/plugin-linear`
-- `@kesarcloud/plugin-github-issues`
-- `@kesarcloud/plugin-grafana`
-- `@kesarcloud/plugin-runtime-processes`
-- `@kesarcloud/plugin-stripe`
+- `@paperclip/plugin-workspace-files`
+- `@paperclip/plugin-terminal`
+- `@paperclip/plugin-git`
+- `@paperclip/plugin-linear`
+- `@paperclip/plugin-github-issues`
+- `@paperclip/plugin-grafana`
+- `@paperclip/plugin-runtime-processes`
+- `@paperclip/plugin-stripe`
 
 ## 29. Compatibility And Versioning
 
@@ -1605,19 +1726,19 @@ This spec directly supports the following plugin types:
 
 The host publishes a single SDK package for plugin authors:
 
-- `@kesarcloud/plugin-sdk` — the complete plugin SDK
+- `@paperclipai/plugin-sdk` — the complete plugin SDK
 
 The package uses subpath exports to separate worker and UI concerns:
 
-- `@kesarcloud/plugin-sdk` — worker-side SDK (context, events, state, tools, logger, `definePlugin`, `z`)
-- `@kesarcloud/plugin-sdk/ui` — frontend SDK (bridge hooks, shared components, design tokens)
+- `@paperclipai/plugin-sdk` — worker-side SDK (context, events, state, tools, logger, `definePlugin`, `z`)
+- `@paperclipai/plugin-sdk/ui` — frontend SDK (bridge hooks, shared components, design tokens)
 
 A single package simplifies dependency management for plugin authors — one dependency, one version, one changelog. The subpath exports keep bundle separation clean: worker code imports from the root, UI code imports from `/ui`. Build tools tree-shake accordingly so the worker bundle does not include React components and the UI bundle does not include worker-only code.
 
 Versioning rules:
 
 1. **Semver**: The SDK follows strict semantic versioning. Major version bumps indicate breaking changes to either the worker or UI surface; minor versions add new features backwards-compatibly; patch versions are bug fixes only.
-2. **Tied to API version**: Each major SDK version corresponds to exactly one plugin `apiVersion`. When `@kesarcloud/plugin-sdk@2.x` ships, it targets `apiVersion: 2`. Plugins built with SDK 1.x continue to declare `apiVersion: 1`.
+2. **Tied to API version**: Each major SDK version corresponds to exactly one plugin `apiVersion`. When `@paperclipai/plugin-sdk@2.x` ships, it targets `apiVersion: 2`. Plugins built with SDK 1.x continue to declare `apiVersion: 1`.
 3. **Host multi-version support**: The host must support at least the current and one previous `apiVersion` simultaneously. This means plugins built against the previous SDK major version continue to work without modification. The host maintains separate IPC protocol handlers for each supported API version.
 4. **Minimum SDK version in manifest**: Plugins declare `sdkVersion` in the manifest as a semver range (e.g. `">=1.4.0 <2.0.0"`). The host validates this at install time and warns if the plugin's declared range is outside the host's supported SDK versions.
 5. **Deprecation timeline**: When a new `apiVersion` ships, the previous version enters a deprecation period of at least 6 months. During this period:
@@ -1644,7 +1765,7 @@ This matrix is published in the host docs and queryable via `GET /api/plugins/co
 
 When a new SDK version is released:
 
-1. Plugin author updates `@kesarcloud/plugin-sdk` dependency.
+1. Plugin author updates `@paperclipai/plugin-sdk` dependency.
 2. Plugin author follows the migration guide to update code.
 3. Plugin author updates `apiVersion` and `sdkVersion` in the manifest.
 4. Plugin author publishes a new plugin version.
@@ -1664,7 +1785,7 @@ When a new SDK version is released:
 - jobs
 - webhooks
 - settings page
-- plugin UI bundle loading, host bridge, and `@kesarcloud/plugin-sdk/ui`
+- plugin UI bundle loading, host bridge, and `@paperclipai/plugin-sdk/ui`
 - extension slot mounting for pages, tabs, widgets, sidebar entries
 - bridge error propagation (`PluginBridgeError`)
 - auto-generated settings form from `instanceConfigSchema`
@@ -1673,8 +1794,8 @@ When a new SDK version is released:
 - event filtering
 - graceful shutdown with configurable deadlines
 - plugin logging and health dashboard
-- `@kesarcloud/plugin-test-harness`
-- `create-paperclaw-plugin` starter template
+- `@paperclipai/plugin-test-harness`
+- `create-paperclip-plugin` starter template
 - uninstall with data retention grace period
 - hot plugin lifecycle (install, uninstall, upgrade, config change without server restart)
 - SDK versioning with multi-version host support and deprecation policy
@@ -1702,9 +1823,9 @@ Workspace plugins (file browser, terminal, git, process tracking) do not require
 
 ## 31. Final Design Decision
 
-PaperClaw should not implement a generic in-process hook bag modeled directly after local coding tools.
+Paperclip should not implement a generic in-process hook bag modeled directly after local coding tools.
 
-PaperClaw should implement:
+Paperclip should implement:
 
 - trusted platform modules for low-level host integration
 - globally installed out-of-process plugins for additive instance-wide capabilities
@@ -1721,4 +1842,4 @@ PaperClaw should implement:
 - test harness and starter template for low authoring friction
 - strict preservation of core governance and audit rules
 
-That is the complete target design for the PaperClaw plugin system.
+That is the complete target design for the Paperclip plugin system.

@@ -1,45 +1,48 @@
 {
-  "name": "@kesarcloud/plugin-authoring-smoke-example",
+  "name": "@paperclipai/plugin-authoring-smoke-example",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "A PaperClaw plugin",
+  "description": "A Paperclip plugin",
   "scripts": {
-    "prebuild": "pnpm --filter @kesarcloud/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @paperclipai/plugin-sdk ensure-build-deps",
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
     "dev": "node ./esbuild.config.mjs --watch",
-    "dev:ui": "paperclaw-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
+    "dev:ui": "paperclip-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
     "test": "vitest run --config ./vitest.config.ts",
-    "typecheck": "pnpm --filter @kesarcloud/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @paperclipai/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
-  "paperclawPlugin": {
+  "paperclipPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
   },
   "keywords": [
-    "paperclaw",
+    "paperclip",
     "plugin",
     "connector"
   ],
   "author": "Plugin Author",
   "license": "MIT",
   "dependencies": {
-    "@kesarcloud/plugin-sdk": "workspace:*"
+    "@paperclipai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.0.8",
-    "esbuild": "^0.27.3",
-    "rollup": "^4.59.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.18",
+    "esbuild": "^0.28.2",
+    "rollup": "^4.63.1",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
     "react": ">=18"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

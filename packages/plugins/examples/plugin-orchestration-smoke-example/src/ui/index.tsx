@@ -4,7 +4,7 @@ import {
   type PluginDetailTabProps,
   type PluginSettingsPageProps,
   type PluginWidgetProps,
-} from "@kesarcloud/plugin-sdk/ui";
+} from "@paperclipai/plugin-sdk/ui";
 import type React from "react";
 
 type SurfaceStatus = {

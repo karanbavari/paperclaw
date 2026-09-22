@@ -3,9 +3,10 @@ import {
   parseAgentMentionHref,
   parseIssueReferenceHref,
   parseProjectMentionHref,
+  parseRoutineMentionHref,
   parseSkillMentionHref,
   parseUserMentionHref,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { getAgentIcon } from "./agent-icons";
 import { hexToRgb, pickTextColorForPillBg } from "./color-contrast";
 
@@ -32,6 +33,10 @@ export type ParsedMentionChip =
       kind: "skill";
       skillId: string;
       slug: string | null;
+    }
+  | {
+      kind: "routine";
+      routineId: string;
     };
 
 const iconMaskCache = new Map<string, string>();
@@ -84,6 +89,14 @@ export function parseMentionChipHref(href: string): ParsedMentionChip | null {
     };
   }
 
+  const routine = parseRoutineMentionHref(href);
+  if (routine) {
+    return {
+      kind: "routine",
+      routineId: routine.routineId,
+    };
+  }
+
   return null;
 }
 
@@ -93,13 +106,13 @@ export function mentionChipInlineStyle(mention: ParsedMentionChip): CSSPropertie
   if (mention.kind === "project" && mention.color) {
     const projectStyle = projectMentionColors(mention.color);
     Object.assign(style, projectStyle);
-    style["--paperclaw-mention-project-color"] = mention.color;
+    style["--paperclip-mention-project-color"] = mention.color;
   }
 
   if (mention.kind === "agent") {
     const iconMask = buildAgentIconMask(mention.icon);
     if (iconMask) {
-      style["--paperclaw-mention-icon-mask"] = iconMask;
+      style["--paperclip-mention-icon-mask"] = iconMask;
     }
   }
 
@@ -110,9 +123,9 @@ export function applyMentionChipDecoration(element: HTMLElement, mention: Parsed
   clearMentionChipDecoration(element);
   element.dataset.mentionKind = mention.kind;
   element.setAttribute("contenteditable", "false");
-  element.classList.add("paperclaw-mention-chip", `paperclaw-mention-chip--${mention.kind}`);
+  element.classList.add("paperclip-mention-chip", `paperclip-mention-chip--${mention.kind}`);
   if (mention.kind === "project") {
-    element.classList.add("paperclaw-project-mention-chip");
+    element.classList.add("paperclip-project-mention-chip");
   }
 
   const style = mentionChipInlineStyle(mention);
@@ -131,20 +144,21 @@ export function applyMentionChipDecoration(element: HTMLElement, mention: Parsed
 export function clearMentionChipDecoration(element: HTMLElement) {
   delete element.dataset.mentionKind;
   element.classList.remove(
-    "paperclaw-mention-chip",
-    "paperclaw-mention-chip--agent",
-    "paperclaw-mention-chip--issue",
-    "paperclaw-mention-chip--project",
-    "paperclaw-mention-chip--user",
-    "paperclaw-mention-chip--skill",
-    "paperclaw-project-mention-chip",
+    "paperclip-mention-chip",
+    "paperclip-mention-chip--agent",
+    "paperclip-mention-chip--issue",
+    "paperclip-mention-chip--project",
+    "paperclip-mention-chip--routine",
+    "paperclip-mention-chip--user",
+    "paperclip-mention-chip--skill",
+    "paperclip-project-mention-chip",
   );
   element.removeAttribute("contenteditable");
   element.style.removeProperty("border-color");
   element.style.removeProperty("background-color");
   element.style.removeProperty("color");
-  element.style.removeProperty("--paperclaw-mention-project-color");
-  element.style.removeProperty("--paperclaw-mention-icon-mask");
+  element.style.removeProperty("--paperclip-mention-project-color");
+  element.style.removeProperty("--paperclip-mention-icon-mask");
 }
 
 function projectMentionColors(color: string): Pick<CSSProperties, "borderColor" | "backgroundColor" | "color"> {

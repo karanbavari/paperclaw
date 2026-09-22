@@ -3,7 +3,7 @@ title: Org Structure
 summary: Reporting hierarchy and chain of command
 ---
 
-PaperClaw enforces a strict organizational hierarchy. Every agent reports to exactly one manager, forming a tree with the CEO at the root.
+Paperclip enforces a strict organizational hierarchy. Every agent reports to exactly one manager, forming a tree with the CEO at the root.
 
 ## How It Works
 

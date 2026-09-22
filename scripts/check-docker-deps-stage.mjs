@@ -38,7 +38,7 @@ function parseWorkspaceRoots(workspaceText) {
     .map((entry) => entry.replace(/\*+$/, ""))
     .filter((entry) => entry.length > 0)
     .filter((entry) => !entry.includes("examples"))
-    .filter((entry) => !entry.includes("create-paperclaw-plugin"));
+    .filter((entry) => !entry.includes("create-paperclip-plugin"));
 }
 
 function walkPackageJsonFiles(rootRelative, maxDepth) {
@@ -64,7 +64,7 @@ function walkPackageJsonFiles(rootRelative, maxDepth) {
       if (
         entry.name === "package.json" &&
         !relative.includes("/examples/") &&
-        !relative.includes("/create-paperclaw-plugin/")
+        !relative.includes("/create-paperclip-plugin/")
       ) {
         results.push(relative);
       }

@@ -1,3 +1,7 @@
+// token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
+// user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
+// are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
+// tokens; the file is on the check-token-gates allowlist in ui/src/index.css.
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,8 +27,8 @@ const inviteRoleOptions = [
   {
     value: "viewer",
     label: "Viewer",
-    description: "Can view company work and follow along without operational permissions.",
-    gets: "No built-in grants.",
+    description: "Can view organization work and follow along.",
+    gets: "View-only organization membership.",
   },
   {
     value: "operator",
@@ -41,8 +45,8 @@ const inviteRoleOptions = [
   {
     value: "owner",
     label: "Owner",
-    description: "Full company access, including membership and permission management.",
-    gets: "Everything in Admin, plus managing members and permission grants.",
+    description: "Full organization access, including membership management.",
+    gets: "Everything in Admin, plus managing members.",
   },
 ] as const;
 
@@ -52,7 +56,7 @@ const inviteHistory = [
     state: "Active",
     humanRole: "operator",
     invitedBy: "Board User 25",
-    email: "board25@kesarcloud.local",
+    email: "board25@paperclip.local",
     createdAt: "Apr 25, 2026, 9:00 AM",
     action: "Revoke",
     relatedLabel: "Review request",
@@ -62,7 +66,7 @@ const inviteHistory = [
     state: "Accepted",
     humanRole: "viewer",
     invitedBy: "Board User 24",
-    email: "board24@kesarcloud.local",
+    email: "board24@paperclip.local",
     createdAt: "Apr 24, 2026, 8:15 AM",
     action: "Inactive",
     relatedLabel: "—",
@@ -72,7 +76,7 @@ const inviteHistory = [
     state: "Revoked",
     humanRole: "admin",
     invitedBy: "Board User 20",
-    email: "board20@kesarcloud.local",
+    email: "board20@paperclip.local",
     createdAt: "Apr 20, 2026, 2:45 PM",
     action: "Inactive",
     relatedLabel: "—",
@@ -82,7 +86,7 @@ const inviteHistory = [
     state: "Expired",
     humanRole: "owner",
     invitedBy: "Board User 19",
-    email: "board19@kesarcloud.local",
+    email: "board19@paperclip.local",
     createdAt: "Apr 19, 2026, 7:10 PM",
     action: "Inactive",
     relatedLabel: "—",
@@ -109,13 +113,13 @@ function LabSection({
   return (
     <section
       className={cn(
-        "rounded-[28px] border border-border/70 bg-background/80 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
+        "rounded-(--rad-28) border border-border/70 bg-background/80 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
         accentClassName,
       )}
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
             {eyebrow}
           </div>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">{title}</h2>
@@ -146,7 +150,7 @@ function StatusCard({
   }[tone];
 
   return (
-    <Card className={cn("rounded-[24px] shadow-none", toneClassName)}>
+    <Card className={cn("rounded-(--rad-24) shadow-none", toneClassName)}>
       <CardHeader className="space-y-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-current/10 bg-background/70 text-muted-foreground">
           {icon}
@@ -168,8 +172,8 @@ function InviteLandingShell({
   right: ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950 shadow-[0_30px_80px_rgba(2,6,23,0.55)]">
-      <div className="grid gap-px bg-zinc-800 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+    <div className="overflow-hidden rounded-(--rad-28) border border-zinc-800 bg-zinc-950 shadow-[0_30px_80px_rgba(2,6,23,0.55)]">
+      <div className="grid gap-px bg-zinc-800 lg:grid-cols-(--gtc-37)">
         <section className={cn(panelClassName, "space-y-6 bg-zinc-950")}>{left}</section>
         <section className={cn(panelClassName, "h-full bg-zinc-950")}>{right}</section>
       </div>
@@ -196,18 +200,17 @@ function InviteSummaryPanel({
         <CompanyPatternIcon
           companyName="Acme Robotics"
           logoUrl="/api/invites/pcp_invite_test/logo"
-          brandColor="#114488"
           className="h-16 w-16 rounded-none border border-zinc-800"
         />
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">You&apos;ve been invited to join PaperClaw</p>
+          <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">You&apos;ve been invited to join Paperclip</p>
           <h3 className="mt-2 text-2xl font-semibold text-zinc-100">{title}</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">{description}</p>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <MetaCard label="Company" value="Acme Robotics" />
+        <MetaCard label="Organization" value="Acme Robotics" />
         <MetaCard label="Invited by" value="Board User" />
         <MetaCard label="Requested access" value={requestedAccess} />
         <MetaCard label="Invite expires" value="Mar 7, 2027" />
@@ -215,7 +218,7 @@ function InviteSummaryPanel({
 
       {inviteMessage ? (
         <div className="border border-amber-500/40 bg-amber-500/10 p-4">
-          <div className="text-xs uppercase tracking-[0.2em] text-amber-200/80">Message from inviter</div>
+          <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">Message from inviter</div>
           <p className="mt-2 text-sm leading-6 text-amber-50">{inviteMessage}</p>
         </div>
       ) : null}
@@ -232,7 +235,7 @@ function InviteSummaryPanel({
 function MetaCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="border border-zinc-800 p-3">
-      <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">{label}</div>
+      <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{label}</div>
       <div className="mt-1 text-sm text-zinc-100">{value}</div>
     </div>
   );
@@ -255,8 +258,8 @@ function InlineAuthPreview({
         </h3>
         <p className="mt-1 text-sm text-zinc-400">
           {mode === "sign_up"
-            ? "Start with a PaperClaw account. After that, you'll come right back here to accept the invite for Acme Robotics."
-            : "Use the PaperClaw account that already matches this invite. If you do not have one yet, switch back to create account."}
+            ? "Start with a Paperclip account. After that, you'll come right back here to accept the invite for Acme Robotics."
+            : "Use the Paperclip account that already matches this invite. If you do not have one yet, switch back to create account."}
         </p>
       </div>
 
@@ -312,7 +315,7 @@ function InlineAuthPreview({
 
       <p className="text-xs leading-5 text-zinc-500">
         {mode === "sign_up"
-          ? "Already signed up before? Use the existing-account option instead so the invite lands on the right PaperClaw user."
+          ? "Already signed up before? Use the existing-account option instead so the invite lands on the right Paperclip user."
           : "No account yet? Switch back to create account so you can accept the invite with a new login."}
       </p>
     </div>
@@ -368,13 +371,13 @@ function AcceptInvitePreview({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-zinc-100">Accept company invite</h3>
+        <h3 className="text-lg font-semibold text-zinc-100">Accept organization invite</h3>
         <p className="mt-1 text-sm text-zinc-400">
           {autoAccept
-            ? "Submitting your join request for Acme Robotics."
+            ? "Granting your access to Acme Robotics."
             : isCurrentMember
               ? "This account already belongs to Acme Robotics."
-              : "This will submit or complete your join request for Acme Robotics."}
+              : "This will grant or complete your access to Acme Robotics."}
         </p>
       </div>
       {error ? <p className="text-xs text-red-400">{error}</p> : null}
@@ -408,7 +411,6 @@ function InviteResultPreview({
         <CompanyPatternIcon
           companyName="Acme Robotics"
           logoUrl="/api/invites/pcp_invite_test/logo"
-          brandColor="#114488"
           className="h-12 w-12 rounded-none border border-zinc-800"
         />
         <h3 className="text-lg font-semibold">{title}</h3>
@@ -423,8 +425,8 @@ function InviteResultPreview({
           <>
             <div className="border border-zinc-800 p-3">
               <p className="mb-1 text-xs text-zinc-500">Approval page</p>
-              <a className="text-sm text-zinc-200 underline underline-offset-2" href="/company/settings/access">
-                Company Settings → Access
+              <a className="text-sm text-zinc-200 underline underline-offset-2" href="/company/settings/members">
+                Settings → Members
               </a>
             </div>
             <p className="text-xs text-zinc-500">
@@ -451,16 +453,16 @@ function InviteResultPreview({
 
 function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error?: string }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+    <div className="overflow-hidden rounded-(--rad-28) border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
       <div className="grid gap-px bg-border/60 md:grid-cols-2">
-        <div className="flex min-h-[420px] flex-col justify-center bg-background px-8 py-10">
+        <div className="flex min-h-(--sz-420px) flex-col justify-center bg-background px-8 py-10">
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">PaperClaw</span>
+              <span className="text-sm font-medium">Paperclip</span>
             </div>
             <h3 className="text-xl font-semibold">
-              {mode === "sign_in" ? "Sign in to PaperClaw" : "Create your PaperClaw account"}
+              {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "sign_in"
@@ -507,9 +509,9 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
             </div>
           </div>
         </div>
-        <div className="hidden min-h-[420px] items-center justify-center bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.18),transparent_48%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,1))] px-8 py-10 md:flex">
+        <div className="hidden min-h-(--sz-420px) items-center justify-center bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.18),transparent_48%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,1))] px-8 py-10 md:flex">
           <div className="max-w-sm space-y-4 text-zinc-200">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-cyan-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-cyan-200">
               Auth preview
             </div>
             <div className="text-2xl font-semibold">Side-by-side signup styling review</div>
@@ -525,12 +527,12 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
 
 function CompanyInvitesPreview() {
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-      <Card className="rounded-[28px] shadow-none">
+    <div className="grid gap-5 xl:grid-cols-(--gtc-38)">
+      <Card className="rounded-(--rad-28) shadow-none">
         <CardHeader className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MailPlus className="h-4 w-4" />
-            Company Invites
+            Organization Invites
           </div>
           <div>
             <CardTitle>Create invite</CardTitle>
@@ -558,9 +560,9 @@ function CompanyInvitesPreview() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        <Badge variant="outline" className="border-border text-muted-foreground">
                           Default
-                        </span>
+                        </Badge>
                       ) : null}
                     </span>
                     <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
@@ -572,7 +574,7 @@ function CompanyInvitesPreview() {
           </fieldset>
 
           <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
-            Each invite link is single-use. The first successful use consumes the link and creates or reuses the matching join request before approval.
+            Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -585,7 +587,7 @@ function CompanyInvitesPreview() {
               <div>
                 <div className="text-sm font-medium">Latest invite link</div>
                 <div className="text-sm text-muted-foreground">
-                  This URL includes the current PaperClaw domain returned by the server.
+                  This URL includes the current Paperclip domain returned by the server.
                 </div>
               </div>
               <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
@@ -597,7 +599,7 @@ function CompanyInvitesPreview() {
               type="button"
               className="w-full rounded-md border border-border bg-muted/60 px-3 py-2 text-left text-sm break-all"
             >
-              https://paperclaw.local/invite/new-token
+              https://paperclip.local/invite/new-token
             </button>
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="outline">
@@ -609,7 +611,7 @@ function CompanyInvitesPreview() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] shadow-none">
+      <Card className="rounded-(--rad-28) shadow-none">
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -640,9 +642,9 @@ function CompanyInvitesPreview() {
                 {inviteHistory.map((invite) => (
                   <tr key={invite.id} className="border-b border-border last:border-b-0">
                     <td className="px-5 py-3 align-top">
-                      <span className="inline-flex rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="border-border text-muted-foreground">
                         {invite.state}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-5 py-3 align-top">{invite.humanRole}</td>
                     <td className="px-5 py-3 align-top">
@@ -678,13 +680,13 @@ function CompanyInvitesPreview() {
             <div className="rounded-2xl border border-border p-4">
               <div className="text-sm font-medium">Empty history state</div>
               <div className="mt-2 text-sm text-muted-foreground">
-                No invites have been created for this company yet.
+                No invites have been created for this organization yet.
               </div>
             </div>
             <div className="rounded-2xl border border-rose-400/40 bg-rose-500/[0.07] p-4">
               <div className="text-sm font-medium text-foreground">Permission error</div>
               <div className="mt-2 text-sm text-muted-foreground">
-                You do not have permission to manage company invites.
+                You do not have permission to manage organization invites.
               </div>
             </div>
           </div>
@@ -697,33 +699,33 @@ function CompanyInvitesPreview() {
 export function InviteUxLab() {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-[32px] border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_320px]">
+      <div className="overflow-hidden rounded-(--rad-32) border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
+        <div className="grid gap-6 lg:grid-cols-(--gtc-39)">
           <div className="p-6 sm:p-7">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-700 dark:text-cyan-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
               <FlaskConical className="h-3.5 w-3.5" />
               Invite UX Lab
             </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">Invite and signup UX review surface</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              This page collects the current invite landing, signup, approval-result, and company invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
+              This page collects the current invite landing, signup, approval-result, and organization invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
                 /tests/ux/invites
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
                 signup + invite states
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em]">
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
                 fixture-backed preview
               </Badge>
             </div>
           </div>
 
           <aside className="border-t border-border/60 bg-background/70 p-6 lg:border-l lg:border-t-0">
-            <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="mb-4 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
               Covered states
             </div>
             <div className="space-y-3">
@@ -732,7 +734,7 @@ export function InviteUxLab() {
                 "Inline account creation and sign-in variants, including feedback/error copy",
                 "Human accept, agent request, and auto-accept transitions",
                 "Pending approval, joined-now, claim secret, and onboarding result screens",
-                "Company invite creation, copied-link, history, empty, and permission-error states",
+                "Organization invite creation, copied-link, history, empty, and permission-error states",
               ].map((highlight) => (
                 <div
                   key={highlight}
@@ -761,7 +763,7 @@ export function InviteUxLab() {
           <StatusCard
             icon={<Clock3 className="h-4 w-4" />}
             title="Checking your access"
-            body="Shown after sign-in while the app verifies whether the current user already belongs to the invited company."
+            body="Shown after sign-in while the app verifies whether the current user already belongs to the invited organization."
           />
           <StatusCard
             icon={<KeyRound className="h-4 w-4" />}
@@ -789,7 +791,7 @@ export function InviteUxLab() {
           <StatusCard
             icon={<Users className="h-4 w-4" />}
             title="Already a member"
-            body="Acceptance stays disabled and the page redirects into the company once membership is confirmed."
+            body="Acceptance stays disabled and the page redirects into the organization once membership is confirmed."
           />
           <StatusCard
             icon={<UserPlus className="h-4 w-4" />}
@@ -811,7 +813,7 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Create your PaperClaw account first. If you already have one, switch to sign in and continue the invite with the same email."
+                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -823,7 +825,7 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Create your PaperClaw account first. If you already have one, switch to sign in and continue the invite with the same email."
+                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -872,7 +874,7 @@ export function InviteUxLab() {
                 signedInLabel="Jane Example"
               />
             }
-            right={<AcceptInvitePreview error="This account already belongs to the company." isCurrentMember />}
+            right={<AcceptInvitePreview error="This account already belongs to the organization." isCurrentMember />}
           />
         </div>
       </LabSection>
@@ -891,13 +893,13 @@ export function InviteUxLab() {
             onboardingTextUrl="/api/invites/pcp_invite_test/onboarding.txt"
           />
           <InviteResultPreview
-            title="You joined the company"
+            title="You joined the organization"
             description="Your account already matched the approved invite, so the board can be opened immediately."
             joinedNow
           />
           <InviteResultPreview
             title="Request to join Acme Robotics"
-            description="Ask them to visit Company Settings → Access to approve your request."
+            description="Ask them to visit Settings → Members to approve your request."
           />
         </div>
       </LabSection>
@@ -915,8 +917,8 @@ export function InviteUxLab() {
       </LabSection>
 
       <LabSection
-        eyebrow="Company settings"
-        title="Company invite management"
+        eyebrow="Settings"
+        title="Organization invite management"
         description="This section captures the board-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
         accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--background)]"
       >

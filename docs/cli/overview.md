@@ -3,12 +3,12 @@ title: CLI Overview
 summary: CLI installation and setup
 ---
 
-The PaperClaw CLI handles instance setup, diagnostics, and control-plane operations.
+The Paperclip CLI handles instance setup, diagnostics, and control-plane operations.
 
 ## Usage
 
 ```sh
-pnpm paperclaw --help
+pnpm paperclipai --help
 ```
 
 ## Global Options
@@ -17,7 +17,7 @@ All commands support:
 
 | Flag | Description |
 |------|-------------|
-| `--data-dir <path>` | Local PaperClaw data root (isolates from `~/.paperclaw`) |
+| `--data-dir <path>` | Local Paperclip data root (isolates from `~/.paperclip`) |
 | `--api-base <url>` | API base URL |
 | `--api-key <token>` | API authentication token |
 | `--context <path>` | Context file path |
@@ -29,7 +29,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-pnpm paperclaw run --data-dir ./tmp/paperclaw-dev
+npx paperclipai run --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -38,26 +38,36 @@ Store defaults to avoid repeating flags:
 
 ```sh
 # Set defaults
-pnpm paperclaw context set --api-base http://localhost:3100 --company-id <id>
+npx paperclipai context set --api-base http://localhost:3100 --company-id <id>
 
 # View current context
-pnpm paperclaw context show
+pnpm paperclipai context show
 
 # List profiles
-pnpm paperclaw context list
+pnpm paperclipai context list
 
 # Switch profile
-pnpm paperclaw context use default
+npx paperclipai context use default
 ```
 
 To avoid storing secrets in context, use an env var:
 
 ```sh
-pnpm paperclaw context set --api-key-env-var-name PAPERCLAW_API_KEY
-export PAPERCLAW_API_KEY=...
+npx paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
+export PAPERCLIP_API_KEY=...
 ```
 
-Context is stored at `~/.paperclaw/context.json`.
+Secret operations are available under `paperclipai secrets`:
+
+```sh
+npx paperclipai secrets declarations --company-id <company-id> --kind secret
+npx paperclipai secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+npx paperclipai secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+npx paperclipai secrets doctor --company-id <company-id>
+npx paperclipai secrets migrate-inline-env --company-id <company-id> --apply
+```
+
+Context is stored at `~/.paperclip/context.json`.
 
 ## Command Categories
 

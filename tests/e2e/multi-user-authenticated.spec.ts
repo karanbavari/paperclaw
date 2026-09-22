@@ -3,12 +3,12 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { test, expect, type Browser, type Page } from "@playwright/test";
 
-const BASE = process.env.PAPERCLAW_E2E_BASE_URL ?? "http://127.0.0.1:3105";
-const DATA_DIR = process.env.PAPERCLAW_E2E_DATA_DIR ?? process.env.PAPERCLAW_HOME;
-const CONFIG_PATH = process.env.PAPERCLAW_E2E_CONFIG_PATH ?? path.resolve(process.cwd(), ".paperclaw/config.json");
+const BASE = process.env.PAPERCLIP_E2E_BASE_URL ?? "http://127.0.0.1:3105";
+const DATA_DIR = process.env.PAPERCLIP_E2E_DATA_DIR ?? process.env.PAPERCLIP_HOME;
+const CONFIG_PATH = process.env.PAPERCLIP_E2E_CONFIG_PATH ?? path.resolve(process.cwd(), ".paperclip/config.json");
 const BOOTSTRAP_SCRIPT_PATH = path.resolve(process.cwd(), "packages/db/scripts/create-auth-bootstrap-invite.ts");
-const OWNER_PASSWORD = "paperclaw-owner-password";
-const INVITED_PASSWORD = "paperclaw-invited-password";
+const OWNER_PASSWORD = "paperclip-owner-password";
+const INVITED_PASSWORD = "paperclip-invited-password";
 
 type HumanUser = {
   name: string;
@@ -40,18 +40,18 @@ const runId = Date.now();
 const companyName = `MU-Auth-${runId}`;
 const ownerUser: HumanUser = {
   name: "Owner User",
-  email: `owner-${runId}@kesarcloud.local`,
+  email: `owner-${runId}@paperclip.local`,
   password: OWNER_PASSWORD,
 };
 const invitedUser: HumanUser = {
   name: "Invited User",
-  email: `invitee-${runId}@kesarcloud.local`,
+  email: `invitee-${runId}@paperclip.local`,
   password: INVITED_PASSWORD,
 };
 
 function createBootstrapInvite() {
   if (!DATA_DIR) {
-    throw new Error("PAPERCLAW_E2E_DATA_DIR or PAPERCLAW_HOME is required for authenticated bootstrap tests");
+    throw new Error("PAPERCLIP_E2E_DATA_DIR or PAPERCLIP_HOME is required for authenticated bootstrap tests");
   }
   if (!existsSync(CONFIG_PATH)) {
     throw new Error(`Authenticated bootstrap config not found at ${CONFIG_PATH}`);
@@ -65,7 +65,7 @@ function createBootstrapInvite() {
     pnpmCommand,
     [
       "--filter",
-      "@kesarcloud/db",
+      "@paperclipai/db",
       "exec",
       "tsx",
       BOOTSTRAP_SCRIPT_PATH,
@@ -80,7 +80,7 @@ function createBootstrapInvite() {
         ...process.env,
         FORCE_COLOR: "0",
         NO_COLOR: "1",
-        PAPERCLAW_HOME: DATA_DIR,
+        PAPERCLIP_HOME: DATA_DIR,
       },
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
@@ -90,9 +90,9 @@ function createBootstrapInvite() {
 
 async function signUp(page: Page, user: HumanUser) {
   await page.goto(`${BASE}/auth`);
-  await expect(page.getByRole("heading", { name: "Sign in to PaperClaw" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to Paperclip" })).toBeVisible();
   await page.getByRole("button", { name: "Create one" }).click();
-  await expect(page.getByRole("heading", { name: "Create your PaperClaw account" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create your Paperclip account" })).toBeVisible();
   await page.getByLabel("Name").fill(user.name);
   await page.getByLabel("Email").fill(user.email);
   await page.getByLabel("Password").fill(user.password);
@@ -102,7 +102,7 @@ async function signUp(page: Page, user: HumanUser) {
 
 async function acceptBootstrapInvite(page: Page, inviteUrl: string) {
   await page.goto(inviteUrl);
-  await expect(page.getByRole("heading", { name: "Bootstrap your PaperClaw instance" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bootstrap your Paperclip instance" })).toBeVisible();
   await page.getByRole("button", { name: "Accept bootstrap invite" }).click();
   await expect(page.getByRole("heading", { name: "Bootstrap complete" })).toBeVisible({
     timeout: 20_000,
@@ -137,7 +137,7 @@ async function signUpFromInvite(page: Page, inviteUrl: string, user: HumanUser) 
   await expect(page.getByText("Sign in or create an account before submitting a human join request.")).toBeVisible();
   await page.getByRole("link", { name: "Sign in / Create account" }).click();
   await expect(page).toHaveURL(/\/auth\?next=/);
-  await expect(page.getByRole("heading", { name: "Sign in to PaperClaw" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to Paperclip" })).toBeVisible();
   await page.getByRole("button", { name: "Create one" }).click();
   await page.getByLabel("Name").fill(user.name);
   await page.getByLabel("Email").fill(user.email);
@@ -323,4 +323,63 @@ test.describe("Multi-user: authenticated mode", () => {
       await invited.context.close();
     }
   });
+});
+
+
+test("agent chats keep personal identity and ordinary company visibility", async ({ browser, page }) => {
+  test.setTimeout(120_000);
+  expect((await (await page.request.get(`${BASE}/api/health`)).json()).deploymentMode).toBe("authenticated");
+  await signUp(page, { ...ownerUser, email: `chat-${ownerUser.email}` });
+  const bootstrapToken = new URL(createBootstrapInvite()).pathname.split("/").at(-1);
+  expect((await sessionJsonRequest(page, `${BASE}/api/invites/${bootstrapToken}/accept`, { method: "POST", data: { requestType: "human" } })).ok).toBe(true);
+  const company = await createCompanyForSession(page, `Chat identity ${runId}`);
+  const companyPrefix = company.issuePrefix ?? company.id;
+  const invite = await sessionJsonRequest<{ inviteUrl: string }>(page, `${BASE}/api/companies/${company.id}/invites`, { method: "POST", data: { allowedJoinTypes: "human", humanRole: "operator" } });
+  expect(invite.ok).toBe(true);
+  const invited = await newPage(browser);
+  try {
+    await signUp(invited.page, { ...invitedUser, email: `chat-${invitedUser.email}` });
+    const inviteToken = new URL(invite.json!.inviteUrl, BASE).pathname.split("/").at(-1);
+    const joined = await sessionJsonRequest(invited.page, `${BASE}/api/invites/${inviteToken}/accept`, { method: "POST", data: { requestType: "human" } });
+    expect(joined.ok).toBe(true);
+      // Persistent chats are personal identities, not private messaging.
+      const originalFlags = await sessionJsonRequest<Record<string, boolean>>(page, `${BASE}/api/instance/settings/experimental`);
+      const enable = await sessionJsonRequest(page, `${BASE}/api/instance/settings/experimental`, { method: "PATCH", data: { enableAgentChat: true } });
+      expect(enable.ok).toBe(true);
+      try {
+        const createdAgent = await sessionJsonRequest<{ id: string }>(page, `${BASE}/api/companies/${company.id}/agents`, { method: "POST", data: {
+          name: "Personal chat identity", adapterType: "process",
+          adapterConfig: { command: process.execPath, args: ["-e", "process.exit(0)"] },
+          runtimeConfig: { heartbeat: { enabled: false } },
+        } });
+        expect(createdAgent.ok).toBe(true);
+        const agentId = createdAgent.json!.id;
+        const chatEndpoint = `${BASE}/api/companies/${company.id}/chats/${agentId}`;
+        await page.goto(`${BASE}/${companyPrefix}/chats/${agentId}`);
+        await invited.page.goto(`${BASE}/${companyPrefix}/chats/${agentId}`);
+        expect((await sessionJsonRequest(page, chatEndpoint)).json).toBeNull();
+        expect((await sessionJsonRequest(invited.page, chatEndpoint)).json).toBeNull();
+        const ownerChat = await sessionJsonRequest<{ id: string; conversationUserId: string }>(page, chatEndpoint, { method: "POST", data: {} });
+        const memberChat = await sessionJsonRequest<{ id: string; conversationUserId: string }>(invited.page, chatEndpoint, { method: "POST", data: {} });
+        expect(ownerChat.ok).toBe(true); expect(memberChat.ok).toBe(true);
+        expect(ownerChat.json!.id).not.toBe(memberChat.json!.id);
+        expect(ownerChat.json!.conversationUserId).not.toBe(memberChat.json!.conversationUserId);
+        expect((await sessionJsonRequest(invited.page, `${BASE}/api/issues/${ownerChat.json!.id}`)).ok).toBe(true);
+        expect((await sessionJsonRequest(page, `${BASE}/api/issues/${memberChat.json!.id}`)).ok).toBe(true);
+        await page.reload(); await invited.page.reload();
+        await page.getByRole("button", { name: "Star Personal chat identity", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Unstar Personal chat identity", exact: true })).toBeAttached();
+        await expect(invited.page.getByRole("button", { name: "Star Personal chat identity", exact: true })).toBeAttached();
+        const ownerRecent = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("paperclip.recentAgentChats:")));
+        const memberRecent = await invited.page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("paperclip.recentAgentChats:")));
+        expect(ownerRecent.some(key => key.endsWith(ownerChat.json!.conversationUserId))).toBe(true);
+        expect(memberRecent.some(key => key.endsWith(memberChat.json!.conversationUserId))).toBe(true);
+        const another = await createCompanyForSession(page, `Private company ${runId}`);
+        const forbidden = await sessionJsonRequest(invited.page, `${BASE}/api/companies/${another.id}/chats/${agentId}`);
+        expect([403, 404]).toContain(forbidden.status);
+      } finally {
+        const restore = await sessionJsonRequest(page, `${BASE}/api/instance/settings/experimental`, { method: "PATCH", data: { enableAgentChat: originalFlags.json!.enableAgentChat } });
+        expect(restore.ok).toBe(true);
+      }
+  } finally { await invited.context.close(); }
 });

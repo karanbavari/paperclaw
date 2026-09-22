@@ -9,9 +9,9 @@
  * @see PLUGIN_SPEC.md §10 — Plugin Manifest
  * @see packages/shared/src/validators/plugin.ts — Zod schema definition
  */
-import { pluginManifestV1Schema } from "@kesarcloud/shared";
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/shared";
-import { PLUGIN_API_VERSION } from "@kesarcloud/shared";
+import { pluginManifestV1Schema } from "@paperclipai/shared";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+import { PLUGIN_API_VERSION } from "@paperclipai/shared";
 import { badRequest } from "../errors.js";
 
 // ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ const SUPPORTED_VERSIONS = [PLUGIN_API_VERSION] as const;
  */
 export interface ManifestParseSuccess {
   success: true;
-  manifest: PaperClawPluginManifestV1;
+  manifest: PaperclipPluginManifestV1;
 }
 
 /**
@@ -79,7 +79,7 @@ export interface PluginManifestValidator {
    *
    * @throws {HttpError} 400 Bad Request if the manifest is invalid.
    */
-  parseOrThrow(input: unknown): PaperClawPluginManifestV1;
+  parseOrThrow(input: unknown): PaperclipPluginManifestV1;
 
   /**
    * Return the list of plugin API versions supported by this host.
@@ -124,12 +124,17 @@ export function pluginManifestValidator(): PluginManifestValidator {
       if (result.success) {
         return {
           success: true,
-          manifest: result.data as PaperClawPluginManifestV1,
+          manifest: result.data as PaperclipPluginManifestV1,
         };
       }
 
-      const details = result.error.errors.map((issue) => ({
-        path: issue.path,
+      const details = result.error.issues.map((issue) => ({
+        // Zod 4 types an issue path as `PropertyKey[]`, which can include a
+        // symbol. A manifest path only has string or number segments, so map a
+        // rare symbol segment to its string form for a stable message.
+        path: issue.path.map((segment) =>
+          typeof segment === "symbol" ? segment.toString() : segment,
+        ),
         message: issue.message,
       }));
 
@@ -146,7 +151,7 @@ export function pluginManifestValidator(): PluginManifestValidator {
       };
     },
 
-    parseOrThrow(input: unknown): PaperClawPluginManifestV1 {
+    parseOrThrow(input: unknown): PaperclipPluginManifestV1 {
       const result = this.parse(input);
 
       if (!result.success) {

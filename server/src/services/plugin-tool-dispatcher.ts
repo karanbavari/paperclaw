@@ -22,12 +22,12 @@
  * @see PLUGIN_SPEC.md §13.10 — `executeTool`
  */
 
-import type { Db } from "@kesarcloud/db";
+import type { Db } from "@paperclipai/db";
 import type {
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginRecord,
-} from "@kesarcloud/shared";
-import type { ToolRunContext, ToolResult } from "@kesarcloud/plugin-sdk";
+} from "@paperclipai/shared";
+import type { ToolRunContext, ToolResult } from "@paperclipai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import {
@@ -150,14 +150,18 @@ export interface PluginToolDispatcher {
    * This is called automatically when a plugin transitions to `ready`.
    * Can also be called manually for testing or recovery scenarios.
    *
-   * @param pluginId - The plugin's unique identifier
-   * @param manifest - The plugin manifest containing tool declarations
-   * @param pluginDbId - Optional database id used for worker routing
+   * @param pluginKey - The plugin's namespaced key (e.g. `acme.linear`).
+   *   Used as the lookup key for tool registration.
+   * @param manifest - The plugin manifest containing tool declarations.
+   * @param pluginDbId - The plugin's database UUID. Required:
+   *   `workerManager` keys running workers by DB UUID, not by pluginKey, so
+   *   without this `workerManager.isRunning(...)` always returns false and
+   *   every tool dispatch fails with `worker for plugin X is not running`.
    */
   registerPluginTools(
-    pluginId: string,
-    manifest: PaperClawPluginManifestV1,
-    pluginDbId?: string,
+    pluginKey: string,
+    manifest: PaperclipPluginManifestV1,
+    pluginDbId: string,
   ): void;
 
   /**
@@ -429,11 +433,11 @@ export function createPluginToolDispatcher(
     },
 
     registerPluginTools(
-      pluginId: string,
-      manifest: PaperClawPluginManifestV1,
-      pluginDbId?: string,
+      pluginKey: string,
+      manifest: PaperclipPluginManifestV1,
+      pluginDbId: string,
     ): void {
-      registry.registerPlugin(pluginId, manifest, pluginDbId);
+      registry.registerPlugin(pluginKey, manifest, pluginDbId);
     },
 
     unregisterPluginTools(pluginId: string): void {

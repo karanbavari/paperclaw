@@ -1,16 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { PaperClawApiClient } from "./client.js";
-import { readConfigFromEnv, type PaperClawMcpConfig } from "./config.js";
+import { PaperclipApiClient } from "./client.js";
+import { readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
 import { createToolDefinitions } from "./tools.js";
 
-export function createPaperClawMcpServer(config: PaperClawMcpConfig = readConfigFromEnv()) {
+export function createPaperclipMcpServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
   const server = new McpServer({
-    name: "paperclaw",
+    name: "paperclip",
     version: "0.1.0",
   });
 
-  const client = new PaperClawApiClient(config);
+  const client = new PaperclipApiClient(config);
   const tools = createToolDefinitions(client);
   for (const tool of tools) {
     server.tool(tool.name, tool.description, tool.schema.shape, tool.execute);
@@ -23,8 +23,8 @@ export function createPaperClawMcpServer(config: PaperClawMcpConfig = readConfig
   };
 }
 
-export async function runServer(config: PaperClawMcpConfig = readConfigFromEnv()) {
-  const { server } = createPaperClawMcpServer(config);
+export async function runServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
+  const { server } = createPaperclipMcpServer(config);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

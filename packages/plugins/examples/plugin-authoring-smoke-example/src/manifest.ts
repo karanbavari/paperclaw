@@ -1,17 +1,18 @@
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 
-const manifest: PaperClawPluginManifestV1 = {
-  id: "paperclaw.plugin-authoring-smoke-example",
+const manifest: PaperclipPluginManifestV1 = {
+  id: "paperclipai.plugin-authoring-smoke-example",
   apiVersion: 1,
   version: "0.1.0",
   displayName: "Plugin Authoring Smoke Example",
-  description: "A PaperClaw plugin",
+  description: "A Paperclip plugin",
   author: "Plugin Author",
   categories: ["connector"],
   capabilities: [
     "events.subscribe",
     "plugin.state.read",
-    "plugin.state.write"
+    "plugin.state.write",
+    "ui.dashboardWidget.register"
   ],
   entrypoints: {
     worker: "./dist/worker.js",

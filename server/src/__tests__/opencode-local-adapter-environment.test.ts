@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { testEnvironment } from "@kesarcloud/adapter-opencode-local/server";
+import { testEnvironment } from "@paperclipai/adapter-opencode-local/server";
 
 describe("opencode_local environment diagnostics", () => {
   it("reports a missing working directory as an error when cwd is absolute", async () => {
     const cwd = path.join(
       os.tmpdir(),
-      `paperclaw-opencode-local-cwd-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      `paperclip-opencode-local-cwd-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       "workspace",
     );
 
@@ -20,6 +20,7 @@ describe("opencode_local environment diagnostics", () => {
       config: {
         command: process.execPath,
         cwd,
+        env: { XDG_CONFIG_HOME: path.join(cwd, "config") },
       },
     });
 
@@ -29,7 +30,10 @@ describe("opencode_local environment diagnostics", () => {
   });
 
   it("treats an empty OPENAI_API_KEY override as missing", async () => {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-opencode-env-empty-key-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-empty-key-"));
+    // This case tests environment precedence, not model-discovery retry delays.
+    const fakeOpencode = path.join(cwd, "opencode");
+    await fs.writeFile(fakeOpencode, "#!/bin/sh\necho openai/test-model\n", { mode: 0o755 });
     const originalOpenAiKey = process.env.OPENAI_API_KEY;
     process.env.OPENAI_API_KEY = "sk-host-value";
 
@@ -38,10 +42,11 @@ describe("opencode_local environment diagnostics", () => {
         companyId: "company-1",
         adapterType: "opencode_local",
         config: {
-          command: process.execPath,
+          command: fakeOpencode,
           cwd,
           env: {
             OPENAI_API_KEY: "",
+            XDG_CONFIG_HOME: path.join(cwd, "config"),
           },
         },
       });
@@ -57,11 +62,11 @@ describe("opencode_local environment diagnostics", () => {
       }
       await fs.rm(cwd, { recursive: true, force: true });
     }
-  });
+  }, 10_000);
 
   it("classifies ProviderModelNotFoundError probe output as model-unavailable warning", async () => {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-opencode-env-probe-cwd-"));
-    const binDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-opencode-env-probe-bin-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-probe-cwd-"));
+    const binDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-probe-bin-"));
     const fakeOpencode = path.join(binDir, "opencode");
     const script = [
       "#!/bin/sh",
@@ -81,6 +86,7 @@ describe("opencode_local environment diagnostics", () => {
         config: {
           command: fakeOpencode,
           cwd,
+          env: { XDG_CONFIG_HOME: path.join(cwd, "config") },
         },
       });
 
@@ -92,5 +98,5 @@ describe("opencode_local environment diagnostics", () => {
       await fs.rm(cwd, { recursive: true, force: true });
       await fs.rm(binDir, { recursive: true, force: true });
     }
-  });
+  }, 10_000);
 });

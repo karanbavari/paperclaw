@@ -2,9 +2,10 @@ import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import pc from "picocolors";
 import { Command } from "commander";
-import type { Company, FeedbackTrace, FeedbackTraceBundle } from "@kesarcloud/shared";
+import type { Company, FeedbackTrace, FeedbackTraceBundle } from "@paperclipai/shared";
 import {
   addCommonClientOptions,
+  apiPath,
   handleCommandError,
   printOutput,
   resolveCommandContext,
@@ -167,6 +168,36 @@ export function registerFeedbackCommands(program: Command): void {
       }),
     { includeCompany: false },
   );
+
+  addCommonClientOptions(
+    feedback
+      .command("trace")
+      .description("Get a feedback trace")
+      .argument("<traceId>", "Feedback trace ID")
+      .action(async (traceId: string, opts: BaseClientOptions) => {
+        try {
+          const ctx = resolveCommandContext(opts);
+          printOutput(await ctx.api.get(apiPath`/api/feedback-traces/${traceId}`), { json: ctx.json });
+        } catch (err) {
+          handleCommandError(err);
+        }
+      }),
+  );
+
+  addCommonClientOptions(
+    feedback
+      .command("bundle")
+      .description("Get a feedback trace bundle")
+      .argument("<traceId>", "Feedback trace ID")
+      .action(async (traceId: string, opts: BaseClientOptions) => {
+        try {
+          const ctx = resolveCommandContext(opts);
+          printOutput(await ctx.api.get(apiPath`/api/feedback-traces/${traceId}/bundle`), { json: ctx.json });
+        } catch (err) {
+          handleCommandError(err);
+        }
+      }),
+  );
 }
 
 export async function resolveFeedbackCompanyId(
@@ -179,7 +210,7 @@ export async function resolveFeedbackCompanyId(
   const companyId = companies[0]?.id?.trim();
   if (!companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLAW_COMPANY_ID, or configure a CLI context default.",
+      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or configure a CLI context default.",
     );
   }
   return companyId;
@@ -220,7 +251,7 @@ export async function fetchCompanyFeedbackTraces(
 ): Promise<FeedbackTrace[]> {
   return (
     (await ctx.api.get<FeedbackTrace[]>(
-      `/api/companies/${companyId}/feedback-traces${buildFeedbackTraceQuery(opts, true)}`,
+      `${apiPath`/api/companies/${companyId}/feedback-traces`}${buildFeedbackTraceQuery(opts, true)}`,
     )) ?? []
   );
 }
@@ -229,7 +260,7 @@ export async function fetchFeedbackTraceBundle(
   ctx: ResolvedClientContext,
   traceId: string,
 ): Promise<FeedbackTraceBundle> {
-  const bundle = await ctx.api.get<FeedbackTraceBundle>(`/api/feedback-traces/${traceId}/bundle`);
+  const bundle = await ctx.api.get<FeedbackTraceBundle>(apiPath`/api/feedback-traces/${traceId}/bundle`);
   if (!bundle) {
     throw new Error(`Feedback trace bundle ${traceId} not found`);
   }
@@ -267,7 +298,7 @@ export function renderFeedbackReport(input: {
 }): string {
   const lines: string[] = [];
   lines.push("");
-  lines.push(pc.bold(pc.magenta("PaperClaw Feedback Report")));
+  lines.push(pc.bold(pc.magenta("Paperclip Feedback Report")));
   lines.push(pc.dim(new Date().toISOString()));
   lines.push(horizontalRule());
   lines.push(`${pc.dim("Server:")}  ${input.apiBase}`);
@@ -439,7 +470,7 @@ export async function writeFeedbackExportBundle(input: {
 export function renderFeedbackExportSummary(exported: FeedbackExportResult): string {
   const lines: string[] = [];
   lines.push("");
-  lines.push(pc.bold(pc.magenta("PaperClaw Feedback Export")));
+  lines.push(pc.bold(pc.magenta("Paperclip Feedback Export")));
   lines.push(pc.dim(exported.manifest.exportedAt));
   lines.push(horizontalRule());
   lines.push(`${pc.dim("Company:")} ${exported.manifest.companyId}`);

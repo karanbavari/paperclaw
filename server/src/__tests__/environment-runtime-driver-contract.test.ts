@@ -10,7 +10,7 @@ import {
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
   type SshEnvironmentConfig,
-} from "@kesarcloud/adapter-utils/ssh";
+} from "@paperclipai/adapter-utils/ssh";
 import {
   agents,
   companies,
@@ -20,8 +20,8 @@ import {
   environmentLeases,
   environments,
   heartbeatRuns,
-} from "@kesarcloud/db";
-import type { Environment } from "@kesarcloud/shared";
+} from "@paperclipai/db";
+import type { Environment } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -59,7 +59,7 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
     const started = await startEmbeddedPostgresTestDatabase("environment-runtime-contract");
     stopDb = started.stop;
     db = createDb(started.connectionString);
-  }, 30_000);
+  });
 
   afterEach(async () => {
     while (fixtureRoots.length > 0) {
@@ -118,6 +118,13 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
         provider: "local_encrypted",
         value: config.privateKey,
       });
+      await secretService(db).createBinding({
+        companyId,
+        secretId: secret.id,
+        targetType: "environment",
+        targetId: environmentId,
+        configPath: "privateKeySecretRef",
+      });
       config = {
         ...config,
         privateKey: null,
@@ -128,16 +135,26 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
         },
       };
     }
-    await db.insert(environments).values({
-      id: environmentId,
-      companyId,
-      name: `${input.driver} contract`,
-      driver: input.driver,
-      status: "active",
-      config,
-      createdAt: now,
-      updatedAt: now,
-    });
+    const existingLocal =
+      input.driver === "local"
+        ? await db.query.environments.findFirst({
+            where: (environment, { eq }) => eq(environment.driver, "local"),
+          })
+        : null;
+    const resolvedEnvironmentId = existingLocal?.id ?? environmentId;
+    if (!existingLocal) {
+      await db.insert(environments).values({
+        id: resolvedEnvironmentId,
+        name: `${input.driver} contract`,
+        driver: input.driver,
+        status: "active",
+        config,
+        createdAt: now,
+        updatedAt: now,
+      });
+    } else {
+      config = (existingLocal.config as Record<string, unknown> | null) ?? {};
+    }
     await db.insert(heartbeatRuns).values({
       id: runId,
       companyId,
@@ -153,7 +170,7 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
       issueId: null,
       runId,
       environment: {
-        id: environmentId,
+        id: resolvedEnvironmentId,
         companyId,
         name: `${input.driver} contract`,
         description: null,
@@ -258,7 +275,7 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
       return;
     }
 
-    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "paperclaw-env-runtime-contract-ssh-"));
+    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-env-runtime-contract-ssh-"));
     fixtureRoots.push(fixtureRoot);
     const fixture = await startSshEnvLabFixture({ statePath: path.join(fixtureRoot, "state.json") });
     const sshConfig = await buildSshEnvLabFixtureConfig(fixture);

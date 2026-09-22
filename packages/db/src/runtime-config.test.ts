@@ -30,48 +30,48 @@ afterEach(() => {
 
 describe("resolveDatabaseTarget", () => {
   it("uses DATABASE_URL from process env first", () => {
-    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/paperclaw";
+    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/paperclip";
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://env-user:env-pass@db.example.com:5432/paperclaw",
+      connectionString: "postgres://env-user:env-pass@db.example.com:5432/paperclip",
       source: "DATABASE_URL",
     });
   });
 
-  it("uses DATABASE_URL from repo-local .paperclaw/.env", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-db-runtime-"));
+  it("uses DATABASE_URL from repo-local .paperclip/.env", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const projectDir = path.join(tempDir, "repo");
     fs.mkdirSync(projectDir, { recursive: true });
     process.chdir(projectDir);
-    delete process.env.PAPERCLAW_CONFIG;
-    writeJson(path.join(projectDir, ".paperclaw", "config.json"), {
+    delete process.env.PAPERCLIP_CONFIG;
+    writeJson(path.join(projectDir, ".paperclip", "config.json"), {
       database: { mode: "embedded-postgres", embeddedPostgresPort: 54329 },
     });
     writeText(
-      path.join(projectDir, ".paperclaw", ".env"),
-      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/paperclaw"\n',
+      path.join(projectDir, ".paperclip", ".env"),
+      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/paperclip"\n',
     );
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://file-user:file-pass@db.example.com:6543/paperclaw",
-      source: "paperclaw-env",
+      connectionString: "postgres://file-user:file-pass@db.example.com:6543/paperclip",
+      source: "paperclip-env",
     });
   });
 
   it("uses config postgres connection string when configured", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.PAPERCLAW_CONFIG = configPath;
+    process.env.PAPERCLIP_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "postgres",
-        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclaw",
+        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
       },
     });
 
@@ -79,19 +79,19 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclaw",
+      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
       source: "config.database.connectionString",
     });
   });
 
   it("falls back to embedded postgres settings from config", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.PAPERCLAW_CONFIG = configPath;
+    process.env.PAPERCLIP_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "embedded-postgres",
-        embeddedPostgresDataDir: "~/paperclaw-test-db",
+        embeddedPostgresDataDir: "~/paperclip-test-db",
         embeddedPostgresPort: 55444,
       },
     });
@@ -100,9 +100,30 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "embedded-postgres",
-      dataDir: path.resolve(os.homedir(), "paperclaw-test-db"),
+      dataDir: path.resolve(os.homedir(), "paperclip-test-db"),
       port: 55444,
       source: "embedded-postgres@55444",
+    });
+  });
+
+  it("uses the instance root for a fresh default embedded postgres target", () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-home-"));
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-cwd-"));
+    process.chdir(cwd);
+    process.env.PAPERCLIP_HOME = home;
+    delete process.env.PAPERCLIP_CONFIG;
+    delete process.env.PAPERCLIP_INSTANCE_ID;
+    delete process.env.DATABASE_URL;
+
+    const target = resolveDatabaseTarget();
+
+    expect(target).toMatchObject({
+      mode: "embedded-postgres",
+      dataDir: path.join(home, "instances", "default", "db"),
+      port: 54329,
+      source: "embedded-postgres@54329",
+      configPath: path.join(home, "instances", "default", "config.json"),
+      envPath: path.join(home, "instances", "default", ".env"),
     });
   });
 });

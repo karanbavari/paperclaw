@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@kesarcloud/adapter-utils";
+} from "@paperclipai/adapter-utils";
 import {
   buildPersistentSkillSnapshot,
-  ensurePaperClawSkillSymlink,
-  readPaperClawRuntimeSkillEntries,
+  ensurePaperclipSkillSymlink,
+  readPaperclipRuntimeSkillEntries,
   readInstalledSkillTargets,
-  resolvePaperClawDesiredSkillNames,
-} from "@kesarcloud/adapter-utils/server-utils";
+  resolveLegacyPaperclipDesiredSkillNames,
+} from "@paperclipai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,7 +20,7 @@ function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
-function resolveOpenCodeSkillsHome(config: Record<string, unknown>) {
+export function resolveOpenCodeSkillsHome(config: Record<string, unknown>) {
   const env =
     typeof config.env === "object" && config.env !== null && !Array.isArray(config.env)
       ? (config.env as Record<string, unknown>)
@@ -31,8 +31,8 @@ function resolveOpenCodeSkillsHome(config: Record<string, unknown>) {
 }
 
 async function buildOpenCodeSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperClawRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperClawDesiredSkillNames(config, availableEntries);
+  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkills = resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveOpenCodeSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
   return buildPersistentSkillSnapshot({
@@ -45,7 +45,7 @@ async function buildOpenCodeSkillSnapshot(config: Record<string, unknown>): Prom
     installedDetail: "Installed in the shared Claude/OpenCode skills home.",
     missingDetail: "Configured but not currently linked into the shared Claude/OpenCode skills home.",
     externalConflictDetail: "Skill name is occupied by an external installation in the shared skills home.",
-    externalDetail: "Installed outside PaperClaw management in the shared skills home.",
+    externalDetail: "Installed outside Paperclip management in the shared skills home.",
     warnings: [
       "OpenCode currently uses the shared Claude skills home (~/.claude/skills).",
     ],
@@ -60,10 +60,10 @@ export async function syncOpenCodeSkills(
   ctx: AdapterSkillContext,
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperClawRuntimeSkillEntries(ctx.config, __moduleDir);
+  const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
   const desiredSet = new Set([
+    ...resolveLegacyPaperclipDesiredSkillNames({}, availableEntries),
     ...desiredSkills,
-    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
   ]);
   const skillsHome = resolveOpenCodeSkillsHome(ctx.config);
   await fs.mkdir(skillsHome, { recursive: true });
@@ -73,7 +73,7 @@ export async function syncOpenCodeSkills(
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
     const target = path.join(skillsHome, available.runtimeName);
-    await ensurePaperClawSkillSymlink(available.source, target);
+    await ensurePaperclipSkillSymlink(available.source, target);
   }
 
   for (const [name, installedEntry] of installed.entries()) {
@@ -89,7 +89,7 @@ export async function syncOpenCodeSkills(
 
 export function resolveOpenCodeDesiredSkillNames(
   config: Record<string, unknown>,
-  availableEntries: Array<{ key: string; required?: boolean }>,
+  availableEntries: Array<{ key: string }>,
 ) {
-  return resolvePaperClawDesiredSkillNames(config, availableEntries);
+  return resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
 }

@@ -3,20 +3,19 @@ title: Core Concepts
 summary: Companies, agents, issues, delegation, heartbeats, and governance
 ---
 
-PaperClaw organizes human-governed AI-agent company work around six key concepts.
+Paperclip organizes autonomous AI work around six key concepts.
 
-## Company
+## Organization
 
-A company is the top-level unit of organization. Each company has:
+An organization is the top-level unit in Paperclip. Each organization has:
 
 - A **goal** — the reason it exists (e.g. "Build the #1 AI note-taking app at $1M MRR")
 - **Employees** — every employee is an AI agent
 - **Org structure** — who reports to whom
 - **Budget** — monthly spend limits in cents
 - **Task hierarchy** — all work traces back to the company goal
-- **Operating context** — memory, language, currency, timezone, and durable work history
 
-One PaperClaw instance can run multiple companies.
+One Paperclip instance can run multiple companies.
 
 ## Agents
 
@@ -64,7 +63,7 @@ You don't need to manually assign every task — set the goals and let the CEO o
 
 ## Heartbeats
 
-Agents don't run continuously. They wake up in **heartbeats** — short execution windows triggered by PaperClaw.
+Agents don't run continuously. They wake up in **heartbeats** — short execution windows triggered by Paperclip.
 
 A heartbeat can be triggered by:
 
@@ -85,7 +84,3 @@ Some actions require board (human) approval:
 - **Board overrides** — the board can pause, resume, or terminate any agent and reassign any task
 
 The board operator has full visibility and control through the web UI. Every mutation is logged in an **activity audit trail**.
-
-## Outcomes and Operations
-
-Agent work should produce visible outcomes, not only logs. PaperClaw surfaces work products such as documents, previews, pull requests, reports, artifacts, commits, branches, and runtime links. It also provides operational views for stuck runs, recovery issues, budget incidents, plugin failures, workspace runtime failures, and agent error states.

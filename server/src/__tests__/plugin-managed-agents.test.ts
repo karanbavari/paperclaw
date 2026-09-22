@@ -15,13 +15,14 @@ import {
   pluginCompanySettings,
   pluginManagedResources,
   plugins,
-} from "@kesarcloud/db";
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/shared";
+} from "@paperclipai/db";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { buildHostServices } from "../services/plugin-host-services.js";
+import { agentService } from "../services/agents.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -41,14 +42,14 @@ function issuePrefix(id: string) {
   return `T${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-function manifest(): PaperClawPluginManifestV1 {
+function manifest(): PaperclipPluginManifestV1 {
   return {
-    id: "paperclaw.managed-agents-test",
+    id: "paperclip.managed-agents-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Agents Test",
     description: "Test plugin",
-    author: "PaperClaw",
+    author: "Paperclip",
     categories: ["automation"],
     capabilities: ["agents.managed"],
     entrypoints: { worker: "./dist/worker.js" },
@@ -61,12 +62,21 @@ function manifest(): PaperClawPluginManifestV1 {
         capabilities: "Maintains a plugin-owned wiki.",
         adapterType: "process",
         adapterConfig: { command: "pnpm wiki:maintain" },
-        runtimeConfig: { modelProfiles: { cheap: { enabled: true, adapterConfig: { model: "small" } } } },
+        runtimeConfig: { heartbeat: { enabled: false } },
         permissions: { canCreateAgents: false },
         budgetMonthlyCents: 1234,
       },
     ],
   };
+}
+
+function pausedManifest(): PaperclipPluginManifestV1 {
+  const pluginManifest = manifest();
+  pluginManifest.agents![0] = {
+    ...pluginManifest.agents![0]!,
+    status: "paused",
+  };
+  return pluginManifest;
 }
 
 if (!embeddedPostgresSupport.supported) {
@@ -80,7 +90,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-plugin-managed-agents-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-agents-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -100,20 +110,20 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     await tempDb?.cleanup();
   });
 
-  async function seedCompanyAndPlugin(options: { requireApproval?: boolean; manifest?: PaperClawPluginManifestV1 } = {}) {
+  async function seedCompanyAndPlugin(options: { requireApproval?: boolean; manifest?: PaperclipPluginManifestV1 } = {}) {
     const companyId = randomUUID();
     const pluginId = randomUUID();
     const pluginManifest = options.manifest ?? manifest();
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: issuePrefix(companyId),
       requireBoardApprovalForNewAgents: options.requireApproval ?? false,
     });
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@kesarcloud/plugin-managed-agents-test",
+      packageName: "@paperclipai/plugin-managed-agents-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,
@@ -190,6 +200,64 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
   });
 
+  it("records plugin provenance when a manifest creates a paused managed agent", async () => {
+    const { companyId, services } = await seedCompanyAndPlugin({ manifest: pausedManifest() });
+
+    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+
+    expect(created.agent).toMatchObject({
+      status: "paused",
+      pauseReason: "Provisioned paused by plugin paperclip.managed-agents-test; requires explicit activation.",
+    });
+    expect(created.agent?.pausedAt).toBeInstanceOf(Date);
+  });
+
+  it("backfills a legacy null pause reason while the managed declaration and agent remain paused", async () => {
+    const { companyId, services } = await seedCompanyAndPlugin({ manifest: pausedManifest() });
+    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    await db
+      .update(agents)
+      .set({ pauseReason: null, updatedAt: new Date() })
+      .where(eq(agents.id, created.agentId!));
+
+    const reconciled = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+
+    expect(reconciled.agent).toMatchObject({
+      status: "paused",
+      pauseReason: "Provisioned paused by plugin paperclip.managed-agents-test; requires explicit activation.",
+    });
+  });
+
+  it.each(["manual", "budget", "system", "maintenance"])(
+    "preserves the existing %s pause reason during reconcile",
+    async (pauseReason) => {
+      const { companyId, services } = await seedCompanyAndPlugin({ manifest: pausedManifest() });
+      const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+      await db
+        .update(agents)
+        .set({ pauseReason, updatedAt: new Date() })
+        .where(eq(agents.id, created.agentId!));
+
+      const reconciled = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+
+      expect(reconciled.agent).toMatchObject({ status: "paused", pauseReason });
+    },
+  );
+
+  it("keeps an explicit resume durable across managed-agent reconcile", async () => {
+    const { companyId, services } = await seedCompanyAndPlugin({ manifest: pausedManifest() });
+    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    await agentService(db).resume(created.agentId!);
+
+    const reconciled = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+
+    expect(reconciled.agent).toMatchObject({
+      status: "idle",
+      pauseReason: null,
+      pausedAt: null,
+    });
+  });
+
   it("creates managed agents with the most-used compatible company adapter", async () => {
     const pluginManifest = manifest();
     pluginManifest.agents![0] = {
@@ -242,12 +310,12 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   });
 
   it("materializes declared managed agent instructions with local folder paths", async () => {
-    const previousHome = process.env.PAPERCLAW_HOME;
-    const previousInstance = process.env.PAPERCLAW_INSTANCE_ID;
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-managed-agent-home-"));
-    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-managed-agent-wiki-")));
-    process.env.PAPERCLAW_HOME = tempHome;
-    process.env.PAPERCLAW_INSTANCE_ID = "test";
+    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousInstance = process.env.PAPERCLIP_INSTANCE_ID;
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-home-"));
+    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-wiki-")));
+    process.env.PAPERCLIP_HOME = tempHome;
+    process.env.PAPERCLIP_INSTANCE_ID = "test";
     try {
       const pluginManifest = manifest();
       pluginManifest.localFolders = [
@@ -302,10 +370,10 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       expect(content).toContain(`Wiki root: \`${wikiRoot}\``);
       expect(content).toContain(`Wiki schema: \`${path.join(wikiRoot, "AGENTS.md")}\``);
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLAW_HOME;
-      else process.env.PAPERCLAW_HOME = previousHome;
-      if (previousInstance === undefined) delete process.env.PAPERCLAW_INSTANCE_ID;
-      else process.env.PAPERCLAW_INSTANCE_ID = previousInstance;
+      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
+      else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
+      else process.env.PAPERCLIP_INSTANCE_ID = previousInstance;
       await fs.rm(tempHome, { recursive: true, force: true });
       await fs.rm(wikiRoot, { recursive: true, force: true });
     }
@@ -325,7 +393,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       runtimeConfig: {},
       permissions: {},
       metadata: {
-        paperclawManagedResource: {
+        paperclipManagedResource: {
           pluginId,
           pluginKey: pluginManifest.id,
           resourceKind: "agent",
@@ -358,7 +426,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
     expect(approval?.payload).toMatchObject({
       agentId: created.agentId,
-      sourcePluginKey: "paperclaw.managed-agents-test",
+      sourcePluginKey: "paperclip.managed-agents-test",
       managedResourceKey: "wiki-maintainer",
     });
   });

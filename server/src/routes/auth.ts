@@ -1,14 +1,15 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import type { Db } from "@kesarcloud/db";
-import { authUsers } from "@kesarcloud/db";
+import type { Db } from "@paperclipai/db";
+import { authUsers } from "@paperclipai/db";
 import {
   authSessionSchema,
   currentUserProfileSchema,
   updateCurrentUserProfileSchema,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { unauthorized } from "../errors.js";
 import { validate } from "../middleware/validate.js";
+import { resolveSentryDsns } from "../sentry-dsn.js";
 
 async function loadCurrentUserProfile(db: Db, userId: string) {
   const user = await db
@@ -45,10 +46,15 @@ export function authRoutes(db: Db) {
     const user = await loadCurrentUserProfile(db, req.actor.userId);
     res.json(authSessionSchema.parse({
       session: {
-        id: `paperclaw:${req.actor.source ?? "none"}:${req.actor.userId}`,
+        id: `paperclip:${req.actor.source ?? "none"}:${req.actor.userId}`,
         userId: req.actor.userId,
       },
       user,
+      // The browser reads this value to open its own Sentry gate — see
+      // `ui/src/lib/sentry.ts`. `req.actor.type` already gates this whole
+      // handler, so no second authorization check runs here. This field
+      // carries the front-end DSN only; it never carries the backend DSN.
+      sentryDsn: resolveSentryDsns().frontend,
     }));
   });
 

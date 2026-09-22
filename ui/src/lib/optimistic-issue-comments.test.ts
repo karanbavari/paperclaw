@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Issue } from "@kesarcloud/shared";
+import type { Issue } from "@paperclipai/shared";
 import {
   applyLocalQueuedIssueCommentState,
   applyOptimisticIssueFieldUpdate,
@@ -110,6 +110,66 @@ describe("optimistic issue comments", () => {
     );
 
     expect(merged.map((comment) => comment.id)).toEqual(["optimistic-1", "comment-2"]);
+  });
+
+  it("reconciles an optimistic comment with its canonical server copy", () => {
+    const optimistic = createOptimisticIssueComment({
+      companyId: "company-1",
+      issueId: "issue-1",
+      body: "Do not flash twice",
+      authorUserId: "board-1",
+    });
+    const { clientId: _clientId, clientStatus: _clientStatus, queueTargetRunId: _queueTargetRunId, ...persisted } = optimistic;
+
+    const merged = mergeIssueComments(
+      [{ ...persisted, id: "comment-1" }],
+      [optimistic],
+    );
+
+    expect(merged.map((comment) => comment.id)).toEqual(["comment-1"]);
+    expect(merged[0]).toMatchObject({ clientId: optimistic.clientId });
+  });
+
+  it("reconciles repeated identical comments one-for-one", () => {
+    const first = createOptimisticIssueComment({
+      companyId: "company-1",
+      issueId: "issue-1",
+      body: "Same text",
+      authorUserId: "board-1",
+    });
+    const second = createOptimisticIssueComment({
+      companyId: "company-1",
+      issueId: "issue-1",
+      body: "Same text",
+      authorUserId: "board-1",
+    });
+    const { clientId: _clientId, clientStatus: _clientStatus, queueTargetRunId: _queueTargetRunId, ...persisted } = first;
+
+    const merged = mergeIssueComments(
+      [{ ...persisted, id: "comment-1" }],
+      [first, second],
+    );
+
+    expect(merged).toHaveLength(2);
+    expect(merged.map((comment) => comment.id)).toContain("comment-1");
+    expect(merged.map((comment) => comment.id)).toContain(second.id);
+  });
+
+  it("keeps repeated identical optimistic comments when neither is persisted", () => {
+    const first = createOptimisticIssueComment({
+      companyId: "company-1",
+      issueId: "issue-1",
+      body: "Same pending text",
+      authorUserId: "board-1",
+    });
+    const second = createOptimisticIssueComment({
+      companyId: "company-1",
+      issueId: "issue-1",
+      body: "Same pending text",
+      authorUserId: "board-1",
+    });
+
+    expect(mergeIssueComments([], [first, second])).toHaveLength(2);
   });
 
   it("can take one optimistic queued comment back out of the queue", () => {
@@ -446,9 +506,12 @@ describe("optimistic issue comments", () => {
         title: "Fix comment flow",
         description: null,
         status: "done",
+        workMode: "standard",
         priority: "medium",
+        reviewPolicy: null,
         assigneeAgentId: "agent-1",
         assigneeUserId: null,
+        responsibleUserId: null,
         checkoutRunId: null,
         executionRunId: null,
         executionAgentNameKey: null,
@@ -515,9 +578,12 @@ describe("optimistic issue comments", () => {
         title: "Fix property pane",
         description: null,
         status: "todo",
+        workMode: "standard",
         priority: "medium",
+        reviewPolicy: null,
         assigneeAgentId: "agent-1",
         assigneeUserId: null,
+        responsibleUserId: null,
         checkoutRunId: null,
         executionRunId: null,
         executionAgentNameKey: null,
@@ -592,6 +658,7 @@ describe("optimistic issue comments", () => {
           leadAgentId: null,
           targetDate: null,
           color: null,
+          icon: null,
           env: null,
           pauseReason: null,
           pausedAt: null,
@@ -603,8 +670,8 @@ describe("optimistic issue comments", () => {
             defaultRef: null,
             repoName: null,
             localFolder: null,
-            managedFolder: "/tmp/paperclaw",
-            effectiveLocalFolder: "/tmp/paperclaw",
+            managedFolder: "/tmp/paperclip",
+            effectiveLocalFolder: "/tmp/paperclip",
             origin: "local_folder",
           },
           workspaces: [],
@@ -623,8 +690,9 @@ describe("optimistic issue comments", () => {
           strategyType: "project_primary",
           branchName: null,
           status: "active",
+          deliveryState: "unknown",
           name: "Execution workspace",
-          cwd: "/tmp/paperclaw",
+          cwd: "/tmp/paperclip",
           repoUrl: null,
           baseRef: null,
           providerType: "local_fs",
@@ -687,9 +755,12 @@ describe("optimistic issue comments", () => {
         title: "Fix property pane",
         description: null,
         status: "todo",
+        workMode: "standard",
         priority: "medium",
+        reviewPolicy: null,
         assigneeAgentId: "agent-1",
         assigneeUserId: null,
+        responsibleUserId: null,
         checkoutRunId: null,
         executionRunId: null,
         executionAgentNameKey: null,
@@ -728,9 +799,12 @@ describe("optimistic issue comments", () => {
         title: "Leave me alone",
         description: null,
         status: "todo",
+        workMode: "standard",
         priority: "medium",
+        reviewPolicy: null,
         assigneeAgentId: "agent-2",
         assigneeUserId: null,
+        responsibleUserId: null,
         checkoutRunId: null,
         executionRunId: null,
         executionAgentNameKey: null,

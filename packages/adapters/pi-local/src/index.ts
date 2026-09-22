@@ -1,20 +1,16 @@
-import type { AdapterModelProfileDefinition } from "@kesarcloud/adapter-utils";
-
 export const type = "pi_local";
-export const label = "Pi (local)";
+export const label = "Pi";
 
-export const SANDBOX_INSTALL_COMMAND = "npm install -g @mariozechner/pi-coding-agent";
+export const SANDBOX_INSTALL_COMMAND = "npm install -g @earendil-works/pi-coding-agent@0.74.0";
 
 export const models: Array<{ id: string; label: string }> = [];
-
-export const modelProfiles: AdapterModelProfileDefinition[] = [];
 
 export const agentConfigurationDoc = `# pi_local agent configuration
 
 Adapter: pi_local
 
 Use when:
-- You want PaperClaw to run Pi (the AI coding agent) locally as the agent runtime
+- You want Paperclip to run Pi (the AI coding agent) locally as the agent runtime
 - You want provider/model routing in Pi format (--provider <name> --model <id>)
 - You want Pi session resume across heartbeats via --session
 - You need Pi's tool set (read, bash, edit, write, grep, find, ls)
@@ -39,8 +35,8 @@ Operational fields:
 
 Notes:
 - Pi supports multiple providers and models. Use \`pi --list-models\` to list available options.
-- PaperClaw requires an explicit \`model\` value for \`pi_local\` agents.
-- Sessions are stored in ~/.pi/paperclaws/ and resumed with --session.
+- Paperclip requires an explicit \`model\` value for \`pi_local\` agents.
+- Sessions are stored in ~/.pi/paperclips/ and resumed with --session.
 - All tools (read, bash, edit, write, grep, find, ls) are enabled by default.
 - Agent instructions are appended to Pi's system prompt via --append-system-prompt, while the user task is sent via -p.
 `;

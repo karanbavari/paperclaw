@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@kesarcloud/adapter-utils/server-utils";
-import { execute } from "@kesarcloud/adapter-cursor-local/server";
+import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import { execute } from "@paperclipai/adapter-cursor-local/server";
 
 async function writeFakeCursorCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
-  paperclawEnvKeys: Object.keys(process.env)
-    .filter((key) => key.startsWith("PAPERCLAW_"))
+  paperclipEnvKeys: Object.keys(process.env)
+    .filter((key) => key.startsWith("PAPERCLIP_"))
     .sort(),
 };
 if (capturePath) {
@@ -106,7 +106,7 @@ function createLocalSandboxRunner() {
 type CapturePayload = {
   argv: string[];
   prompt: string;
-  paperclawEnvKeys: string[];
+  paperclipEnvKeys: string[];
 };
 
 async function createSkillDir(root: string, name: string) {
@@ -117,8 +117,8 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor execute", () => {
-  it("injects paperclaw env vars and prompt note by default", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-cursor-execute-"));
+  it("injects paperclip env vars and prompt note by default", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -150,9 +150,9 @@ describe("cursor execute", () => {
           cwd: workspace,
           model: "auto",
           env: {
-            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the paperclaw heartbeat.",
+          promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -166,22 +166,22 @@ describe("cursor execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.argv).not.toContain("Follow the paperclaw heartbeat.");
+      expect(capture.argv).not.toContain("Follow the paperclip heartbeat.");
       expect(capture.argv).not.toContain("--mode");
       expect(capture.argv).not.toContain("ask");
-      expect(capture.paperclawEnvKeys).toEqual(
+      expect(capture.paperclipEnvKeys).toEqual(
         expect.arrayContaining([
-          "PAPERCLAW_AGENT_ID",
-          "PAPERCLAW_API_KEY",
-          "PAPERCLAW_API_URL",
-          "PAPERCLAW_COMPANY_ID",
-          "PAPERCLAW_RUN_ID",
+          "PAPERCLIP_AGENT_ID",
+          "PAPERCLIP_API_KEY",
+          "PAPERCLIP_API_URL",
+          "PAPERCLIP_COMPANY_ID",
+          "PAPERCLIP_RUN_ID",
         ]),
       );
-      expect(capture.prompt).toContain("PaperClaw runtime note:");
-      expect(capture.prompt).toContain("PAPERCLAW_API_KEY");
-      expect(invocationPrompt).toContain("PaperClaw runtime note:");
-      expect(invocationPrompt).toContain("PAPERCLAW_API_URL");
+      expect(capture.prompt).toContain("Paperclip runtime note:");
+      expect(capture.prompt).toContain("PAPERCLIP_API_KEY");
+      expect(invocationPrompt).toContain("Paperclip runtime note:");
+      expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -193,7 +193,7 @@ describe("cursor execute", () => {
   });
 
   it("passes --mode when explicitly configured", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-cursor-execute-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-mode-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -225,9 +225,9 @@ describe("cursor execute", () => {
           model: "auto",
           mode: "ask",
           env: {
-            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the paperclaw heartbeat.",
+          promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -251,18 +251,20 @@ describe("cursor execute", () => {
   });
 
   it("injects company-library runtime skills into the Cursor skills home before execution", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-cursor-execute-runtime-skill-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-runtime-skill-"));
+    const processHome = path.join(root, "process-home");
+    const configuredHome = path.join(root, "configured-home");
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
     await fs.mkdir(workspace, { recursive: true });
     await writeFakeCursorCommand(commandPath);
 
-    const paperclawDir = await createSkillDir(runtimeSkillsRoot, "paperclaw");
+    const paperclipDir = await createSkillDir(runtimeSkillsRoot, "paperclip");
     const asciiHeartDir = await createSkillDir(runtimeSkillsRoot, "ascii-heart");
 
     const previousHome = process.env.HOME;
-    process.env.HOME = root;
+    process.env.HOME = processHome;
 
     try {
       const result = await execute({
@@ -284,22 +286,21 @@ describe("cursor execute", () => {
           command: commandPath,
           cwd: workspace,
           model: "auto",
-          paperclawRuntimeSkills: [
+          env: { HOME: configuredHome },
+          paperclipRuntimeSkills: [
             {
-              name: "paperclaw",
-              source: paperclawDir,
-              required: true,
-              requiredReason: "Bundled PaperClaw skills are always available for local adapters.",
+              name: "paperclip",
+              source: paperclipDir,
             },
             {
               name: "ascii-heart",
               source: asciiHeartDir,
             },
           ],
-          paperclawSkillSync: {
+          paperclipSkillSync: {
             desiredSkills: ["ascii-heart"],
           },
-          promptTemplate: "Follow the paperclaw heartbeat.",
+          promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -309,10 +310,12 @@ describe("cursor execute", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
-      expect((await fs.lstat(path.join(root, ".cursor", "skills", "ascii-heart"))).isSymbolicLink()).toBe(true);
-      expect(await fs.realpath(path.join(root, ".cursor", "skills", "ascii-heart"))).toBe(
+      const installedSkill = path.join(configuredHome, ".cursor", "skills", "ascii-heart");
+      expect((await fs.lstat(installedSkill)).isSymbolicLink()).toBe(true);
+      expect(await fs.realpath(installedSkill)).toBe(
         await fs.realpath(asciiHeartDir),
       );
+      await expect(fs.lstat(path.join(processHome, ".cursor", "skills", "ascii-heart"))).rejects.toThrow();
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -324,7 +327,7 @@ describe("cursor execute", () => {
   });
 
   it("prefers ~/.local/bin/cursor-agent for remote sandbox execution when using the default command", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-cursor-sandbox-execute-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-execute-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
     const remoteWorkspace = path.join(root, "remote-workspace");
@@ -363,7 +366,7 @@ describe("cursor execute", () => {
         config: {
           command: "agent",
           cwd: workspace,
-          promptTemplate: "Follow the paperclaw heartbeat.",
+          promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -379,16 +382,16 @@ describe("cursor execute", () => {
       };
       expect(capture.command).toBe(cursorAgentPath);
       expect(capture.path.split(":")[0]).toBe(path.join(homeDir, ".local", "bin"));
-      expect(capture.prompt).toContain("Follow the paperclaw heartbeat.");
+      expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 30_000);
+  }, 10_000);
 
   it("keeps explicit command overrides for remote sandbox execution", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-cursor-sandbox-explicit-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-explicit-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
     const remoteWorkspace = path.join(root, "remote-workspace");
@@ -429,7 +432,7 @@ describe("cursor execute", () => {
         config: {
           command: customCommandPath,
           cwd: workspace,
-          promptTemplate: "Follow the paperclaw heartbeat.",
+          promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",

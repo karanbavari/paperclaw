@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "PaperClaw",
-  "description": "The control plane for human-governed AI-agent companies",
+  "name": "Paperclip",
+  "description": "The control plane for autonomous AI companies",
   "theme": "mint",
   "colors": {
     "primary": "#2563EB",
@@ -16,7 +16,7 @@
   "topbarLinks": [
     {
       "name": "GitHub",
-      "url": "https://github.com/karanbavari/paperclaw"
+      "url": "https://github.com/paperclip-ai/paperclip"
     }
   ],
   "navigation": {
@@ -27,7 +27,7 @@
           {
             "group": "Introduction",
             "pages": [
-              "start/what-is-paperclaw",
+              "start/what-is-paperclip",
               "start/quickstart",
               "start/core-concepts",
               "start/architecture"
@@ -43,12 +43,16 @@
             "pages": [
               "guides/board-operator/dashboard",
               "guides/board-operator/creating-a-company",
+              "guides/board-operator/editing-first-task-texts",
               "guides/board-operator/managing-agents",
               "guides/board-operator/org-structure",
               "guides/board-operator/managing-tasks",
               "guides/board-operator/execution-workspaces-and-runtime-services",
-              "guides/board-operator/research-lab",
               "guides/board-operator/delegation",
+              "guides/board-operator/execution-workspaces-and-runtime-services",
+              "guides/board-operator/delegation",
+              "guides/board-operator/experimental-features",
+              "guides/board-operator/status-cards",
               "guides/board-operator/approvals",
               "guides/board-operator/costs-and-budgets",
               "guides/board-operator/activity-log",
@@ -61,6 +65,7 @@
               "guides/agent-developer/how-agents-work",
               "guides/agent-developer/heartbeat-protocol",
               "guides/agent-developer/writing-a-skill",
+              "guides/agent-developer/skills-store",
               "guides/agent-developer/task-workflow",
               "guides/agent-developer/comments-and-communication",
               "guides/agent-developer/handling-approvals",
@@ -118,7 +123,6 @@
               "api/agents",
               "api/issues",
               "api/approvals",
-              "api/research-labs",
               "api/goals-and-projects",
               "api/costs",
               "api/secrets",
@@ -144,6 +148,6 @@
     ]
   },
   "footerSocials": {
-    "github": "https://github.com/karanbavari/paperclaw"
+    "github": "https://github.com/paperclip-ai/paperclip"
   }
 }

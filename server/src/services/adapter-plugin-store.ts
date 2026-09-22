@@ -2,7 +2,7 @@
  * JSON-file-backed store for external adapter registrations.
  *
  * Stores metadata about externally installed adapter packages at
- * ~/.paperclaw/adapter-plugins.json. This is the source of truth for which
+ * ~/.paperclip/adapter-plugins.json. This is the source of truth for which
  * external adapters should be loaded at startup.
  *
  * Both the plugin store and the settings store are cached in memory after
@@ -14,14 +14,14 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { resolvePaperClawHomeDir } from "../home-paths.js";
+import { resolvePaperclipHomeDir } from "../home-paths.js";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface AdapterPluginRecord {
-  /** npm package name (e.g., "droid-paperclaw-adapter") */
+  /** npm package name (e.g., "droid-paperclip-adapter") */
   packageName: string;
   /** Absolute local filesystem path (for locally linked adapters) */
   localPath?: string;
@@ -44,11 +44,11 @@ interface AdapterSettings {
 // ---------------------------------------------------------------------------
 
 function adapterPluginPaths() {
-  const paperclawDir = resolvePaperClawHomeDir();
+  const paperclipDir = resolvePaperclipHomeDir();
   return {
-    adapterPluginsDir: path.join(paperclawDir, "adapter-plugins"),
-    adapterPluginsStorePath: path.join(paperclawDir, "adapter-plugins.json"),
-    adapterSettingsPath: path.join(paperclawDir, "adapter-settings.json"),
+    adapterPluginsDir: path.join(paperclipDir, "adapter-plugins"),
+    adapterPluginsStorePath: path.join(paperclipDir, "adapter-plugins.json"),
+    adapterSettingsPath: path.join(paperclipDir, "adapter-settings.json"),
   };
 }
 
@@ -69,10 +69,10 @@ function ensureDirs(): string {
   const pkgJsonPath = path.join(adapterPluginsDir, "package.json");
   if (!fs.existsSync(pkgJsonPath)) {
     fs.writeFileSync(pkgJsonPath, JSON.stringify({
-      name: "paperclaw-adapter-plugins",
+      name: "paperclip-adapter-plugins",
       version: "0.0.0",
       private: true,
-      description: "Managed directory for PaperClaw external adapter plugins. Do not edit manually.",
+      description: "Managed directory for Paperclip external adapter plugins. Do not edit manually.",
     }, null, 2) + "\n");
   }
   return adapterPluginsDir;

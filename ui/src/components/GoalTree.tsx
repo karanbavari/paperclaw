@@ -1,4 +1,4 @@
-import type { Goal } from "@kesarcloud/shared";
+import type { Goal } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
 import { StatusBadge } from "./StatusBadge";
 import { ChevronRight } from "lucide-react";
@@ -35,6 +35,8 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect }: GoalN
             e.stopPropagation();
             setExpanded(!expanded);
           }}
+          aria-label={`${goal.title} subtree`}
+          aria-expanded={expanded}
         >
           <ChevronRight
             className={cn("h-3 w-3 transition-transform", expanded && "rotate-90")}

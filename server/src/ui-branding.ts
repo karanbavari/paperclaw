@@ -1,7 +1,7 @@
-const FAVICON_BLOCK_START = "<!-- PAPERCLAW_FAVICON_START -->";
-const FAVICON_BLOCK_END = "<!-- PAPERCLAW_FAVICON_END -->";
-const RUNTIME_BRANDING_BLOCK_START = "<!-- PAPERCLAW_RUNTIME_BRANDING_START -->";
-const RUNTIME_BRANDING_BLOCK_END = "<!-- PAPERCLAW_RUNTIME_BRANDING_END -->";
+const FAVICON_BLOCK_START = "<!-- PAPERCLIP_FAVICON_START -->";
+const FAVICON_BLOCK_END = "<!-- PAPERCLIP_FAVICON_END -->";
+const RUNTIME_BRANDING_BLOCK_START = "<!-- PAPERCLIP_RUNTIME_BRANDING_START -->";
+const RUNTIME_BRANDING_BLOCK_END = "<!-- PAPERCLIP_RUNTIME_BRANDING_END -->";
 
 const DEFAULT_FAVICON_LINKS = [
   '<link rel="icon" href="/favicon.ico" sizes="48x48" />',
@@ -16,6 +16,13 @@ export type WorktreeUiBranding = {
   color: string | null;
   textColor: string | null;
   faviconHref: string | null;
+  /**
+   * Runtime instance id for this worktree preview. Surfaced to the client so
+   * the experimental "Run tasks in this worktree" card can fail closed when a
+   * copied settings row was armed in a different instance. Null outside a
+   * worktree or when the runtime id is unset.
+   */
+  instanceId: string | null;
 };
 
 function isTruthyEnvValue(value: string | undefined): boolean {
@@ -141,7 +148,7 @@ function createFaviconDataUrl(background: string, foreground: string): string {
 }
 
 export function isWorktreeUiBrandingEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return isTruthyEnvValue(env.PAPERCLAW_IN_WORKTREE);
+  return isTruthyEnvValue(env.PAPERCLIP_IN_WORKTREE);
 }
 
 export function getWorktreeUiBranding(env: NodeJS.ProcessEnv = process.env): WorktreeUiBranding {
@@ -152,11 +159,12 @@ export function getWorktreeUiBranding(env: NodeJS.ProcessEnv = process.env): Wor
       color: null,
       textColor: null,
       faviconHref: null,
+      instanceId: null,
     };
   }
 
-  const name = nonEmpty(env.PAPERCLAW_WORKTREE_NAME) ?? nonEmpty(env.PAPERCLAW_INSTANCE_ID) ?? "worktree";
-  const color = normalizeHexColor(env.PAPERCLAW_WORKTREE_COLOR) ?? deriveColorFromSeed(name);
+  const name = nonEmpty(env.PAPERCLIP_WORKTREE_NAME) ?? nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? "worktree";
+  const color = normalizeHexColor(env.PAPERCLIP_WORKTREE_COLOR) ?? deriveColorFromSeed(name);
   const textColor = pickReadableTextColor(color);
 
   return {
@@ -165,6 +173,7 @@ export function getWorktreeUiBranding(env: NodeJS.ProcessEnv = process.env): Wor
     color,
     textColor,
     faviconHref: createFaviconDataUrl(color, textColor),
+    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID),
   };
 }
 
@@ -181,12 +190,16 @@ export function renderFaviconLinks(branding: WorktreeUiBranding): string {
 export function renderRuntimeBrandingMeta(branding: WorktreeUiBranding): string {
   if (!branding.enabled || !branding.name || !branding.color || !branding.textColor) return "";
 
-  return [
-    '<meta name="paperclaw-worktree-enabled" content="true" />',
-    `<meta name="paperclaw-worktree-name" content="${escapeHtmlAttribute(branding.name)}" />`,
-    `<meta name="paperclaw-worktree-color" content="${escapeHtmlAttribute(branding.color)}" />`,
-    `<meta name="paperclaw-worktree-text-color" content="${escapeHtmlAttribute(branding.textColor)}" />`,
-  ].join("\n");
+  const tags = [
+    '<meta name="paperclip-worktree-enabled" content="true" />',
+    `<meta name="paperclip-worktree-name" content="${escapeHtmlAttribute(branding.name)}" />`,
+    `<meta name="paperclip-worktree-color" content="${escapeHtmlAttribute(branding.color)}" />`,
+    `<meta name="paperclip-worktree-text-color" content="${escapeHtmlAttribute(branding.textColor)}" />`,
+  ];
+  if (branding.instanceId) {
+    tags.push(`<meta name="paperclip-instance-id" content="${escapeHtmlAttribute(branding.instanceId)}" />`);
+  }
+  return tags.join("\n");
 }
 
 function replaceMarkedBlock(html: string, startMarker: string, endMarker: string, content: string): string {

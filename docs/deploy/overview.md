@@ -3,7 +3,7 @@ title: Deployment Overview
 summary: Deployment modes at a glance
 ---
 
-PaperClaw supports three deployment configurations, from zero-friction local to internet-facing production.
+Paperclip supports three deployment configurations, from zero-friction local to internet-facing production.
 
 ## Deployment Modes
 
@@ -38,18 +38,18 @@ PaperClaw supports three deployment configurations, from zero-friction local to 
 
 ## Choosing a Mode
 
-- **Just trying PaperClaw?** Use `local_trusted` (the default)
+- **Just trying Paperclip?** Use `local_trusted` (the default)
 - **Sharing with a team on private network?** Use `authenticated` + `private`
 - **Deploying to the cloud?** Use `authenticated` + `public` — see [AWS ECS Fargate guide](aws-ecs.md)
 
 Set the mode during onboarding:
 
 ```sh
-pnpm paperclaw onboard
+pnpm paperclipai onboard
 ```
 
 Or update it later:
 
 ```sh
-pnpm paperclaw configure --section server
+pnpm paperclipai configure --section server
 ```

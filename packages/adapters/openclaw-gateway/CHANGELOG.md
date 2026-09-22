@@ -1,4 +1,4 @@
-# @kesarcloud/adapter-openclaw-gateway
+# @paperclipai/adapter-openclaw-gateway
 
 ## 0.3.1
 
@@ -6,7 +6,7 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @kesarcloud/adapter-utils@0.3.1
+  - @paperclipai/adapter-utils@0.3.1
 
 ## 0.3.0
 
@@ -17,4 +17,4 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @kesarcloud/adapter-utils@0.3.0
+  - @paperclipai/adapter-utils@0.3.0

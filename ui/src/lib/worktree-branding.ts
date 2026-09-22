@@ -1,3 +1,5 @@
+import { READABLE_TEXT_LIGHT, READABLE_TEXT_DARK } from "./color-contrast";
+
 export type WorktreeUiBranding = {
   enabled: true;
   name: string;
@@ -46,20 +48,41 @@ function pickReadableTextColor(background: string): string {
     (0.0722 * relativeLuminanceChannel(b));
   const whiteContrast = 1.05 / (luminance + 0.05);
   const blackContrast = (luminance + 0.05) / 0.05;
-  return whiteContrast >= blackContrast ? "#f8fafc" : "#111827";
+  return whiteContrast >= blackContrast ? READABLE_TEXT_LIGHT : READABLE_TEXT_DARK;
+}
+
+/**
+ * True when the UI is served by an isolated git-worktree preview instance
+ * (`PAPERCLIP_IN_WORKTREE=true` on the server). Unlike {@link getWorktreeUiBranding}
+ * this only depends on the enabled flag, so it stays reliable even if the
+ * worktree name/color branding is absent.
+ */
+export function isWorktreeRuntime(): boolean {
+  return readMetaContent("paperclip-worktree-enabled") === "true";
+}
+
+/**
+ * Runtime instance id of the worktree preview serving this UI, injected by the
+ * server as a `<meta name="paperclip-instance-id">` tag. Returns null outside a
+ * worktree or when the server did not surface the id. Used by the experimental
+ * "Run tasks in this worktree" card to fail closed when a copied settings row
+ * was armed in a different instance.
+ */
+export function getWorktreeInstanceId(): string | null {
+  return readMetaContent("paperclip-instance-id");
 }
 
 export function getWorktreeUiBranding(): WorktreeUiBranding | null {
-  if (readMetaContent("paperclaw-worktree-enabled") !== "true") return null;
+  if (readMetaContent("paperclip-worktree-enabled") !== "true") return null;
 
-  const name = readMetaContent("paperclaw-worktree-name");
-  const color = normalizeHexColor(readMetaContent("paperclaw-worktree-color"));
+  const name = readMetaContent("paperclip-worktree-name");
+  const color = normalizeHexColor(readMetaContent("paperclip-worktree-color"));
   if (!name || !color) return null;
 
   return {
     enabled: true,
     name,
     color,
-    textColor: normalizeHexColor(readMetaContent("paperclaw-worktree-text-color")) ?? pickReadableTextColor(color),
+    textColor: normalizeHexColor(readMetaContent("paperclip-worktree-text-color")) ?? pickReadableTextColor(color),
   };
 }

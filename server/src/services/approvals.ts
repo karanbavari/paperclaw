@@ -1,6 +1,6 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@kesarcloud/db";
-import { approvalComments, approvals, researchLabs } from "@kesarcloud/db";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import type { Db } from "@paperclipai/db";
+import { approvalComments, approvals } from "@paperclipai/db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { agentService } from "./agents.js";
@@ -22,6 +22,13 @@ export function approvalService(db: Db) {
       ...comment,
       body: redactCurrentUserText(comment.body, { enabled: censorUsernameInLogs }),
     };
+  }
+
+  async function reconcileApprovedBuiltInAgent(companyId: string, payload: Record<string, unknown>) {
+    const sourceBuiltInAgentKey = typeof payload.sourceBuiltInAgentKey === "string" ? payload.sourceBuiltInAgentKey : null;
+    if (!sourceBuiltInAgentKey) return;
+    const { builtInAgentService } = await import("./built-in-agents.js");
+    await builtInAgentService(db).ensure(companyId, sourceBuiltInAgentKey);
   }
 
   async function getExistingApproval(id: string) {
@@ -78,25 +85,6 @@ export function approvalService(db: Db) {
     );
   }
 
-  async function syncResearchLabApproval(
-    approval: ApprovalRecord,
-    status: "approved" | "rejected" | "changes_requested" | "board_review",
-    decisionNote?: string | null,
-  ) {
-    if (approval.type !== "research_lab_report") return;
-    const payload = approval.payload as Record<string, unknown>;
-    const researchLabId = typeof payload.researchLabId === "string" ? payload.researchLabId : null;
-    if (!researchLabId) return;
-    await db
-      .update(researchLabs)
-      .set({
-        status,
-        decisionNote: decisionNote ?? approval.decisionNote ?? null,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(researchLabs.companyId, approval.companyId), eq(researchLabs.id, researchLabId)));
-  }
-
   return {
     list: (companyId: string, status?: string) => {
       const conditions = [eq(approvals.companyId, companyId)];
@@ -111,12 +99,46 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .then((rows) => rows[0] ?? null),
 
+    findOpenHireApprovalForAgent: async (companyId: string, agentId: string) => {
+      const rows = await db
+        .select()
+        .from(approvals)
+        .where(
+          and(
+            eq(approvals.companyId, companyId),
+            eq(approvals.type, "hire_agent"),
+            inArray(approvals.status, resolvableStatuses),
+            sql`${approvals.payload} ->> 'agentId' = ${agentId}`,
+          ),
+        );
+      return rows[0] ?? null;
+    },
+
     create: (companyId: string, data: Omit<typeof approvals.$inferInsert, "companyId">) =>
       db
         .insert(approvals)
         .values({ ...data, companyId })
         .returning()
         .then((rows) => rows[0]),
+
+    // Cancel an open (pending/revision_requested) approval without a board
+    // decision — e.g. when its paired agent is terminated during duplicate
+    // cleanup. Idempotent: a no-op on already-resolved approvals.
+    cancel: async (id: string, reason?: string | null) => {
+      const now = new Date();
+      const updated = await db
+        .update(approvals)
+        .set({
+          status: "cancelled",
+          decisionNote: reason ?? null,
+          decidedAt: now,
+          updatedAt: now,
+        })
+        .where(and(eq(approvals.id, id), inArray(approvals.status, resolvableStatuses)))
+        .returning()
+        .then((rows) => rows[0] ?? null);
+      return updated;
+    },
 
     approve: async (id: string, decidedByUserId: string, decisionNote?: string | null) => {
       const { approval: updated, applied } = await resolveApproval(
@@ -132,7 +154,8 @@ export function approvalService(db: Db) {
         const payload = updated.payload as Record<string, unknown>;
         const payloadAgentId = typeof payload.agentId === "string" ? payload.agentId : null;
         if (payloadAgentId) {
-          await agentsSvc.activatePendingApproval(payloadAgentId);
+          await agentsSvc.activatePendingApproval(payloadAgentId, payload);
+          await reconcileApprovedBuiltInAgent(updated.companyId, payload);
           hireApprovedAgentId = payloadAgentId;
         } else {
           const created = await agentsSvc.create(updated.companyId, {
@@ -184,10 +207,6 @@ export function approvalService(db: Db) {
         }
       }
 
-      if (applied) {
-        await syncResearchLabApproval(updated, "approved", decisionNote);
-      }
-
       return { approval: updated, applied };
     },
 
@@ -207,10 +226,6 @@ export function approvalService(db: Db) {
         }
       }
 
-      if (applied) {
-        await syncResearchLabApproval(updated, "rejected", decisionNote);
-      }
-
       return { approval: updated, applied };
     },
 
@@ -221,7 +236,7 @@ export function approvalService(db: Db) {
       }
 
       const now = new Date();
-      const updated = await db
+      return db
         .update(approvals)
         .set({
           status: "revision_requested",
@@ -233,10 +248,6 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .returning()
         .then((rows) => rows[0]);
-      if (updated) {
-        await syncResearchLabApproval(updated, "changes_requested", decisionNote);
-      }
-      return updated;
     },
 
     resubmit: async (id: string, payload?: Record<string, unknown>) => {
@@ -246,7 +257,7 @@ export function approvalService(db: Db) {
       }
 
       const now = new Date();
-      const updated = await db
+      return db
         .update(approvals)
         .set({
           status: "pending",
@@ -259,10 +270,6 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .returning()
         .then((rows) => rows[0]);
-      if (updated) {
-        await syncResearchLabApproval(updated, "board_review", null);
-      }
-      return updated;
     },
 
     listComments: async (approvalId: string) => {

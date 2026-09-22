@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@kesarcloud/adapter-utils";
+} from "@paperclipai/adapter-utils";
 import {
   buildPersistentSkillSnapshot,
-  ensurePaperClawSkillSymlink,
-  readPaperClawRuntimeSkillEntries,
+  ensurePaperclipSkillSymlink,
+  readPaperclipRuntimeSkillEntries,
   readInstalledSkillTargets,
-  resolvePaperClawDesiredSkillNames,
-} from "@kesarcloud/adapter-utils/server-utils";
+  resolveLegacyPaperclipDesiredSkillNames,
+} from "@paperclipai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,8 +31,8 @@ function resolvePiSkillsHome(config: Record<string, unknown>) {
 }
 
 async function buildPiSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperClawRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperClawDesiredSkillNames(config, availableEntries);
+  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkills = resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
   const skillsHome = resolvePiSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
   return buildPersistentSkillSnapshot({
@@ -44,7 +44,7 @@ async function buildPiSkillSnapshot(config: Record<string, unknown>): Promise<Ad
     locationLabel: "~/.pi/agent/skills",
     missingDetail: "Configured but not currently linked into the Pi skills home.",
     externalConflictDetail: "Skill name is occupied by an external installation.",
-    externalDetail: "Installed outside PaperClaw management.",
+    externalDetail: "Installed outside Paperclip management.",
   });
 }
 
@@ -56,10 +56,10 @@ export async function syncPiSkills(
   ctx: AdapterSkillContext,
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperClawRuntimeSkillEntries(ctx.config, __moduleDir);
+  const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
   const desiredSet = new Set([
+    ...resolveLegacyPaperclipDesiredSkillNames({}, availableEntries),
     ...desiredSkills,
-    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
   ]);
   const skillsHome = resolvePiSkillsHome(ctx.config);
   await fs.mkdir(skillsHome, { recursive: true });
@@ -69,7 +69,7 @@ export async function syncPiSkills(
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
     const target = path.join(skillsHome, available.runtimeName);
-    await ensurePaperClawSkillSymlink(available.source, target);
+    await ensurePaperclipSkillSymlink(available.source, target);
   }
 
   for (const [name, installedEntry] of installed.entries()) {
@@ -85,7 +85,7 @@ export async function syncPiSkills(
 
 export function resolvePiDesiredSkillNames(
   config: Record<string, unknown>,
-  availableEntries: Array<{ key: string; required?: boolean }>,
+  availableEntries: Array<{ key: string }>,
 ) {
-  return resolvePaperClawDesiredSkillNames(config, availableEntries);
+  return resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
 }

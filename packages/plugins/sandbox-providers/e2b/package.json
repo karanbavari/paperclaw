@@ -1,15 +1,15 @@
 {
-  "name": "@kesarcloud/plugin-e2b",
+  "name": "@paperclipai/plugin-e2b",
   "version": "0.1.0",
-  "description": "E2B sandbox provider plugin for PaperClaw environments",
+  "description": "E2B sandbox provider plugin for Paperclip environments",
   "license": "MIT",
-  "homepage": "https://github.com/karanbavari/paperclaw",
+  "homepage": "https://github.com/paperclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/karanbavari/paperclaw/issues"
+    "url": "https://github.com/paperclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karanbavari/paperclaw",
+    "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/plugins/sandbox-providers/e2b"
   },
   "type": "module",
@@ -30,22 +30,21 @@
   "files": [
     "dist"
   ],
-  "paperclawPlugin": {
+  "paperclipPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js"
   },
   "keywords": [
-    "paperclaw",
+    "paperclip",
     "plugin",
     "sandbox",
     "e2b"
   ],
   "scripts": {
-    "postinstall": "node ../../../../scripts/link-plugin-dev-sdk.mjs",
-    "prebuild": "pnpm -C ../../../.. --filter @kesarcloud/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm -C ../../../.. --filter @paperclipai/plugin-sdk ensure-build-deps",
     "build": "rm -rf dist && tsc",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm -C ../../../.. --filter @kesarcloud/plugin-sdk ensure-build-deps && tsc --noEmit",
+    "typecheck": "pnpm -C ../../../.. --filter @paperclipai/plugin-sdk ensure-build-deps && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "prepack": "rm -f package.dev.json && cp package.json package.dev.json && node ../../../../scripts/generate-plugin-package-json.mjs",
     "postpack": "if [ -f package.dev.json ]; then mv package.dev.json package.json; fi"
@@ -54,8 +53,11 @@
     "e2b": "^2.19.0"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

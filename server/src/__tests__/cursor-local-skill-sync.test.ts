@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listCursorSkills,
   syncCursorSkills,
-} from "@kesarcloud/adapter-cursor-local/server";
+} from "@paperclipai/adapter-cursor-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor local skill sync", () => {
-  const paperclawKey = "karanbavari/paperclaw/paperclaw";
+  const paperclipKey = "paperclipai/paperclip/paperclip";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -27,8 +27,8 @@ describe("cursor local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports configured PaperClaw skills and installs them into the Cursor skills home", async () => {
-    const home = await makeTempDir("paperclaw-cursor-skill-sync-");
+  it("defaults and installs the operational Paperclip skill in the Cursor skills home", async () => {
+    const home = await makeTempDir("paperclip-cursor-skill-sync-");
     cleanupDirs.add(home);
 
     const ctx = {
@@ -39,30 +39,45 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclawSkillSync: {
-          desiredSkills: [paperclawKey],
-        },
       },
     } as const;
 
     const before = await listCursorSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclawKey);
-    expect(before.entries.find((entry) => entry.key === paperclawKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclawKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(paperclipKey);
+    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
 
-    const after = await syncCursorSkills(ctx, [paperclawKey]);
-    expect(after.entries.find((entry) => entry.key === paperclawKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclaw"))).isSymbolicLink()).toBe(true);
+    const after = await syncCursorSkills(ctx, [paperclipKey]);
+    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
   });
 
-  it("recognizes company-library runtime skills supplied outside the bundled PaperClaw directory", async () => {
-    const home = await makeTempDir("paperclaw-cursor-runtime-skills-home-");
-    const runtimeSkills = await makeTempDir("paperclaw-cursor-runtime-skills-src-");
+  it("keeps the operational skill installed after an explicit empty replacement", async () => {
+    const home = await makeTempDir("paperclip-cursor-required-skill-");
+    cleanupDirs.add(home);
+
+    const snapshot = await syncCursorSkills({
+      agentId: "agent-required",
+      companyId: "company-1",
+      adapterType: "cursor",
+      config: {
+        env: { HOME: home },
+        paperclipSkillSync: { desiredSkills: [] },
+      },
+    }, []);
+
+    expect(snapshot.desiredSkills).toEqual([paperclipKey]);
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+  });
+
+  it("recognizes company-library runtime skills supplied outside the bundled Paperclip directory", async () => {
+    const home = await makeTempDir("paperclip-cursor-runtime-skills-home-");
+    const runtimeSkills = await makeTempDir("paperclip-cursor-runtime-skills-src-");
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclawDir = await createSkillDir(runtimeSkills, "paperclaw");
+    const paperclipDir = await createSkillDir(runtimeSkills, "paperclip");
     const asciiHeartDir = await createSkillDir(runtimeSkills, "ascii-heart");
 
     const ctx = {
@@ -73,13 +88,11 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclawRuntimeSkills: [
+        paperclipRuntimeSkills: [
           {
-            key: "paperclaw",
-            runtimeName: "paperclaw",
-            source: paperclawDir,
-            required: true,
-            requiredReason: "Bundled PaperClaw skills are always available for local adapters.",
+            key: "paperclip",
+            runtimeName: "paperclip",
+            source: paperclipDir,
           },
           {
             key: "ascii-heart",
@@ -87,7 +100,7 @@ describe("cursor local skill sync", () => {
             source: asciiHeartDir,
           },
         ],
-        paperclawSkillSync: {
+        paperclipSkillSync: {
           desiredSkills: ["ascii-heart"],
         },
       },
@@ -95,7 +108,7 @@ describe("cursor local skill sync", () => {
 
     const before = await listCursorSkills(ctx);
     expect(before.warnings).toEqual([]);
-    expect(before.desiredSkills).toEqual(["paperclaw", "ascii-heart"]);
+    expect(before.desiredSkills).toEqual(["ascii-heart"]);
     expect(before.entries.find((entry) => entry.key === "ascii-heart")?.state).toBe("missing");
 
     const after = await syncCursorSkills(ctx, ["ascii-heart"]);
@@ -104,41 +117,4 @@ describe("cursor local skill sync", () => {
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "ascii-heart"))).isSymbolicLink()).toBe(true);
   });
 
-  it("keeps required bundled PaperClaw skills installed even when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclaw-cursor-skill-prune-");
-    cleanupDirs.add(home);
-
-    const configuredCtx = {
-      agentId: "agent-2",
-      companyId: "company-1",
-      adapterType: "cursor",
-      config: {
-        env: {
-          HOME: home,
-        },
-        paperclawSkillSync: {
-          desiredSkills: [paperclawKey],
-        },
-      },
-    } as const;
-
-    await syncCursorSkills(configuredCtx, [paperclawKey]);
-
-    const clearedCtx = {
-      ...configuredCtx,
-      config: {
-        env: {
-          HOME: home,
-        },
-        paperclawSkillSync: {
-          desiredSkills: [],
-        },
-      },
-    } as const;
-
-    const after = await syncCursorSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclawKey);
-    expect(after.entries.find((entry) => entry.key === paperclawKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".cursor", "skills", "paperclaw"))).isSymbolicLink()).toBe(true);
-  });
 });

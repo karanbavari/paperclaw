@@ -11,7 +11,7 @@ import {
   shouldArmIssueDetailInboxQuickArchive,
   withIssueDetailHeaderSeed,
 } from "./issueDetailBreadcrumb";
-import type { Issue } from "@kesarcloud/shared";
+import type { Issue } from "@paperclipai/shared";
 
 const sessionStorageMock = (() => {
   const store = new Map<string, string>();
@@ -44,8 +44,10 @@ describe("issueDetailBreadcrumb", () => {
       description: null,
       status: "todo",
       priority: "medium",
+      reviewPolicy: null,
       assigneeAgentId: null,
       assigneeUserId: null,
+      responsibleUserId: null,
       checkoutRunId: null,
       executionRunId: null,
       executionAgentNameKey: null,
@@ -72,16 +74,17 @@ describe("issueDetailBreadcrumb", () => {
       project: {
         id: "project-1",
         companyId: "company-1",
-        urlKey: "paperclaw-app",
+        urlKey: "paperclip-app",
         goalId: null,
         goalIds: [],
         goals: [],
-        name: "PaperClaw App",
+        name: "Paperclip App",
         description: null,
         status: "in_progress",
         leadAgentId: null,
         targetDate: null,
         color: null,
+        icon: null,
         env: null,
         pauseReason: null,
         pausedAt: null,
@@ -93,8 +96,8 @@ describe("issueDetailBreadcrumb", () => {
           defaultRef: null,
           repoName: null,
           localFolder: null,
-          managedFolder: "/tmp/paperclaw-app",
-          effectiveLocalFolder: "/tmp/paperclaw-app",
+          managedFolder: "/tmp/paperclip-app",
+          effectiveLocalFolder: "/tmp/paperclip-app",
           origin: "local_folder",
         },
         workspaces: [],
@@ -114,6 +117,7 @@ describe("issueDetailBreadcrumb", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       ...overrides,
+      workMode: overrides.workMode ?? "standard",
     };
   }
 
@@ -178,7 +182,7 @@ describe("issueDetailBreadcrumb", () => {
       status: "todo",
       priority: "medium",
       projectId: "project-1",
-      projectName: "PaperClaw App",
+      projectName: "Paperclip App",
       originKind: "manual",
       originId: null,
     });
@@ -201,7 +205,7 @@ describe("issueDetailBreadcrumb", () => {
       status: "todo",
       priority: "medium",
       projectId: "project-1",
-      projectName: "PaperClaw App",
+      projectName: "Paperclip App",
       originKind: "manual",
       originId: null,
     });

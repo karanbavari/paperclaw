@@ -8,7 +8,8 @@ import {
   type AgentRuntimeState,
   type CompanySecret,
   type EnvBinding,
-} from "@kesarcloud/shared";
+  type Environment,
+} from "@paperclipai/shared";
 import { ActiveAgentsPanel } from "@/components/ActiveAgentsPanel";
 import { AgentConfigForm, type CreateConfigValues } from "@/components/AgentConfigForm";
 import { defaultCreateValues } from "@/components/agent-config-defaults";
@@ -37,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { storybookAgents, storybookIssues } from "../fixtures/paperclawData";
+import { storybookAgents, storybookIssues } from "../fixtures/paperclipData";
 
 const COMPANY_ID = "company-storybook";
 const now = new Date("2026-04-20T12:00:00.000Z");
@@ -53,9 +54,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclaw-story__frame overflow-hidden">
+    <section className="paperclip-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclaw-story__label">{eyebrow}</div>
+        <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -107,7 +108,7 @@ const agentManagementAgents: Agent[] = [
       extraArgs: ["--full-auto"],
       env: {
         OPENAI_API_KEY: { type: "secret_ref", secretId: "secret-openai", version: "latest" },
-        PAPERCLAW_TRACE: { type: "plain", value: "storybook" },
+        PAPERCLIP_TRACE: { type: "plain", value: "storybook" },
       } satisfies Record<string, EnvBinding>,
       timeoutSec: 7200,
       graceSec: 20,
@@ -205,7 +206,7 @@ const agentManagementAgents: Agent[] = [
     pausedAt: null,
     adapterConfig: {
       webhookUrl: "https://ops.internal.example/heartbeat",
-      payloadTemplateJson: JSON.stringify({ channel: "paperclaw-storybook", priority: "normal" }, null, 2),
+      payloadTemplateJson: JSON.stringify({ channel: "paperclip-storybook", priority: "normal" }, null, 2),
       env: {
         OPS_WEBHOOK_TOKEN: { type: "secret_ref", secretId: "secret-ops-webhook", version: 3 },
       } satisfies Record<string, EnvBinding>,
@@ -250,38 +251,84 @@ const runtimeState: AgentRuntimeState = {
 };
 
 const storybookSecrets: CompanySecret[] = [
-  {
-    id: "secret-openai",
-    companyId: COMPANY_ID,
-    name: "OPENAI_API_KEY",
-    provider: "local_encrypted",
-    externalRef: null,
-    latestVersion: 5,
-    description: "Primary coding model key for local Codex agents.",
-    createdByAgentId: null,
-    createdByUserId: "user-board",
-    createdAt: recent(21_000),
+	  {
+	    id: "secret-openai",
+	    companyId: COMPANY_ID,
+	    scope: "company",
+	    ownerUserId: null,
+	    userSecretDefinitionId: null,
+	    key: "openai-api-key",
+	    name: "OPENAI_API_KEY",
+	    provider: "local_encrypted",
+	    status: "active",
+	    managedMode: "paperclip_managed",
+	    externalRef: null,
+	    providerConfigId: null,
+	    providerMetadata: null,
+	    latestVersion: 5,
+	    description: "Primary coding model key for local Codex agents.",
+	    lastResolvedAt: recent(600),
+	    lastRotatedAt: recent(21_000),
+	    deletedAt: null,
+	    createdByAgentId: null,
+	    createdByUserId: "user-board",
+	    createdAt: recent(21_000),
     updatedAt: recent(400),
   },
-  {
-    id: "secret-ops-webhook",
-    companyId: COMPANY_ID,
-    name: "OPS_WEBHOOK_TOKEN",
-    provider: "local_encrypted",
-    externalRef: null,
-    latestVersion: 3,
-    description: "Webhook token for runtime observability callbacks.",
-    createdByAgentId: "agent-cto",
+	  {
+	    id: "secret-ops-webhook",
+	    companyId: COMPANY_ID,
+	    scope: "company",
+	    ownerUserId: null,
+	    userSecretDefinitionId: null,
+	    key: "ops-webhook-token",
+	    name: "OPS_WEBHOOK_TOKEN",
+	    provider: "local_encrypted",
+	    status: "active",
+	    managedMode: "paperclip_managed",
+	    externalRef: null,
+	    providerConfigId: null,
+	    providerMetadata: null,
+	    latestVersion: 3,
+	    description: "Webhook token for runtime observability callbacks.",
+	    lastResolvedAt: recent(120),
+	    lastRotatedAt: recent(12_000),
+	    deletedAt: null,
+	    createdByAgentId: "agent-cto",
     createdByUserId: null,
     createdAt: recent(12_000),
-    updatedAt: recent(80),
-  },
+	    updatedAt: recent(80),
+	  },
+	  {
+	    id: "secret-prod-database",
+	    companyId: COMPANY_ID,
+	    scope: "company",
+	    ownerUserId: null,
+	    userSecretDefinitionId: null,
+	    key: "/paperclip-cloud/prod/database/url",
+	    name: "/paperclip-cloud/prod/database/url",
+	    provider: "local_encrypted",
+	    status: "active",
+	    managedMode: "paperclip_managed",
+	    externalRef: null,
+	    providerConfigId: null,
+	    providerMetadata: null,
+	    latestVersion: 2,
+	    description: "Production database URL grouped under its secret folder path.",
+	    lastResolvedAt: recent(30),
+	    lastRotatedAt: recent(8_000),
+	    deletedAt: null,
+	    createdByAgentId: "agent-cto",
+	    createdByUserId: null,
+	    createdAt: recent(8_000),
+	    updatedAt: recent(30),
+	  },
 ];
 
 const adapterFixtures: AdapterInfo[] = [
   {
     type: "codex_local",
-    label: "Codex Local",
+    label: "Codex",
     source: "builtin",
     modelsCount: 3,
     loaded: true,
@@ -291,12 +338,12 @@ const adapterFixtures: AdapterInfo[] = [
       supportsSkills: true,
       supportsLocalAgentJwt: true,
       requiresMaterializedRuntimeSkills: true,
-      supportsModelProfiles: true,
+      supportsAcp: true,
     },
   },
   {
     type: "claude_local",
-    label: "Claude Local",
+    label: "Claude Code",
     source: "builtin",
     modelsCount: 2,
     loaded: true,
@@ -306,7 +353,7 @@ const adapterFixtures: AdapterInfo[] = [
       supportsSkills: true,
       supportsLocalAgentJwt: true,
       requiresMaterializedRuntimeSkills: true,
-      supportsModelProfiles: true,
+      supportsAcp: true,
     },
   },
   {
@@ -321,7 +368,7 @@ const adapterFixtures: AdapterInfo[] = [
       supportsSkills: false,
       supportsLocalAgentJwt: false,
       requiresMaterializedRuntimeSkills: false,
-      supportsModelProfiles: false,
+      supportsAcp: false,
     },
   },
 ];
@@ -409,7 +456,10 @@ function StorybookQueryFixtures({ children }: { children: ReactNode }) {
   queryClient.setQueryData(queryKeys.adapters.all, adapterFixtures);
   queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
   queryClient.setQueryData([...queryKeys.issues.list(COMPANY_ID), "with-routine-executions"], storybookIssues);
-  queryClient.setQueryData([...queryKeys.liveRuns(COMPANY_ID), "dashboard"], liveRuns);
+  queryClient.setQueryData([...queryKeys.liveRuns(COMPANY_ID), "dashboard", { minRunCount: 4, fetchLimit: undefined }], liveRuns);
+  for (const issue of storybookIssues) {
+    queryClient.setQueryData(queryKeys.issues.detail(issue.id), issue);
+  }
   queryClient.setQueryData(queryKeys.instance.generalSettings, { censorUsernameInLogs: false });
   queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "codex_local"), [
     { id: "gpt-5.4", label: "GPT-5.4" },
@@ -444,7 +494,7 @@ function AgentConfigFormStory() {
     extraArgs: "--full-auto, --search",
     envBindings: {
       OPENAI_API_KEY: { type: "secret_ref", secretId: "secret-openai", version: "latest" },
-      PAPERCLAW_TRACE: { type: "plain", value: "storybook" },
+      PAPERCLIP_TRACE: { type: "plain", value: "storybook" },
     },
     runtimeServicesJson: JSON.stringify(
       [
@@ -468,6 +518,28 @@ function AgentConfigFormStory() {
       onChange={(patch) => setValues((current) => ({ ...current, ...patch }))}
       sectionLayout="cards"
       showAdapterTestEnvironmentButton={false}
+    />
+  );
+}
+
+function AgentSecretsFormStory() {
+  return (
+    <AgentConfigForm
+      mode="edit"
+      agent={agentWith({
+        id: "agent-secrets-story",
+        adapterConfig: {
+          "access.OPENAI": {
+            type: "secret_ref",
+            secretId: "secret-openai",
+            version: "latest",
+          },
+        },
+      })}
+      onSave={() => undefined}
+      content="secrets"
+      sectionLayout="cards"
+      hideInlineSave
     />
   );
 }
@@ -591,7 +663,7 @@ function ConfigPrimitivesStory() {
     runtimeServices: [
       { name: "api", command: "pnpm dev:once", healthUrl: "http://localhost:3100/api/health" },
     ],
-    env: { PAPERCLAW_BIND: "lan" },
+    env: { PAPERCLIP_BIND: "lan" },
   }, null, 2));
 
   return (
@@ -642,12 +714,12 @@ function ConfigPrimitivesStory() {
 function AgentManagementStories() {
   return (
     <StorybookQueryFixtures>
-      <div className="paperclaw-story">
-        <main className="paperclaw-story__inner space-y-6">
-          <section className="paperclaw-story__frame p-6">
+      <div className="paperclip-story">
+        <main className="paperclip-story__inner space-y-6">
+          <section className="paperclip-story__frame p-6">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="paperclaw-story__label">Agent management</div>
+                <div className="paperclip-story__label">Agent management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Agent details, controls, and config surfaces</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                   Management stories exercise the dense pieces of the agent lifecycle: status detail panels,
@@ -717,6 +789,12 @@ function AgentManagementStories() {
             </div>
           </Section>
 
+          <Section eyebrow="Agent Secrets tab" title="Searchable API-access secret bindings">
+            <div className="max-w-4xl">
+              <AgentSecretsFormStory />
+            </div>
+          </Section>
+
           <Section eyebrow="AgentIconPicker" title="Available icon grid with selected state">
             <IconPickerMatrix />
           </Section>
@@ -747,7 +825,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Agent management stories cover detail, configuration, icon, action, live-run, and config primitive states using extended PaperClaw fixtures.",
+          "Agent management stories cover detail, configuration, icon, action, live-run, and config primitive states using extended Paperclip fixtures.",
       },
     },
   },
@@ -758,3 +836,88 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const ManagementMatrix: Story = {};
+
+/* ---- Forced Kubernetes execution (instance executionMode=kubernetes) ---- */
+
+const managedKubernetesEnvironment: Environment = {
+  id: "env-k8s-storybook",
+  name: "Kubernetes Sandbox",
+  description: "Managed Kubernetes sandbox environment for hosted tenant execution.",
+  driver: "sandbox",
+  status: "active",
+  config: {
+    provider: "kubernetes",
+    backend: "job",
+    inCluster: true,
+    runtimeClassName: "gvisor",
+    egressMode: "cilium",
+  },
+  envVars: {},
+  metadata: { managedByPaperclip: true, managedKubernetesSandbox: true },
+  createdAt: recent(2_000),
+  updatedAt: recent(60),
+};
+
+function ForcedKubernetesFixtures({
+  environmentFixtures,
+  children,
+}: {
+  environmentFixtures: Environment[];
+  children: ReactNode;
+}) {
+  const queryClient = useQueryClient();
+
+  queryClient.setQueryData(queryKeys.agents.list(COMPANY_ID), agentManagementAgents);
+  queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), storybookSecrets);
+  queryClient.setQueryData(queryKeys.adapters.all, adapterFixtures);
+  // The instance-level execution policy that forces all agent execution onto
+  // the managed Kubernetes sandbox (PAPERCLIP_EXECUTION_MODE=kubernetes).
+  queryClient.setQueryData(queryKeys.instance.generalSettings, {
+    censorUsernameInLogs: false,
+    executionMode: "kubernetes",
+  });
+  queryClient.setQueryData(queryKeys.environments.list(COMPANY_ID), environmentFixtures);
+  queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "codex_local"), [
+    { id: "gpt-5.4", label: "GPT-5.4" },
+    { id: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
+  ]);
+
+  return children;
+}
+
+function ForcedKubernetesStory({ environmentFixtures }: { environmentFixtures: Environment[] }) {
+  return (
+    <ForcedKubernetesFixtures environmentFixtures={environmentFixtures}>
+      <div className="min-h-screen bg-background text-foreground">
+        <main className="mx-auto max-w-4xl space-y-8 px-6 py-10">
+          <Section
+            eyebrow="AgentConfigForm"
+            title="Execution pinned to the managed Kubernetes sandbox (executionMode=kubernetes)"
+          >
+            <div className="max-w-4xl">
+              <AgentConfigFormStory />
+            </div>
+          </Section>
+        </main>
+      </div>
+    </ForcedKubernetesFixtures>
+  );
+}
+
+/**
+ * Instance execution policy forces Kubernetes and the company has a managed
+ * Kubernetes sandbox environment: the Execution section renders the
+ * environment read-only (no local/SSH picker).
+ */
+export const ForcedKubernetesExecution: Story = {
+  render: () => <ForcedKubernetesStory environmentFixtures={[managedKubernetesEnvironment]} />,
+};
+
+/**
+ * Instance execution policy forces Kubernetes but no managed environment is
+ * available for the company yet: the Execution section shows the warning
+ * notice instead of silently falling back to local execution.
+ */
+export const ForcedKubernetesMissingEnvironment: Story = {
+  render: () => <ForcedKubernetesStory environmentFixtures={[]} />,
+};

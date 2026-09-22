@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, CompanySecret, EnvBinding, Project, RoutineVariable } from "@kesarcloud/shared";
+import type { Agent, CompanySecret, EnvBinding, Project, RoutineVariable } from "@paperclipai/shared";
 import { Code2, FileText, ListPlus, RotateCcw, Table2 } from "lucide-react";
-import { EnvVarEditor } from "@/components/EnvVarEditor";
+import { EnvironmentVariablesEditor } from "@/components/environment-variables-editor";
 import { ExecutionParticipantPicker } from "@/components/ExecutionParticipantPicker";
 import { FoldCurtain } from "@/components/FoldCurtain";
 import { InlineEditor } from "@/components/InlineEditor";
@@ -20,7 +20,7 @@ import { ScheduleEditor, describeSchedule } from "@/components/ScheduleEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildExecutionPolicy } from "@/lib/issue-execution-policy";
-import { createIssue, storybookAgents } from "../fixtures/paperclawData";
+import { createIssue, storybookAgents } from "../fixtures/paperclipData";
 
 function Section({
   eyebrow,
@@ -34,9 +34,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclaw-story__frame overflow-hidden">
+    <section className="paperclip-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclaw-story__label">{eyebrow}</div>
+        <div className="paperclip-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
@@ -78,8 +78,8 @@ function StatePanel({
 
 function StoryShell({ children }: { children: ReactNode }) {
   return (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner space-y-6">{children}</main>
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -103,7 +103,7 @@ Tooling: lean on [/react-perf-optimizer](skill://skill-react-perf?s=react-perf-o
 const shouldRun = issue.status === "in_progress" && issue.companyId === company.id;
 \`\`\`
 
-See [the implementation notes](https://github.com/karanbavari/paperclaw).`;
+See [the implementation notes](https://github.com/paperclipai/paperclip).`;
 
 const editorMentions: MentionOption[] = [
   { id: "agent-codex", name: "CodexCoder", kind: "agent", agentId: "agent-codex", agentIcon: "code" },
@@ -121,7 +121,7 @@ const adapterSchema: JsonSchemaNode = {
       title: "Adapter name",
       description: "Human-readable name shown in the adapter manager.",
       minLength: 3,
-      default: "Codex local",
+      default: "Codex",
     },
     mode: {
       type: "string",
@@ -133,7 +133,7 @@ const adapterSchema: JsonSchemaNode = {
       type: "string",
       title: "API key",
       format: "secret-ref",
-      description: "Stored with the active PaperClaw secret provider.",
+      description: "Stored with the active Paperclip secret provider.",
     },
     concurrency: {
       type: "integer",
@@ -175,13 +175,13 @@ const adapterSchema: JsonSchemaNode = {
 
 const validAdapterValues = {
   ...getDefaultValues(adapterSchema),
-  adapterName: "Codex local",
+  adapterName: "Codex",
   mode: "implementation",
   apiKey: "secret:openai-api-key",
   concurrency: 2,
   dryRun: true,
   notes: "Use the project worktree and post a concise task update before handoff.",
-  allowedCommands: ["pnpm --filter @kesarcloud/ui typecheck", "pnpm build-storybook"],
+  allowedCommands: ["pnpm --filter @paperclipai/ui typecheck", "pnpm build-storybook"],
   advanced: { timeoutSeconds: 900, requireApproval: false },
 };
 
@@ -199,28 +199,50 @@ const adapterErrors = {
 };
 
 const storybookSecrets: CompanySecret[] = [
-  {
-    id: "secret-openai",
-    companyId: "company-storybook",
-    name: "OPENAI_API_KEY",
-    provider: "local_encrypted",
-    externalRef: null,
-    latestVersion: 3,
-    description: null,
-    createdByAgentId: null,
+	  {
+	    id: "secret-openai",
+	    companyId: "company-storybook",
+	    scope: "company",
+	    ownerUserId: null,
+	    userSecretDefinitionId: null,
+	    key: "openai-api-key",
+	    name: "OPENAI_API_KEY",
+	    provider: "local_encrypted",
+	    status: "active",
+	    managedMode: "paperclip_managed",
+	    externalRef: null,
+	    providerConfigId: null,
+	    providerMetadata: null,
+	    latestVersion: 3,
+	    description: null,
+	    lastResolvedAt: new Date("2026-04-20T09:00:00.000Z"),
+	    lastRotatedAt: new Date("2026-04-18T10:00:00.000Z"),
+	    deletedAt: null,
+	    createdByAgentId: null,
     createdByUserId: "user-board",
     createdAt: new Date("2026-04-18T10:00:00.000Z"),
     updatedAt: new Date("2026-04-20T10:00:00.000Z"),
   },
-  {
-    id: "secret-github",
-    companyId: "company-storybook",
-    name: "GITHUB_TOKEN",
-    provider: "local_encrypted",
-    externalRef: null,
-    latestVersion: 1,
-    description: null,
-    createdByAgentId: null,
+	  {
+	    id: "secret-github",
+	    companyId: "company-storybook",
+	    scope: "company",
+	    ownerUserId: null,
+	    userSecretDefinitionId: null,
+	    key: "github-token",
+	    name: "GITHUB_TOKEN",
+	    provider: "local_encrypted",
+	    status: "active",
+	    managedMode: "paperclip_managed",
+	    externalRef: null,
+	    providerConfigId: null,
+	    providerMetadata: null,
+	    latestVersion: 1,
+	    description: null,
+	    lastResolvedAt: null,
+	    lastRotatedAt: new Date("2026-04-19T10:00:00.000Z"),
+	    deletedAt: null,
+	    createdByAgentId: null,
     createdByUserId: "user-board",
     createdAt: new Date("2026-04-19T10:00:00.000Z"),
     updatedAt: new Date("2026-04-19T10:00:00.000Z"),
@@ -237,7 +259,7 @@ const routineVariables: RoutineVariable[] = [
     name: "repo",
     label: "Repository",
     type: "text",
-    defaultValue: "karanbavari/paperclaw",
+    defaultValue: "paperclipai/paperclip",
     required: true,
     options: [],
   },
@@ -273,26 +295,27 @@ const storybookProject: Project = {
   urlKey: "board-ui",
   goalId: "goal-company",
   goalIds: ["goal-company"],
-  goals: [{ id: "goal-company", title: "We're building PaperClaw" }],
+  goals: [{ id: "goal-company", title: "We're building Paperclip" }],
   name: "Board UI",
   description: "Control-plane interface, Storybook review surfaces, and operator workflows.",
   status: "in_progress",
   leadAgentId: "agent-codex",
   targetDate: null,
   color: "#0f766e",
+  icon: null,
   env: null,
   pauseReason: null,
   pausedAt: null,
   executionWorkspacePolicy: null,
   codebase: {
     workspaceId: "workspace-board-ui",
-    repoUrl: "https://github.com/karanbavari/paperclaw",
+    repoUrl: "https://github.com/paperclipai/paperclip",
     repoRef: "master",
     defaultRef: "master",
-    repoName: "paperclaw",
-    localFolder: "/Users/dotta/paperclaw",
-    managedFolder: "paperclaw",
-    effectiveLocalFolder: "/Users/dotta/paperclaw",
+    repoName: "paperclip",
+    localFolder: "/Users/dotta/paperclip",
+    managedFolder: "paperclip",
+    effectiveLocalFolder: "/Users/dotta/paperclip",
     origin: "local_folder",
   },
   workspaces: [],
@@ -441,7 +464,7 @@ function InlineEditorGallery() {
   );
 }
 
-function EnvVarEditorGallery() {
+function EnvironmentVariablesEditorGallery() {
   const [emptyEnv, setEmptyEnv] = useState<Record<string, EnvBinding>>({});
   const [env, setEnv] = useState<Record<string, EnvBinding>>(filledEnv);
   const createSecret = async (name: string): Promise<CompanySecret> => ({
@@ -452,16 +475,16 @@ function EnvVarEditorGallery() {
   });
 
   return (
-    <Section eyebrow="EnvVarEditor" title="Runtime environment bindings">
+    <Section eyebrow="EnvironmentVariablesEditor" title="Runtime environment bindings">
       <div className="grid gap-4 lg:grid-cols-3">
-        <StatePanel label="Empty add row" detail="Trailing blank row is the add state.">
-          <EnvVarEditor value={emptyEnv} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={(next) => setEmptyEnv(next ?? {})} />
+        <StatePanel label="Empty add row" detail="Explicit + Add variable button; no trailing ghost row.">
+          <EnvironmentVariablesEditor value={emptyEnv} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={(next) => setEmptyEnv(next ?? {})} />
         </StatePanel>
-        <StatePanel label="Plain and secret values" detail="Filled rows show edit, seal, secret select, and remove controls.">
-          <EnvVarEditor value={env} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={(next) => setEnv(next ?? {})} />
+        <StatePanel label="Plain and secret values" detail="Filled rows show text, secret picker, version tag, and remove controls.">
+          <EnvironmentVariablesEditor value={env} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={(next) => setEnv(next ?? {})} />
         </StatePanel>
         <StatePanel label="Disabled shell" disabled>
-          <EnvVarEditor value={filledEnv} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={() => undefined} />
+          <EnvironmentVariablesEditor value={filledEnv} secrets={storybookSecrets} onCreateSecret={createSecret} onChange={() => undefined} disabled />
         </StatePanel>
       </div>
     </Section>
@@ -615,11 +638,11 @@ function PickerGallery() {
 function FormsEditorsShowcase() {
   return (
     <StoryShell>
-      <section className="paperclaw-story__frame p-6">
+      <section className="paperclip-story__frame p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <div className="paperclaw-story__label">Forms and editors</div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">PaperClaw form controls under realistic state</h1>
+            <div className="paperclip-story__label">Forms and editors</div>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Paperclip form controls under realistic state</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Dense control-plane forms need to hold empty, filled, validation, and disabled states without losing scan
               speed. These fixtures keep the components reviewable outside production routes.
@@ -638,7 +661,7 @@ function FormsEditorsShowcase() {
       <MarkdownBodyGallery />
       <JsonSchemaFormGallery />
       <InlineEditorGallery />
-      <EnvVarEditorGallery />
+      <EnvironmentVariablesEditorGallery />
       <ScheduleEditorGallery />
       <RoutineVariablesGallery />
       <PickerGallery />
@@ -694,7 +717,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Fixture-backed stories for PaperClaw form controls, markdown editors, inline editors, schedule controls, runtime-variable dialogs, and selection pickers.",
+          "Fixture-backed stories for Paperclip form controls, markdown editors, inline editors, schedule controls, runtime-variable dialogs, and selection pickers.",
       },
     },
   },
@@ -715,7 +738,7 @@ export const RoutineRunVariablesDialogOpen: Story = {
 };
 
 const foldCurtainLongMarkdown = [
-  "# paperclaw-bench",
+  "# paperclip-bench",
   "",
   "Ship criteria for the benchmark harness — these notes are intentionally lengthy so the fold-curtain clips them.",
   "",

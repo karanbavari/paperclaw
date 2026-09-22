@@ -3,7 +3,7 @@ title: Importing & Exporting Companies
 summary: Export companies to portable packages and import them from local paths or GitHub
 ---
 
-PaperClaw companies can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share company configurations, duplicate setups, and version-control your agent teams.
+Paperclip companies can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share company configurations, duplicate setups, and version-control your agent teams.
 
 ## Package Format
 
@@ -21,20 +21,30 @@ my-company/
 │   └── review/SKILL.md
 ├── tasks/
 │   └── onboarding/TASK.md
-└── .paperclaw.yaml     # Adapter config, env inputs, routines
+└── .paperclip.yaml     # Adapter config, env inputs, routines
 ```
 
 - **COMPANY.md** defines company name, description, and metadata.
 - **AGENT.md** files contain agent identity, role, and instructions.
 - **SKILL.md** files are compatible with the Agent Skills ecosystem.
-- **.paperclaw.yaml** holds PaperClaw-specific config (adapter types, env inputs, budgets) as an optional sidecar.
+- **.paperclip.yaml** holds Paperclip-specific config (adapter types, env inputs, budgets) as an optional sidecar.
+
+## Export & Import in the App
+
+Both flows are also available in the web UI as company settings pages: **Export** and **Import** appear in the company settings navigation.
+
+> **Cloud-managed instances:** when a hosting platform manages the instance, the company is provisioned by the platform and importing is disabled — the Import page and buttons are hidden, and every import API route answers `403` with `code: "cloud_managed"`. Export stays available, so you can always take your company's data with you. Self-hosted instances keep the full import surface.
+
+The **Export** page lets you pick exactly which files go into the bundle before downloading it. Above the file tree it shows a **"Not included in this export"** panel — the export fidelity report — listing data the bundle will not carry (for example attachments, approvals, cost history, or activity log entries), with blocking issues highlighted.
+
+The **Import** page previews the package, lets you resolve name collisions and adapter assignments, and applies the import. A **"Start imported agents and routines paused"** checkbox (on by default) makes imported agents and routines land paused instead of live. After the import finishes, an **"Activate imported agents and routines"** panel lists everything that was imported paused so you can resume the agents and activate the routines you select — nothing starts running until you say so.
 
 ## Exporting a Company
 
 Export a company into a portable folder:
 
 ```sh
-paperclaw company export <company-id> --out ./my-export
+paperclipai company export <company-id> --out ./my-export
 ```
 
 ### Options
@@ -53,13 +63,13 @@ paperclaw company export <company-id> --out ./my-export
 
 ```sh
 # Export company with agents and projects
-paperclaw company export abc123 --out ./backup --include company,agents,projects
+paperclipai company export abc123 --out ./backup --include company,agents,projects
 
 # Export everything including tasks and skills
-paperclaw company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
+paperclipai company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
 
 # Export only specific skills
-paperclaw company export abc123 --out ./skills-only --include skills --skills review,deploy
+paperclipai company export abc123 --out ./skills-only --include skills --skills review,deploy
 ```
 
 ### What Gets Exported
@@ -69,7 +79,7 @@ paperclaw company export abc123 --out ./skills-only --include skills --skills re
 - Project definitions and workspace config
 - Task/issue descriptions (when included)
 - Skill packages (as references or vendored content)
-- Adapter type and env input declarations in `.paperclaw.yaml`
+- Adapter type and env input declarations in `.paperclip.yaml`
 
 Secret values, machine-local paths, and database IDs are **never** exported.
 
@@ -79,17 +89,17 @@ Import from a local directory, GitHub URL, or GitHub shorthand:
 
 ```sh
 # From a local folder
-paperclaw company import ./my-export
+paperclipai company import ./my-export
 
 # From a GitHub URL
-paperclaw company import https://github.com/org/repo
+paperclipai company import https://github.com/org/repo
 
 # From a GitHub subfolder
-paperclaw company import https://github.com/org/repo/tree/main/companies/acme
+paperclipai company import https://github.com/org/repo/tree/main/companies/acme
 
 # From GitHub shorthand
-paperclaw company import org/repo
-paperclaw company import org/repo/companies/acme
+paperclipai company import org/repo
+paperclipai company import org/repo/companies/acme
 ```
 
 ### Options
@@ -112,7 +122,7 @@ paperclaw company import org/repo/companies/acme
 - **`new`** — Creates a fresh company from the package. Good for duplicating a company template.
 - **`existing`** — Merges the package into an existing company. Use `--company-id` to specify the target.
 
-If `--target` is not specified, PaperClaw infers it: if a `--company-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
+If `--target` is not specified, Paperclip infers it: if a `--company-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
 
 ### Collision Strategies
 
@@ -131,7 +141,7 @@ When running interactively (no `--yes` or `--json` flags), the import command sh
 Always preview first with `--dry-run`:
 
 ```sh
-paperclaw company import org/repo --target existing --company-id abc123 --dry-run
+paperclipai company import org/repo --target existing --company-id abc123 --dry-run
 ```
 
 The preview shows:
@@ -142,12 +152,14 @@ The preview shows:
 
 Imported agents always land with timer heartbeats disabled. Assignment/on-demand wake behavior from the package is preserved, but scheduled runs stay off until a board operator re-enables them.
 
+Imports can additionally request `pauseAutomations` (the default in the app's Import page) so imported agents and routines land fully paused. Use the post-import activation panel — or resume the agents and activate the routines individually — when you are ready for them to run.
+
 ### Common Workflows
 
 **Clone a company template from GitHub:**
 
 ```sh
-paperclaw company import org/company-templates/engineering-team \
+paperclipai company import org/company-templates/engineering-team \
   --target new \
   --new-company-name "My Engineering Team"
 ```
@@ -155,7 +167,7 @@ paperclaw company import org/company-templates/engineering-team \
 **Add agents from a package into your existing company:**
 
 ```sh
-paperclaw company import ./shared-agents \
+paperclipai company import ./shared-agents \
   --target existing \
   --company-id abc123 \
   --include agents \
@@ -165,13 +177,13 @@ paperclaw company import ./shared-agents \
 **Import a specific branch or tag:**
 
 ```sh
-paperclaw company import org/repo --ref v2.0.0 --dry-run
+paperclipai company import org/repo --ref v2.0.0 --dry-run
 ```
 
 **Non-interactive import (CI/scripts):**
 
 ```sh
-paperclaw company import ./package \
+paperclipai company import ./package \
   --target new \
   --yes \
   --json
@@ -184,16 +196,19 @@ The CLI commands use these API endpoints under the hood:
 | Action | Endpoint |
 |--------|----------|
 | Export company | `POST /api/companies/{companyId}/export` |
+| Export fidelity report | `GET /api/companies/{companyId}/export/fidelity` |
 | Preview import (existing company) | `POST /api/companies/{companyId}/imports/preview` |
 | Apply import (existing company) | `POST /api/companies/{companyId}/imports/apply` |
 | Preview import (new company) | `POST /api/companies/import/preview` |
 | Apply import (new company) | `POST /api/companies/import` |
 
+Import apply requests accept `pauseAutomations: true` to create imported agents and routines in a paused state.
+
 CEO agents can also use the safe import routes (`/imports/preview` and `/imports/apply`) which enforce non-destructive rules: `replace` is rejected, collisions resolve with `rename` or `skip`, and issues are always created as new.
 
 ## GitHub Sources
 
-PaperClaw supports several GitHub URL formats:
+Paperclip supports several GitHub URL formats:
 
 - Full URL: `https://github.com/org/repo`
 - Subfolder URL: `https://github.com/org/repo/tree/main/path/to/company`

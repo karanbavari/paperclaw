@@ -1,12 +1,13 @@
-import type { PluginLauncherRegistration } from "@kesarcloud/plugin-sdk";
+import type { PluginLauncherRegistration } from "@paperclipai/plugin-sdk";
 
-export const PLUGIN_ID = "paperclaw-kitchen-sink-example";
+export const PLUGIN_ID = "paperclip-kitchen-sink-example";
 export const PLUGIN_VERSION = "0.1.0";
 export const PAGE_ROUTE = "kitchensink";
 
 export const SLOT_IDS = {
   page: "kitchen-sink-page",
   settingsPage: "kitchen-sink-settings-page",
+  companySettingsPage: "kitchen-sink-company-settings-page",
   dashboardWidget: "kitchen-sink-dashboard-widget",
   sidebar: "kitchen-sink-sidebar-link",
   sidebarPanel: "kitchen-sink-sidebar-panel",
@@ -23,6 +24,7 @@ export const SLOT_IDS = {
 export const EXPORT_NAMES = {
   page: "KitchenSinkPage",
   settingsPage: "KitchenSinkSettingsPage",
+  companySettingsPage: "KitchenSinkCompanySettingsPage",
   dashboardWidget: "KitchenSinkDashboardWidget",
   sidebar: "KitchenSinkSidebarLink",
   sidebarPanel: "KitchenSinkSidebarPanel",
@@ -93,7 +95,7 @@ export const DEFAULT_CONFIG = {
   secretRefExample: "",
   httpDemoUrl: "https://httpbin.org/anything",
   allowedCommands: SAFE_COMMANDS.map((command) => command.key),
-  workspaceScratchFile: ".paperclaw-kitchen-sink-demo.txt",
+  workspaceScratchFile: ".paperclip-kitchen-sink-demo.txt",
 } as const;
 
 export const RUNTIME_LAUNCHER: PluginLauncherRegistration = {

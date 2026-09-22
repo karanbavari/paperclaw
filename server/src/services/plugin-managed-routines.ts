@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@kesarcloud/db";
+import type { Db } from "@paperclipai/db";
 import {
   agents,
   pluginManagedResources,
@@ -7,7 +7,7 @@ import {
   projects,
   routines,
   routineTriggers,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import type {
   CreateRoutineTrigger,
   PluginManagedResourceRef,
@@ -16,8 +16,8 @@ import type {
   Routine,
   RoutineManagedByPlugin,
   RoutineStatus,
-} from "@kesarcloud/shared";
-import { ROUTINE_STATUSES } from "@kesarcloud/shared";
+} from "@paperclipai/shared";
+import { ROUTINE_STATUSES } from "@paperclipai/shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { routineService } from "./routines.js";
@@ -28,7 +28,7 @@ const MANAGED_ROUTINE_RESOURCE_KIND = "routine";
 interface PluginManagedRoutineServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: import("@kesarcloud/shared").PaperClawPluginManifestV1 | null;
+  manifest?: import("@paperclipai/shared").PaperclipPluginManifestV1 | null;
   pluginWorkerManager?: PluginWorkerManager;
 }
 
@@ -49,6 +49,8 @@ function buildRoutineDefaults(declaration: PluginManagedRoutineDeclaration) {
     priority: declaration.priority ?? "medium",
     concurrencyPolicy: declaration.concurrencyPolicy ?? "coalesce_if_active",
     catchUpPolicy: declaration.catchUpPolicy ?? "skip_missed",
+    activityGatePolicy: declaration.activityGatePolicy ?? "always",
+    activityGateScope: declaration.activityGateScope ?? "company",
     variables: declaration.variables ?? [],
     triggers: declaration.triggers ?? [],
     issueTemplate: declaration.issueTemplate ?? null,
@@ -370,6 +372,8 @@ export function pluginManagedRoutineService(
       status: declaration.status ?? (refs.assigneeAgentId ? "active" : "paused"),
       concurrencyPolicy: declaration.concurrencyPolicy ?? "coalesce_if_active",
       catchUpPolicy: declaration.catchUpPolicy ?? "skip_missed",
+      activityGatePolicy: declaration.activityGatePolicy ?? "always",
+      activityGateScope: declaration.activityGateScope ?? "company",
       variables: declaration.variables ?? [],
     }, { agentId: null, userId: null });
     await upsertBinding(companyId, declaration, created.id);
@@ -430,6 +434,8 @@ export function pluginManagedRoutineService(
       status: declaration.status ?? (refs.assigneeAgentId ? "active" : "paused"),
       concurrencyPolicy: declaration.concurrencyPolicy ?? "coalesce_if_active",
       catchUpPolicy: declaration.catchUpPolicy ?? "skip_missed",
+      activityGatePolicy: declaration.activityGatePolicy ?? "always",
+      activityGateScope: declaration.activityGateScope ?? "company",
       variables: declaration.variables ?? [],
     }, { agentId: null, userId: null });
     if (!updated) throw notFound("Managed routine not found");

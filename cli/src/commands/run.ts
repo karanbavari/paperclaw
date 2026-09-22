@@ -7,59 +7,88 @@ import pc from "picocolors";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
 import { onboard } from "./onboard.js";
 import { doctor } from "./doctor.js";
-import { loadPaperClawEnvFile } from "../config/env.js";
+import { loadPaperclipEnvFile } from "../config/env.js";
 import { configExists, resolveConfigPath } from "../config/store.js";
-import type { PaperClawConfig } from "../config/schema.js";
+import type { PaperclipConfig } from "../config/schema.js";
 import { readConfig } from "../config/store.js";
 import {
   describeLocalInstancePaths,
-  resolvePaperClawHomeDir,
-  resolvePaperClawInstanceId,
+  resolvePaperclipHomeDir,
+  resolvePaperclipInstanceId,
 } from "../config/home.js";
+import { assertForegroundRunAllowed } from "../services/service-manager.js";
+import { removeRuntimeInfoForPid, writeRuntimeInfo } from "../runtime-info.js";
+import { printUpdateNotice } from "../update-notice.js";
+import { ensureWorktreeSeeded } from "./worktree.js";
 
-interface RunOptions {
+export interface RunOptions {
   config?: string;
   instance?: string;
   repair?: boolean;
   yes?: boolean;
   bind?: "loopback" | "lan" | "tailnet";
+  force?: boolean;
+  /** Internal lifecycle option used by foreground-only commands. */
+  installService?: boolean;
+  /** Internal lifecycle option for isolated instances that cannot collide with a managed service. */
+  skipServiceManagerCheck?: boolean;
+  /** Internal label override for commands that reuse the foreground run path. */
+  introLabel?: string;
+  /** Runs after the server is listening and all normal post-start initialization has completed. */
+  afterStart?: (server: StartedServer) => Promise<void>;
 }
 
-interface StartedServer {
+export interface StartedServer {
   apiUrl: string;
   databaseUrl: string;
   host: string;
   listenPort: number;
+  shutdown?: (signal?: "SIGINT" | "SIGTERM") => Promise<void>;
 }
 
 export async function runCommand(opts: RunOptions): Promise<void> {
-  const instanceId = resolvePaperClawInstanceId(opts.instance);
-  process.env.PAPERCLAW_INSTANCE_ID = instanceId;
+  const instanceId = resolvePaperclipInstanceId(opts.instance);
+  process.env.PAPERCLIP_INSTANCE_ID = instanceId;
+  if (!opts.skipServiceManagerCheck) {
+    await assertForegroundRunAllowed(instanceId, opts.force);
+  }
 
-  const homeDir = resolvePaperClawHomeDir();
+  const homeDir = resolvePaperclipHomeDir();
   fs.mkdirSync(homeDir, { recursive: true });
 
   const paths = describeLocalInstancePaths(instanceId);
   fs.mkdirSync(paths.instanceRoot, { recursive: true });
 
   const configPath = resolveConfigPath(opts.config);
-  process.env.PAPERCLAW_CONFIG = configPath;
-  loadPaperClawEnvFile(configPath);
+  process.env.PAPERCLIP_CONFIG = configPath;
+  loadPaperclipEnvFile(configPath);
+  await printUpdateNotice(configPath);
 
-  p.intro(pc.bgCyan(pc.black(" paperclaw run ")));
+  p.intro(pc.bgCyan(pc.black(` ${opts.introLabel ?? "paperclipai run"} `)));
   p.log.message(pc.dim(`Home: ${paths.homeDir}`));
   p.log.message(pc.dim(`Instance: ${paths.instanceId}`));
   p.log.message(pc.dim(`Config: ${configPath}`));
 
   if (!configExists(configPath)) {
-    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    if ((!process.stdin.isTTY || !process.stdout.isTTY) && !opts.yes) {
       p.log.error("No config found and terminal is non-interactive.");
-      p.log.message(`Run ${pc.cyan("paperclaw onboard")} once, then retry ${pc.cyan("paperclaw run")}.`);
+      p.log.message(`Run ${pc.cyan("paperclipai onboard")} once, then retry ${pc.cyan("paperclipai run")}.`);
       process.exit(1);
     }
 
     p.log.step("No config found. Starting onboarding...");
-    await onboard({ config: configPath, invokedByRun: true, bind: opts.bind });
+    await onboard({
+      config: configPath,
+      invokedByRun: true,
+      bind: opts.bind,
+      yes: opts.yes,
+      installService: opts.installService,
+    });
+  }
+
+  const seedResult = await ensureWorktreeSeeded({ config: configPath });
+  if (seedResult.seeded) {
+    p.log.success("Completed deferred worktree database seed.");
   }
 
   p.log.step("Running doctor checks...");
@@ -80,8 +109,18 @@ export async function runCommand(opts: RunOptions): Promise<void> {
     process.exit(1);
   }
 
-  p.log.step("Starting PaperClaw server...");
+  p.log.step("Starting Paperclip server...");
   const startedServer = await importServerEntry();
+  writeRuntimeInfo({
+    schemaVersion: 1,
+    instanceId,
+    pid: process.pid,
+    host: startedServer.host,
+    port: startedServer.listenPort,
+    dashboardUrl: startedServer.apiUrl.replace(/\/api\/?$/, ""),
+    startedAt: new Date().toISOString(),
+  });
+  process.once("exit", () => removeRuntimeInfoForPid(process.pid, instanceId));
 
   if (shouldGenerateBootstrapInviteAfterStart(config)) {
     p.log.step("Generating bootstrap CEO invite");
@@ -91,15 +130,24 @@ export async function runCommand(opts: RunOptions): Promise<void> {
       baseUrl: resolveBootstrapInviteBaseUrl(config, startedServer),
     });
   }
+
+  if (opts.afterStart) {
+    try {
+      await opts.afterStart(startedServer);
+    } catch (error) {
+      await startedServer.shutdown?.("SIGTERM");
+      throw error;
+    }
+  }
 }
 
 function resolveBootstrapInviteBaseUrl(
-  config: PaperClawConfig,
+  config: PaperclipConfig,
   startedServer: StartedServer,
 ): string {
   const explicitBaseUrl =
-    process.env.PAPERCLAW_PUBLIC_URL ??
-    process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL ??
+    process.env.PAPERCLIP_PUBLIC_URL ??
+    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL ??
     process.env.BETTER_AUTH_URL ??
     process.env.BETTER_AUTH_BASE_URL ??
     (config.auth.baseUrlMode === "explicit" ? config.auth.publicBaseUrl : undefined);
@@ -141,10 +189,10 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 }
 
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
-  if (process.env.PAPERCLAW_UI_DEV_MIDDLEWARE !== undefined) return;
+  if (process.env.PAPERCLIP_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
-  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@kesarcloud/server/src/index.ts")) {
-    process.env.PAPERCLAW_UI_DEV_MIDDLEWARE = "true";
+  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@paperclipai/server/src/index.ts")) {
+    process.env.PAPERCLIP_UI_DEV_MIDDLEWARE = "true";
   }
 }
 
@@ -160,13 +208,13 @@ function ensureDevWorkspaceBuildDeps(projectRoot: string): void {
 
   if (result.error) {
     throw new Error(
-      `Failed to prepare workspace build artifacts before starting the PaperClaw dev server.\n${formatError(result.error)}`,
+      `Failed to prepare workspace build artifacts before starting the Paperclip dev server.\n${formatError(result.error)}`,
     );
   }
 
   if ((result.status ?? 1) !== 0) {
     throw new Error(
-      "Failed to prepare workspace build artifacts before starting the PaperClaw dev server.",
+      "Failed to prepare workspace build artifacts before starting the Paperclip dev server.",
     );
   }
 }
@@ -182,35 +230,35 @@ async function importServerEntry(): Promise<StartedServer> {
     return await startServerFromModule(mod, devEntry);
   }
 
-  // Production mode: import the published @kesarcloud/server package
+  // Production mode: import the published @paperclipai/server package
   try {
-    const mod = await import("@kesarcloud/server");
-    return await startServerFromModule(mod, "@kesarcloud/server");
+    const mod = await import("@paperclipai/server");
+    return await startServerFromModule(mod, "@paperclipai/server");
   } catch (err) {
     const missingSpecifier = getMissingModuleSpecifier(err);
-    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@kesarcloud/server";
+    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@paperclipai/server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
-        `Could not locate a PaperClaw server entrypoint.\n` +
-          `Tried: ${devEntry}, @kesarcloud/server\n` +
+        `Could not locate a Paperclip server entrypoint.\n` +
+          `Tried: ${devEntry}, @paperclipai/server\n` +
           `${formatError(err)}`,
       );
     }
     throw new Error(
-      `PaperClaw server failed to start.\n` +
+      `Paperclip server failed to start.\n` +
         `${formatError(err)}`,
     );
   }
 }
 
-function shouldGenerateBootstrapInviteAfterStart(config: PaperClawConfig): boolean {
+function shouldGenerateBootstrapInviteAfterStart(config: PaperclipConfig): boolean {
   return config.server.deploymentMode === "authenticated" && config.database.mode === "embedded-postgres";
 }
 
 async function startServerFromModule(mod: unknown, label: string): Promise<StartedServer> {
   const startServer = (mod as { startServer?: () => Promise<StartedServer> }).startServer;
   if (typeof startServer !== "function") {
-    throw new Error(`PaperClaw server entrypoint did not export startServer(): ${label}`);
+    throw new Error(`Paperclip server entrypoint did not export startServer(): ${label}`);
   }
   return await startServer();
 }

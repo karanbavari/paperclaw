@@ -4,6 +4,7 @@ import type {
   AdapterEnvironmentTestResult,
 } from "../types.js";
 import { asString, parseObject } from "../utils.js";
+import { guardedHttpAdapterFetch } from "./remote-fetch.js";
 
 function summarizeStatus(checks: AdapterEnvironmentCheck[]): AdapterEnvironmentTestResult["status"] {
   if (checks.some((check) => check.level === "error")) return "fail";
@@ -77,7 +78,7 @@ export async function testEnvironment(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
     try {
-      const response = await fetch(url, {
+      const response = await guardedHttpAdapterFetch(url, {
         method: "HEAD",
         signal: controller.signal,
       });
@@ -86,7 +87,7 @@ export async function testEnvironment(
           code: "http_endpoint_probe_unexpected_status",
           level: "warn",
           message: `Endpoint probe returned HTTP ${response.status}.`,
-          hint: "Verify the endpoint is reachable from the PaperClaw server host.",
+          hint: "Verify the endpoint is reachable from the Paperclip server host.",
         });
       } else {
         checks.push({

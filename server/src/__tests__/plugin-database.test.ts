@@ -12,8 +12,8 @@ import {
   pluginDatabaseNamespaces,
   pluginMigrations,
   plugins,
-} from "@kesarcloud/db";
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/shared";
+} from "@paperclipai/db";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -25,11 +25,12 @@ import {
   validatePluginRuntimeExecute,
   validatePluginRuntimeQuery,
 } from "../services/plugin-database.js";
-import { pluginLoader } from "../services/plugin-loader.js";
+import { buildPluginWorkerEnv, pluginLoader } from "../services/plugin-loader.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const multiMigrationPluginKey = "paperclaw.dbfixture";
+const multiMigrationPluginKey = "paperclip.dbfixture";
+const llmWikiPluginKey = "paperclipai.plugin-llm-wiki";
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -46,6 +47,63 @@ describe("plugin database SQL validation", () => {
         ["issues"],
       )
     ).not.toThrow();
+  });
+
+  it("allows qualified index creation and namespace-scoped migration backfills", () => {
+    expect(() =>
+      validatePluginMigrationStatement(
+        "CREATE INDEX IF NOT EXISTS rows_issue_idx ON plugin_test.rows (issue_id)",
+        "plugin_test",
+      )
+    ).not.toThrow();
+    expect(() =>
+      validatePluginMigrationStatement(
+        `
+        WITH source_rows AS (
+          SELECT id FROM plugin_test.rows
+        )
+        INSERT INTO plugin_test.row_copies (id)
+        SELECT id FROM source_rows
+        ON CONFLICT (id) DO NOTHING
+        `,
+        "plugin_test",
+      )
+    ).not.toThrow();
+    expect(() =>
+      validatePluginMigrationStatement(
+        `
+        UPDATE plugin_test.rows r
+        SET copied_from_id = s.id
+        FROM plugin_test.source_rows s
+        WHERE s.id = r.id
+        `,
+        "plugin_test",
+      )
+    ).not.toThrow();
+  });
+
+  it("keeps migration backfill writes scoped to the plugin namespace", () => {
+    expect(() =>
+      validatePluginMigrationStatement(
+        "CREATE TABLE rows (id uuid PRIMARY KEY, issue_id uuid REFERENCES public.issues(id))",
+        "plugin_test",
+        ["issues"],
+      )
+    ).toThrow(/fully qualified/i);
+    expect(() =>
+      validatePluginMigrationStatement(
+        "WITH source_rows AS (SELECT id FROM plugin_test.rows) INSERT INTO public.issues (id) SELECT id FROM source_rows",
+        "plugin_test",
+        ["issues"],
+      )
+    ).toThrow(/public/i);
+    expect(() =>
+      validatePluginMigrationStatement(
+        "UPDATE public.issues SET title = 'bad'",
+        "plugin_test",
+        ["issues"],
+      )
+    ).toThrow(/public/i);
   });
 
   it("rejects migrations that create public objects", () => {
@@ -84,21 +142,188 @@ describe("plugin database SQL validation", () => {
   });
 });
 
+describe("buildPluginWorkerEnv", () => {
+  const instanceInfo = {
+    deploymentMode: "authenticated",
+    deploymentExposure: "public",
+  };
+
+  it("passes only model provider keys through to environment driver plugins", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: { capabilities: ["environment.drivers.register"] },
+      instanceInfo,
+      processEnv: {
+        ANTHROPIC_API_KEY: "anthropic-token",
+        OPENAI_API_KEY: "openai-token",
+        GEMINI_API_KEY: " ",
+        AWS_SECRET_ACCESS_KEY: "aws-secret",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      ANTHROPIC_API_KEY: "anthropic-token",
+      OPENAI_API_KEY: "openai-token",
+    });
+  });
+
+  it("passes in-cluster Kubernetes service-discovery vars to environment driver plugins", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: { capabilities: ["environment.drivers.register"] },
+      instanceInfo,
+      processEnv: {
+        KUBERNETES_SERVICE_HOST: "10.0.0.1",
+        KUBERNETES_SERVICE_PORT: "443",
+        KUBERNETES_SERVICE_PORT_HTTPS: " ",
+        AWS_SECRET_ACCESS_KEY: "aws-secret",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      KUBERNETES_SERVICE_HOST: "10.0.0.1",
+      KUBERNETES_SERVICE_PORT: "443",
+    });
+  });
+
+  it("does not pass provider keys to non-environment plugins", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: { capabilities: ["ui.slots.register"] },
+      instanceInfo,
+      processEnv: {
+        OPENAI_API_KEY: "openai-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it("passes a first-party sandbox provider's documented credential env var to its own worker", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@paperclipai/plugin-daytona",
+      packagePath: null,
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+        NOVITA_API_KEY: "novita-token",
+        E2B_API_KEY: " ",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      DAYTONA_API_KEY: "daytona-token",
+    });
+  });
+
+  it("passes the credential to a first-party plugin installed from the bundled catalog", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@paperclipai/plugin-daytona",
+      packagePath: "/app/packages/plugins/sandbox-providers/daytona",
+      trustedLocalPluginRoots: ["/app/packages/plugins"],
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      DAYTONA_API_KEY: "daytona-token",
+    });
+  });
+
+  it("does not pass the credential to a local plugin that self-declares the first-party name", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@paperclipai/plugin-daytona",
+      packagePath: "/home/operator/.paperclip/plugins/fake-daytona",
+      trustedLocalPluginRoots: ["/app/packages/plugins"],
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it("does not pass a credential to a third-party plugin that claims a first-party driver key", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@acme/plugin-fake-daytona",
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it("does not pass a credential when the first-party package omits its expected driver key", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "kubernetes" }],
+      },
+      packageName: "@paperclipai/plugin-daytona",
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+});
+
 describeEmbeddedPostgres("plugin database namespaces", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let packageRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-plugin-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-db-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
   afterEach(async () => {
-    for (const pluginKey of ["paperclaw.dbtest", "paperclaw.escape", "paperclaw.refresh", multiMigrationPluginKey]) {
+    for (const pluginKey of ["paperclip.dbtest", "paperclip.escape", "paperclip.refresh", multiMigrationPluginKey, llmWikiPluginKey]) {
       const namespace = derivePluginDatabaseNamespace(pluginKey);
       await db.execute(sql.raw(`DROP SCHEMA IF EXISTS "${namespace}" CASCADE`));
     }
+    await db.execute(sql.raw(`DROP SCHEMA IF EXISTS "${derivePluginDatabaseNamespace(llmWikiPluginKey, "llm_wiki")}" CASCADE`));
     await db.delete(pluginMigrations);
     await db.delete(pluginDatabaseNamespaces);
     await db.delete(plugins);
@@ -113,8 +338,8 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     await tempDb?.cleanup();
   });
 
-  async function createPluginPackage(manifest: PaperClawPluginManifestV1, migrationSql: string) {
-    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "paperclaw-plugin-package-"));
+  async function createPluginPackage(manifest: PaperclipPluginManifestV1, migrationSql: string) {
+    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-package-"));
     packageRoots.push(packageRoot);
     const migrationsDir = path.join(packageRoot, manifest.database!.migrationsDir);
     await mkdir(migrationsDir, { recursive: true });
@@ -122,8 +347,31 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return packageRoot;
   }
 
+  function llmWikiManifest(): PaperclipPluginManifestV1 {
+    return {
+      id: llmWikiPluginKey,
+      apiVersion: 1,
+      version: "0.1.0",
+      displayName: "LLM Wiki",
+      description: "Local-file LLM Wiki plugin.",
+      author: "Paperclip",
+      categories: ["automation", "ui"],
+      capabilities: [
+        "database.namespace.migrate",
+        "database.namespace.read",
+        "database.namespace.write",
+      ],
+      entrypoints: { worker: "./dist/worker.js" },
+      database: {
+        namespaceSlug: "llm_wiki",
+        migrationsDir: "migrations",
+        coreReadTables: ["companies", "issues", "projects", "agents"],
+      },
+    };
+  }
+
   async function createInstallablePluginPackage(
-    pluginManifest: PaperClawPluginManifestV1,
+    pluginManifest: PaperclipPluginManifestV1,
     migrationSql: string,
   ) {
     const packageRoot = await createPluginPackage(pluginManifest, migrationSql);
@@ -133,7 +381,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
         name: pluginManifest.id,
         version: pluginManifest.version,
         type: "module",
-        paperclawPlugin: { manifest: "./manifest.js" },
+        paperclipPlugin: { manifest: "./manifest.js" },
       }),
       "utf8",
     );
@@ -147,7 +395,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return packageRoot;
   }
 
-  async function installPluginRecord(manifest: PaperClawPluginManifestV1) {
+  async function installPluginRecord(manifest: PaperclipPluginManifestV1) {
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
@@ -163,14 +411,14 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return pluginId;
   }
 
-  function manifest(pluginKey = "paperclaw.dbtest"): PaperClawPluginManifestV1 {
+  function manifest(pluginKey = "paperclip.dbtest"): PaperclipPluginManifestV1 {
     return {
       id: pluginKey,
       apiVersion: 1,
       version: "1.0.0",
       displayName: "DB Test",
       description: "Exercises restricted plugin database access.",
-      author: "PaperClaw",
+      author: "Paperclip",
       categories: ["automation"],
       capabilities: [
         "database.namespace.migrate",
@@ -210,6 +458,61 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     expect(migrations).toHaveLength(2);
   });
 
+  it("applies the bundled LLM Wiki migrations through the production validator", async () => {
+    const pluginManifest = llmWikiManifest();
+    const repoRoot = path.basename(process.cwd()) === "server" ? path.resolve(process.cwd(), "..") : process.cwd();
+    const packageRoot = path.join(repoRoot, "packages", "plugins", "plugin-llm-wiki");
+    const namespace = derivePluginDatabaseNamespace(pluginManifest.id, pluginManifest.database?.namespaceSlug);
+    const pluginId = await installPluginRecord(pluginManifest);
+
+    await pluginDatabaseService(db).applyMigrations(pluginId, pluginManifest, packageRoot);
+
+    const migrations = await db
+      .select()
+      .from(pluginMigrations)
+      .where(and(eq(pluginMigrations.pluginId, pluginId), eq(pluginMigrations.status, "applied")));
+    expect(migrations.map((migration) => migration.migrationKey)).toEqual([
+      "001_llm_wiki.sql",
+      "002_paperclip_distillation.sql",
+      "003_spaces.sql",
+    ]);
+
+    const constraintRows = Array.from(
+      await db.execute(
+        sql<{ table_name: string; conname: string; columns: string[] }>`
+          SELECT t.relname AS table_name, c.conname, array_agg(a.attname ORDER BY constraint_columns.ordinality)::text[] AS columns
+          FROM pg_constraint c
+          JOIN pg_class t ON t.oid = c.conrelid
+          JOIN unnest(c.conkey) WITH ORDINALITY AS constraint_columns(attnum, ordinality) ON true
+          JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = constraint_columns.attnum
+          WHERE c.connamespace = ${namespace}::regnamespace AND c.contype = 'u'
+          GROUP BY t.relname, c.conname
+          ORDER BY t.relname, c.conname
+        `,
+      ) as Iterable<{ table_name: string; conname: string; columns: string[] }>,
+    );
+    const constraints = constraintRows.map((row) => row.conname);
+    const uniqueColumnSets = new Set(
+      constraintRows.map((row) => `${row.table_name}:${row.columns.join(",")}`),
+    );
+    expect(constraints).toEqual(
+      expect.arrayContaining([
+        "wiki_pages_company_wiki_space_path_key",
+        "distillation_cursors_company_wiki_space_scope_key",
+        "distillation_work_items_company_wiki_space_idempotency_key",
+        "page_bindings_company_wiki_space_page_path_key",
+      ]),
+    );
+    expect(constraints).not.toContain("wiki_pages_company_id_wiki_id_path_key");
+    expect(constraints).not.toContain("paperclip_distillation_cursor_company_id_wiki_id_source_sco_key");
+    expect(constraints).not.toContain("paperclip_distillation_work_i_company_id_wiki_id_idempotenc_key");
+    expect(constraints).not.toContain("paperclip_page_bindings_company_id_wiki_id_page_path_key");
+    expect(uniqueColumnSets).not.toContain("wiki_pages:company_id,wiki_id,path");
+    expect(uniqueColumnSets).not.toContain("paperclip_distillation_cursors:company_id,wiki_id,source_scope,scope_key,source_kind");
+    expect(uniqueColumnSets).not.toContain("paperclip_distillation_work_items:company_id,wiki_id,idempotency_key");
+    expect(uniqueColumnSets).not.toContain("paperclip_page_bindings:company_id,wiki_id,page_path");
+  });
+
   it("applies migrations once and allows whitelisted core joins at runtime", async () => {
     const pluginManifest = manifest();
     const namespace = derivePluginDatabaseNamespace(pluginManifest.id);
@@ -228,7 +531,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     const issueId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: "TST",
       requireBoardApprovalForNewAgents: false,
     });
@@ -280,7 +583,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("records a failed migration when SQL escapes the plugin namespace", async () => {
-    const pluginManifest = manifest("paperclaw.escape");
+    const pluginManifest = manifest("paperclip.escape");
     const packageRoot = await createPluginPackage(
       pluginManifest,
       "CREATE TABLE public.plugin_escape (id uuid PRIMARY KEY);",
@@ -299,7 +602,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("rolls back plugin install when migration validation fails", async () => {
-    const pluginManifest = manifest("paperclaw.escape");
+    const pluginManifest = manifest("paperclip.escape");
     const namespace = derivePluginDatabaseNamespace(pluginManifest.id);
     const packageRoot = await createInstallablePluginPackage(
       pluginManifest,
@@ -338,13 +641,22 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("refreshes persisted manifests from disk before activation", async () => {
-    const staleManifest = manifest("paperclaw.refresh");
-    const refreshedManifest: PaperClawPluginManifestV1 = {
+    const staleManifest = manifest("paperclip.refresh");
+    const refreshedManifest: PaperclipPluginManifestV1 = {
       ...staleManifest,
+      capabilities: [...staleManifest.capabilities, "agent.tools.register"],
       database: {
         ...staleManifest.database!,
         coreReadTables: ["companies"],
       },
+      tools: [
+        {
+          name: "db-smoke",
+          displayName: "DB Smoke",
+          description: "Exercises plugin tool registration worker lookup.",
+          parametersSchema: { type: "object", properties: {} },
+        },
+      ],
     };
     const namespace = derivePluginDatabaseNamespace(refreshedManifest.id);
     const packageRoot = await createInstallablePluginPackage(
@@ -369,6 +681,9 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       startWorker: vi.fn().mockResolvedValue(undefined),
       stopAll: vi.fn().mockResolvedValue(undefined),
     };
+    const toolDispatcher = {
+      registerPluginTools: vi.fn(),
+    };
     const loader = pluginLoader(db, {
       enableLocalFilesystem: false,
       enableNpmDiscovery: false,
@@ -385,9 +700,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       jobStore: {
         syncJobDeclarations: vi.fn().mockResolvedValue(undefined),
       },
-      toolDispatcher: {
-        registerPluginTools: vi.fn(),
-      },
+      toolDispatcher,
       lifecycleManager: {
         markError: vi.fn().mockResolvedValue(undefined),
       },
@@ -408,13 +721,20 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       expect.objectContaining({
         databaseNamespace: namespace,
         env: {
-          PAPERCLAW_DEPLOYMENT_MODE: "authenticated",
-          PAPERCLAW_DEPLOYMENT_EXPOSURE: "public",
+          PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+          PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
         },
         manifest: expect.objectContaining({
           database: expect.objectContaining({ coreReadTables: ["companies"] }),
         }),
       }),
+    );
+    expect(toolDispatcher.registerPluginTools).toHaveBeenCalledWith(
+      refreshedManifest.id,
+      expect.objectContaining({
+        tools: refreshedManifest.tools,
+      }),
+      pluginId,
     );
     const [plugin] = await db
       .select()

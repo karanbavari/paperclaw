@@ -59,20 +59,64 @@ describe("BreadcrumbContext", () => {
     expect(renderCounts).toHaveLength(2);
   });
 
-  it("builds page titles with the selected company name before PaperClaw", () => {
+  it("rerenders consumers when only the crumb identifier changes", () => {
+    const renderCounts: number[] = [];
+    let updateBreadcrumbs:
+      | ((crumbs: Array<{ label: string; href?: string; identifier?: string }>) => void)
+      | null = null;
+
+    function TestConsumer() {
+      const { breadcrumbs, setBreadcrumbs } = useBreadcrumbs();
+      renderCounts.push(breadcrumbs.length);
+      updateBreadcrumbs = setBreadcrumbs;
+      return null;
+    }
+
+    act(() => {
+      root.render(
+        <BreadcrumbProvider>
+          <TestConsumer />
+        </BreadcrumbProvider>,
+      );
+    });
+
+    expect(renderCounts).toHaveLength(1);
+
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1204" }]);
+    });
+
+    expect(renderCounts).toHaveLength(2);
+
+    // Same everything but a new identifier must produce a fresh render.
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1205" }]);
+    });
+
+    expect(renderCounts).toHaveLength(3);
+
+    // Identical identifier is a no-op.
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1205" }]);
+    });
+
+    expect(renderCounts).toHaveLength(3);
+  });
+
+  it("builds page titles with the selected company name before Paperclip", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
-      "Inbox • Anachronist Wiki • PaperClaw",
+      "Inbox • Anachronist Wiki • Paperclip",
     );
     expect(
       buildDocumentTitle(
         [{ label: "Issues", href: "/issues" }, { label: "PAP-3515" }],
         "Anachronist Wiki",
       ),
-    ).toBe("PAP-3515 • Issues • Anachronist Wiki • PaperClaw");
+    ).toBe("PAP-3515 • Issues • Anachronist Wiki • Paperclip");
   });
 
   it("omits blank company names from page titles", () => {
-    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • PaperClaw");
-    expect(buildDocumentTitle([], null)).toBe("PaperClaw");
+    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • Paperclip");
+    expect(buildDocumentTitle([], null)).toBe("Paperclip");
   });
 });

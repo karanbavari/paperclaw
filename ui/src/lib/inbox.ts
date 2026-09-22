@@ -5,27 +5,29 @@ import type {
   InboxDismissal,
   Issue,
   JoinRequest,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import {
   applyIssueFilters,
   defaultIssueFilterState,
   normalizeIssueFilterState,
   type IssueFilterState,
+  type IssueFilterWorkspaceContext,
 } from "./issue-filters";
 import { formatAssigneeUserLabel } from "./assignees";
 
 export const RECENT_ISSUES_LIMIT = 100;
 export const FAILED_RUN_STATUSES = new Set(["failed", "timed_out"]);
 export const ACTIONABLE_APPROVAL_STATUSES = new Set(["pending", "revision_requested"]);
-export const DISMISSED_KEY = "paperclaw:inbox:dismissed";
-export const READ_ITEMS_KEY = "paperclaw:inbox:read-items";
-export const INBOX_LAST_TAB_KEY = "paperclaw:inbox:last-tab";
-export const INBOX_ISSUE_COLUMNS_KEY = "paperclaw:inbox:issue-columns";
-export const INBOX_NESTING_KEY = "paperclaw:inbox:nesting";
-export const INBOX_GROUP_BY_KEY = "paperclaw:inbox:group-by";
-export const INBOX_FILTER_PREFERENCES_KEY_PREFIX = "paperclaw:inbox:filters";
-export const INBOX_COLLAPSED_GROUPS_KEY_PREFIX = "paperclaw:inbox:collapsed-groups";
-export type InboxTab = "mine" | "recent" | "unread" | "all";
+export const DISMISSED_KEY = "paperclip:inbox:dismissed";
+export const READ_ITEMS_KEY = "paperclip:inbox:read-items";
+export const INBOX_LAST_TAB_KEY = "paperclip:inbox:last-tab";
+export const INBOX_ISSUE_COLUMNS_KEY = "paperclip:inbox:issue-columns";
+export const INBOX_NESTING_KEY = "paperclip:inbox:nesting";
+export const INBOX_GROUP_BY_KEY = "paperclip:inbox:group-by";
+export const INBOX_FILTER_PREFERENCES_KEY_PREFIX = "paperclip:inbox:filters";
+export const INBOX_COLLAPSED_GROUPS_KEY_PREFIX = "paperclip:inbox:collapsed-groups";
+export const INBOX_COLLAPSED_PARENTS_KEY_PREFIX = "paperclip:inbox:collapsed-parents";
+export type InboxTab = "mine" | "recent" | "unread" | "blocked" | "all";
 export type InboxCategoryFilter =
   | "everything"
   | "issues_i_touched"
@@ -39,6 +41,7 @@ export const inboxIssueColumns = [
   "status",
   "id",
   "assignee",
+  "kickedOffBy",
   "project",
   "workspace",
   "parent",
@@ -126,12 +129,14 @@ export type InboxKeyboardNavEntry =
 
 export interface InboxProjectWorkspaceLookup {
   name: string;
+  projectId?: string | null;
 }
 
 export interface InboxExecutionWorkspaceLookup {
   name: string;
   mode: "shared_workspace" | "isolated_workspace" | "operator_branch" | "adapter_managed" | "cloud_sandbox";
   projectWorkspaceId: string | null;
+  projectId?: string | null;
 }
 
 export interface InboxWorkspaceGroupingOptions {
@@ -142,6 +147,15 @@ export interface InboxWorkspaceGroupingOptions {
   agentById?: ReadonlyMap<string, string | null | undefined>;
   userLabelById?: ReadonlyMap<string, string>;
   currentUserId?: string | null;
+}
+
+export interface InboxIssueGroupCreateDefaults {
+  projectId?: string;
+  projectWorkspaceId?: string;
+  executionWorkspaceId?: string;
+  executionWorkspaceMode?: string;
+  assigneeAgentId?: string;
+  assigneeUserId?: string;
 }
 
 const defaultInboxFilterPreferences: InboxFilterPreferences = {
@@ -172,6 +186,11 @@ function getInboxFilterPreferencesStorageKey(companyId: string | null | undefine
 function getInboxCollapsedGroupsStorageKey(companyId: string | null | undefined): string | null {
   if (!companyId) return null;
   return `${INBOX_COLLAPSED_GROUPS_KEY_PREFIX}:${companyId}`;
+}
+
+function getInboxCollapsedParentsStorageKey(companyId: string | null | undefined): string | null {
+  if (!companyId) return null;
+  return `${INBOX_COLLAPSED_PARENTS_KEY_PREFIX}:${companyId}`;
 }
 
 export function loadInboxFilterPreferences(
@@ -253,6 +272,36 @@ export function saveCollapsedInboxGroupKeys(
 
   try {
     localStorage.setItem(storageKey, JSON.stringify([...groupKeys]));
+  } catch {
+    // Ignore localStorage failures.
+  }
+}
+
+export function loadCollapsedInboxParentIds(
+  companyId: string | null | undefined,
+): Set<string> {
+  const storageKey = getInboxCollapsedParentsStorageKey(companyId);
+  if (!storageKey) return new Set();
+
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveCollapsedInboxParentIds(
+  companyId: string | null | undefined,
+  parentIds: ReadonlySet<string>,
+) {
+  const storageKey = getInboxCollapsedParentsStorageKey(companyId);
+  if (!storageKey) return;
+
+  try {
+    localStorage.setItem(storageKey, JSON.stringify([...parentIds]));
   } catch {
     // Ignore localStorage failures.
   }
@@ -451,6 +500,7 @@ export function getInboxSearchSupplementIssues({
   currentUserId,
   enableRoutineVisibilityFilter = false,
   liveIssueIds,
+  issueFilterContext = {},
 }: {
   query: string;
   filteredWorkItems: InboxWorkItem[];
@@ -460,6 +510,7 @@ export function getInboxSearchSupplementIssues({
   currentUserId?: string | null;
   enableRoutineVisibilityFilter?: boolean;
   liveIssueIds?: ReadonlySet<string>;
+  issueFilterContext?: IssueFilterWorkspaceContext;
 }): Issue[] {
   const normalizedQuery = query.trim();
   if (!normalizedQuery) return [];
@@ -469,7 +520,14 @@ export function getInboxSearchSupplementIssues({
       .map((item) => item.issue.id),
     ...archivedSearchIssues.map((issue) => issue.id),
   ]);
-  return applyIssueFilters(remoteIssues, issueFilters, currentUserId, enableRoutineVisibilityFilter, liveIssueIds)
+  return applyIssueFilters(
+    remoteIssues,
+    issueFilters,
+    currentUserId,
+    enableRoutineVisibilityFilter,
+    liveIssueIds,
+    issueFilterContext,
+  )
     .filter((issue) => !visibleIssueIds.has(issue.id));
 }
 
@@ -619,7 +677,13 @@ export function resolveInboxNestingEnabled(preferenceEnabled: boolean, isMobile:
 export function loadLastInboxTab(): InboxTab {
   try {
     const raw = localStorage.getItem(INBOX_LAST_TAB_KEY);
-    if (raw === "all" || raw === "unread" || raw === "recent" || raw === "mine") return raw;
+    if (
+      raw === "all"
+      || raw === "unread"
+      || raw === "recent"
+      || raw === "mine"
+      || raw === "blocked"
+    ) return raw;
     if (raw === "new") return "mine";
     return "mine";
   } catch {
@@ -804,7 +868,7 @@ const inboxWorkItemKindOrder: InboxWorkItem["kind"][] = [
 ];
 
 const inboxWorkItemKindLabels: Record<InboxWorkItem["kind"], string> = {
-  issue: "Issues",
+  issue: "Tasks",
   approval: "Approvals",
   failed_run: "Failed runs",
   join_request: "Join requests",
@@ -931,6 +995,85 @@ export function groupInboxWorkItems(
   return orderedGroups;
 }
 
+function stripInboxSearchGroupPrefix(groupKey: string) {
+  return groupKey
+    .replace(/^archived-search:/, "")
+    .replace(/^other-search:/, "");
+}
+
+function firstIssueFromInboxWorkItems(items: InboxWorkItem[]): Issue | null {
+  return items.find((item): item is InboxWorkItem & { kind: "issue" } => item.kind === "issue")?.issue ?? null;
+}
+
+function projectIdForProjectWorkspace(
+  projectWorkspaceId: string | null | undefined,
+  options: InboxWorkspaceGroupingOptions,
+  fallbackIssue: Issue | null,
+) {
+  if (!projectWorkspaceId) return fallbackIssue?.projectId ?? null;
+  return options.projectWorkspaceById?.get(projectWorkspaceId)?.projectId
+    ?? (fallbackIssue?.projectWorkspaceId === projectWorkspaceId ? fallbackIssue.projectId : null);
+}
+
+export function buildInboxIssueGroupCreateDefaults(
+  groupKey: string,
+  groupBy: InboxWorkItemGroupBy,
+  items: InboxWorkItem[],
+  options: InboxWorkspaceGroupingOptions = {},
+): InboxIssueGroupCreateDefaults | null {
+  const fallbackIssue = firstIssueFromInboxWorkItems(items);
+  if (!fallbackIssue) return null;
+
+  const key = stripInboxSearchGroupPrefix(groupKey);
+  if (groupBy === "project") {
+    if (!key.startsWith("project:")) return {};
+    const projectId = key.slice("project:".length);
+    return projectId && projectId !== "none" ? { projectId } : {};
+  }
+
+  if (groupBy === "assignee") {
+    if (key.startsWith("assignee:agent:")) {
+      const assigneeAgentId = key.slice("assignee:agent:".length);
+      return assigneeAgentId ? { assigneeAgentId } : {};
+    }
+    if (key.startsWith("assignee:user:")) {
+      const assigneeUserId = key.slice("assignee:user:".length);
+      return assigneeUserId ? { assigneeUserId } : {};
+    }
+    return {};
+  }
+
+  if (groupBy === "workspace") {
+    if (key.startsWith("workspace:execution:")) {
+      const executionWorkspaceId = key.slice("workspace:execution:".length);
+      if (!executionWorkspaceId) return {};
+      const executionWorkspace = options.executionWorkspaceById?.get(executionWorkspaceId) ?? null;
+      const projectWorkspaceId = executionWorkspace?.projectWorkspaceId
+        ?? (fallbackIssue.executionWorkspaceId === executionWorkspaceId ? fallbackIssue.projectWorkspaceId : null);
+      const projectId = executionWorkspace?.projectId
+        ?? projectIdForProjectWorkspace(projectWorkspaceId, options, fallbackIssue);
+      return {
+        executionWorkspaceId,
+        executionWorkspaceMode: "reuse_existing",
+        ...(projectId ? { projectId } : {}),
+        ...(projectWorkspaceId ? { projectWorkspaceId } : {}),
+      };
+    }
+
+    if (key.startsWith("workspace:project:")) {
+      const projectWorkspaceId = key.slice("workspace:project:".length);
+      if (!projectWorkspaceId) return {};
+      const projectId = projectIdForProjectWorkspace(projectWorkspaceId, options, fallbackIssue);
+      return {
+        ...(projectId ? { projectId } : {}),
+        projectWorkspaceId,
+      };
+    }
+  }
+
+  return {};
+}
+
 /**
  * Groups parent-child issues in a flat InboxWorkItem list.
  *
@@ -1019,6 +1162,9 @@ export function buildGroupedInboxSections(
   const keyPrefix = options?.keyPrefix ?? "";
   const searchSection = options?.searchSection ?? "none";
   const nestingEnabled = options?.nestingEnabled ?? false;
+  if (searchSection !== "none" && items.length === 0) {
+    return [];
+  }
 
   return groupInboxWorkItems(items, groupBy, workspaceGrouping).map((group) => {
     const nestedGroup = nestingEnabled && group.items.some((item) => item.kind === "issue")

@@ -1,4 +1,4 @@
-import type { RoutineTrigger } from "@kesarcloud/shared";
+import type { RoutineTrigger } from "@paperclipai/shared";
 
 export type RoutineTriggerEditorDraft = {
   label: string;

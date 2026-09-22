@@ -10,7 +10,7 @@ describe("environment config helpers", () => {
         host: "ssh.example.test",
         port: "2222",
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclaw/workspace",
+        remoteWorkspacePath: "/srv/paperclip/workspace",
         privateKeySecretRef: {
           type: "secret_ref",
           secretId: "11111111-1111-1111-1111-111111111111",
@@ -24,7 +24,7 @@ describe("environment config helpers", () => {
       host: "ssh.example.test",
       port: 2222,
       username: "ssh-user",
-      remoteWorkspacePath: "/srv/paperclaw/workspace",
+      remoteWorkspacePath: "/srv/paperclip/workspace",
       privateKey: null,
       privateKeySecretRef: {
         type: "secret_ref",
@@ -44,7 +44,7 @@ describe("environment config helpers", () => {
           host: "ssh.example.test",
           port: "2222",
           username: "ssh-user",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: "PRIVATE KEY",
         },
       }),
@@ -82,7 +82,7 @@ describe("environment config helpers", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclaw/workspace",
+        remoteWorkspacePath: "/srv/paperclip/workspace",
         privateKey: null,
         privateKeySecretRef: null,
         knownHosts: null,
@@ -96,7 +96,7 @@ describe("environment config helpers", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclaw/workspace",
+        remoteWorkspacePath: "/srv/paperclip/workspace",
         privateKey: null,
         privateKeySecretRef: null,
         knownHosts: null,
@@ -119,6 +119,45 @@ describe("environment config helpers", () => {
       image: "ubuntu:24.04",
       reuseLease: false,
     });
+  });
+
+  it("loads a strict fake sandbox config that still carries the removed streamAgentSessionOutput key and drops it", () => {
+    // Session-output streaming moved from an operator flag to the capability
+    // snapshot. The fake sandbox schema is `.strict()`, so an undeclared key
+    // would fail validation. A saved config that still carries the removed key
+    // must load, and the removed key must not reach the stored config.
+    const config = normalizeEnvironmentConfig({
+      driver: "sandbox",
+      config: {
+        provider: "fake",
+        image: "ubuntu:24.04",
+        streamAgentSessionOutput: true,
+      },
+    });
+
+    expect(config).toEqual({
+      provider: "fake",
+      image: "ubuntu:24.04",
+      reuseLease: false,
+    });
+    expect(config).not.toHaveProperty("streamAgentSessionOutput");
+  });
+
+  it("loads a plugin sandbox config that still carries the removed streamAgentSessionOutput key and drops it", () => {
+    // The plugin sandbox schema uses `.catchall`, so an unknown key passes
+    // through. The removed key must still drop, so no consumer reads a stale
+    // operator flag.
+    const config = normalizeEnvironmentConfig({
+      driver: "sandbox",
+      config: {
+        provider: "fake-plugin",
+        image: "fake:test",
+        streamAgentSessionOutput: true,
+      },
+    });
+
+    expect(config).not.toHaveProperty("streamAgentSessionOutput");
+    expect(config).toMatchObject({ provider: "fake-plugin", image: "fake:test" });
   });
 
   it("parses a persisted sandbox environment into a typed driver config", () => {

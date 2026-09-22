@@ -26,7 +26,7 @@ export function shouldTrackDevServerPath(relativePath) {
   if (nodeDiagnosticReportPattern.test(basename)) {
     return false;
   }
-  if (segments.includes(".paperclaw")) {
+  if (segments.includes(".paperclip")) {
     return false;
   }
   if (ignoredTestConfigBasenames.has(basename)) {

@@ -1,4 +1,4 @@
-FROM node:lts-trixie-slim
+FROM node:24-trixie-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -25,7 +25,7 @@ RUN useradd --create-home --shell /bin/bash reviewer
 ENV HOME=/home/reviewer \
   CODEX_HOME=/home/reviewer/.codex \
   CLAUDE_HOME=/home/reviewer/.claude \
-  PAPERCLAW_HOME=/home/reviewer/.paperclaw-review \
+  PAPERCLIP_HOME=/home/reviewer/.paperclip-review \
   PNPM_HOME=/home/reviewer/.local/share/pnpm \
   PATH=/home/reviewer/.local/share/pnpm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 

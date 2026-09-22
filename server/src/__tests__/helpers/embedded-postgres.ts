@@ -3,4 +3,4 @@ export {
   startEmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestSupport,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";

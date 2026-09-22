@@ -2,18 +2,18 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCodexSkillsInjected } from "@kesarcloud/adapter-codex-local/server";
+import { ensureCodexSkillsInjected } from "@paperclipai/adapter-codex-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
-async function createPaperClawRepoSkill(root: string, skillName: string) {
+async function createPaperclipRepoSkill(root: string, skillName: string) {
   await fs.mkdir(path.join(root, "server"), { recursive: true });
   await fs.mkdir(path.join(root, "packages", "adapter-utils"), { recursive: true });
   await fs.mkdir(path.join(root, "skills", skillName), { recursive: true });
   await fs.writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n", "utf8");
-  await fs.writeFile(path.join(root, "package.json"), '{"name":"paperclaw"}\n', "utf8");
+  await fs.writeFile(path.join(root, "package.json"), '{"name":"paperclip"}\n', "utf8");
   await fs.writeFile(
     path.join(root, "skills", skillName, "SKILL.md"),
     `---\nname: ${skillName}\n---\n`,
@@ -31,8 +31,8 @@ async function createCustomSkill(root: string, skillName: string) {
 }
 
 describe("codex local adapter skill injection", () => {
-  const paperclawKey = "karanbavari/paperclaw/paperclaw";
-  const createAgentKey = "karanbavari/paperclaw/paperclaw-create-agent";
+  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -40,18 +40,18 @@ describe("codex local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("repairs a Codex PaperClaw skill symlink that still points at another live checkout", async () => {
-    const currentRepo = await makeTempDir("paperclaw-codex-current-");
-    const oldRepo = await makeTempDir("paperclaw-codex-old-");
-    const skillsHome = await makeTempDir("paperclaw-codex-home-");
+  it("repairs a Codex Paperclip skill symlink that still points at another live checkout", async () => {
+    const currentRepo = await makeTempDir("paperclip-codex-current-");
+    const oldRepo = await makeTempDir("paperclip-codex-old-");
+    const skillsHome = await makeTempDir("paperclip-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperClawRepoSkill(currentRepo, "paperclaw");
-    await createPaperClawRepoSkill(currentRepo, "paperclaw-create-agent");
-    await createPaperClawRepoSkill(oldRepo, "paperclaw");
-    await fs.symlink(path.join(oldRepo, "skills", "paperclaw"), path.join(skillsHome, "paperclaw"));
+    await createPaperclipRepoSkill(currentRepo, "paperclip");
+    await createPaperclipRepoSkill(currentRepo, "paperclip-create-agent");
+    await createPaperclipRepoSkill(oldRepo, "paperclip");
+    await fs.symlink(path.join(oldRepo, "skills", "paperclip"), path.join(skillsHome, "paperclip"));
 
     const logs: Array<{ stream: "stdout" | "stderr"; chunk: string }> = [];
     await ensureCodexSkillsInjected(
@@ -62,75 +62,75 @@ describe("codex local adapter skill injection", () => {
         skillsHome,
         skillsEntries: [
           {
-            key: paperclawKey,
-            runtimeName: "paperclaw",
-            source: path.join(currentRepo, "skills", "paperclaw"),
+            key: paperclipKey,
+            runtimeName: "paperclip",
+            source: path.join(currentRepo, "skills", "paperclip"),
           },
           {
             key: createAgentKey,
-            runtimeName: "paperclaw-create-agent",
-            source: path.join(currentRepo, "skills", "paperclaw-create-agent"),
+            runtimeName: "paperclip-create-agent",
+            source: path.join(currentRepo, "skills", "paperclip-create-agent"),
           },
         ],
       },
     );
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclaw"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "paperclaw")),
+    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
+      await fs.realpath(path.join(currentRepo, "skills", "paperclip")),
     );
-    expect(await fs.realpath(path.join(skillsHome, "paperclaw-create-agent"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "paperclaw-create-agent")),
+    expect(await fs.realpath(path.join(skillsHome, "paperclip-create-agent"))).toBe(
+      await fs.realpath(path.join(currentRepo, "skills", "paperclip-create-agent")),
     );
     expect(logs).toContainEqual(
       expect.objectContaining({
         stream: "stdout",
-        chunk: expect.stringContaining('Repaired Codex skill "paperclaw"'),
+        chunk: expect.stringContaining('Repaired Codex skill "paperclip"'),
       }),
     );
     expect(logs).toContainEqual(
       expect.objectContaining({
         stream: "stdout",
-        chunk: expect.stringContaining('Injected Codex skill "paperclaw-create-agent"'),
+        chunk: expect.stringContaining('Injected Codex skill "paperclip-create-agent"'),
       }),
     );
   });
 
-  it("preserves a custom Codex skill symlink outside PaperClaw repo checkouts", async () => {
-    const currentRepo = await makeTempDir("paperclaw-codex-current-");
-    const customRoot = await makeTempDir("paperclaw-codex-custom-");
-    const skillsHome = await makeTempDir("paperclaw-codex-home-");
+  it("preserves a custom Codex skill symlink outside Paperclip repo checkouts", async () => {
+    const currentRepo = await makeTempDir("paperclip-codex-current-");
+    const customRoot = await makeTempDir("paperclip-codex-custom-");
+    const skillsHome = await makeTempDir("paperclip-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(customRoot);
     cleanupDirs.add(skillsHome);
 
-    await createPaperClawRepoSkill(currentRepo, "paperclaw");
-    await createCustomSkill(customRoot, "paperclaw");
-    await fs.symlink(path.join(customRoot, "custom", "paperclaw"), path.join(skillsHome, "paperclaw"));
+    await createPaperclipRepoSkill(currentRepo, "paperclip");
+    await createCustomSkill(customRoot, "paperclip");
+    await fs.symlink(path.join(customRoot, "custom", "paperclip"), path.join(skillsHome, "paperclip"));
 
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclawKey,
-        runtimeName: "paperclaw",
-        source: path.join(currentRepo, "skills", "paperclaw"),
+        key: paperclipKey,
+        runtimeName: "paperclip",
+        source: path.join(currentRepo, "skills", "paperclip"),
       }],
     });
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclaw"))).toBe(
-      await fs.realpath(path.join(customRoot, "custom", "paperclaw")),
+    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
+      await fs.realpath(path.join(customRoot, "custom", "paperclip")),
     );
   });
 
-  it("prunes broken symlinks for unavailable PaperClaw repo skills before Codex starts", async () => {
-    const currentRepo = await makeTempDir("paperclaw-codex-current-");
-    const oldRepo = await makeTempDir("paperclaw-codex-old-");
-    const skillsHome = await makeTempDir("paperclaw-codex-home-");
+  it("prunes broken symlinks for unavailable Paperclip repo skills before Codex starts", async () => {
+    const currentRepo = await makeTempDir("paperclip-codex-current-");
+    const oldRepo = await makeTempDir("paperclip-codex-old-");
+    const skillsHome = await makeTempDir("paperclip-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperClawRepoSkill(currentRepo, "paperclaw");
-    await createPaperClawRepoSkill(oldRepo, "agent-browser");
+    await createPaperclipRepoSkill(currentRepo, "paperclip");
+    await createPaperclipRepoSkill(oldRepo, "agent-browser");
     const staleTarget = path.join(oldRepo, "skills", "agent-browser");
     await fs.symlink(staleTarget, path.join(skillsHome, "agent-browser"));
     await fs.rm(staleTarget, { recursive: true, force: true });
@@ -143,9 +143,9 @@ describe("codex local adapter skill injection", () => {
       {
         skillsHome,
         skillsEntries: [{
-          key: paperclawKey,
-          runtimeName: "paperclaw",
-          source: path.join(currentRepo, "skills", "paperclaw"),
+          key: paperclipKey,
+          runtimeName: "paperclip",
+          source: path.join(currentRepo, "skills", "paperclip"),
         }],
       },
     );
@@ -161,14 +161,14 @@ describe("codex local adapter skill injection", () => {
     );
   });
 
-  it("preserves other live PaperClaw skill symlinks in the shared workspace skill directory", async () => {
-    const currentRepo = await makeTempDir("paperclaw-codex-current-");
-    const skillsHome = await makeTempDir("paperclaw-codex-home-");
+  it("preserves other live Paperclip skill symlinks in the shared workspace skill directory", async () => {
+    const currentRepo = await makeTempDir("paperclip-codex-current-");
+    const skillsHome = await makeTempDir("paperclip-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperClawRepoSkill(currentRepo, "paperclaw");
-    await createPaperClawRepoSkill(currentRepo, "agent-browser");
+    await createPaperclipRepoSkill(currentRepo, "paperclip");
+    await createPaperclipRepoSkill(currentRepo, "agent-browser");
     await fs.symlink(
       path.join(currentRepo, "skills", "agent-browser"),
       path.join(skillsHome, "agent-browser"),
@@ -177,13 +177,13 @@ describe("codex local adapter skill injection", () => {
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclawKey,
-        runtimeName: "paperclaw",
-        source: path.join(currentRepo, "skills", "paperclaw"),
+        key: paperclipKey,
+        runtimeName: "paperclip",
+        source: path.join(currentRepo, "skills", "paperclip"),
       }],
     });
 
-    expect((await fs.lstat(path.join(skillsHome, "paperclaw"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(skillsHome, "paperclip"))).isSymbolicLink()).toBe(true);
     expect((await fs.lstat(path.join(skillsHome, "agent-browser"))).isSymbolicLink()).toBe(true);
     expect(await fs.realpath(path.join(skillsHome, "agent-browser"))).toBe(
       await fs.realpath(path.join(currentRepo, "skills", "agent-browser")),

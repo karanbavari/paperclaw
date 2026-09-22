@@ -1,4 +1,4 @@
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 import {
   DEFAULT_CONFIG,
   EXPORT_NAMES,
@@ -11,13 +11,13 @@ import {
   WEBHOOK_KEYS,
 } from "./constants.js";
 
-const manifest: PaperClawPluginManifestV1 = {
+const manifest: PaperclipPluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Kitchen Sink (Example)",
-  description: "Reference plugin that demonstrates the current PaperClaw plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
-  author: "PaperClaw",
+  description: "Reference plugin that demonstrates the current Paperclip plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
+  author: "Paperclip",
   categories: ["ui", "automation", "workspace", "connector"],
   capabilities: [
     "companies.read",
@@ -159,7 +159,7 @@ const manifest: PaperClawPluginManifestV1 = {
     {
       name: TOOL_NAMES.companySummary,
       displayName: "Kitchen Sink Company Summary",
-      description: "Summarizes the current company using the PaperClaw domain APIs.",
+      description: "Summarizes the current company using the Paperclip domain APIs.",
       parametersSchema: {
         type: "object",
         properties: {},
@@ -193,6 +193,13 @@ const manifest: PaperClawPluginManifestV1 = {
         id: SLOT_IDS.settingsPage,
         displayName: "Kitchen Sink Settings",
         exportName: EXPORT_NAMES.settingsPage,
+      },
+      {
+        type: "companySettingsPage",
+        id: SLOT_IDS.companySettingsPage,
+        displayName: "Kitchen Sink",
+        exportName: EXPORT_NAMES.companySettingsPage,
+        routePath: "kitchen-sink",
       },
       {
         type: "dashboardWidget",

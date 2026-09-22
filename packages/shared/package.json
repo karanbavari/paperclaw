@@ -1,14 +1,14 @@
 {
-  "name": "@kesarcloud/shared",
+  "name": "@paperclipai/shared",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/karanbavari/paperclaw",
+  "homepage": "https://github.com/paperclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/karanbavari/paperclaw/issues"
+    "url": "https://github.com/paperclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karanbavari/paperclaw",
+    "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/shared"
   },
   "type": "module",
@@ -45,9 +45,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^3.24.2"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

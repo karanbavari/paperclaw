@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Issue } from "@kesarcloud/shared";
+import type { Issue } from "@paperclipai/shared";
 import { buildIssuePropertiesPanelKey } from "./issue-properties-panel-key";
 
 function createIssue(overrides: Partial<Issue> = {}) {
@@ -50,6 +50,33 @@ describe("buildIssuePropertiesPanelKey", () => {
     expect(second).not.toBe(first);
   });
 
+  it("changes when watchdog configuration changes", () => {
+    const first = buildIssuePropertiesPanelKey(createIssue({ watchdog: null }), []);
+    const second = buildIssuePropertiesPanelKey(
+      createIssue({
+        watchdog: {
+          id: "watchdog-1",
+          companyId: "company-1",
+          issueId: "issue-1",
+          watchdogAgentId: "agent-1",
+          instructions: "Keep the tree moving.",
+          status: "active",
+          watchdogIssueId: null,
+          lastObservedFingerprint: null,
+          lastReviewedFingerprint: null,
+          lastTriggeredAt: null,
+          lastCompletedAt: null,
+          triggerCount: 0,
+          createdAt: new Date("2026-04-12T12:01:00.000Z"),
+          updatedAt: new Date("2026-04-12T12:01:00.000Z"),
+        },
+      }),
+      [],
+    );
+
+    expect(second).not.toBe(first);
+  });
+
   it("changes when workspace detail hydrates after opening from a cached issue", () => {
     const first = buildIssuePropertiesPanelKey(createIssue(), []);
     const second = buildIssuePropertiesPanelKey(
@@ -67,12 +94,13 @@ describe("buildIssuePropertiesPanelKey", () => {
           strategyType: "git_worktree",
           name: "PAP-1 workspace",
           status: "active",
-          cwd: "/tmp/paperclaw/PAP-1",
+          deliveryState: "unknown",
+          cwd: "/tmp/paperclip/PAP-1",
           repoUrl: null,
           baseRef: "master",
           branchName: "PAP-1-workspace",
           providerType: "git_worktree",
-          providerRef: "/tmp/paperclaw/PAP-1",
+          providerRef: "/tmp/paperclip/PAP-1",
           derivedFromExecutionWorkspaceId: null,
           lastUsedAt: new Date("2026-04-12T12:01:00.000Z"),
           openedAt: new Date("2026-04-12T12:01:00.000Z"),

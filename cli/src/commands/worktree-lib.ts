@@ -1,12 +1,55 @@
 import { randomInt } from "node:crypto";
 import path from "node:path";
-import type { PaperClawConfig } from "../config/schema.js";
+import type { PaperclipConfig } from "../config/schema.js";
 import { expandHomePrefix } from "../config/home.js";
 
-export const DEFAULT_WORKTREE_HOME = "~/.paperclaw-worktrees";
+export const DEFAULT_WORKTREE_HOME = "~/.paperclip-worktrees";
 export const WORKTREE_SEED_MODES = ["minimal", "full"] as const;
+export const WORKTREE_SEED_MANIFEST = "seed-manifest.json";
+export const WORKTREE_SEED_PENDING_MARKER = "seed-pending";
+export const WORKTREE_SEED_COMPLETE_MARKER = "seed-complete";
+export const WORKTREE_SEED_LOCK_MARKER = "seed.lock";
 
 export type WorktreeSeedMode = (typeof WORKTREE_SEED_MODES)[number];
+
+export const WORKTREE_SEED_PHASES = [
+  "pending",
+  "source_validation",
+  "snapshot",
+  "restore",
+  "migrations",
+  "execution_quarantine",
+  "routine_pause",
+  "workspace_rebind",
+  "post_restore_validation",
+  "complete",
+] as const;
+
+export type WorktreeSeedPhase = (typeof WORKTREE_SEED_PHASES)[number];
+export type WorktreeSeedState = "pending" | "running" | "verified" | "failed";
+
+export type WorktreeSeedManifest = {
+  version: 2;
+  source: {
+    instanceId: string;
+    configPath: string;
+  };
+  snapshotAt: string | null;
+  seedMode: WorktreeSeedMode;
+  migrationRevision: string | null;
+  targetInstanceId: string;
+  phase: WorktreeSeedPhase;
+  state: WorktreeSeedState;
+  attemptId: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  diagnostics: Array<{
+    phase: WorktreeSeedPhase;
+    status: "started" | "succeeded" | "failed";
+    at: string;
+    message?: string;
+  }>;
+};
 
 export type WorktreeSeedPlan = {
   mode: WorktreeSeedMode;
@@ -49,6 +92,23 @@ export type WorktreeUiBranding = {
   name: string;
   color: string;
 };
+
+export type WorktreeSeedMarkerPaths = {
+  manifest: string;
+  pending: string;
+  complete: string;
+  lock: string;
+};
+
+export function resolveWorktreeSeedMarkerPaths(configPath: string): WorktreeSeedMarkerPaths {
+  const configDir = path.dirname(path.resolve(configPath));
+  return {
+    manifest: path.resolve(configDir, WORKTREE_SEED_MANIFEST),
+    pending: path.resolve(configDir, WORKTREE_SEED_PENDING_MARKER),
+    complete: path.resolve(configDir, WORKTREE_SEED_COMPLETE_MARKER),
+    lock: path.resolve(configDir, WORKTREE_SEED_LOCK_MARKER),
+  };
+}
 
 export function isWorktreeSeedMode(value: string): value is WorktreeSeedMode {
   return (WORKTREE_SEED_MODES as readonly string[]).includes(value);
@@ -141,7 +201,7 @@ export function resolveWorktreeLocalPaths(opts: {
   const cwd = path.resolve(opts.cwd);
   const homeDir = path.resolve(expandHomePrefix(opts.homeDir ?? DEFAULT_WORKTREE_HOME));
   const instanceRoot = path.resolve(homeDir, "instances", opts.instanceId);
-  const repoConfigDir = path.resolve(cwd, ".paperclaw");
+  const repoConfigDir = path.resolve(cwd, ".paperclip");
   return {
     cwd,
     repoConfigDir,
@@ -173,12 +233,12 @@ export function rewriteLocalUrlPort(rawUrl: string | undefined, port: number): s
 }
 
 export function buildWorktreeConfig(input: {
-  sourceConfig: PaperClawConfig | null;
+  sourceConfig: PaperclipConfig | null;
   paths: WorktreeLocalPaths;
   serverPort: number;
   databasePort: number;
   now?: Date;
-}): PaperClawConfig {
+}): PaperclipConfig {
   const { sourceConfig, paths, serverPort, databasePort } = input;
   const nowIso = (input.now ?? new Date()).toISOString();
 
@@ -197,7 +257,7 @@ export function buildWorktreeConfig(input: {
       embeddedPostgresDataDir: paths.embeddedPostgresDataDir,
       embeddedPostgresPort: databasePort,
       backup: {
-        enabled: source?.database.backup.enabled ?? true,
+        enabled: false,
         intervalMinutes: source?.database.backup.intervalMinutes ?? 60,
         retentionDays: source?.database.backup.retentionDays ?? 30,
         dir: paths.backupDir,
@@ -231,7 +291,7 @@ export function buildWorktreeConfig(input: {
         baseDir: paths.storageDir,
       },
       s3: {
-        bucket: source?.storage.s3.bucket ?? "paperclaw",
+        bucket: source?.storage.s3.bucket ?? "paperclip",
         region: source?.storage.s3.region ?? "us-east-1",
         endpoint: source?.storage.s3.endpoint,
         prefix: source?.storage.s3.prefix ?? "",
@@ -253,13 +313,14 @@ export function buildWorktreeEnvEntries(
   branding?: WorktreeUiBranding,
 ): Record<string, string> {
   return {
-    PAPERCLAW_HOME: paths.homeDir,
-    PAPERCLAW_INSTANCE_ID: paths.instanceId,
-    PAPERCLAW_CONFIG: paths.configPath,
-    PAPERCLAW_CONTEXT: paths.contextPath,
-    PAPERCLAW_IN_WORKTREE: "true",
-    ...(branding?.name ? { PAPERCLAW_WORKTREE_NAME: branding.name } : {}),
-    ...(branding?.color ? { PAPERCLAW_WORKTREE_COLOR: branding.color } : {}),
+    PAPERCLIP_HOME: paths.homeDir,
+    PAPERCLIP_INSTANCE_ID: paths.instanceId,
+    PAPERCLIP_CONFIG: paths.configPath,
+    PAPERCLIP_CONTEXT: paths.contextPath,
+    PAPERCLIP_IN_WORKTREE: "true",
+    PAPERCLIP_DB_BACKUP_ENABLED: "false",
+    ...(branding?.name ? { PAPERCLIP_WORKTREE_NAME: branding.name } : {}),
+    ...(branding?.color ? { PAPERCLIP_WORKTREE_COLOR: branding.color } : {}),
   };
 }
 

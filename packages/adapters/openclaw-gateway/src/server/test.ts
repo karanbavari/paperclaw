@@ -2,8 +2,8 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@kesarcloud/adapter-utils";
-import { asString, parseObject } from "@kesarcloud/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils";
+import { asString, parseObject } from "@paperclipai/adapter-utils/server-utils";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 
@@ -145,11 +145,11 @@ async function probeGateway(input: {
             id: connectId,
             method: "connect",
             params: {
-              minProtocol: 3,
-              maxProtocol: 3,
+              minProtocol: 4,
+              maxProtocol: 4,
               client: {
                 id: "gateway-client",
-                version: "paperclaw-probe",
+                version: "paperclip-probe",
                 platform: process.platform,
                 mode: "probe",
               },
@@ -296,7 +296,7 @@ export async function testEnvironment(
           code: "openclaw_gateway_probe_failed",
           level: "warn",
           message: "Gateway probe failed.",
-          hint: "Verify network reachability and gateway URL from the PaperClaw server host.",
+          hint: "Verify network reachability and gateway URL from the Paperclip server host.",
         });
       }
     } catch (err) {

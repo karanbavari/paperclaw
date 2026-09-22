@@ -6,17 +6,21 @@ export {
   findServerAdapter,
   findActiveServerAdapter,
   detectAdapterModel,
-  listAdapterModelProfiles,
   registerServerAdapter,
   unregisterServerAdapter,
   requireServerAdapter,
 } from "./registry.js";
 export type {
   ServerAdapterModule,
+  AcpTargetDescriptor,
   AdapterExecutionContext,
   AdapterExecutionResult,
   AdapterInvocationMeta,
-  AdapterModelProfileDefinition,
+  AdapterRuntimeEvent,
+  AdapterRuntimeMcpServer,
+  AdapterRuntimeMcpAccess,
+  AdapterRuntimeToolAccess,
+  AdapterRuntimeToolDelivery,
   AdapterEnvironmentCheckLevel,
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestStatus,
@@ -26,5 +30,5 @@ export type {
   UsageSummary,
   AdapterAgent,
   AdapterRuntime,
-} from "@kesarcloud/adapter-utils";
+} from "@paperclipai/adapter-utils";
 export { runningProcesses } from "./utils.js";

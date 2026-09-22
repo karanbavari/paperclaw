@@ -1,19 +1,31 @@
 import fs from "node:fs";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { doctor } from "../commands/doctor.js";
 import { writeConfig } from "../config/store.js";
-import type { PaperClawConfig } from "../config/schema.js";
+import type { PaperclipConfig } from "../config/schema.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
-function createTempConfig(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-doctor-"));
-  const configPath = path.join(root, ".paperclaw", "config.json");
+async function availablePort(): Promise<number> {
+  const server = net.createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address() as net.AddressInfo;
+  await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  return address.port;
+}
+
+function createTempConfig(serverPort: number): string {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-doctor-"));
+  const configPath = path.join(root, ".paperclip", "config.json");
   const runtimeRoot = path.join(root, "runtime");
 
-  const config: PaperClawConfig = {
+  const config: PaperclipConfig = {
     $meta: {
       version: 1,
       updatedAt: "2026-03-10T00:00:00.000Z",
@@ -38,7 +50,7 @@ function createTempConfig(): string {
       deploymentMode: "local_trusted",
       exposure: "private",
       host: "127.0.0.1",
-      port: 3199,
+      port: serverPort,
       allowedHostnames: [],
       serveUi: true,
     },
@@ -55,7 +67,7 @@ function createTempConfig(): string {
         baseDir: path.join(runtimeRoot, "storage"),
       },
       s3: {
-        bucket: "paperclaw",
+        bucket: "paperclip",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -77,9 +89,9 @@ function createTempConfig(): string {
 describe("doctor", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLAW_AGENT_JWT_SECRET;
-    delete process.env.PAPERCLAW_SECRETS_MASTER_KEY;
-    delete process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE;
+    delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
+    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY;
+    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
   });
 
   afterEach(() => {
@@ -87,7 +99,7 @@ describe("doctor", () => {
   });
 
   it("re-runs repairable checks so repaired failures do not remain blocking", async () => {
-    const configPath = createTempConfig();
+    const configPath = createTempConfig(await availablePort());
 
     const summary = await doctor({
       config: configPath,
@@ -97,6 +109,6 @@ describe("doctor", () => {
 
     expect(summary.failed).toBe(0);
     expect(summary.warned).toBe(0);
-    expect(process.env.PAPERCLAW_AGENT_JWT_SECRET).toBeTruthy();
+    expect(process.env.PAPERCLIP_AGENT_JWT_SECRET).toBeTruthy();
   });
 });

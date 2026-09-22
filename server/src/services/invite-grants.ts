@@ -1,5 +1,5 @@
-import { PERMISSION_KEYS } from "@kesarcloud/shared";
-import type { HumanCompanyMembershipRole } from "@kesarcloud/shared";
+import { PERMISSION_KEYS } from "@paperclipai/shared";
+import type { HumanCompanyMembershipRole } from "@paperclipai/shared";
 import { grantsForHumanRole } from "./company-member-roles.js";
 
 export function grantsFromDefaults(

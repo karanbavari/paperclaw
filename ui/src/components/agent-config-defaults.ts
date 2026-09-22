@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@kesarcloud/adapter-utils";
+import type { CreateConfigValues } from "@paperclipai/adapter-utils";
 
 export const defaultCreateValues: CreateConfigValues = {
   adapterType: "claude_local",
@@ -28,4 +28,19 @@ export const defaultCreateValues: CreateConfigValues = {
   maxTurnsPerRun: 1000,
   heartbeatEnabled: false,
   intervalSec: 300,
+  // openclaw_gateway defaults
+  authToken: "",
+  agentId: "",
+  sessionKeyStrategy: "issue",
+  sessionKey: "",
+  timeoutSec: undefined,
+  waitTimeoutMs: undefined,
+  disableDeviceAuth: undefined,
+  autoPairOnFirstConnect: undefined,
+  devicePrivateKeyPem: "",
+  role: "",
+  scopes: "",
+  paperclipApiUrl: "",
+  headersJson: "",
+  password: "",
 };

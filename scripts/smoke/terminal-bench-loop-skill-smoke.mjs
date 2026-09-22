@@ -9,9 +9,9 @@ const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 function parseArgs(argv) {
   const parsed = {
     keep: false,
-    sourceIssueId: process.env.PAPERCLAW_TASK_ID ?? null,
-    projectId: process.env.PAPERCLAW_PROJECT_ID ?? null,
-    goalId: process.env.PAPERCLAW_GOAL_ID ?? null,
+    sourceIssueId: process.env.PAPERCLIP_TASK_ID ?? null,
+    projectId: process.env.PAPERCLIP_PROJECT_ID ?? null,
+    goalId: process.env.PAPERCLIP_GOAL_ID ?? null,
     runKey: null,
   };
 
@@ -50,13 +50,13 @@ function parseArgs(argv) {
 function printUsage() {
   console.log(`
 Usage:
-  PAPERCLAW_API_URL=http://localhost:3100 \\
-  PAPERCLAW_API_KEY=... \\
-  PAPERCLAW_COMPANY_ID=... \\
+  PAPERCLIP_API_URL=http://localhost:3100 \\
+  PAPERCLIP_API_KEY=... \\
+  PAPERCLIP_COMPANY_ID=... \\
   pnpm smoke:terminal-bench-loop-skill
 
 Options:
-  --source-issue-id <uuid>  Attach smoke issues under an existing PaperClaw issue.
+  --source-issue-id <uuid>  Attach smoke issues under an existing Paperclip issue.
   --project-id <uuid>       Override inferred project id.
   --goal-id <uuid>          Override inferred goal id.
   --run-key <string>        Stable key used in smoke titles and mocked artifact paths.
@@ -67,7 +67,7 @@ Options:
 function requireEnv(name) {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} is required. Run against a local PaperClaw server with an agent or board API token.`);
+    throw new Error(`${name} is required. Run against a local Paperclip server with an agent or board API token.`);
   }
   return value;
 }
@@ -83,15 +83,15 @@ function assert(condition, message) {
 }
 
 async function assertLocalSkillPackage() {
-  const skillPath = join(repoRoot, "skills", "terminal-bench-loop", "SKILL.md");
+  const skillPath = join(repoRoot, ".agents", "skills", "terminal-bench-loop", "SKILL.md");
   const markdown = await readFile(skillPath, "utf8");
   for (const expected of [
     "name: terminal-bench-loop",
     "request_confirmation",
     "diagnosis",
     "blockedByIssueIds",
-    "PAPERCLAWAI_CMD",
-    "PAPERCLAW_HARBOR_RUNNER_CONFIG",
+    "PAPERCLIPAI_CMD",
+    "PAPERCLIP_HARBOR_RUNNER_CONFIG",
   ]) {
     assert(markdown.includes(expected), `Skill smoke expected ${skillPath} to mention ${expected}`);
   }
@@ -110,7 +110,7 @@ function createApiClient({ apiUrl, apiKey, runId }) {
       headers["Content-Type"] = "application/json";
     }
     if (runId && method !== "GET") {
-      headers["X-PaperClaw-Run-Id"] = runId;
+      headers["X-Paperclip-Run-Id"] = runId;
     }
 
     const response = await fetch(`${baseUrl}${path}`, {
@@ -129,10 +129,10 @@ function createApiClient({ apiUrl, apiKey, runId }) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const apiUrl = requireEnv("PAPERCLAW_API_URL");
-  const apiKey = requireEnv("PAPERCLAW_API_KEY");
-  const companyId = requireEnv("PAPERCLAW_COMPANY_ID");
-  const runId = process.env.PAPERCLAW_RUN_ID ?? null;
+  const apiUrl = requireEnv("PAPERCLIP_API_URL");
+  const apiKey = requireEnv("PAPERCLIP_API_KEY");
+  const companyId = requireEnv("PAPERCLIP_COMPANY_ID");
+  const runId = process.env.PAPERCLIP_RUN_ID ?? null;
   const api = createApiClient({ apiUrl, apiKey, runId });
 
   await assertLocalSkillPackage();
@@ -195,7 +195,7 @@ async function main() {
         `- Manifest: ${artifactRoot}/manifest.json`,
         `- Results JSONL: ${artifactRoot}/results.jsonl`,
         `- Harbor raw job folder: ${artifactRoot}/harbor/raw-job`,
-        "- Dispatch config: PAPERCLAW_HARBOR_RUNNER_CONFIG=<omitted - harness/setup no-dispatch smoke>",
+        "- Dispatch config: PAPERCLIP_HARBOR_RUNNER_CONFIG=<omitted - harness/setup no-dispatch smoke>",
         "- Heartbeat-enabled agents: 0 (harness/setup no-dispatch; not a product signal)",
         "",
         "No benchmark process, Harbor job, model call, or provider call was started.",
@@ -215,7 +215,7 @@ async function main() {
         "",
         "Next-action owner: board/user must accept or reject the confirmation before implementation subtasks exist.",
         "",
-        "Failure taxonomy: PaperClaw product gap, mocked for smoke coverage.",
+        "Failure taxonomy: Paperclip product gap, mocked for smoke coverage.",
         "",
         "Invariant check:",
         "",
@@ -312,7 +312,7 @@ async function main() {
     `Expected iteration issue to be in_review, got ${verifiedIteration.status}`,
   );
   assert(verifiedRunDoc.body.includes(`${artifactRoot}/results.jsonl`), "Expected run doc to include mocked results path");
-  assert(verifiedRunDoc.body.includes("PAPERCLAW_HARBOR_RUNNER_CONFIG"), "Expected run doc to record dispatch config");
+  assert(verifiedRunDoc.body.includes("PAPERCLIP_HARBOR_RUNNER_CONFIG"), "Expected run doc to record dispatch config");
   assert(
     verifiedDiagnosisDoc.body.includes("Exact stop point") && verifiedDiagnosisDoc.body.includes("Next-action owner"),
     "Expected diagnosis doc to include exact stop point and next-action owner",

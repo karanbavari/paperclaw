@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Agent, Issue } from "@kesarcloud/shared";
+import type { Agent, Issue } from "@paperclipai/shared";
 import { useQuery } from "@tanstack/react-query";
 import { accessApi } from "../api/access";
 import { formatAssigneeUserLabel } from "../lib/assignees";
@@ -97,7 +97,7 @@ export function ExecutionParticipantPicker({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer",
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-(length:--text-nano) font-medium transition-colors cursor-pointer",
             values.length > 0
               ? "border-border text-foreground hover:bg-accent/50"
               : "border-dashed border-border/60 text-muted-foreground hover:border-border hover:text-foreground",
@@ -105,7 +105,7 @@ export function ExecutionParticipantPicker({
         >
           <Icon className="h-3 w-3" />
           {values.length > 0 ? (
-            <span className="truncate max-w-[100px]">
+            <span className="truncate max-w-(--sz-100px)">
               {values.map(participantLabel).join(", ")}
             </span>
           ) : (

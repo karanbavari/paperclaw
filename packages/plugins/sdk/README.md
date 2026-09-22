@@ -1,12 +1,12 @@
-# `@kesarcloud/plugin-sdk`
+# `@paperclipai/plugin-sdk`
 
-Official TypeScript SDK for PaperClaw plugin authors.
+Official TypeScript SDK for Paperclip plugin authors.
 
-- **Worker SDK:** `@kesarcloud/plugin-sdk` — `definePlugin`, context, lifecycle
-- **UI SDK:** `@kesarcloud/plugin-sdk/ui` — React hooks and slot props
-- **Testing:** `@kesarcloud/plugin-sdk/testing` — in-memory host harness
-- **Bundlers:** `@kesarcloud/plugin-sdk/bundlers` — esbuild/rollup presets
-- **Dev server:** `@kesarcloud/plugin-sdk/dev-server` — static UI server + SSE reload
+- **Worker SDK:** `@paperclipai/plugin-sdk` — `definePlugin`, context, lifecycle
+- **UI SDK:** `@paperclipai/plugin-sdk/ui` — React hooks and slot props
+- **Testing:** `@paperclipai/plugin-sdk/testing` — in-memory host harness
+- **Bundlers:** `@paperclipai/plugin-sdk/bundlers` — esbuild/rollup presets
+- **Dev server:** `@paperclipai/plugin-sdk/dev-server` — static UI server + SSE reload
 
 Reference: `doc/plugins/PLUGIN_SPEC.md`
 
@@ -14,15 +14,15 @@ Reference: `doc/plugins/PLUGIN_SPEC.md`
 
 | Import | Purpose |
 |--------|--------|
-| `@kesarcloud/plugin-sdk` | Worker entry: `definePlugin`, `runWorker`, context types, protocol helpers |
-| `@kesarcloud/plugin-sdk/ui` | UI entry: `usePluginData`, `usePluginAction`, `usePluginStream`, `useHostContext`, `useHostNavigation`, slot prop types |
-| `@kesarcloud/plugin-sdk/ui/hooks` | Hooks only |
-| `@kesarcloud/plugin-sdk/ui/types` | UI types and slot prop interfaces |
-| `@kesarcloud/plugin-sdk/testing` | `createTestHarness` for unit/integration tests |
-| `@kesarcloud/plugin-sdk/bundlers` | `createPluginBundlerPresets` for worker/manifest/ui builds |
-| `@kesarcloud/plugin-sdk/dev-server` | `startPluginDevServer`, `getUiBuildSnapshot` |
-| `@kesarcloud/plugin-sdk/protocol` | JSON-RPC protocol types and helpers (advanced) |
-| `@kesarcloud/plugin-sdk/types` | Worker context and API types (advanced) |
+| `@paperclipai/plugin-sdk` | Worker entry: `definePlugin`, `runWorker`, context types, protocol helpers |
+| `@paperclipai/plugin-sdk/ui` | UI entry: hooks, host navigation, HTTP-safe clipboard copy, shared components, and slot prop types |
+| `@paperclipai/plugin-sdk/ui/hooks` | Hooks only |
+| `@paperclipai/plugin-sdk/ui/types` | UI types and slot prop interfaces |
+| `@paperclipai/plugin-sdk/testing` | `createTestHarness` for unit/integration tests |
+| `@paperclipai/plugin-sdk/bundlers` | `createPluginBundlerPresets` for worker/manifest/ui builds |
+| `@paperclipai/plugin-sdk/dev-server` | `startPluginDevServer`, `getUiBuildSnapshot` |
+| `@paperclipai/plugin-sdk/protocol` | JSON-RPC protocol types and helpers (advanced) |
+| `@paperclipai/plugin-sdk/types` | Worker context and API types (advanced) |
 
 ## Manifest entrypoints
 
@@ -34,7 +34,7 @@ In your plugin manifest you declare:
 ## Install
 
 ```bash
-pnpm add @kesarcloud/plugin-sdk
+pnpm add @paperclipai/plugin-sdk
 ```
 
 ## Current deployment caveats
@@ -42,12 +42,12 @@ pnpm add @kesarcloud/plugin-sdk
 The SDK is stable enough for local development and first-party examples, but the runtime deployment model is still early.
 
 - Plugin workers and plugin UI should both be treated as trusted code today.
-- Plugin UI bundles run as same-origin JavaScript inside the main PaperClaw app. They can call ordinary PaperClaw HTTP APIs with the board session, so manifest capabilities are not a frontend sandbox.
+- Plugin UI bundles run as same-origin JavaScript inside the main Paperclip app. They can call ordinary Paperclip HTTP APIs with the board session, so manifest capabilities are not a frontend sandbox.
 - Local-path installs and the repo example plugins are development workflows. They assume the plugin source checkout exists on disk.
-- For deployed plugins, publish an npm package and install that package into the PaperClaw instance at runtime.
+- For deployed plugins, publish an npm package and install that package into the Paperclip instance at runtime.
 - The current host runtime expects a writable filesystem, `npm` available at runtime, and network access to the package registry used for plugin installation.
 - Dynamic plugin install is currently best suited to single-node persistent deployments. Multi-instance cloud deployments still need a shared artifact/distribution model before runtime installs are reliable across nodes.
-- The host ships a small shared React component kit through `@kesarcloud/plugin-sdk/ui`. Use it for native PaperClaw controls; custom React and CSS are still supported.
+- The host ships a small shared React component kit through `@paperclipai/plugin-sdk/ui`. Use it for native Paperclip controls; custom React and CSS are still supported.
 - `ctx.assets` is not part of the supported runtime in this build. Do not depend on asset upload/read APIs yet.
 
 If you are authoring a plugin for others to deploy, treat npm-packaged installation as the supported path and treat repo-local example installs as a development convenience.
@@ -55,7 +55,7 @@ If you are authoring a plugin for others to deploy, treat npm-packaged installat
 ## Worker quick start
 
 ```ts
-import { definePlugin, runWorker } from "@kesarcloud/plugin-sdk";
+import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -100,9 +100,7 @@ runWorker(plugin, import.meta.url);
 | `onValidateConfig?(config)` | Optional. Return `{ ok, warnings?, errors? }` for settings UI / Test Connection. |
 | `onWebhook?(input)` | Optional. Handle `POST /api/plugins/:pluginId/webhooks/:endpointKey`; required if webhooks declared. |
 
-**Context (`ctx`) in setup:** `config`, `localFolders`, `events`, `jobs`, `launchers`, `http`, `secrets`, `activity`, `state`, `entities`, `projects`, `companies`, `issues`, `agents`, `goals`, `data`, `actions`, `streams`, `tools`, `metrics`, `logger`, `manifest`. Worker-side host APIs are capability-gated; declare capabilities in the manifest.
-
-**Secrets:** `ctx.secrets.resolve(secretRef)` requires `secrets.read-ref` and resolves only operator-authorized config refs or plugin-owned refs. `ctx.secrets.upsert({ companyId, name, value })` requires `secrets.write-ref`; the host stores or rotates a company secret under a plugin-prefixed name and returns the secret ref.
+**Context (`ctx`) in setup:** `config`, `localFolders`, `events`, `jobs`, `launchers`, `http`, `secrets`, `activity`, `state`, `entities`, `projects`, `companies`, `issues`, `agents`, `goals`, `access`, `authorization`, `data`, `actions`, `streams`, `tools`, `metrics`, `logger`, `manifest`. Worker-side host APIs are capability-gated; declare capabilities in the manifest.
 
 **Agents:** `ctx.agents.invoke(agentId, companyId, opts)` for one-shot invocation. `ctx.agents.sessions` for two-way chat: `create`, `list`, `sendMessage` (with streaming `onEvent` callback), `close`. See the [Plugin Authoring Guide](../../doc/plugins/PLUGIN_AUTHORING_GUIDE.md#agent-sessions-two-way-chat) for details.
 
@@ -136,7 +134,7 @@ Subscribe in `setup` with `ctx.events.on(name, handler)` or `ctx.events.on(name,
 
 **Filter (optional):** Pass a second argument to `on()`: `{ projectId?, companyId?, agentId? }` so the host only delivers matching events.
 
-**Company context:** Events still carry `companyId` for company-scoped data, but plugin installation and activation are instance-wide in the current runtime.
+**Company context:** Events still carry `companyId` for company-scoped data, but plugin installation and activation are instance-wide in the current runtime. Access and authorization host services require an active company-scoped invocation such as an event, API route, tool run, environment call, or UI bridge call; the requested `companyId` must match that active scope.
 
 ## Scheduled (recurring) jobs
 
@@ -226,7 +224,7 @@ Slot types describe where a component mounts. Most values also exist as launcher
 
 **Scope** describes whether the slot requires an entity to render. **Global** slots render without a specific entity but still receive the active `companyId` through `PluginHostContext` — use it to scope data fetches to the current company. **Entity** slots additionally require `entityId` and `entityType` (e.g. a detail tab on a specific issue).
 
-**Entity types** (for `entityTypes` on slots): `project` \| `issue` \| `agent` \| `goal` \| `run` \| `comment`. Full list: import `PLUGIN_UI_SLOT_TYPES` and `PLUGIN_UI_SLOT_ENTITY_TYPES` from `@kesarcloud/plugin-sdk`.
+**Entity types** (for `entityTypes` on slots): `project` \| `issue` \| `agent` \| `goal` \| `run` \| `comment`. Full list: import `PLUGIN_UI_SLOT_TYPES` and `PLUGIN_UI_SLOT_ENTITY_TYPES` from `@paperclipai/plugin-sdk`.
 
 ### Slot component descriptions
 
@@ -240,7 +238,9 @@ Adds a navigation-style entry to the main company sidebar navigation area, rende
 
 #### `routeSidebar`
 
-Replaces the normal company sidebar while the current route is a plugin page route with the same `routePath`. Use this for full-page plugin workspaces that need their own local navigation while keeping the company rail and account footer. Receives `PluginRouteSidebarProps` with `context.companyId` and `context.companyPrefix` set to the active company. Requires the `ui.sidebar.register` capability.
+A contextual sidebar shown while the current route is a plugin page route with the same `routePath`. Use this for full-page plugin workspaces that need their own local navigation. It does **not** replace the app sidebar: the host collapses the main `<Sidebar/>` to its 64px icon rail (still hover/peek-able) and renders your `routeSidebar` in a secondary pane beside it, producing `[ app rail ][ your sidebar ][ content ]`. Receives `PluginRouteSidebarProps` with `context.companyId` and `context.companyPrefix` set to the active company. Requires the `ui.sidebar.register` capability.
+
+Do **not** mount `RequestCollapsedSidebar` (or otherwise try to collapse the app sidebar) from a `routeSidebar` plugin — the host drives the collapse automatically while your route is active and restores the user's preference when they navigate away. The collapse is a hard invariant: a secondary sidebar always forces the app rail collapsed (hiding its expand toggle), overriding any user pin, but it never mutates the user's saved expanded/collapsed preference — that is restored as soon as they leave your route.
 
 #### `sidebarPanel`
 
@@ -252,7 +252,7 @@ Replaces the auto-generated JSON Schema settings form with a custom React compon
 
 #### `dashboardWidget`
 
-A card or section rendered on the main dashboard. Use this for at-a-glance metrics, status indicators, or summary views that surface plugin data alongside core PaperClaw information. Receives `PluginWidgetProps` with `context.companyId` set to the active company. Requires the `ui.dashboardWidget.register` capability.
+A card or section rendered on the main dashboard. Use this for at-a-glance metrics, status indicators, or summary views that surface plugin data alongside core Paperclip information. Receives `PluginWidgetProps` with `context.companyId` set to the active company. Requires the `ui.dashboardWidget.register` capability.
 
 #### `detailTab`
 
@@ -323,12 +323,18 @@ Declare in `manifest.capabilities`. Grouped by scope:
 | | `activity.read` |
 | | `costs.read` |
 | | `issues.orchestration.read` |
+| | `access.members.read` |
+| | `access.invites.read` |
+| | `authorization.grants.read` |
+| | `authorization.policies.read` |
+| | `authorization.audit.read` |
 | | `database.namespace.read` |
 | | `issues.create` |
 | | `issues.update` |
 | | `issues.checkout` |
 | | `issues.wakeup` |
 | | `issue.comments.create` |
+| | `issue.comments.create_human_attributed` |
 | | `issue.documents.write` |
 | | `issue.relations.write` |
 | | `activity.log.write` |
@@ -336,6 +342,10 @@ Declare in `manifest.capabilities`. Grouped by scope:
 | | `telemetry.track` |
 | | `database.namespace.migrate` |
 | | `database.namespace.write` |
+| | `external.objects.detect` |
+| | `external.objects.read` |
+| | `external.objects.write` |
+| | `external.objects.refresh` |
 | **Instance** | `instance.settings.register` |
 | | `plugin.state.read` |
 | | `plugin.state.write` |
@@ -346,11 +356,14 @@ Declare in `manifest.capabilities`. Grouped by scope:
 | | `api.routes.register` |
 | | `http.outbound` |
 | | `secrets.read-ref` |
-| | `secrets.write-ref` |
 | | `environment.drivers.register` |
 | | `local.folders` |
 | **Agent** | `agent.tools.register` |
 | | `agents.invoke` |
+| | `access.members.write` |
+| | `access.invites.write` |
+| | `authorization.grants.write` |
+| | `authorization.policies.write` |
 | | `agent.sessions.create` |
 | | `agent.sessions.list` |
 | | `agent.sessions.send` |
@@ -362,7 +375,43 @@ Declare in `manifest.capabilities`. Grouped by scope:
 | | `ui.commentAnnotation.register` |
 | | `ui.action.register` |
 
-Full list in code: import `PLUGIN_CAPABILITIES` from `@kesarcloud/plugin-sdk`.
+Full list in code: import `PLUGIN_CAPABILITIES` from `@paperclipai/plugin-sdk`.
+
+### External Object Reference Providers
+
+Trusted connector plugins can declare generic external object providers in the
+manifest. The host owns URL scanning, sanitized canonical URLs, core storage,
+normalized status rendering, and issue/comment/document write durability. The
+plugin only identifies provider-owned objects and resolves board-safe status
+metadata.
+
+```ts
+objectReferences: [
+  {
+    providerKey: "mocktracker",
+    displayName: "Mock Tracker",
+    objectTypes: ["ticket"],
+    urlPatterns: ["https://mock.example/tickets/:id"],
+    refreshPolicy: { defaultTtlSeconds: 300, staleAfterSeconds: 1800 },
+  },
+],
+capabilities: ["external.objects.detect", "external.objects.read"],
+```
+
+Implement `onDetectExternalObjects()` to map sanitized URL candidates to
+`providerKey`, `objectType`, provider-stable `externalId`, and optional display
+metadata such as `displayKey`/`iconKey`. Implement `onResolveExternalObject()`
+to return a normalized snapshot with `statusCategory`, `statusTone`,
+`statusLabel`, optional `statusIconKey`, board-safe `data`, and freshness
+metadata. Slow or failing plugins are isolated: Paperclip logs the failure and
+continues saving the source issue, comment, or document.
+
+MVP security posture: provider plugins are trusted installs. Manifest
+capabilities gate host APIs and provider invocation paths, but they are not a
+sandbox boundary for untrusted marketplace code. Plugin UI is same-origin
+JavaScript and must not be mounted inline in markdown; inline external-object
+rendering uses host-owned metadata only. Treat untrusted providers as future work
+that requires worker sandboxing plus isolated plugin UI.
 
 ### Restricted Database Namespace
 
@@ -455,7 +504,7 @@ const child = await ctx.issues.create({
   status: "todo",
   assigneeAgentId: workerAgentId,
   billingCode: "mission:alpha",
-  originKind: "plugin:paperclaw.missions:feature",
+  originKind: "plugin:paperclip.missions:feature",
   originId: "mission-alpha:feature-1",
   blockedByIssueIds: [planningIssueId],
 });
@@ -521,6 +570,26 @@ const summary = await ctx.issues.summaries.getOrchestration({
 });
 ```
 
+By default, `ctx.issues.createComment` attributes the comment to the calling
+plugin's own agent (`authorAgentId`). A plugin that relays a message a human
+actually sent — a chat gateway bridging Slack/Telegram replies back onto an
+issue, for example — can instead attribute the comment to that person by
+passing `actorUserId`:
+
+```ts
+await ctx.issues.createComment(issueId, replyText, companyId, {
+  actorUserId: verifiedSlackUser.paperclipUserId,
+});
+```
+
+This requires the `issue.comments.create_human_attributed` capability in
+addition to `issue.comments.create`. The host independently verifies that
+`actorUserId` is an active human member of the issue's company before
+applying the comment — a plugin cannot forge attribution to an arbitrary or
+inactive user id. When the issue has a non-terminal status and an assigned
+agent, a human-attributed comment also wakes that assignee, the same way a
+board user's comment does in the web app.
+
 Required capabilities:
 
 | API | Capability |
@@ -529,6 +598,8 @@ Required capabilities:
 | `ctx.issues.relations.setBlockedBy` / `addBlockers` / `removeBlockers` | `issue.relations.write` |
 | `ctx.issues.getSubtree` | `issue.subtree.read` |
 | `ctx.issues.assertCheckoutOwner` | `issues.checkout` |
+| `ctx.issues.createComment` | `issue.comments.create` |
+| `ctx.issues.createComment` with `actorUserId` | `issue.comments.create` + `issue.comments.create_human_attributed` |
 | `ctx.issues.requestWakeup` / `requestWakeups` | `issues.wakeup` |
 | `ctx.issues.summaries.getOrchestration` | `issues.orchestration.read` |
 
@@ -537,7 +608,7 @@ Plugin-originated mutations are logged with `actorType: "plugin"` and details fi
 ## UI quick start
 
 ```tsx
-import { usePluginData, usePluginAction } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginData, usePluginAction } from "@paperclipai/plugin-sdk/ui";
 
 export function DashboardWidget() {
   const { data } = usePluginData<{ status: string }>("health");
@@ -559,7 +630,7 @@ export function DashboardWidget() {
 Fetches data from the worker's registered `getData` handler. Re-fetches when `params` changes. Returns `{ data, loading, error, refresh }`.
 
 ```tsx
-import { usePluginData } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginData } from "@paperclipai/plugin-sdk/ui";
 
 interface SyncStatus {
   lastSyncAt: string;
@@ -592,7 +663,7 @@ Returns an async function that calls the worker's `performAction` handler. Throw
 
 ```tsx
 import { useState } from "react";
-import { usePluginAction, type PluginBridgeError } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginAction, type PluginBridgeError } from "@paperclipai/plugin-sdk/ui";
 
 export function ResyncButton({ context }: PluginWidgetProps) {
   const resync = usePluginAction("resync");
@@ -627,8 +698,8 @@ export function ResyncButton({ context }: PluginWidgetProps) {
 Reads the active company, project, entity, and user context. Use this to scope data fetches and actions.
 
 ```tsx
-import { useHostContext, usePluginData } from "@kesarcloud/plugin-sdk/ui";
-import type { PluginDetailTabProps } from "@kesarcloud/plugin-sdk/ui";
+import { useHostContext, usePluginData } from "@paperclipai/plugin-sdk/ui";
+import type { PluginDetailTabProps } from "@paperclipai/plugin-sdk/ui";
 
 export function IssueLinearLink({ context }: PluginDetailTabProps) {
   const { companyId, entityId, entityType } = context;
@@ -644,10 +715,10 @@ export function IssueLinearLink({ context }: PluginDetailTabProps) {
 
 #### `useHostNavigation()`
 
-Routes PaperClaw-internal plugin links through the host router without a full document reload. Use `linkProps()` for anchors so the browser still gets a real `href` for copy-link, modifier-click, middle-click, and open-in-new-tab behavior.
+Routes Paperclip-internal plugin links through the host router without a full document reload. Use `linkProps()` for anchors so the browser still gets a real `href` for copy-link, modifier-click, middle-click, and open-in-new-tab behavior.
 
 ```tsx
-import { useHostNavigation } from "@kesarcloud/plugin-sdk/ui";
+import { useHostNavigation } from "@paperclipai/plugin-sdk/ui";
 
 export function WikiSidebarLink() {
   const hostNavigation = useHostNavigation();
@@ -657,14 +728,14 @@ export function WikiSidebarLink() {
 
 `linkProps("/wiki")` resolves against the active company prefix, so in company `PAP` it renders `href="/PAP/wiki"`. Already-prefixed paths such as `/PAP/wiki` are not prefixed again. For button-style commands, call `hostNavigation.navigate("/issues/PAP-123")`.
 
-Avoid raw same-origin `href`s or `window.location.assign()` for PaperClaw-internal navigation from plugin UI. Those bypass the host router and can reload the whole app. External links should keep normal anchors with `target="_blank"` and `rel="noopener noreferrer"` as appropriate.
+Avoid raw same-origin `href`s or `window.location.assign()` for Paperclip-internal navigation from plugin UI. Those bypass the host router and can reload the whole app. External links should keep normal anchors with `target="_blank"` and `rel="noopener noreferrer"` as appropriate.
 
 #### `usePluginStream<T>(channel, options?)`
 
 Subscribes to a real-time event stream pushed from the plugin worker via SSE. The worker pushes events using `ctx.streams.emit(channel, event)` and the hook receives them as they arrive. Returns `{ events, lastEvent, connecting, connected, error, close }`.
 
 ```tsx
-import { usePluginStream } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginStream } from "@paperclipai/plugin-sdk/ui";
 
 interface ChatToken {
   text: string;
@@ -689,12 +760,22 @@ The SSE connection targets `GET /api/plugins/:pluginId/bridge/stream/:channel?co
 
 ### UI authoring note
 
-The host provides selected shared UI components through `@kesarcloud/plugin-sdk/ui`.
+The host provides selected shared UI components through `@paperclipai/plugin-sdk/ui`.
 Plugins can also use normal React components, their own CSS, or small design
 primitives inside the plugin package.
 
+Use `copyTextToClipboard` for every plugin copy action. The host selects the
+modern Clipboard API in secure contexts and a compatible fallback in plain-HTTP
+deployments.
+
+```tsx
+import { copyTextToClipboard } from "@paperclipai/plugin-sdk/ui";
+
+await copyTextToClipboard("text to copy");
+```
+
 Use the shared components when the plugin needs to look and behave like a native
-PaperClaw surface:
+Paperclip surface:
 
 | Component | Use when |
 |---|---|
@@ -709,10 +790,10 @@ PaperClaw surface:
 #### Shared Markdown Components
 
 Plugin UI can render markdown and edit markdown using the same host components
-used by PaperClaw issue comments and documents:
+used by Paperclip issue comments and documents:
 
 ```tsx
-import { MarkdownBlock, MarkdownEditor } from "@kesarcloud/plugin-sdk/ui";
+import { MarkdownBlock, MarkdownEditor } from "@paperclipai/plugin-sdk/ui";
 
 export function WikiPageEditor() {
   const [body, setBody] = useState("# Wiki page");
@@ -731,7 +812,7 @@ target URL shape:
 
 ```tsx
 <MarkdownBlock
-  content={"See [[wiki/entities/paperclaw|PaperClaw]]."}
+  content={"See [[wiki/entities/paperclip|Paperclip]]."}
   enableWikiLinks
   wikiLinkRoot="/wiki/page"
 />
@@ -742,7 +823,7 @@ target URL shape:
 Plugin UI can render the host file tree without importing host internals:
 
 ```tsx
-import { FileTree, type FileTreeNode } from "@kesarcloud/plugin-sdk/ui";
+import { FileTree, type FileTreeNode } from "@paperclipai/plugin-sdk/ui";
 
 const nodes: FileTreeNode[] = [
   { name: "AGENTS.md", path: "AGENTS.md", kind: "file", children: [] },
@@ -772,11 +853,11 @@ export function WikiFiles() {
 #### Shared Assignee and Project Pickers
 
 Use `AssigneePicker` and `ProjectPicker` when a plugin needs to create, filter,
-or configure work against PaperClaw entities. Both are controlled components and
+or configure work against Paperclip entities. Both are controlled components and
 load their options from the host for the provided company.
 
 ```tsx
-import { AssigneePicker, ProjectPicker } from "@kesarcloud/plugin-sdk/ui";
+import { AssigneePicker, ProjectPicker } from "@paperclipai/plugin-sdk/ui";
 
 export function AssignmentControls({ companyId }: { companyId: string }) {
   const [assignee, setAssignee] = useState("");
@@ -804,7 +885,7 @@ export function AssignmentControls({ companyId }: { companyId: string }) {
 
 ### Slot component props
 
-Each slot type receives a typed props object with `context: PluginHostContext`. Import from `@kesarcloud/plugin-sdk/ui`.
+Each slot type receives a typed props object with `context: PluginHostContext`. Import from `@paperclipai/plugin-sdk/ui`.
 
 | Slot type | Props interface | `context` extras |
 |-----------|----------------|------------------|
@@ -823,8 +904,8 @@ Each slot type receives a typed props object with `context: PluginHostContext`. 
 Example detail tab with entity context:
 
 ```tsx
-import type { PluginDetailTabProps } from "@kesarcloud/plugin-sdk/ui";
-import { usePluginData } from "@kesarcloud/plugin-sdk/ui";
+import type { PluginDetailTabProps } from "@paperclipai/plugin-sdk/ui";
+import { usePluginData } from "@paperclipai/plugin-sdk/ui";
 
 export function AgentMetricsTab({ context }: PluginDetailTabProps) {
   const { data, loading } = usePluginData<Record<string, string>>("agent-metrics", {
@@ -916,7 +997,7 @@ Minimal React component that links to the project’s plugin tab (see project de
 import {
   useHostNavigation,
   type PluginProjectSidebarItemProps,
-} from "@kesarcloud/plugin-sdk/ui";
+} from "@paperclipai/plugin-sdk/ui";
 
 export function FilesLink({ context }: PluginProjectSidebarItemProps) {
   const hostNavigation = useHostNavigation();
@@ -965,7 +1046,7 @@ import { useState } from "react";
 import {
   useHostContext,
   usePluginAction,
-} from "@kesarcloud/plugin-sdk/ui";
+} from "@paperclipai/plugin-sdk/ui";
 
 export function SyncToolbarButton() {
   const context = useHostContext();
@@ -1122,7 +1203,7 @@ ctx.actions.register("ask-agent", async (params) => {
 
 ```tsx
 import { useState } from "react";
-import { usePluginAction, usePluginStream } from "@kesarcloud/plugin-sdk/ui";
+import { usePluginAction, usePluginStream } from "@paperclipai/plugin-sdk/ui";
 
 interface AgentEvent {
   type: "chunk" | "done" | "error";
@@ -1181,7 +1262,7 @@ Exported types: `AgentSession`, `AgentSessionEvent`, `AgentSessionSendResult`, `
 ## Testing utilities
 
 ```ts
-import { createTestHarness } from "@kesarcloud/plugin-sdk/testing";
+import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
 import plugin from "../src/worker.js";
 import manifest from "../src/manifest.js";
 
@@ -1193,7 +1274,7 @@ await harness.emit("issue.created", { issueId: "iss_1" }, { entityId: "iss_1", e
 ## Bundler presets
 
 ```ts
-import { createPluginBundlerPresets } from "@kesarcloud/plugin-sdk/bundlers";
+import { createPluginBundlerPresets } from "@paperclipai/plugin-sdk/bundlers";
 
 const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 // presets.esbuild.worker / presets.esbuild.manifest / presets.esbuild.ui
@@ -1203,16 +1284,16 @@ const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 ## Local dev server (hot-reload events)
 
 ```bash
-paperclaw-plugin-dev-server --root . --ui-dir dist/ui --port 4177
+paperclip-plugin-dev-server --root . --ui-dir dist/ui --port 4177
 ```
 
 Or programmatically:
 
 ```ts
-import { startPluginDevServer } from "@kesarcloud/plugin-sdk/dev-server";
+import { startPluginDevServer } from "@paperclipai/plugin-sdk/dev-server";
 const server = await startPluginDevServer({ rootDir: process.cwd() });
 ```
 
 Dev server endpoints:
-- `GET /__paperclaw__/health` returns `{ ok, rootDir, uiDir }`
-- `GET /__paperclaw__/events` streams `reload` SSE events on UI build changes
+- `GET /__paperclip__/health` returns `{ ok, rootDir, uiDir }`
+- `GET /__paperclip__/events` streams `reload` SSE events on UI build changes

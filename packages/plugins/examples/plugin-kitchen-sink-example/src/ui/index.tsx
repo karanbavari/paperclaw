@@ -10,13 +10,14 @@ import {
   usePluginToast,
   type PluginCommentAnnotationProps,
   type PluginCommentContextMenuItemProps,
+  type PluginCompanySettingsPageProps,
   type PluginDetailTabProps,
   type PluginPageProps,
   type PluginProjectSidebarItemProps,
   type PluginSettingsPageProps,
   type PluginSidebarProps,
   type PluginWidgetProps,
-} from "@kesarcloud/plugin-sdk/ui";
+} from "@paperclipai/plugin-sdk/ui";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,
@@ -421,7 +422,7 @@ function hostFetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   });
 }
 
-function useSettingsConfig() {
+function useSettingsConfig(companyId: string | null) {
   const [configJson, setConfigJson] = useState<Record<string, unknown>>({ ...DEFAULT_CONFIG });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -429,8 +430,15 @@ function useSettingsConfig() {
 
   useEffect(() => {
     let cancelled = false;
+    if (!companyId) {
+      setLoading(false);
+      setError("Select a company before loading plugin config.");
+      return () => {
+        cancelled = true;
+      };
+    }
     setLoading(true);
-    hostFetchJson<{ configJson?: Record<string, unknown> | null } | null>(`/api/plugins/${PLUGIN_ID}/config`)
+    hostFetchJson<{ configJson?: Record<string, unknown> | null } | null>(`/api/plugins/${PLUGIN_ID}/config?companyId=${encodeURIComponent(companyId)}`)
       .then((result) => {
         if (cancelled) return;
         setConfigJson({ ...DEFAULT_CONFIG, ...(result?.configJson ?? {}) });
@@ -446,14 +454,15 @@ function useSettingsConfig() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [companyId]);
 
   async function save(nextConfig: Record<string, unknown>) {
+    if (!companyId) throw new Error("Select a company before saving plugin config.");
     setSaving(true);
     try {
       await hostFetchJson(`/api/plugins/${PLUGIN_ID}/config`, {
         method: "POST",
-        body: JSON.stringify({ configJson: nextConfig }),
+        body: JSON.stringify({ companyId, configJson: nextConfig }),
       });
       setConfigJson(nextConfig);
       setError(null);
@@ -855,7 +864,7 @@ function KitchenSinkIssueCrudDemo({ context }: { context: PluginPageProps["conte
   return (
     <Section title="Issue CRUD">
       <div style={mutedTextStyle}>
-        This is a regular embedded React page inside PaperClaw calling the board API directly. It creates, updates, and deletes issues for the current company.
+        This is a regular embedded React page inside Paperclip calling the board API directly. It creates, updates, and deletes issues for the current company.
       </div>
       {!context.companyId ? (
         <div style={mutedTextStyle}>Select a company to use issue demos.</div>
@@ -1099,9 +1108,9 @@ function KitchenSinkTopRow({ context }: { context: PluginPageProps["context"] })
             {hostNavigation.resolveHref(`/${PAGE_ROUTE}`)}
           </a>
         </Section>
-        <Section title="PaperClaw Animation">
+        <Section title="Paperclip Animation">
           <div style={mutedTextStyle}>
-            This is the same PaperClaw ASCII treatment used in onboarding, copied into the example plugin so the package stays self-contained.
+            This is the same Paperclip ASCII treatment used in onboarding, copied into the example plugin so the package stays self-contained.
           </div>
           <AsciiArtAnimation />
         </Section>
@@ -1221,7 +1230,7 @@ function KitchenSinkHostIntegrationDemo({ context }: { context: PluginPageProps[
   return (
     <Section title="Host Integrations">
       <div style={mutedTextStyle}>
-        Plugin pages can feel like native PaperClaw pages. This section demonstrates host toasts, company-scoped routing, and reading live heartbeat data from the embedded page.
+        Plugin pages can feel like native Paperclip pages. This section demonstrates host toasts, company-scoped routing, and reading live heartbeat data from the embedded page.
       </div>
       <div style={subtleCardStyle}>
         <div style={rowStyle}>
@@ -1303,7 +1312,7 @@ function KitchenSinkSharedPickerDemo({ context }: { context: PluginPageProps["co
   return (
     <Section title="Shared Host Pickers">
       <div style={mutedTextStyle}>
-        These controls are imported from `@kesarcloud/plugin-sdk/ui` and reuse the host's assignee and project pickers from the new issue pane.
+        These controls are imported from `@paperclipai/plugin-sdk/ui` and reuse the host's assignee and project pickers from the new issue pane.
       </div>
       {!context.companyId ? (
         <div style={mutedTextStyle}>Select a company to load picker options.</div>
@@ -1590,7 +1599,7 @@ function KitchenSinkConsole({ context }: { context: { companyId: string | null; 
         <JsonBlock value={overview.data?.runtimeLaunchers ?? []} />
       </Section>
 
-      <Section title="PaperClaw Domain APIs">
+      <Section title="Paperclip Domain APIs">
         <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
           <PaginatedDomainCard
             title="Companies"
@@ -2102,7 +2111,7 @@ export function KitchenSinkPage({ context }: PluginPageProps) {
 }
 
 export function KitchenSinkSettingsPage({ context }: PluginSettingsPageProps) {
-  const { configJson, setConfigJson, loading, saving, error, save } = useSettingsConfig();
+  const { configJson, setConfigJson, loading, saving, error, save } = useSettingsConfig(context.companyId);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   function setField(key: string, value: unknown) {
@@ -2126,7 +2135,7 @@ export function KitchenSinkSettingsPage({ context }: PluginSettingsPageProps) {
         <div style={{ display: "grid", gap: "8px" }}>
           <strong>About</strong>
           <div style={{ fontSize: "13px", lineHeight: 1.5 }}>
-            Kitchen Sink demonstrates the current PaperClaw plugin API surface in one local, trusted example. It intentionally includes domain mutations, event handling, streams, tools, jobs, webhooks, and local workspace/process demos.
+            Kitchen Sink demonstrates the current Paperclip plugin API surface in one local, trusted example. It intentionally includes domain mutations, event handling, streams, tools, jobs, webhooks, and local workspace/process demos.
           </div>
           <div style={{ fontSize: "12px", opacity: 0.7 }}>
             Current company context: {context.companyId ?? "none"}
@@ -2233,6 +2242,33 @@ export function KitchenSinkSettingsPage({ context }: PluginSettingsPageProps) {
         {savedMessage ? <span style={{ fontSize: "12px", opacity: 0.7 }}>{savedMessage}</span> : null}
       </div>
     </form>
+  );
+}
+
+export function KitchenSinkCompanySettingsPage({ context }: PluginCompanySettingsPageProps) {
+  const hostNavigation = useHostNavigation();
+  const overview = usePluginOverview(context.companyId);
+  const href = hostNavigation.resolveHref("/company/settings/kitchen-sink");
+
+  return (
+    <div style={layoutStack}>
+      <Section title="Company Settings Slot">
+        <div style={subtleCardStyle}>
+          <div style={{ display: "grid", gap: "8px" }}>
+            <strong>Mounted inside company settings</strong>
+            <div style={mutedTextStyle}>
+              This fixture proves a ready plugin can add a settings sidebar item and render with company context.
+            </div>
+            <JsonBlock value={{
+              companyId: context.companyId,
+              companyPrefix: context.companyPrefix,
+              route: href,
+              pluginId: overview.data?.pluginId ?? PLUGIN_ID,
+            }} />
+          </div>
+        </div>
+      </Section>
+    </div>
   );
 }
 

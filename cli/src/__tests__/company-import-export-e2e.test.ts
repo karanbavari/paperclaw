@@ -85,7 +85,7 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
         baseDir: path.join(tempRoot, "storage"),
       },
       s3: {
-        bucket: "paperclaw",
+        bucket: "paperclip",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -104,26 +104,26 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
-interface TestPaperClawEnv {
+interface TestPaperclipEnv {
   configPath: string;
-  paperclawHome: string;
+  paperclipHome: string;
   instanceId: string;
   shellHome?: string;
 }
 
-function createBasePaperClawEnv(options: TestPaperClawEnv) {
+function createBasePaperclipEnv(options: TestPaperclipEnv) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLAW_")) {
+    if (key.startsWith("PAPERCLIP_")) {
       delete env[key];
     }
   }
 
-  env.PAPERCLAW_CONFIG = options.configPath;
-  env.PAPERCLAW_HOME = options.paperclawHome;
-  env.PAPERCLAW_INSTANCE_ID = options.instanceId;
-  env.PAPERCLAW_CONTEXT = path.join(options.paperclawHome, "context.json");
-  env.PAPERCLAW_AUTH_STORE = path.join(options.paperclawHome, "auth.json");
+  env.PAPERCLIP_CONFIG = options.configPath;
+  env.PAPERCLIP_HOME = options.paperclipHome;
+  env.PAPERCLIP_INSTANCE_ID = options.instanceId;
+  env.PAPERCLIP_CONTEXT = path.join(options.paperclipHome, "context.json");
+  env.PAPERCLIP_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
   if (options.shellHome) {
     env.HOME = options.shellHome;
   }
@@ -135,9 +135,9 @@ function createServerEnv(
   configPath: string,
   port: number,
   connectionString: string,
-  options: Omit<TestPaperClawEnv, "configPath">,
+  options: Omit<TestPaperclipEnv, "configPath">,
 ) {
-  const env = createBasePaperClawEnv({
+  const env = createBasePaperclipEnv({
     configPath,
     ...options,
   });
@@ -152,24 +152,25 @@ function createServerEnv(
   env.HOST = "127.0.0.1";
   env.PORT = String(port);
   env.SERVE_UI = "false";
-  env.PAPERCLAW_DB_BACKUP_ENABLED = "false";
+  env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
+  env.PAPERCLIP_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
   env.HEARTBEAT_SCHEDULER_ENABLED = "false";
-  env.PAPERCLAW_MIGRATION_AUTO_APPLY = "true";
-  env.PAPERCLAW_UI_DEV_MIDDLEWARE = "false";
+  env.PAPERCLIP_MIGRATION_AUTO_APPLY = "true";
+  env.PAPERCLIP_UI_DEV_MIDDLEWARE = "false";
 
   return env;
 }
 
-function createCliEnv(options: TestPaperClawEnv) {
-  const env = createBasePaperClawEnv(options);
+function createCliEnv(options: TestPaperclipEnv) {
+  const env = createBasePaperclipEnv(options);
   delete env.DATABASE_URL;
   delete env.PORT;
   delete env.HOST;
   delete env.SERVE_UI;
-  delete env.PAPERCLAW_DB_BACKUP_ENABLED;
+  delete env.PAPERCLIP_DB_BACKUP_ENABLED;
   delete env.HEARTBEAT_SCHEDULER_ENABLED;
-  delete env.PAPERCLAW_MIGRATION_AUTO_APPLY;
-  delete env.PAPERCLAW_UI_DEV_MIDDLEWARE;
+  delete env.PAPERCLIP_MIGRATION_AUTO_APPLY;
+  delete env.PAPERCLIP_UI_DEV_MIDDLEWARE;
   return env;
 }
 
@@ -208,12 +209,17 @@ async function api<T>(baseUrl: string, pathname: string, init?: RequestInit): Pr
   return text ? JSON.parse(text) as T : (null as T);
 }
 
+function isPortableAgent(agent: { metadata?: Record<string, unknown> | null }) {
+  const marker = agent.metadata?.paperclipBuiltInAgent;
+  return typeof marker !== "object" || marker === null;
+}
+
 async function runCliJson<T>(
   args: string[],
-  opts: TestPaperClawEnv & { apiBase?: string; includeConfigArg?: boolean },
+  opts: TestPaperclipEnv & { apiBase?: string; includeConfigArg?: boolean },
 ) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const cliArgs = ["--silent", "paperclaw", ...args];
+  const cliArgs = ["--silent", "paperclipai", ...args];
   if (opts.apiBase) {
     cliArgs.push("--api-base", opts.apiBase);
   }
@@ -247,7 +253,7 @@ async function waitForServer(
   while (Date.now() - startedAt < 30_000) {
     if (child.exitCode !== null) {
       throw new Error(
-        `paperclaw run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
+        `paperclipai run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
       );
     }
 
@@ -266,28 +272,28 @@ async function waitForServer(
   );
 }
 
-describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
+describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
   let tempRoot = "";
   let configPath = "";
   let exportDir = "";
   let apiBase = "";
-  let paperclawHome = "";
+  let paperclipHome = "";
   let cliShellHome = "";
-  let paperclawInstanceId = "";
+  let paperclipInstanceId = "";
   let serverProcess: ServerProcess | null = null;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempRoot = mkdtempSync(path.join(os.tmpdir(), "paperclaw-company-cli-e2e-"));
+    tempRoot = mkdtempSync(path.join(os.tmpdir(), "paperclip-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
-    paperclawHome = path.join(tempRoot, "paperclaw-home");
+    paperclipHome = path.join(tempRoot, "paperclip-home");
     cliShellHome = path.join(tempRoot, "shell-home");
-    paperclawInstanceId = "company-cli-e2e";
-    mkdirSync(paperclawHome, { recursive: true });
+    paperclipInstanceId = "company-cli-e2e";
+    mkdirSync(paperclipHome, { recursive: true });
     mkdirSync(cliShellHome, { recursive: true });
 
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-company-cli-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-cli-db-");
 
     const port = await getAvailablePort();
     writeTestConfig(configPath, tempRoot, port, tempDb.connectionString);
@@ -297,12 +303,12 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
     const output = { stdout: [] as string[], stderr: [] as string[] };
     const child = spawn(
       "pnpm",
-      ["paperclaw", "run", "--config", configPath],
+      ["paperclipai", "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {
-          paperclawHome,
-          instanceId: paperclawInstanceId,
+          paperclipHome,
+          instanceId: paperclipInstanceId,
           shellHome: cliShellHome,
         }),
         stdio: ["ignore", "pipe", "pipe"],
@@ -338,15 +344,15 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       ["context", "set", "--profile", "isolation-check", "--api-base", "https://example.test"],
       {
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
         includeConfigArg: false,
       },
     );
 
-    const expectedContextPath = path.join(paperclawHome, "context.json");
-    const leakedContextPath = path.join(cliShellHome, ".paperclaw", "context.json");
+    const expectedContextPath = path.join(paperclipHome, "context.json");
+    const leakedContextPath = path.join(cliShellHome, ".paperclip", "context.json");
     expect(cliContext.contextPath).toBe(expectedContextPath);
     expect(cliContext.profileName).toBe("isolation-check");
     expect(cliContext.profile.apiBase).toBe("https://example.test");
@@ -434,8 +440,8 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -443,7 +449,7 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
     expect(exportResult.ok).toBe(true);
     expect(exportResult.filesWritten).toBeGreaterThan(0);
     expect(readFileSync(path.join(exportDir, "COMPANY.md"), "utf8")).toContain(sourceCompany.name);
-    expect(readFileSync(path.join(exportDir, ".paperclaw.yaml"), "utf8")).toContain('schema: "paperclaw/v1"');
+    expect(readFileSync(path.join(exportDir, ".paperclip.yaml"), "utf8")).toContain('schema: "paperclip/v1"');
 
     const importedNew = await runCliJson<{
       company: { id: string; name: string; action: string };
@@ -464,8 +470,8 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -518,8 +524,8 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -551,8 +557,8 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -560,7 +566,7 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
     expect(importedExisting.company.action).toBe("unchanged");
     expect(importedExisting.agents.some((agent) => agent.action === "created")).toBe(true);
 
-    const twiceImportedAgents = await api<Array<{ id: string; name: string }>>(
+    const twiceImportedAgents = await api<Array<{ id: string; name: string; metadata?: Record<string, unknown> | null }>>(
       apiBase,
       `/api/companies/${importedNew.company.id}/agents`,
     );
@@ -573,9 +579,10 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       `/api/companies/${importedNew.company.id}/issues`,
     );
     const twiceImportedMatchingIssues = twiceImportedIssues.filter((issue) => issue.title === sourceIssue.title);
+    const twiceImportedPortableAgents = twiceImportedAgents.filter(isPortableAgent);
 
-    expect(twiceImportedAgents).toHaveLength(2);
-    expect(new Set(twiceImportedAgents.map((agent) => agent.name)).size).toBe(2);
+    expect(twiceImportedPortableAgents).toHaveLength(2);
+    expect(new Set(twiceImportedPortableAgents.map((agent) => agent.name)).size).toBe(2);
     expect(twiceImportedProjects).toHaveLength(2);
     expect(twiceImportedMatchingIssues).toHaveLength(2);
     expect(new Set(twiceImportedMatchingIssues.map((issue) => issue.identifier)).size).toBe(2);
@@ -583,7 +590,7 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
     const zipPath = path.join(tempRoot, "exported-company.zip");
     const portableFiles: Record<string, string> = {};
     collectTextFiles(exportDir, exportDir, portableFiles);
-    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "paperclaw-demo"));
+    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "paperclip-demo"));
 
     const importedFromZip = await runCliJson<{
       company: { id: string; name: string; action: string };
@@ -604,8 +611,8 @@ describeEmbeddedPostgres("paperclaw company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclawHome,
-        instanceId: paperclawInstanceId,
+        paperclipHome,
+        instanceId: paperclipInstanceId,
         shellHome: cliShellHome,
       },
     );

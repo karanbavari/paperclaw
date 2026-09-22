@@ -10,6 +10,7 @@ import {
   preparePluginLocalFolder,
   readPluginLocalFolderText,
   resolvePluginLocalFolderPath,
+  deletePluginLocalFolderFile,
   writePluginLocalFolderTextAtomic,
 } from "../services/plugin-local-folders.js";
 
@@ -22,7 +23,7 @@ describe("plugin local folders", () => {
   });
 
   async function makeRoot() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclaw-plugin-folder-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-folder-"));
     tempRoots.push(root);
     return root;
   }
@@ -215,7 +216,25 @@ describe("plugin local folders", () => {
 
     await expect(readPluginLocalFolderText(root, "nested/page.md")).resolves.toBe("updated");
     const leftovers = await fs.readdir(path.join(root, "nested"));
-    expect(leftovers.filter((name) => name.includes(".paperclaw-"))).toEqual([]);
+    expect(leftovers.filter((name) => name.includes(".paperclip-"))).toEqual([]);
+  });
+
+  it("creates missing nested parent directories for atomic writes", async () => {
+    const root = await makeRoot();
+
+    await writePluginLocalFolderTextAtomic(root, "cases/active/smoke/README.md", "hello");
+
+    await expect(readPluginLocalFolderText(root, "cases/active/smoke/README.md")).resolves.toBe("hello");
+  });
+
+  it("returns the real folder key after deleting a file", async () => {
+    const root = await makeRoot();
+    await fs.writeFile(path.join(root, "stale.md"), "delete me", "utf8");
+
+    const status = await deletePluginLocalFolderFile(root, "stale.md", "content-root");
+
+    expect(status.folderKey).toBe("content-root");
+    await expect(fs.stat(path.join(root, "stale.md"))).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("lists nested local folder entries without following symlink escapes", async () => {

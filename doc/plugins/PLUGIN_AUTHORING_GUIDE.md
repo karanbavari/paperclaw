@@ -1,42 +1,62 @@
 # Plugin Authoring Guide
 
-This guide describes the current, implemented way to create a PaperClaw plugin in this repo.
+This guide describes the current, implemented way to create a Paperclip plugin in this repo.
 
 It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec includes future ideas; this guide only covers the alpha surface that exists now.
+
+> **New to plugins?** Start with the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) — it walks the CLI happy path (`plugin init` → `pnpm dev` → `plugin install <path>`) end to end. Come back here for the full manifest surface, worker capabilities, and UI components.
 
 ## Current reality
 
 - Treat plugin workers and plugin UI as trusted code.
-- Plugin UI runs as same-origin JavaScript inside the main PaperClaw app.
+- Plugin UI runs as same-origin JavaScript inside the main Paperclip app.
 - Worker-side host APIs are capability-gated.
 - Plugin UI is not sandboxed by manifest capabilities.
+- External object reference providers are trusted-install only in the MVP.
+  Capabilities gate provider detection/resolution and host API calls, but they
+  are not a sandbox boundary for untrusted marketplace code.
 - Plugin database migrations are restricted to a host-derived plugin namespace.
+- Plugin-managed surfaces are first-class records (agents, projects, routines, and
+  skills) rather than private plugin-only state.
 - Plugin-owned JSON API routes must be declared in the manifest and are mounted
   only under `/api/plugins/:pluginId/api/*`.
 - The host provides a small shared React component kit through
-  `@kesarcloud/plugin-sdk/ui`; use it for common PaperClaw controls before
+  `@paperclipai/plugin-sdk/ui`; use it for common Paperclip controls before
   building custom versions.
 - `ctx.assets` is not supported in the current runtime.
 
+## External object reference providers
+
+Plugins can contribute provider-neutral object reference detection and status
+resolution for URLs and future explicit links. Declare `objectReferences` in the
+manifest and add at least `external.objects.detect` and `external.objects.read`.
+
+```ts
+objectReferences: [
+  {
+    providerKey: "mocktracker",
+    displayName: "Mock Tracker",
+    objectTypes: ["ticket"],
+    urlPatterns: ["https://mock.example/tickets/:id"],
+  },
+],
+```
+
+Implement `onDetectExternalObjects()` in the worker to recognize sanitized URL
+candidates and return provider-stable identities. Implement
+`onResolveExternalObject()` to return normalized board-safe status metadata.
+Paperclip owns inline markdown rendering; plugins must not return React, HTML,
+or `dangerouslySetInnerHTML` content for inline references.
+
 ## Scaffold a plugin
 
-Use the scaffold package:
+Use the CLI scaffold command:
 
 ```bash
-pnpm --filter @kesarcloud/create-paperclaw-plugin build
-node packages/plugins/create-paperclaw-plugin/dist/index.js @yourscope/plugin-name --output ./packages/plugins/examples
+paperclipai plugin init @yourscope/plugin-name --output /absolute/path/to/plugin-repos
 ```
 
-For a plugin that lives outside the PaperClaw repo:
-
-```bash
-pnpm --filter @kesarcloud/create-paperclaw-plugin build
-node packages/plugins/create-paperclaw-plugin/dist/index.js @yourscope/plugin-name \
-  --output /absolute/path/to/plugin-repos \
-  --sdk-path /absolute/path/to/paperclaw/packages/plugins/sdk
-```
-
-That creates a package with:
+That creates `<output>/plugin-name/` with:
 
 - `src/manifest.ts`
 - `src/worker.ts`
@@ -45,29 +65,21 @@ That creates a package with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@kesarcloud/plugin-sdk`.
+Inside this monorepo, the scaffold uses `workspace:*` for `@paperclipai/plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@kesarcloud/plugin-sdk` from the local PaperClaw checkout into a `.paperclaw-sdk/` tarball so you can build and test a plugin without publishing anything to npm first.
+Outside this monorepo, the scaffold snapshots `@paperclipai/plugin-sdk` from the local Paperclip checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Paperclip checkout.
 
-## Recommended local workflow
+## Local development workflow
 
-From the generated plugin folder:
+See the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) for the full happy path (`pnpm dev` → `paperclipai plugin install <absolute-path>` → `paperclipai plugin list`) and reload semantics.
+
+Minimum verification from the generated plugin folder:
 
 ```bash
 pnpm install
 pnpm typecheck
 pnpm test
 pnpm build
-```
-
-For local development, install it into PaperClaw from an absolute local path through the plugin manager or API. The server supports local filesystem installs and watches local-path plugins for file changes so worker restarts happen automatically after rebuilds.
-
-Example:
-
-```bash
-curl -X POST http://127.0.0.1:3100/api/plugins/install \
-  -H "Content-Type: application/json" \
-  -d '{"packageName":"/absolute/path/to/your-plugin","isLocalPath":true}'
 ```
 
 ## Supported alpha surface
@@ -79,7 +91,7 @@ Worker:
 - jobs
 - launchers
 - http
-- secrets (`resolve` with `secrets.read-ref`; plugin-owned `upsert` with `secrets.write-ref`)
+- secrets
 - activity
 - state
 - database namespace via `ctx.db`
@@ -90,6 +102,7 @@ Worker:
 - issues, comments, namespaced `plugin:<pluginKey>` origins, blocker relations, checkout assertions, assignment wakeups, and orchestration summaries
 - agents, plugin-managed agents, and agent sessions
 - plugin-managed routines
+- plugin-managed skills
 - goals
 - data/actions
 - streams
@@ -146,21 +159,26 @@ handler. The worker receives sanitized headers, route params, query, parsed JSON
 body, actor context, and company id. Do not use plugin routes to claim core
 paths; they always remain under `/api/plugins/:pluginId/api/*`.
 
-## Managed PaperClaw resources
+## Managed Paperclip resources
 
-Plugins that provide durable PaperClaw business objects should declare them in
+Plugins that provide durable Paperclip business objects should declare them in
 the manifest and let the host create or relink the actual records per company.
-Do this for plugin-owned agents, plugin-owned projects, and recurring automation.
+Do this for plugin-owned agents, projects, routines, and skills.
 Do not hide long-lived work behind private plugin state when it should be visible
 to the board, scoped to a company, audited, budgeted, and assigned like normal
-PaperClaw work.
+Paperclip work.
+
+Content-oriented plugins, such as LLM Wiki-style ingestion or durable knowledge
+systems, should use the same pattern: managed projects for operation issues,
+managed agents plus managed skills for LLM work, and managed routines for
+ingest, lint, refresh, or maintenance runs.
 
 Use these surfaces:
 
 - Managed agents: declare top-level `agents[]` and require
   `agents.managed`. Use this when the plugin provides a named worker the board
   should see in the org, budget, pause, invoke, and inspect. Managed agents are
-  normal PaperClaw agents with plugin ownership metadata, not background plugin
+  normal Paperclip agents with plugin ownership metadata, not background plugin
   workers.
 - Managed projects: declare top-level `projects[]` and require
   `projects.managed`. Use this when the plugin needs a stable company-scoped
@@ -168,13 +186,17 @@ Use these surfaces:
   in a project instead of scattering generated issues across unrelated projects.
 - Managed routines: declare top-level `routines[]` and require
   `routines.managed`. Use this for scheduled, webhook, or manually triggered
-  jobs that should create visible PaperClaw issues. Prefer managed routines over
+  jobs that should create visible Paperclip issues. Prefer managed routines over
   plugin `jobs[]` for recurring business work; plugin jobs are for plugin
   runtime maintenance that does not need a board-visible task trail.
+- Managed skills: declare top-level `skills[]` and require `skills.managed`.
+  Use this for reusable plugin capabilities that should be surfaced to operators and
+  synced into Paperclip managed agents.
 
 Managed resources are resolved by stable plugin keys, not hardcoded database
 ids. In a worker action or data handler, call `ctx.agents.managed.reconcile()`,
-`ctx.projects.managed.reconcile()`, and `ctx.routines.managed.reconcile()` for
+`ctx.projects.managed.reconcile()`, `ctx.routines.managed.reconcile()`, and
+`ctx.skills.managed.reconcile()` for
 the current `companyId`. `reconcile()` creates the missing resource, relinks a
 recoverable binding, or returns the existing resource. `reset()` reapplies the
 manifest defaults when the operator wants to restore the plugin's suggested
@@ -187,20 +209,21 @@ routine; if a ref is still missing, the routine resolution reports
 `missing_refs` instead of guessing.
 
 ```ts
-import type { PaperClawPluginManifestV1 } from "@kesarcloud/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 
-const manifest: PaperClawPluginManifestV1 = {
+const manifest: PaperclipPluginManifestV1 = {
   id: "example.research-plugin",
   apiVersion: 1,
   version: "0.1.0",
   displayName: "Research Plugin",
   description: "Creates a managed research agent and scheduled research routine.",
   author: "Example",
-  categories: ["automation", "productivity"],
+  categories: ["automation"],
   capabilities: [
     "agents.managed",
     "projects.managed",
     "routines.managed",
+    "skills.managed",
     "instance.settings.register",
   ],
   entrypoints: {
@@ -216,7 +239,7 @@ const manifest: PaperClawPluginManifestV1 = {
       capabilities: "Runs recurring research briefs for this company.",
       adapterPreference: ["codex_local", "claude_local", "process"],
       instructions: {
-        content: "Follow the PaperClaw heartbeat and produce concise research briefs.",
+        content: "Follow the Paperclip heartbeat and produce concise research briefs.",
       },
     },
   ],
@@ -247,6 +270,13 @@ const manifest: PaperClawPluginManifestV1 = {
       ],
     },
   ],
+  skills: [
+    {
+      skillKey: "weekly-brief-skills",
+      displayName: "Weekly Briefer",
+      description: "Reusable skill for the managed research workflow.",
+    },
+  ],
   ui: {
     slots: [
       {
@@ -266,7 +296,7 @@ In the worker, expose a small setup action or settings-page action that
 reconciles the resources for the selected company:
 
 ```ts
-import { definePlugin } from "@kesarcloud/plugin-sdk";
+import { definePlugin } from "@paperclipai/plugin-sdk";
 
 export default definePlugin({
   setup(ctx) {
@@ -277,8 +307,9 @@ export default definePlugin({
       const project = await ctx.projects.managed.reconcile("research", companyId);
       const agent = await ctx.agents.managed.reconcile("researcher", companyId);
       const routine = await ctx.routines.managed.reconcile("weekly-brief", companyId);
+      const skill = await ctx.skills.managed.reconcile("weekly-brief-skills", companyId);
 
-      return { project, agent, routine };
+      return { project, agent, routine, skill };
     });
   },
 });
@@ -286,19 +317,23 @@ export default definePlugin({
 
 Authoring rules:
 
-- Keep keys stable once published. Renaming `agentKey`, `projectKey`, or
-  `routineKey` creates a new managed resource from the host's point of view.
+- Keep keys stable once published. Renaming `agentKey`, `projectKey`,
+  `routineKey`, or `skillKey` creates a new managed resource from the host's
+  point of view.
 - Use managed agents for plugin-provided labor. Use `ctx.agents.invoke()` or
   `ctx.agents.sessions` only after you have a real agent id, either selected by
   the operator or resolved from `ctx.agents.managed`.
 - Use managed routines for recurring or externally triggered work that should
   produce tasks. Schedule, webhook, and API triggers are visible routine
-  triggers, and each run has the normal PaperClaw issue/audit trail.
+  triggers, and each run has the normal Paperclip issue/audit trail.
+- Use managed skills for reusable operator-visible capabilities that are shared
+  by managed agents. Reconcile skill declarations by `skillKey` and keep the
+  declared skill markdown and files in sync with agent behavior.
 - Use managed projects to keep plugin-generated work organized and to give
   project-scoped plugin UI a stable home. For filesystem access inside a
   project, still resolve project workspaces through `ctx.projects`.
 - Keep defaults conservative. Managed declarations are suggestions owned by the
-  plugin, but the resulting resources are normal PaperClaw records that the
+  plugin, but the resulting resources are normal Paperclip records that the
   operator can inspect, pause, and adjust.
 
 UI:
@@ -308,7 +343,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@kesarcloud/plugin-sdk/ui`
+- typed slot props from `@paperclipai/plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 
@@ -316,6 +351,7 @@ Mount surfaces currently wired in the host include:
 - `settingsPage`
 - `dashboardWidget`
 - `sidebar`
+- `routeSidebar`
 - `sidebarPanel`
 - `detailTab`
 - `taskDetailView`
@@ -326,12 +362,32 @@ Mount surfaces currently wired in the host include:
 - `commentAnnotation`
 - `commentContextMenuItem`
 
+### `routeSidebar` and the app sidebar
+
+A `routeSidebar` slot gives a plugin page route its own contextual navigation.
+It **coexists** with the main app sidebar rather than replacing it: while your
+route is active the host collapses the app `<Sidebar/>` to its 64px icon rail
+(still hover/peek-able) and renders your sidebar in a second pane, yielding
+`[ app rail ][ your sidebar ][ content ]`.
+
+Because the host drives this collapse, a plugin should **not** mount
+`RequestCollapsedSidebar` or otherwise try to collapse the app sidebar itself —
+doing so is redundant and fights the host. While your route is active the app
+rail is forced collapsed (its expand toggle is hidden), overriding any user pin
+— a secondary sidebar always collapses the primary. This force never changes the
+user's saved expanded/collapsed preference, so the host restores exactly what
+the user chose as soon as they navigate away.
+
 ## Shared host components
 
-Use shared components from `@kesarcloud/plugin-sdk/ui` when the plugin needs a
-PaperClaw-native control. The host owns the implementation, so plugins inherit
+Use shared components from `@paperclipai/plugin-sdk/ui` when the plugin needs a
+Paperclip-native control. The host owns the implementation, so plugins inherit
 the board's current styling, ordering, recent selections, and dark-mode behavior
 without importing `ui/src` internals.
+
+Prefer shared components for common Paperclip UX patterns to reduce drift and
+deprecation risk, especially for task/assignment flows and routine or sidebar-like
+plugin screens.
 
 Currently exposed components include:
 
@@ -345,7 +401,7 @@ Currently exposed components include:
 - `ManagedRoutinesList` for plugin-owned routine settings pages.
 
 ```tsx
-import { AssigneePicker, ProjectPicker } from "@kesarcloud/plugin-sdk/ui";
+import { AssigneePicker, ProjectPicker } from "@paperclipai/plugin-sdk/ui";
 
 export function PluginAssignmentControls({ companyId }: { companyId: string }) {
   const [assignee, setAssignee] = useState("");
@@ -377,7 +433,7 @@ data the plugin actually has.
 
 ### When to use the shared `FileTree`
 
-Use `FileTree` from `@kesarcloud/plugin-sdk/ui` whenever the plugin only needs
+Use `FileTree` from `@paperclipai/plugin-sdk/ui` whenever the plugin only needs
 to render a serializable file/directory list and react to selection or
 expand/collapse. The host owns the implementation, so plugin UI inherits the
 board's icons, indent, focus ring, and dark-mode styling without importing host
@@ -387,7 +443,7 @@ internals.
 import {
   FileTree,
   type FileTreeNode,
-} from "@kesarcloud/plugin-sdk/ui";
+} from "@paperclipai/plugin-sdk/ui";
 
 const nodes: FileTreeNode[] = [
   { name: "AGENTS.md", path: "AGENTS.md", kind: "file", children: [] },

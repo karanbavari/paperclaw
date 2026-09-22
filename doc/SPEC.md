@@ -1,12 +1,12 @@
-# PaperClaw Specification
+# Paperclip Specification
 
-Target specification for the PaperClaw control plane. Living document — updated incrementally during spec interviews.
+Target specification for the Paperclip control plane. Living document — updated incrementally during spec interviews.
 
 ---
 
 ## 1. Company Model [DRAFT]
 
-A Company is a first-order object. One PaperClaw instance runs multiple Companies. A Company does not have a standalone "goal" field — its direction is defined by its set of Initiatives (see Task Hierarchy Mapping).
+A Company is a first-order object. One Paperclip instance runs multiple Companies. A Company does not have a standalone "goal" field — its direction is defined by its set of Initiatives (see Task Hierarchy Mapping).
 
 ### Fields (Draft)
 
@@ -28,6 +28,11 @@ Every Company has a **Board** that governs high-impact decisions. The Board is t
 - New Agent hires (creating new Agents)
 - CEO's initial strategic breakdown (CEO proposes, Board approves before execution begins)
 - [TBD: other governance-gated actions — goal changes, firing Agents?]
+
+Connection tool reviews also appear in task history, with a composer takeover for
+human approval, decline, or scoped remembered permission. Connections and task
+views resolve the same review, and the agent continues with the server-recorded
+outcome. See [the implementation contract](SPEC-implementation.md#124-connection-tool-reviews).
 
 #### Board Powers (Always Available)
 
@@ -67,17 +72,17 @@ Every employee is an agent. Agents are the workforce.
 
 ### Agent Identity (Adapter-Level)
 
-Concepts like SOUL.md (identity/mission) and HEARTBEAT.md (loop definition) are **not part of the PaperClaw protocol**. They are adapter-specific configurations. For example, an OpenClaw adapter might use SOUL.md and HEARTBEAT.md files. A Claude Code adapter might use CLAUDE.md. A bare Python script might use command-line args.
+Concepts like SOUL.md (identity/mission) and HEARTBEAT.md (loop definition) are **not part of the Paperclip protocol**. They are adapter-specific configurations. For example, an OpenClaw adapter might use SOUL.md and HEARTBEAT.md files. A Claude Code adapter might use CLAUDE.md. A bare Python script might use command-line args.
 
-PaperClaw doesn't prescribe how an agent defines its identity or behavior. It provides the control plane; the adapter defines the agent's inner workings.
+Paperclip doesn't prescribe how an agent defines its identity or behavior. It provides the control plane; the adapter defines the agent's inner workings.
 
 ### Agent Configuration [DRAFT]
 
 Each agent has an **adapter type** and an **adapter-specific configuration blob**. The adapter defines what config fields exist.
 
-#### PaperClaw Protocol (What PaperClaw Knows)
+#### Paperclip Protocol (What Paperclip Knows)
 
-At the protocol level, PaperClaw tracks:
+At the protocol level, Paperclip tracks:
 
 - Agent identity (id, name, role, title)
 - Org position (who they report to, who reports to them)
@@ -105,22 +110,22 @@ A key goal: **the entire org's agent configurations are exportable.** You can ex
 
 Configurable per agent. Two ends of the spectrum:
 
-- **Fat payload** — PaperClaw bundles relevant context (current tasks, messages, company state, metrics) into the heartbeat invocation. Suited for simple/stateless agents that can't call back to PaperClaw.
-- **Thin ping** — Heartbeat is just a wake-up signal. Agent calls PaperClaw's API to fetch whatever context it needs. Suited for sophisticated agents that manage their own state.
+- **Fat payload** — Paperclip bundles relevant context (current tasks, messages, company state, metrics) into the heartbeat invocation. Suited for simple/stateless agents that can't call back to Paperclip.
+- **Thin ping** — Heartbeat is just a wake-up signal. Agent calls Paperclip's API to fetch whatever context it needs. Suited for sophisticated agents that manage their own state.
 
 #### Minimum Contract
 
-The minimum requirement to be a PaperClaw agent: **be callable.** That's it. PaperClaw can invoke you via command or webhook. No requirement to report back — PaperClaw infers basic status from process liveness when it can.
+The minimum requirement to be a Paperclip agent: **be callable.** That's it. Paperclip can invoke you via command or webhook. No requirement to report back — Paperclip infers basic status from process liveness when it can.
 
 #### Integration Levels
 
-Beyond the minimum, PaperClaw provides progressively richer integration:
+Beyond the minimum, Paperclip provides progressively richer integration:
 
-1. **Callable** (minimum) — PaperClaw can start you. That's the only contract.
+1. **Callable** (minimum) — Paperclip can start you. That's the only contract.
 2. **Status reporting** — Agent reports back success/failure/in-progress after execution.
 3. **Fully instrumented** — Agent reports status, cost/token usage, task updates, and logs. Bidirectional integration with the control plane.
 
-PaperClaw ships **default agents** that demonstrate full integration: progress tracking, cost instrumentation, and a **PaperClaw skill** (a Claude Code skill for interacting with the PaperClaw API) for task management. These serve as both useful defaults and reference implementations for adapter authors.
+Paperclip ships **default agents** that demonstrate full integration: progress tracking, cost instrumentation, and a **Paperclip skill** (a Claude Code skill for interacting with the Paperclip API) for task management. These serve as both useful defaults and reference implementations for adapter authors.
 
 #### Export Formats
 
@@ -141,11 +146,13 @@ Hierarchical reporting structure. CEO at top, reports cascade down.
 
 **Full visibility across the org.** Every agent can see the entire org chart, all tasks, all agents. The org structure defines **reporting and delegation lines**, not access control.
 
+Visibility settings on an agent profile (where supported) do not alter company-level visibility for tasks, projects, issues, comments, costs, or activity. Those work-object privacy controls are not a V1 feature until centralized scoped authorization is in place.
+
 Each agent publishes a short description of their responsibilities and capabilities — almost like skills ("when I'm relevant"). This lets other agents discover who can help with what.
 
 ### Cross-Team Work
 
-Agents can create tasks and assign them to agents outside their reporting line. This is the mechanism for cross-team collaboration. These rules are primarily encoded in the PaperClaw SKILL.md which is recommended for all agents. PaperClaw the app enforces the tooling and some light governance, but the cross-team rules below are mainly implemented by agent decisions.
+Agents can create tasks and assign them to agents outside their reporting line. This is the mechanism for cross-team collaboration. These rules are primarily encoded in the Paperclip SKILL.md which is recommended for all agents. Paperclip the app enforces the tooling and some light governance, but the cross-team rules below are mainly implemented by agent decisions.
 
 #### Task Acceptance Rules
 
@@ -169,6 +176,11 @@ When a task originates from a cross-team request, track the **depth** as an inte
 
 #### Billing Codes
 
+Task detail keeps hierarchy separate from creation provenance: the Tasks tab shows
+all subtasks and, independently, work created from the current task grouped by
+project or No project. A created subtask may appear in both sections. Creation
+provenance follows the originating run equally for legacy and native runners.
+
 Tasks carry a **billing code** so that token spend during execution can be attributed upstream to the requesting task/agent. When Agent A asks Agent B to do work, the cost of B's work is tracked against A's request. This enables cost attribution across the org.
 
 ### Open Questions
@@ -182,11 +194,11 @@ Tasks carry a **billing code** so that token spend during execution can be attri
 
 ## 4. Heartbeat System [DRAFT]
 
-The heartbeat is a protocol, not a runtime. PaperClaw defines how to initiate an agent's cycle. What the agent does with that cycle — how long it runs, whether it's task-scoped or continuous — is entirely up to the agent.
+The heartbeat is a protocol, not a runtime. Paperclip defines how to initiate an agent's cycle. What the agent does with that cycle — how long it runs, whether it's task-scoped or continuous — is entirely up to the agent.
 
 ### Execution Adapters
 
-Agent configuration includes an **adapter** that defines how PaperClaw invokes the agent. Built-in adapters include:
+Agent configuration includes an **adapter** that defines how Paperclip invokes the agent. Built-in adapters include:
 
 | Adapter | Mechanism | Example |
 | ---------------- | -------------------------- | -------------------------------------------------- |
@@ -202,6 +214,12 @@ Agent configuration includes an **adapter** that defines how PaperClaw invokes t
 
 The `process` and `http` adapters ship as generic defaults. Additional built-in adapters cover common local coding runtimes (see list above), and new adapter types can be registered via the plugin system (see Plugin / Extension Architecture).
 
+An adapter's selected execution engine is part of its permission and session
+contract. Missing prerequisites or engine failures must be surfaced without
+silently launching a different engine. A default local engine must support
+normal task work and control-plane coordination; explicit operator restrictions
+remain authoritative.
+
 ### Adapter Interface
 
 Every adapter implements three methods:
@@ -212,15 +230,15 @@ status(agentConfig) → AgentStatus        // Is it running? finished? errored?
 cancel(agentConfig) → void               // Graceful stop signal (for pause/resume)
 ```
 
-This is the full adapter contract. `invoke` starts the agent, `status` lets PaperClaw check on it, `cancel` enables the board's pause functionality. Everything else (cost reporting, task updates) is optional and flows through the PaperClaw REST API.
+This is the full adapter contract. `invoke` starts the agent, `status` lets Paperclip check on it, `cancel` enables the board's pause functionality. Everything else (cost reporting, task updates) is optional and flows through the Paperclip REST API.
 
-### What PaperClaw Controls
+### What Paperclip Controls
 
 - **When** to fire the heartbeat (schedule/frequency, per-agent)
 - **How** to fire it (adapter selection + config)
 - **What context** to include (thin ping vs. fat payload, per-agent)
 
-### What PaperClaw Does NOT Control
+### What Paperclip Does NOT Control
 
 - How long the agent runs
 - What the agent does during its cycle
@@ -241,7 +259,7 @@ This is "graceful signal + stop future heartbeats." The current run gets a chanc
 
 - Heartbeat frequency — who controls it? Fixed? Per-agent? Cron-like?
 - What happens when a heartbeat invocation fails? (process crashes, HTTP 500)
-- Health monitoring — how does PaperClaw distinguish "stuck" from "working on a long task"?
+- Health monitoring — how does Paperclip distinguish "stuck" from "working on a long task"?
 - Can agents self-trigger their next heartbeat? ("I'm done, wake me again in 5 min")
 - Grace period duration — fixed? configurable per agent?
 
@@ -259,6 +277,8 @@ All agent communication flows through the **task system**.
 
 There is no separate messaging or chat system. Tasks are the communication channel. This keeps all context attached to the work it relates to and creates a natural audit trail.
 
+Experimental Agent Chat presents one persistent task per person and agent as a simplified conversation. It retains the task composer, transcript, tools, attachments, documents, and existing Subtasks panel, with ordinary company visibility. New execution tasks are ordinary project tasks, not children of the conversation. Idle conversations wait for a message without entering execution-task work queues. Agents clarify goals here and create assigned tasks for substantial execution. `/new` resets provider context at an ordered session boundary within the same task while preserving visible history. `enableAgentChat` is disabled by default; the V1 lifecycle and rollout contract is specified in `SPEC-implementation.md`.
+
 ### Implications
 
 - An agent's "inbox" is: tasks assigned to them + comments on tasks they're involved in
@@ -275,11 +295,11 @@ Full hierarchy: **Initiative** (company goal) → Projects → Milestones → Is
 
 ## 6. Cost Tracking [DRAFT]
 
-Token/LLM cost budgeting is a core part of PaperClaw. External revenue and expense tracking is a future plugin.
+Token/LLM cost budgeting is a core part of Paperclip. External revenue and expense tracking is a future plugin.
 
 ### Cost Reporting
 
-Fully-instrumented Agents report token/API usage back to PaperClaw. Costs are tracked at every level:
+Fully-instrumented Agents report token/API usage back to Paperclip. Costs are tracked at every level:
 
 - **Per Agent** — how much is this employee costing?
 - **Per task** — how much did this unit of work cost?
@@ -323,9 +343,9 @@ How a Company goes from "created" to "running":
 
 ### Default Agents
 
-PaperClaw ships default Agent templates:
+Paperclip ships default Agent templates:
 
-- **Default Agent** — a basic Claude Code or Codex loop. Knows the **PaperClaw Skill** (SKILL.md) so it can interact with the task system, read Company context, report status.
+- **Default Agent** — a basic Claude Code or Codex loop. Knows the **Paperclip Skill** (SKILL.md) so it can interact with the task system, read Company context, report status.
 - **Default CEO** — extends the Default Agent with CEO-specific behavior: strategic planning, delegation to reports, progress review, Board communication.
 
 These are starting points. Users can customize or replace them entirely.
@@ -336,9 +356,9 @@ The default agent's loop is **config-driven**. The adapter config contains the i
 
 This means the default CEO config tells the CEO to review strategy, check on reports, etc. The default engineer config tells the engineer to check assigned tasks, pick the highest priority, and work it. But these are config choices, not protocol requirements.
 
-### PaperClaw Skill (SKILL.md)
+### Paperclip Skill (SKILL.md)
 
-A skill definition that teaches agents how to interact with PaperClaw. Provides:
+A skill definition that teaches agents how to interact with Paperclip. Provides:
 
 - Task CRUD (create, read, update, complete tasks)
 - Status reporting (check in, report progress)
@@ -362,16 +382,16 @@ This skill is adapter-agnostic — it can be loaded into Claude Code, injected i
 2. **Hosted** — Deploy to Vercel/Supabase/AWS/anywhere. Remote agents connect to your server with a shared database. The UI is accessible via the web.
 3. **Open company** — Optionally make parts public (e.g. a job board visible to the public for open companies).
 
-The key constraint: it must be trivial to go from "I'm trying this on my machine" to "my agents are running on remote servers talking to my PaperClaw instance."
+The key constraint: it must be trivial to go from "I'm trying this on my machine" to "my agents are running on remote servers talking to my Paperclip instance."
 
 #### Agent Authentication
 
-When a user creates an Agent, PaperClaw generates a **connection string** containing: the server URL, an API key, and instructions for how to authenticate. The Agent is assumed to be capable of figuring out how to call the API with its token/key from there.
+When a user creates an Agent, Paperclip generates a **connection string** containing: the server URL, an API key, and instructions for how to authenticate. The Agent is assumed to be capable of figuring out how to call the API with its token/key from there.
 
 Flow:
 
 1. Human creates an Agent in the UI
-2. PaperClaw generates a connection string (URL + key + instructions)
+2. Paperclip generates a connection string (URL + key + instructions)
 3. Human provides this string to the Agent (e.g. in its adapter config, environment, etc.)
 4. Agent uses the key to authenticate API calls to the control plane
 
@@ -398,9 +418,9 @@ No optimistic locking or CRDTs needed. The single-assignment model + atomic chec
 
 Agents can create tasks assigned to humans. The board member (or any human with access) can complete these tasks through the UI.
 
-When a human completes a task, if the requesting agent's adapter supports **pingbacks** (e.g. OpenClaw hooks), PaperClaw sends a notification to wake that agent. This keeps humans rare but possible participants in the workflow.
+When a human completes a task, if the requesting agent's adapter supports **pingbacks** (e.g. OpenClaw hooks), Paperclip sends a notification to wake that agent. This keeps humans rare but possible participants in the workflow.
 
-The agents are discouraged from assigning tasks to humans in the PaperClaw SKILL, but sometimes it's unavoidable.
+The agents are discouraged from assigning tasks to humans in the Paperclip SKILL, but sometimes it's unavoidable.
 
 ### API Design
 
@@ -410,7 +430,7 @@ No separate "agent API" vs. "board API." Same endpoints, different authorization
 
 ### Work Artifacts
 
-PaperClaw manages task-linked work artifacts: issue documents (rich-text plans, specs, notes attached to issues) and file attachments. Agents read and write these through the API as part of normal task execution. Full delivery infrastructure (code repos, deployments, production runtime) remains the agent's domain — PaperClaw orchestrates the work, not the build pipeline.
+Paperclip manages task-linked work artifacts: issue documents (rich-text plans, specs, notes attached to issues) and file attachments. Agents read and write these through the API as part of normal task execution. Full delivery infrastructure (code repos, deployments, production runtime) remains the agent's domain — Paperclip orchestrates the work, not the build pipeline.
 
 ### Open Questions
 
@@ -419,24 +439,25 @@ PaperClaw manages task-linked work artifacts: issue documents (rich-text plans, 
 
 ### Crash Recovery: Manual, Not Automatic
 
-When an agent crashes or disappears mid-task, PaperClaw does **not** auto-reassign or auto-release the task. Instead:
+When an agent crashes or disappears mid-task, Paperclip does **not** auto-reassign or auto-release the task. Instead:
 
-- PaperClaw surfaces stale tasks (tasks in `in_progress` with no recent activity) through dashboards and reporting
-- PaperClaw does not fail silently — the auditing and visibility tools make problems obvious
+- Paperclip surfaces stale tasks (tasks in `in_progress` with no recent activity) through dashboards and reporting
+- Paperclip may perform bounded continuity repair with the same assigned agent; when that is exhausted or unsafe, it opens a board-owned recovery action without waking a substitute agent
+- Paperclip does not fail silently — the auditing and visibility tools make problems obvious
 - Recovery is handled by humans or by emergent processes (e.g. a project manager agent whose job is to monitor for stale work and surface it)
 
-**Principle: PaperClaw reports problems, it doesn't silently fix them.** Automatic recovery hides failures. Good visibility lets the right entity (human or agent) decide what to do.
+**Principle: Paperclip reports problems, it doesn't silently fix them.** Automatic recovery hides failures. Good visibility lets the right entity (human or agent) decide what to do.
 
 ### Plugin / Extension Architecture
 
-The core PaperClaw system must be extensible. Features like knowledge bases, external revenue tracking, and new Agent Adapters should be addable as **plugins** without modifying core. This means:
+The core Paperclip system must be extensible. Features like knowledge bases, external revenue tracking, and new Agent Adapters should be addable as **plugins** without modifying core. This means:
 
 - Well-defined API boundaries that plugins can hook into
 - Event system or hooks for reacting to task/Agent lifecycle events
 - **Agent Adapter plugins** — new Adapter types can be registered via the plugin system
 - Plugin-registrable UI components (future)
 
-The plugin framework has shipped. Plugins can register new adapter types, hook into lifecycle events, and contribute UI components (e.g. global toolbar buttons). A plugin SDK and CLI commands (`paperclaw plugin`) are available for authoring and installing plugins.
+The plugin framework has shipped. Plugins can register new adapter types, hook into lifecycle events, and contribute UI components (e.g. global toolbar buttons). A plugin SDK and CLI commands (`paperclipai plugin`) are available for authoring and installing plugins.
 
 ---
 
@@ -464,7 +485,7 @@ Each is a distinct page/route:
 
 ## 10. V1 Scope (MVP) [DRAFT]
 
-**Full loop with one adapter.** V1 must demonstrate the complete PaperClaw cycle end-to-end, even if narrow.
+**Full loop with one adapter.** V1 must demonstrate the complete Paperclip cycle end-to-end, even if narrow.
 
 ### Must Have (V1)
 
@@ -477,9 +498,9 @@ Each is a distinct page/route:
 - [ ] **Board governance** — human approves hires, pauses Agents, sets budgets, full PM access
 - [ ] **Cost tracking** — Agents report token usage, per-Agent/task/Company visibility
 - [ ] **Budget controls** — soft alerts + hard ceiling with auto-pause
-- [ ] **Default agent** — basic Claude Code/Codex loop with PaperClaw skill
+- [ ] **Default agent** — basic Claude Code/Codex loop with Paperclip skill
 - [ ] **Default CEO** — strategic planning, delegation, board communication
-- [ ] **PaperClaw skill (SKILL.md)** — teaches agents to interact with the API
+- [ ] **Paperclip skill (SKILL.md)** — teaches agents to interact with the API
 - [ ] **REST API** — full API for agent interaction (Express)
 - [ ] **Web UI** — React/Vite: org chart, task board, dashboard, cost views
 - [ ] **Agent auth** — connection string generation with URL + key + instructions
@@ -497,7 +518,7 @@ Each is a distinct page/route:
 
 ## 11. Knowledge Base
 
-**Anti-goal for core.** The knowledge base is not part of the PaperClaw core — it will be a plugin. The task system + comments + agent descriptions provide sufficient shared context.
+**Anti-goal for core.** The knowledge base is not part of the Paperclip core — it will be a plugin. The task system + comments + agent descriptions provide sufficient shared context.
 
 The architecture must support adding a knowledge base plugin later (clean API boundaries, hookable lifecycle events) but the core system explicitly does not include one.
 
@@ -505,9 +526,9 @@ The architecture must support adding a knowledge base plugin later (clean API bo
 
 ## 12. Anti-Requirements
 
-Things PaperClaw explicitly does **not** do:
+Things Paperclip explicitly does **not** do:
 
-- **Not an Agent runtime** — PaperClaw orchestrates, Agents run elsewhere
+- **Not an Agent runtime** — Paperclip orchestrates, Agents run elsewhere
 - **Not a knowledge base** — core has no wiki/docs/vector-DB (plugin territory)
 - **Not a SaaS** — single-tenant, self-hosted
 - **Not opinionated about Agent implementation** — any language, any framework, any runtime
@@ -520,7 +541,7 @@ Things PaperClaw explicitly does **not** do:
 
 ## 13. Principles (Consolidated)
 
-1. **Unopinionated about how you run your Agents.** Any language, any framework, any runtime. PaperClaw is the control plane, not the execution plane.
+1. **Unopinionated about how you run your Agents.** Any language, any framework, any runtime. Paperclip is the control plane, not the execution plane.
 2. **Company is the unit of organization.** Everything lives under a Company.
 3. **Tasks are the communication channel.** All Agent communication flows through tasks + comments. No side channels.
 4. **All work traces to the goal.** Hierarchical task management — nothing exists in isolation.
@@ -529,3 +550,48 @@ Things PaperClaw explicitly does **not** do:
 7. **Atomic ownership.** Single assignee per task. Atomic checkout prevents conflicts.
 8. **Progressive deployment.** Trivial to start local, straightforward to scale to hosted.
 9. **Extensible core.** Clean boundaries so plugins can add capabilities (Adapters, knowledge base, revenue tracking) without modifying core.
+
+### Agent chat project handoff (2026-09-11)
+
+Chat supports research and full plan drafting/revision in its existing plan document. On handoff, each ordinary assigned task receives the relevant plan in its own `plan` document, committed with task creation before execution is scheduled. The source plan remains in the conversation. Plan acceptance hands off execution; it never switches the conversation into implementation.
+
+Chat instructions require selecting a suitable project, reusing an existing one where appropriate. The project requirement is prompt-only; ordinary projectless tasks remain supported. New parent relationships beneath conversation tasks are rejected by task services, including direct API creation and reparenting. Existing children remain readable/editable and can be moved elsewhere. The Subtasks panel is unchanged.
+
+The `create_project` runtime tool uses the normal project API with durable idempotency. `list_projects` and `list_project_repositories` support selection. Multiple `repositoryIds` select authorized catalog entries; multiple HTTPS GitHub `repositoryUrls` register existing repositories absent from the catalog. IDs and URLs may be combined, but cannot accompany an explicit `workspace`. URLs do not create repositories on GitHub or grant credentials. Execution uses normal repository access rules. Repository IDs are revalidated against the authenticated run's responsible user and connection grants. Agents should consider proper available repositories, clarify material ambiguity, and use repository-free projects when appropriate for non-code work.
+
+Confirmed project creation appears as a durable card in the shared task transcript, including selected repository links. Tasks are linked inline. Failed creation never produces a success card. Tool evals cover planning/handoff, project/repository selection, retries, permission and mode denials, and ordinary delegation regressions using the production chat directive.
+
+### Paused task messages
+
+A paused task takes over the composer with an amber notice and a Resume action.
+Operators must release the effective task or ancestor pause before sending a new
+message. The draft stays intact. This applies to both task interfaces and to
+board comment API requests; an agent may still report interrupted work.
+
+### Experimental iMessage Photon channel
+
+A Photon Cloud project can represent one agent through the existing
+experimental channel subsystem. DMs and explicitly enabled groups create or
+continue task-bound conversations. Linked sender identity is the default;
+telephone numbers, email addresses, names, and group membership do not grant
+Paperclip authority. Photos/files and ordinary questions/confirmations use the
+existing attachment, interaction, continuation, and publication contracts.
+Pause and Disconnect govern runtime behavior independently of the UI gate.
+Local Mac access, unsolicited conversations, and SMS/RCS
+fallback are excluded. Live qualification is required before release readiness.
+Pro shared allocation supports DMs only, with sender enrollment in Photon and
+separate identity linking in Paperclip. Shared channels reserve one project, not
+a pool phone number; group admission and publication are disabled. Dedicated
+allocation retains one selected number and individually enabled groups.
+
+See [iMessage Photon](connections/IMESSAGE-PHOTON.md) for the implementation
+contract, setup, recovery, boundaries, and qualification status.
+
+## Task search relevance
+
+Task discovery uses PostgreSQL and the existing search indexes, with no external
+search service or background indexing job. The task-list quick search and full
+company search share lexical matching and ranking. Known identifiers and direct
+title matches lead; current conversation and document content supplies supporting
+evidence. See [Task search relevance](SEARCH.md) for the evaluation rubric,
+matching contract and reproducible quality tests.

@@ -1,14 +1,15 @@
 import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { createHash, type Hash } from "node:crypto";
-import type { AdapterExecutionContext } from "@kesarcloud/adapter-utils";
-import { ensurePaperClawSkillSymlink, type PaperClawSkillEntry } from "@kesarcloud/adapter-utils/server-utils";
+import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
+import {
+  ensurePaperclipSkillSymlink,
+  resolvePaperclipInstanceRootForAdapter,
+  type PaperclipSkillEntry,
+} from "@paperclipai/adapter-utils/server-utils";
 
-const DEFAULT_PAPERCLAW_INSTANCE_ID = "default";
-
-type SkillEntry = PaperClawSkillEntry;
+type SkillEntry = PaperclipSkillEntry;
 
 export interface ClaudePromptBundle {
   bundleKey: string;
@@ -25,12 +26,13 @@ function resolveManagedClaudePromptCacheRoot(
   env: NodeJS.ProcessEnv,
   companyId: string,
 ): string {
-  const paperclawHome = nonEmpty(env.PAPERCLAW_HOME) ?? path.resolve(os.homedir(), ".paperclaw");
-  const instanceId = nonEmpty(env.PAPERCLAW_INSTANCE_ID) ?? DEFAULT_PAPERCLAW_INSTANCE_ID;
+  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
+    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    env,
+  });
   return path.resolve(
-    paperclawHome,
-    "instances",
-    instanceId,
+    instanceRoot,
     "companies",
     companyId,
     "claude-prompt-cache",
@@ -88,7 +90,7 @@ async function buildClaudePromptBundleKey(input: {
   instructionsContents: string | null;
 }): Promise<string> {
   const hash = createHash("sha256");
-  hash.update("paperclaw-claude-prompt-bundle:v1\n");
+  hash.update("paperclip-claude-prompt-bundle:v1\n");
   if (input.instructionsContents) {
     hash.update("instructions\n");
     hash.update(input.instructionsContents);
@@ -147,11 +149,11 @@ export async function prepareClaudePromptBundle(input: {
   for (const entry of skills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      await ensurePaperClawSkillSymlink(entry.source, target);
+      await ensurePaperclipSkillSymlink(entry.source, target);
     } catch (err) {
       await onLog(
         "stderr",
-        `[paperclaw] Failed to materialize Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[paperclip] Failed to materialize Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }

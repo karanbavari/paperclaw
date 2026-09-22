@@ -7,7 +7,7 @@ import {
   trackInstallCompleted,
   trackCompanyImported,
 } from "../../packages/shared/src/telemetry/index.js";
-import { resolvePaperClawInstanceRoot } from "./config/home.js";
+import { resolvePaperclipInstanceRoot } from "./config/home.js";
 import { readConfig } from "./config/store.js";
 import { cliVersion } from "./version.js";
 
@@ -19,7 +19,7 @@ export function initTelemetry(fileConfig?: { enabled?: boolean }): TelemetryClie
   const config = resolveTelemetryConfig(fileConfig);
   if (!config.enabled) return null;
 
-  const stateDir = path.join(resolvePaperClawInstanceRoot(), "telemetry");
+  const stateDir = path.join(resolvePaperclipInstanceRoot(), "telemetry");
   client = new TelemetryClient(config, () => loadOrCreateState(stateDir, cliVersion), cliVersion);
   return client;
 }

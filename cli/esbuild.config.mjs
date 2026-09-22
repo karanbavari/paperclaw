@@ -1,13 +1,15 @@
 /**
- * esbuild configuration for building the paperclaw CLI for npm.
+ * esbuild configuration for building the paperclipai CLI for npm.
  *
- * Bundles all workspace packages (@kesarcloud/*) into a single file.
+ * Bundles all workspace packages (@paperclipai/*) into a single file.
  * External npm packages remain as regular dependencies.
  */
 
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { bundledCliNpmDependencies } from "../scripts/cli-bundled-npm-dependencies.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -21,13 +23,15 @@ const workspacePaths = [
   "packages/adapter-utils",
   "packages/adapters/claude-local",
   "packages/adapters/codex-local",
+  "packages/adapters/hermes-gateway",
+  "packages/adapters/hermes",
   "packages/adapters/openclaw-gateway",
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published
-// to npm and resolved at runtime (e.g. @kesarcloud/server uses dynamic import).
+// to npm and resolved at runtime (e.g. @paperclipai/server uses dynamic import).
 const externalWorkspacePackages = new Set([
-  "@kesarcloud/server",
+  "@paperclipai/server",
 ]);
 
 // Collect all external (non-workspace) npm package names
@@ -37,7 +41,7 @@ for (const p of workspacePaths) {
   for (const name of Object.keys(pkg.dependencies || {})) {
     if (externalWorkspacePackages.has(name)) {
       externals.add(name);
-    } else if (!name.startsWith("@kesarcloud/")) {
+    } else if (!name.startsWith("@paperclipai/") && !bundledCliNpmDependencies.has(name)) {
       externals.add(name);
     }
   }
@@ -50,12 +54,23 @@ for (const name of externalWorkspacePackages) {
   externals.add(name);
 }
 
+if (bundledCliNpmDependencies.has("embedded-postgres")) {
+  const requireFromDb = createRequire(resolve(repoRoot, "packages/db/package.json"));
+  const embeddedPostgresRoot = dirname(requireFromDb.resolve("embedded-postgres"));
+  const embeddedPostgresPackage = JSON.parse(
+    readFileSync(resolve(embeddedPostgresRoot, "..", "package.json"), "utf8"),
+  );
+  for (const name of Object.keys(embeddedPostgresPackage.optionalDependencies ?? {})) {
+    externals.add(name);
+  }
+}
+
 /** @type {import('esbuild').BuildOptions} */
 export default {
   entryPoints: ["src/index.ts"],
   bundle: true,
   platform: "node",
-  target: "node20",
+  target: "node24",
   format: "esm",
   outfile: "dist/index.js",
   banner: { js: "#!/usr/bin/env node" },

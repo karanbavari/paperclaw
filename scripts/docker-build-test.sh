@@ -21,7 +21,7 @@ if ! "$RUNTIME" info >/dev/null 2>&1; then
   exit 0
 fi
 
-IMAGE_TAG="paperclaw-build-test:$$"
+IMAGE_TAG="paperclip-build-test:$$"
 trap '"$RUNTIME" rmi "$IMAGE_TAG" >/dev/null 2>&1 || true' EXIT
 
 echo "==> Testing Docker build with $RUNTIME"
@@ -42,5 +42,10 @@ echo "==> Verifying key binaries in image"
   curl --version | head -1
   claude --version 2>/dev/null || echo "claude CLI not found (OK in minimal builds)"
 '
+
+echo "==> Verifying PID 1 is an init that reaps adopted orphans"
+# Piped in as CMD (`sh -s`) rather than `--entrypoint`, so the image's real
+# ENTRYPOINT still runs and PID 1 is exactly what a production container gets.
+"$RUNTIME" run --rm -i "$IMAGE_TAG" sh -s < "$REPO_ROOT/scripts/assert-orphan-reaping.sh"
 
 echo "PASS: Docker build test succeeded"

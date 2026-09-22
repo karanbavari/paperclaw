@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, FeedbackVote, IssueComment } from "@kesarcloud/shared";
+import type { Agent, FeedbackVote, IssueComment } from "@paperclipai/shared";
 import type { TranscriptEntry } from "@/adapters";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 import { CommentThread } from "@/components/CommentThread";
 import { IssueChatThread } from "@/components/IssueChatThread";
+import type { MarkdownExternalReferenceMap } from "@/components/MarkdownBody";
 import { RunChatSurface } from "@/components/RunChatSurface";
 import type { InlineEntityOption } from "@/components/InlineEntitySelector";
 import type { MentionOption } from "@/components/MarkdownEditor";
@@ -15,7 +16,7 @@ import type {
   IssueChatTranscriptEntry,
 } from "@/lib/issue-chat-messages";
 import type { IssueTimelineEvent } from "@/lib/issue-timeline-events";
-import { storybookAgentMap, storybookAgents } from "../fixtures/paperclawData";
+import { storybookAgentMap, storybookAgents } from "../fixtures/paperclipData";
 
 const companyId = "company-storybook";
 const projectId = "project-board-ui";
@@ -50,10 +51,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclaw-story__frame overflow-hidden">
+    <section className="paperclip-story__frame overflow-hidden">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div>
-          <div className="paperclaw-story__label">{eyebrow}</div>
+          <div className="paperclip-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
         </div>
       </div>
@@ -106,7 +107,7 @@ function createSystemEvent(overrides: Partial<IssueTimelineEvent>): IssueTimelin
     id: "event-default",
     createdAt: new Date("2026-04-20T14:00:00.000Z"),
     actorType: "system",
-    actorId: "paperclaw",
+    actorId: "paperclip",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -244,7 +245,7 @@ const commentTimelineEvents: IssueTimelineEvent[] = [
     id: "event-system-checkout",
     createdAt: new Date("2026-04-20T13:04:00.000Z"),
     actorType: "system",
-    actorId: "paperclaw",
+    actorId: "paperclip",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -376,14 +377,14 @@ const liveRunTranscript: TranscriptEntry[] = [
 const issueChatComments: IssueChatComment[] = [
   createComment({
     id: "comment-issue-board",
-    body: "Please turn the comment thread into a reviewable chat surface. I need to see operator messages, agent output, system events, and live run progress together.",
+    body: "Please turn the comment thread into a reviewable chat surface. I need to see operator messages, agent output, system events, and live run progress together.\n\nFollow-up tracked in https://github.com/acme/web/pull/241 (merged) and https://github.com/acme/web/pull/243 (review pending).",
     createdAt: new Date("2026-04-20T13:44:00.000Z"),
   }),
   createComment({
     id: "comment-issue-agent",
     authorAgentId: codexAgent.id,
     authorUserId: null,
-    body: "I kept the existing component contracts and added fixtures with realistic PaperClaw work: checkout, comments, linked runs, and review feedback.",
+    body: "I kept the existing component contracts and added fixtures with realistic Paperclip work: checkout, comments, linked runs, and review feedback.\n\nFlaky CI lives in https://github.com/acme/web/pull/242 — re-running. Plain control link: https://random.example.com/path stays undecorated.",
     createdAt: new Date("2026-04-20T13:50:00.000Z"),
     runId: "run-issue-chat-01",
     runAgentId: codexAgent.id,
@@ -395,7 +396,7 @@ const issueChatComments: IssueChatComment[] = [
     authorUserId: null,
     runId: "run-issue-chat-01",
     runAgentId: codexAgent.id,
-    body: "PaperClaw needs a disposition before this issue can continue.",
+    body: "Paperclip needs a disposition before this issue can continue.",
     presentation: {
       kind: "system_notice",
       tone: "warning",
@@ -404,6 +405,7 @@ const issueChatComments: IssueChatComment[] = [
     },
     metadata: {
       version: 1,
+      sourceRunId: "run-issue-chat-01",
       sections: [
         {
           title: "Required action",
@@ -440,7 +442,7 @@ const issueTimelineEvents: IssueTimelineEvent[] = [
     id: "event-issue-checkout",
     createdAt: new Date("2026-04-20T13:42:00.000Z"),
     actorType: "system",
-    actorId: "paperclaw",
+    actorId: "paperclip",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -455,6 +457,73 @@ const issueTimelineEvents: IssueTimelineEvent[] = [
     assigneeChange: {
       from: { agentId: null, userId: null },
       to: { agentId: codexAgent.id, userId: null },
+    },
+  }),
+];
+
+const issueThreadNoticeReviewComments: IssueChatComment[] = [
+  createComment({
+    id: "comment-notice-board",
+    body: "The issue thread needs to show workspace routing changes and make old missing-disposition warnings feel resolved.",
+    createdAt: new Date("2026-04-20T13:44:00.000Z"),
+  }),
+  createComment({
+    id: "comment-notice-system-warning",
+    authorType: "system",
+    authorAgentId: null,
+    authorUserId: null,
+    runId: "run-notice-source",
+    runAgentId: codexAgent.id,
+    body: "Paperclip needs a disposition before this issue can continue.",
+    presentation: {
+      kind: "system_notice",
+      tone: "warning",
+      title: "Missing issue disposition",
+      detailsDefaultOpen: false,
+    },
+    metadata: {
+      version: 1,
+      sourceRunId: "run-notice-source",
+      sections: [
+        {
+          title: "Required action",
+          rows: [
+            { type: "issue_link", label: "Source issue", issueId, identifier: "PAP-3660", title: "Show issue-thread notices" },
+            { type: "agent_link", label: "Assignee", agentId: codexAgent.id, name: codexAgent.name },
+            { type: "key_value", label: "Missing disposition", value: "clear_next_step" },
+          ],
+        },
+        {
+          title: "Run evidence",
+          rows: [
+            { type: "run_link", label: "Completed run", runId: "run-notice-source", title: "succeeded" },
+            { type: "key_value", label: "Normalized cause", value: "successful_run_missing_state" },
+          ],
+        },
+      ],
+    },
+    createdAt: new Date("2026-04-20T13:48:00.000Z"),
+  }),
+];
+
+const issueThreadNoticeReviewTimelineEvents: IssueTimelineEvent[] = [
+  createSystemEvent({
+    id: "event-notice-workspace-change",
+    createdAt: new Date("2026-04-20T13:46:00.000Z"),
+    statusChange: undefined,
+    workspaceChange: {
+      from: {
+        label: "Project primary workspace",
+        projectWorkspaceId: "workspace-primary",
+        executionWorkspaceId: null,
+        mode: "shared_workspace",
+      },
+      to: {
+        label: "PAP-3660 issue-thread-notices",
+        projectWorkspaceId: null,
+        executionWorkspaceId: "execution-workspace-notices",
+        mode: "isolated_workspace",
+      },
     },
   }),
 ];
@@ -524,10 +593,12 @@ function ThreadProps({
   comments,
   queuedComments = [],
   timelineEvents = [],
+  externalReferences,
 }: {
   comments: StoryComment[];
   queuedComments?: StoryComment[];
   timelineEvents?: IssueTimelineEvent[];
+  externalReferences?: MarkdownExternalReferenceMap;
 }) {
   return (
     <CommentThread
@@ -547,9 +618,76 @@ function ThreadProps({
       suggestedAssigneeValue={`agent:${codexAgent.id}`}
       mentions={mentionOptions}
       onInterruptQueued={async () => {}}
+      externalReferences={externalReferences}
     />
   );
 }
+
+const externalReferenceComments: StoryComment[] = [
+  createComment({
+    id: "comment-external-board",
+    body: [
+      "Tracking work that just landed:",
+      "",
+      "- Merged PR: https://github.com/acme/web/pull/241",
+      "- Awaiting review: https://github.com/acme/web/pull/243",
+      "- Auth-blocked: https://app.hubspot.com/leads/99",
+      "- Plain control link (no decoration): https://random.example.com/path",
+    ].join("\n"),
+    createdAt: new Date("2026-04-20T14:02:00.000Z"),
+  }),
+  createComment({
+    id: "comment-external-agent",
+    authorAgentId: codexAgent.id,
+    authorUserId: null,
+    body: [
+      "Confirmed handoff updated.",
+      "Failed CI on https://github.com/acme/web/pull/242 needs a rerun.",
+      "",
+      "```",
+      "Code-fenced URLs stay plain: https://github.com/acme/web/pull/241",
+      "```",
+    ].join("\n"),
+    createdAt: new Date("2026-04-20T14:05:00.000Z"),
+    runId: "run-external-01",
+    runAgentId: codexAgent.id,
+  }),
+];
+
+const externalReferences: MarkdownExternalReferenceMap = {
+  "https://github.com/acme/web/pull/241": {
+    providerKey: "github",
+    objectType: "pull_request",
+    statusCategory: "succeeded",
+    liveness: "fresh",
+    statusLabel: "Merged",
+    displayTitle: "Add external refs",
+  },
+  "https://github.com/acme/web/pull/242": {
+    providerKey: "github",
+    objectType: "pull_request",
+    statusCategory: "failed",
+    liveness: "stale",
+    statusLabel: "CI failed",
+    displayTitle: "Flaky tests",
+  },
+  "https://github.com/acme/web/pull/243": {
+    providerKey: "github",
+    objectType: "pull_request",
+    statusCategory: "waiting",
+    liveness: "fresh",
+    statusLabel: "Awaiting review",
+    displayTitle: "Add liveness overlay",
+  },
+  "https://app.hubspot.com/leads/99": {
+    providerKey: "hubspot",
+    objectType: "lead",
+    statusCategory: "auth_required",
+    liveness: "auth_required",
+    statusLabel: "Reconnect",
+    displayTitle: "Acme deal",
+  },
+};
 
 function CommentThreadMatrix() {
   return (
@@ -566,6 +704,15 @@ function CommentThreadMatrix() {
         </ScenarioCard>
         <ScenarioCard title="Markdown, code, mentions, and links" description="Markdown rendering with code fences, @mentions, links, and a queued reply.">
           <ThreadProps comments={markdownComments} queuedComments={[queuedComment]} />
+        </ScenarioCard>
+        <ScenarioCard
+          title="External object decoration"
+          description="Resolved URLs render with the §2 status chip; an unknown URL stays plain. Code-fenced URLs are not decorated."
+        >
+          <ThreadProps
+            comments={externalReferenceComments}
+            externalReferences={externalReferences}
+          />
         </ScenarioCard>
       </div>
     </Section>
@@ -641,6 +788,7 @@ function IssueChatMatrix() {
             includeSucceededRunsWithoutOutput
             onInterruptQueued={async () => {}}
             onCancelQueued={() => undefined}
+            externalReferences={externalReferences}
           />
         </div>
         <div className="space-y-5">
@@ -675,22 +823,183 @@ function IssueChatMatrix() {
               composerDisabledReason="This issue is in review. Request changes or approve it from the review controls."
             />
           </ScenarioCard>
+          <ScenarioCard
+            title="Planning mode composer"
+            description="Issue is in planning mode. The composer turns amber and surfaces a Planning chip next to the paperclip — clicking it stages a Standard submission without immediately changing the issue mode."
+          >
+            <IssueChatThread
+              comments={[]}
+              timelineEvents={[]}
+              linkedRuns={[]}
+              liveRuns={[]}
+              companyId={companyId}
+              projectId={projectId}
+              agentMap={storybookAgentMap}
+              currentUserId={currentUserId}
+              issueWorkMode="planning"
+              onWorkModeChange={() => undefined}
+              onAdd={async () => {}}
+              enableLiveTranscriptPolling={false}
+              emptyMessage="Planning mode reply box example."
+            />
+          </ScenarioCard>
         </div>
       </div>
     </Section>
   );
 }
 
+function IssueThreadNoticeReview() {
+  return (
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner max-w-4xl">
+        <Section eyebrow="IssueChatThread" title="Workspace changes and stale disposition notices">
+          <div className="rounded-lg border border-border bg-background/70 p-4">
+            <IssueChatThread
+              comments={issueThreadNoticeReviewComments}
+              timelineEvents={issueThreadNoticeReviewTimelineEvents}
+              linkedRuns={[]}
+              liveRuns={[]}
+              companyId={companyId}
+              projectId={projectId}
+              issueStatus="done"
+              successfulRunHandoff={{
+                state: "resolved",
+                required: false,
+                hasLiveContinuation: false,
+                sourceRunId: "run-notice-source",
+                correctiveRunId: "run-notice-corrective",
+                assigneeAgentId: codexAgent.id,
+                detectedProgressSummary: "Captured screenshots for the issue thread notice states.",
+                createdAt: new Date("2026-04-20T13:49:00.000Z"),
+              }}
+              agentMap={storybookAgentMap}
+              currentUserId={currentUserId}
+              userLabelMap={boardUserLabels}
+              onAdd={async () => {}}
+              enableLiveTranscriptPolling={false}
+              showJumpToLatest={false}
+            />
+          </div>
+        </Section>
+      </main>
+    </div>
+  );
+}
+
+// PAP-15871 — compact recovery notices collapse to a single quiet row and
+// expand to the full SystemNotice card. `detailsDefaultOpen` seeds the expanded
+// state so both states are visible in a static screenshot.
+function compactRecoveryComments(expanded: boolean): IssueChatComment[] {
+  return [
+    createComment({
+      id: `comment-compact-harness-${expanded ? "open" : "closed"}`,
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      runId: "run-recovery-source",
+      runAgentId: codexAgent.id,
+      body: "Recovery escalated this issue to the CTO after three stalled runs.",
+      presentation: {
+        kind: "system_notice",
+        tone: "warning",
+        title: "Recovery escalated to CTO",
+        detailsDefaultOpen: expanded,
+        density: "compact",
+      },
+      metadata: {
+        version: 1,
+        sourceRunId: "run-recovery-source",
+        sections: [
+          {
+            title: "Escalation",
+            rows: [
+              { type: "agent_link", label: "Owner", agentId: codexAgent.id, name: codexAgent.name },
+              { type: "run_link", label: "Last run", runId: "run-recovery-source", title: "process_lost" },
+              { type: "key_value", label: "Stalled attempts", value: "3" },
+            ],
+          },
+        ],
+      },
+      createdAt: new Date("2026-04-20T14:10:00.000Z"),
+    }),
+    createComment({
+      id: `comment-compact-agent-${expanded ? "open" : "closed"}`,
+      authorAgentId: codexAgent.id,
+      authorUserId: null,
+      runId: "run-recovery-owner",
+      runAgentId: codexAgent.id,
+      body: "Picked this back up after the wake — re-running the failing migration now.",
+      presentation: {
+        kind: "system_notice",
+        tone: "neutral",
+        title: "Recovery owner update",
+        detailsDefaultOpen: expanded,
+        density: "compact",
+      },
+      metadata: null,
+      createdAt: new Date("2026-04-20T14:12:00.000Z"),
+    }),
+  ];
+}
+
+function CompactRecoveryNoticeReview() {
+  return (
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner max-w-4xl space-y-6">
+        <Section eyebrow="IssueChatThread" title="Compact recovery notices — collapsed">
+          <div className="rounded-lg border border-border bg-background/70 p-4">
+            <IssueChatThread
+              comments={compactRecoveryComments(false)}
+              timelineEvents={[]}
+              linkedRuns={[]}
+              liveRuns={[]}
+              companyId={companyId}
+              projectId={projectId}
+              issueStatus="in_progress"
+              agentMap={storybookAgentMap}
+              currentUserId={currentUserId}
+              userLabelMap={boardUserLabels}
+              onAdd={async () => {}}
+              enableLiveTranscriptPolling={false}
+              showJumpToLatest={false}
+            />
+          </div>
+        </Section>
+        <Section eyebrow="IssueChatThread" title="Compact recovery notices — expanded">
+          <div className="rounded-lg border border-border bg-background/70 p-4">
+            <IssueChatThread
+              comments={compactRecoveryComments(true)}
+              timelineEvents={[]}
+              linkedRuns={[]}
+              liveRuns={[]}
+              companyId={companyId}
+              projectId={projectId}
+              issueStatus="in_progress"
+              agentMap={storybookAgentMap}
+              currentUserId={currentUserId}
+              userLabelMap={boardUserLabels}
+              onAdd={async () => {}}
+              enableLiveTranscriptPolling={false}
+              showJumpToLatest={false}
+            />
+          </div>
+        </Section>
+      </main>
+    </div>
+  );
+}
+
 function ChatCommentsStories() {
   return (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner space-y-6">
-        <section className="paperclaw-story__frame p-6">
-          <div className="paperclaw-story__label">Chat & Comments</div>
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner space-y-6">
+        <section className="paperclip-story__frame p-6">
+          <div className="paperclip-story__label">Chat & Comments</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Threaded work conversations</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             Fixture-backed coverage for classic issue comments, embedded run chat, and the assistant-style issue chat
-            surface. The scenarios use PaperClaw operational content with mixed authors, system timeline events,
+            surface. The scenarios use Paperclip operational content with mixed authors, system timeline events,
             markdown, code blocks, @mentions, links, queued comments, tool calls, and streaming run output.
           </p>
         </section>
@@ -724,8 +1033,8 @@ export const FullSurfaceMatrix: Story = {};
 
 export const CommentThreads: Story = {
   render: () => (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner">
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner">
         <CommentThreadMatrix />
       </main>
     </div>
@@ -734,8 +1043,8 @@ export const CommentThreads: Story = {
 
 export const LiveRunChat: Story = {
   render: () => (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner">
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner">
         <RunChatMatrix />
       </main>
     </div>
@@ -744,10 +1053,18 @@ export const LiveRunChat: Story = {
 
 export const IssueChatWithTimeline: Story = {
   render: () => (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner">
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner">
         <IssueChatMatrix />
       </main>
     </div>
   ),
+};
+
+export const IssueThreadNotices: Story = {
+  render: () => <IssueThreadNoticeReview />,
+};
+
+export const CompactRecoveryNotices: Story = {
+  render: () => <CompactRecoveryNoticeReview />,
 };

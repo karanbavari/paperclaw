@@ -1,8 +1,8 @@
 import { gzipSync } from "node:zlib";
-import type { FeedbackTraceBundle } from "@kesarcloud/shared";
+import type { FeedbackTraceBundle } from "@paperclipai/shared";
 import type { Config } from "../config.js";
 
-const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.github.com/karanbavari/paperclaw";
+const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.paperclip.ing";
 
 function buildFeedbackShareObjectKey(bundle: FeedbackTraceBundle, exportedAt: Date) {
   const year = String(exportedAt.getUTCFullYear());
@@ -20,7 +20,7 @@ export function createFeedbackTraceShareClientFromConfig(
 ): FeedbackTraceShareClient {
   const baseUrl = config.feedbackExportBackendUrl?.trim() || DEFAULT_FEEDBACK_EXPORT_BACKEND_URL;
   const token = config.feedbackExportBackendToken?.trim();
-  const endpoint = `${baseUrl.replace(/\/+$/, "")}/feedback-traces`;
+  const endpoint = new URL("/feedback-traces", baseUrl).toString();
 
   return {
     async uploadTraceBundle(bundle) {

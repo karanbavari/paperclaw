@@ -3,8 +3,8 @@
 import { act } from "react";
 import type { ComponentProps } from "react";
 import { createRoot } from "react-dom/client";
-import type { IssueDocument } from "@kesarcloud/shared";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@kesarcloud/shared";
+import type { IssueDocument } from "@paperclipai/shared";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueContinuationHandoff } from "./IssueContinuationHandoff";
 
@@ -38,6 +38,9 @@ function createHandoffDocument(): IssueDocument {
     createdByUserId: null,
     updatedByAgentId: "agent-1",
     updatedByUserId: null,
+    lockedAt: null,
+    lockedByAgentId: null,
+    lockedByUserId: null,
     createdAt: new Date("2026-04-19T12:00:00.000Z"),
     updatedAt: new Date("2026-04-19T12:05:00.000Z"),
   };

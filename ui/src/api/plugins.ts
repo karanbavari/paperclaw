@@ -1,5 +1,5 @@
 /**
- * @fileoverview Frontend API client for the PaperClaw plugin system.
+ * @fileoverview Frontend API client for the Paperclip plugin system.
  *
  * All functions in `pluginsApi` map 1:1 to REST endpoints on
  * `server/src/routes/plugins.ts`. Call sites should consume these functions
@@ -15,15 +15,10 @@ import type {
   PluginLauncherRenderContextSnapshot,
   PluginUiSlotDeclaration,
   PluginLocalFolderDeclaration,
-  PluginSetupPatchRequest,
-  PluginSetupSummary,
-  PluginToolConsoleDiscoveryResponse,
-  PluginToolConsoleTestRequest,
-  PluginToolConsoleTestResult,
   PluginRecord,
   PluginConfig,
   PluginStatus,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { api } from "./client";
 
 /**
@@ -137,13 +132,15 @@ export interface PluginDashboardData {
   checkedAt: string;
 }
 
-export interface AvailablePluginExample {
+export interface AvailableBundledPlugin {
   packageName: string;
   pluginKey: string;
   displayName: string;
   description: string;
   localPath: string;
-  tag: "example";
+  tag: "example" | "first-party";
+  experimental: boolean;
+  hasBuiltEntrypoints: boolean;
 }
 
 export interface PluginLocalFolderProblem {
@@ -187,14 +184,6 @@ export interface PluginLocalFoldersResponse {
   folders: PluginLocalFolderStatus[];
 }
 
-export interface AgentToolDescriptor {
-  name: string;
-  displayName: string;
-  description: string;
-  parametersSchema: Record<string, unknown>;
-  pluginId: string;
-}
-
 export interface PluginLocalFolderSaveInput {
   path: string;
   access?: "read" | "readWrite";
@@ -228,10 +217,10 @@ export const pluginsApi = {
     api.get<PluginRecord[]>(`/plugins${status ? `?status=${status}` : ""}`),
 
   /**
-   * List bundled example plugins available from the current repo checkout.
+   * List bundled plugin packages available from the current repo checkout.
    */
-  listExamples: () =>
-    api.get<AvailablePluginExample[]>("/plugins/examples"),
+  listBundled: () =>
+    api.get<AvailableBundledPlugin[]>("/plugins/examples"),
 
   /**
    * Fetch a single plugin record by its UUID or plugin key.
@@ -247,7 +236,7 @@ export const pluginsApi = {
    * On success, the plugin is registered in the database and transitioned to
    * `ready` state. The response is the newly created `PluginRecord`.
    *
-   * @param params.packageName - npm package name (e.g. `@kesarcloud/plugin-linear`)
+   * @param params.packageName - npm package name (e.g. `@paperclip/plugin-linear`)
    *   or a filesystem path when `isLocalPath` is `true`.
    * @param params.version - Target npm version tag/range (optional; defaults to latest).
    * @param params.isLocalPath - Set to `true` when `packageName` is a local path.
@@ -309,21 +298,6 @@ export const pluginsApi = {
     api.get<PluginDashboardData>(`/plugins/${pluginId}/dashboard`),
 
   /**
-   * List registered tools for one plugin, including runtime availability.
-   */
-  listTools: (pluginId: string) =>
-    api.get<PluginToolConsoleDiscoveryResponse>(`/plugins/${pluginId}/tools`),
-
-  /**
-   * Execute one plugin tool from the board operator test console.
-   */
-  testTool: (pluginId: string, toolName: string, input: PluginToolConsoleTestRequest) =>
-    api.post<PluginToolConsoleTestResult>(
-      `/plugins/${pluginId}/tools/${encodeURIComponent(toolName)}/test`,
-      input,
-    ),
-
-  /**
    * Fetch recent log entries for a plugin.
    *
    * @param pluginId - UUID of the plugin.
@@ -372,9 +346,6 @@ export const pluginsApi = {
   listUiContributions: () =>
     api.get<PluginUiContribution[]>("/plugins/ui-contributions"),
 
-  listAllTools: () =>
-    api.get<AgentToolDescriptor[]>("/plugins/tools"),
-
   // ===========================================================================
   // Plugin configuration endpoints
   // ===========================================================================
@@ -387,8 +358,8 @@ export const pluginsApi = {
    *
    * @param pluginId - UUID of the plugin.
    */
-  getConfig: (pluginId: string) =>
-    api.get<PluginConfig | null>(`/plugins/${pluginId}/config`),
+  getConfig: (pluginId: string, companyId: string) =>
+    api.get<PluginConfig | null>(`/plugins/${pluginId}/config?companyId=${encodeURIComponent(companyId)}`),
 
   /**
    * Save (create or update) the configuration for a plugin.
@@ -399,8 +370,8 @@ export const pluginsApi = {
    * @param pluginId - UUID of the plugin.
    * @param configJson - Configuration values matching the plugin's `instanceConfigSchema`.
    */
-  saveConfig: (pluginId: string, configJson: Record<string, unknown>) =>
-    api.post<PluginConfig>(`/plugins/${pluginId}/config`, { configJson }),
+  saveConfig: (pluginId: string, companyId: string, configJson: Record<string, unknown>) =>
+    api.post<PluginConfig>(`/plugins/${pluginId}/config`, { companyId, configJson }),
 
   /**
    * Call the plugin's `validateConfig` RPC method to test the configuration
@@ -414,20 +385,8 @@ export const pluginsApi = {
    * @param pluginId - UUID of the plugin.
    * @param configJson - Configuration values to validate.
    */
-  testConfig: (pluginId: string, configJson: Record<string, unknown>) =>
-    api.post<{ valid: boolean; message?: string }>(`/plugins/${pluginId}/config/test`, { configJson }),
-
-  /**
-   * Fetch the company-scoped setup wizard summary for a plugin.
-   */
-  setup: (pluginId: string, companyId: string) =>
-    api.get<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`),
-
-  /**
-   * Persist setup wizard progress for one company/plugin pair.
-   */
-  updateSetup: (pluginId: string, companyId: string, patch: PluginSetupPatchRequest) =>
-    api.patch<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`, patch),
+  testConfig: (pluginId: string, companyId: string, configJson: Record<string, unknown>) =>
+    api.post<{ valid: boolean; message?: string }>(`/plugins/${pluginId}/config/test`, { companyId, configJson }),
 
   /**
    * List manifest-declared and stored company-scoped local folders for a plugin.

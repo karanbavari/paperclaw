@@ -82,9 +82,9 @@ export interface FeedbackTraceBundleFile {
   byteLength: number;
   sha256: string;
   source:
-    | "paperclaw_run"
-    | "paperclaw_run_events"
-    | "paperclaw_run_log"
+    | "paperclip_run"
+    | "paperclip_run_events"
+    | "paperclip_run_log"
     | "codex_session"
     | "claude_stream_json"
     | "claude_project_session"
@@ -111,7 +111,7 @@ export interface FeedbackTraceBundle {
   notes: string[];
   envelope: Record<string, unknown>;
   surface: Record<string, unknown> | null;
-  paperclawRun: Record<string, unknown> | null;
+  paperclipRun: Record<string, unknown> | null;
   rawAdapterTrace: Record<string, unknown> | null;
   normalizedAdapterTrace: Record<string, unknown> | null;
   privacy: Record<string, unknown> | null;

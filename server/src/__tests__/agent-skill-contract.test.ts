@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   agentSkillEntrySchema,
   agentSkillSnapshotSchema,
-} from "@kesarcloud/shared/validators/adapter-skills";
+} from "@paperclipai/shared/validators/adapter-skills";
 
 describe("agent skill contract", () => {
   it("accepts optional provenance metadata on skill entries", () => {
@@ -16,7 +16,7 @@ describe("agent skill contract", () => {
       originLabel: "User-installed",
       locationLabel: "~/.claude/skills",
       readOnly: true,
-      detail: "Installed outside PaperClaw management.",
+      detail: "Installed outside Paperclip management.",
     })).toMatchObject({
       origin: "user_installed",
       locationLabel: "~/.claude/skills",
@@ -31,8 +31,8 @@ describe("agent skill contract", () => {
       mode: "ephemeral",
       desiredSkills: [],
       entries: [{
-        key: "karanbavari/paperclaw/paperclaw",
-        runtimeName: "paperclaw",
+        key: "paperclipai/paperclip/paperclip",
+        runtimeName: "paperclip",
         desired: true,
         managed: true,
         state: "configured",
@@ -41,7 +41,7 @@ describe("agent skill contract", () => {
     })).toMatchObject({
       adapterType: "claude_local",
       entries: [{
-        key: "karanbavari/paperclaw/paperclaw",
+        key: "paperclipai/paperclip/paperclip",
         state: "configured",
       }],
     });

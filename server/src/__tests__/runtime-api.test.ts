@@ -9,12 +9,23 @@ describe("runtime API discovery", () => {
   it("prefers the explicit public base URL for the primary runtime URL", () => {
     expect(
       choosePrimaryRuntimeApiUrl({
-        authPublicBaseUrl: "https://paperclaw.example.com/base/path",
+        authPublicBaseUrl: "https://paperclip.example.com/base/path",
         allowedHostnames: ["198.51.100.10"],
         bindHost: "0.0.0.0",
         port: 3102,
       }),
-    ).toBe("https://paperclaw.example.com");
+    ).toBe("https://paperclip.example.com");
+  });
+
+  it("prefers the loopback bind host over allowed hostnames for the primary runtime URL", () => {
+    expect(
+      choosePrimaryRuntimeApiUrl({
+        authPublicBaseUrl: null,
+        allowedHostnames: ["192.168.1.50"],
+        bindHost: "127.0.0.1",
+        port: 3100,
+      }),
+    ).toBe("http://127.0.0.1:3100");
   });
 
   it("builds ordered callback candidates from explicit, allowed, bind, and interface hosts", () => {
@@ -67,7 +78,7 @@ describe("runtime API discovery", () => {
     expect(
       buildRuntimeApiCandidateUrls({
         preferredApiUrl: "https://agent-entry.example.test/base/path",
-        authPublicBaseUrl: "https://paperclaw.example.test/app",
+        authPublicBaseUrl: "https://paperclip.example.test/app",
         allowedHostnames: ["198.51.100.10"],
         bindHost: "0.0.0.0",
         port: 3102,
@@ -75,7 +86,7 @@ describe("runtime API discovery", () => {
       }),
     ).toEqual([
       "https://agent-entry.example.test",
-      "https://paperclaw.example.test",
+      "https://paperclip.example.test",
       "https://198.51.100.10:3102",
     ]);
   });

@@ -1,4 +1,4 @@
-import { PaperClawApiError } from "./client.js";
+import { PaperclipApiError } from "./client.js";
 
 type McpTextResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -16,7 +16,7 @@ export function formatTextResponse(value: unknown): McpTextResponse {
 }
 
 export function formatErrorResponse(error: unknown): McpTextResponse {
-  if (error instanceof PaperClawApiError) {
+  if (error instanceof PaperclipApiError) {
     return formatTextResponse({
       error: error.message,
       status: error.status,

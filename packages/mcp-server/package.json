@@ -1,19 +1,19 @@
 {
-  "name": "@kesarcloud/mcp-server",
+  "name": "@paperclipai/mcp-server",
   "version": "0.1.0",
   "license": "MIT",
-  "homepage": "https://github.com/karanbavari/paperclaw",
+  "homepage": "https://github.com/paperclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/karanbavari/paperclaw/issues"
+    "url": "https://github.com/paperclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karanbavari/paperclaw",
+    "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/mcp-server"
   },
   "type": "module",
   "bin": {
-    "paperclaw-mcp-server": "./dist/stdio.js"
+    "paperclip-mcp-server": "./dist/stdio.js"
   },
   "exports": {
     ".": "./src/index.ts"
@@ -21,7 +21,7 @@
   "publishConfig": {
     "access": "public",
     "bin": {
-      "paperclaw-mcp-server": "./dist/stdio.js"
+      "paperclip-mcp-server": "./dist/stdio.js"
     },
     "exports": {
       ".": {
@@ -43,13 +43,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "@kesarcloud/shared": "workspace:*",
-    "zod": "^3.24.2"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@paperclipai/shared": "workspace:*",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

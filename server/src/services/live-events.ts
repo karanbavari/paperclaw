@@ -1,11 +1,12 @@
 import { EventEmitter } from "node:events";
-import type { LiveEvent, LiveEventType } from "@kesarcloud/shared";
+import type { LiveEvent, LiveEventType } from "@paperclipai/shared";
 
 type LiveEventPayload = Record<string, unknown>;
 type LiveEventListener = (event: LiveEvent) => void;
 
 const emitter = new EventEmitter();
 emitter.setMaxListeners(0);
+const allCompanyEvents = Symbol("all-company-live-events");
 
 let nextEventId = 0;
 
@@ -31,6 +32,7 @@ export function publishLiveEvent(input: {
 }) {
   const event = toLiveEvent(input);
   emitter.emit(input.companyId, event);
+  emitter.emit(allCompanyEvents, event);
   return event;
 }
 
@@ -51,4 +53,14 @@ export function subscribeCompanyLiveEvents(companyId: string, listener: LiveEven
 export function subscribeGlobalLiveEvents(listener: LiveEventListener) {
   emitter.on("*", listener);
   return () => emitter.off("*", listener);
+}
+
+/**
+ * Internal process-wide observation of company-scoped events. This is kept
+ * distinct from the public/global `*` stream so company subscriptions and
+ * global instance events retain their existing routing semantics.
+ */
+export function subscribeAllCompanyLiveEvents(listener: LiveEventListener) {
+  emitter.on(allCompanyEvents, listener);
+  return () => emitter.off(allCompanyEvents, listener);
 }

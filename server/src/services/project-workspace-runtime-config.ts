@@ -1,4 +1,4 @@
-import type { ProjectWorkspaceRuntimeConfig } from "@kesarcloud/shared";
+import type { ProjectWorkspaceRuntimeConfig } from "@paperclipai/shared";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

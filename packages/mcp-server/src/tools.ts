@@ -1,24 +1,29 @@
 import { z } from "zod";
 import {
+  CONNECTION_REQUEST_TOOL_DESCRIPTION,
+  CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
   addIssueCommentSchema,
   askUserQuestionsPayloadSchema,
   checkoutIssueSchema,
+  connectionRequestInputSchema,
+  connectionsSearchInputSchema,
   createApprovalSchema,
-  createIssueSchema,
+  createIssueInputSchema,
   issueThreadInteractionContinuationPolicySchema,
+  requestCheckboxConfirmationPayloadSchema,
   requestConfirmationPayloadSchema,
   suggestTasksPayloadSchema,
   updateIssueSchema,
   upsertIssueDocumentSchema,
   linkIssueApprovalSchema,
-} from "@kesarcloud/shared";
-import { PaperClawApiClient } from "./client.js";
+} from "@paperclipai/shared";
+import { PaperclipApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 
 export interface ToolDefinition {
   name: string;
   description: string;
-  schema: z.AnyZodObject;
+  schema: z.ZodObject;
   execute: (input: Record<string, unknown>) => Promise<{
     content: Array<{ type: "text"; text: string }>;
   }>;
@@ -50,35 +55,65 @@ function parseOptionalJson(raw: string | undefined | null): unknown {
   return JSON.parse(raw);
 }
 
-const companyIdOptional = z.string().uuid().optional().nullable();
-const agentIdOptional = z.string().uuid().optional().nullable();
+async function callRuntimeConnectionTool(
+  endpointEnv: "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
+  body: unknown,
+) {
+  const endpoint = process.env[endpointEnv]?.trim();
+  const token = process.env.PAPERCLIP_RUNTIME_TOOLS_TOKEN?.trim();
+  if (!endpoint || !token) {
+    throw new Error("Connection intent tools are available only inside an active Paperclip heartbeat run");
+  }
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  const parsed = text ? JSON.parse(text) as unknown : null;
+  if (!response.ok) {
+    const message = parsed && typeof parsed === "object" && "error" in parsed
+      ? String((parsed as { error: unknown }).error)
+      : `Runtime connection tool failed with ${response.status}`;
+    throw new Error(message);
+  }
+  return parsed;
+}
+
+const companyIdOptional = z.string().guid().optional().nullable();
+const agentIdOptional = z.string().guid().optional().nullable();
 const issueIdSchema = z.string().min(1);
 const projectIdSchema = z.string().min(1);
-const goalIdSchema = z.string().uuid();
-const approvalIdSchema = z.string().uuid();
+const goalIdSchema = z.string().guid();
+const approvalIdSchema = z.string().guid();
 const documentKeySchema = z.string().trim().min(1).max(64);
 
 const listIssuesSchema = z.object({
   companyId: companyIdOptional,
   status: z.string().optional(),
-  projectId: z.string().uuid().optional(),
-  assigneeAgentId: z.string().uuid().optional(),
-  participantAgentId: z.string().uuid().optional(),
+  projectId: z.string().guid().optional(),
+  assigneeAgentId: z.string().guid().optional(),
+  participantAgentId: z.string().guid().optional(),
   assigneeUserId: z.string().optional(),
   touchedByUserId: z.string().optional(),
   inboxArchivedByUserId: z.string().optional(),
   unreadForUserId: z.string().optional(),
-  labelId: z.string().uuid().optional(),
-  executionWorkspaceId: z.string().uuid().optional(),
+  labelId: z.string().guid().optional(),
+  executionWorkspaceId: z.string().guid().optional(),
   originKind: z.string().optional(),
   originId: z.string().optional(),
   includeRoutineExecutions: z.boolean().optional(),
+  includeLiveDescendantSummary: z.boolean().optional(),
   q: z.string().optional(),
 });
 
 const listCommentsSchema = z.object({
   issueId: issueIdSchema,
-  after: z.string().uuid().optional(),
+  after: z.string().guid().optional(),
   order: z.enum(["asc", "desc"]).optional(),
   limit: z.number().int().positive().max(500).optional(),
 });
@@ -90,12 +125,12 @@ const upsertDocumentToolSchema = z.object({
   format: z.enum(["markdown"]).default("markdown"),
   body: z.string().max(524288),
   changeSummary: z.string().trim().max(500).nullable().optional(),
-  baseRevisionId: z.string().uuid().nullable().optional(),
+  baseRevisionId: z.string().guid().nullable().optional(),
 });
 
 const createIssueToolSchema = z.object({
   companyId: companyIdOptional,
-}).merge(createIssueSchema);
+}).merge(createIssueInputSchema);
 
 const updateIssueToolSchema = z.object({
   issueId: issueIdSchema,
@@ -114,8 +149,8 @@ const addCommentToolSchema = z.object({
 const createSuggestTasksToolSchema = z.object({
   issueId: issueIdSchema,
   idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().uuid().nullable().optional(),
-  sourceRunId: z.string().uuid().nullable().optional(),
+  sourceCommentId: z.string().guid().nullable().optional(),
+  sourceRunId: z.string().guid().nullable().optional(),
   title: z.string().trim().max(240).nullable().optional(),
   summary: z.string().trim().max(1000).nullable().optional(),
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
@@ -125,8 +160,8 @@ const createSuggestTasksToolSchema = z.object({
 const createAskUserQuestionsToolSchema = z.object({
   issueId: issueIdSchema,
   idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().uuid().nullable().optional(),
-  sourceRunId: z.string().uuid().nullable().optional(),
+  sourceCommentId: z.string().guid().nullable().optional(),
+  sourceRunId: z.string().guid().nullable().optional(),
   title: z.string().trim().max(240).nullable().optional(),
   summary: z.string().trim().max(1000).nullable().optional(),
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
@@ -136,12 +171,23 @@ const createAskUserQuestionsToolSchema = z.object({
 const createRequestConfirmationToolSchema = z.object({
   issueId: issueIdSchema,
   idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().uuid().nullable().optional(),
-  sourceRunId: z.string().uuid().nullable().optional(),
+  sourceCommentId: z.string().guid().nullable().optional(),
+  sourceRunId: z.string().guid().nullable().optional(),
   title: z.string().trim().max(240).nullable().optional(),
   summary: z.string().trim().max(1000).nullable().optional(),
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("none"),
   payload: requestConfirmationPayloadSchema,
+});
+
+const createRequestCheckboxConfirmationToolSchema = z.object({
+  issueId: issueIdSchema,
+  idempotencyKey: z.string().trim().max(255).nullable().optional(),
+  sourceCommentId: z.string().guid().nullable().optional(),
+  sourceRunId: z.string().guid().nullable().optional(),
+  title: z.string().trim().max(240).nullable().optional(),
+  summary: z.string().trim().max(1000).nullable().optional(),
+  continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
+  payload: requestCheckboxConfirmationPayloadSchema,
 });
 
 const approvalDecisionSchema = z.object({
@@ -163,7 +209,7 @@ const apiRequestSchema = z.object({
 
 const workspaceRuntimeControlTargetSchema = z.object({
   workspaceCommandId: z.string().min(1).optional().nullable(),
-  runtimeServiceId: z.string().uuid().optional().nullable(),
+  runtimeServiceId: z.string().guid().optional().nullable(),
   serviceIndex: z.number().int().nonnegative().optional().nullable(),
 });
 
@@ -174,7 +220,7 @@ const issueWorkspaceRuntimeControlSchema = z.object({
 
 const waitForIssueWorkspaceServiceSchema = z.object({
   issueId: issueIdSchema,
-  runtimeServiceId: z.string().uuid().optional().nullable(),
+  runtimeServiceId: z.string().guid().optional().nullable(),
   serviceName: z.string().min(1).optional().nullable(),
   timeoutSeconds: z.number().int().positive().max(300).optional(),
 });
@@ -211,7 +257,7 @@ function selectRuntimeService(
     ?? null;
 }
 
-async function getIssueWorkspaceRuntime(client: PaperClawApiClient, issueId: string) {
+async function getIssueWorkspaceRuntime(client: PaperclipApiClient, issueId: string) {
   const context = await client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/heartbeat-context`);
   const workspace = readCurrentExecutionWorkspace(context);
   return {
@@ -221,28 +267,52 @@ async function getIssueWorkspaceRuntime(client: PaperClawApiClient, issueId: str
   };
 }
 
-export function createToolDefinitions(client: PaperClawApiClient): ToolDefinition[] {
+export function createToolDefinitions(client: PaperclipApiClient): ToolDefinition[] {
   return [
     makeTool(
-      "paperclawMe",
-      "Get the current authenticated PaperClaw actor details",
+      "connections_search",
+      CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
+      connectionsSearchInputSchema,
+      async (input) => callRuntimeConnectionTool(
+        "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL",
+        input,
+      ),
+    ),
+    makeTool(
+      "connection_request",
+      CONNECTION_REQUEST_TOOL_DESCRIPTION,
+      connectionRequestInputSchema,
+      async (input) => callRuntimeConnectionTool(
+        "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
+        input,
+      ),
+    ),
+    makeTool(
+      "paperclipMe",
+      "Get the current authenticated Paperclip actor details",
       z.object({}),
       async () => client.requestJson("GET", "/agents/me"),
     ),
     makeTool(
-      "paperclawInboxLite",
+      "paperclipInboxLite",
       "Get the current authenticated agent inbox-lite assignment list",
       z.object({}),
       async () => client.requestJson("GET", "/agents/me/inbox-lite"),
     ),
     makeTool(
-      "paperclawListAgents",
+      "paperclipListAgents",
       "List agents in a company",
       z.object({ companyId: companyIdOptional }),
       async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/agents`),
     ),
     makeTool(
-      "paperclawGetAgent",
+      "paperclipListSkills",
+      "List the company skill library (all installed skills, independent of which agents have them enabled)",
+      z.object({ companyId: companyIdOptional }),
+      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/skills`),
+    ),
+    makeTool(
+      "paperclipGetAgent",
       "Get a single agent by id",
       z.object({ agentId: z.string().min(1), companyId: companyIdOptional }),
       async ({ agentId, companyId }) => {
@@ -251,7 +321,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawListIssues",
+      "paperclipListIssues",
       "List issues for a company with optional filters",
       listIssuesSchema,
       async (input) => {
@@ -266,22 +336,22 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawGetIssue",
+      "paperclipGetIssue",
       "Get a single issue by UUID or identifier",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}`),
     ),
     makeTool(
-      "paperclawGetHeartbeatContext",
+      "paperclipGetHeartbeatContext",
       "Get compact heartbeat context for an issue",
-      z.object({ issueId: issueIdSchema, wakeCommentId: z.string().uuid().optional() }),
+      z.object({ issueId: issueIdSchema, wakeCommentId: z.string().guid().optional() }),
       async ({ issueId, wakeCommentId }) => {
         const qs = wakeCommentId ? `?wakeCommentId=${encodeURIComponent(wakeCommentId)}` : "";
         return client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/heartbeat-context${qs}`);
       },
     ),
     makeTool(
-      "paperclawListComments",
+      "paperclipListComments",
       "List issue comments with incremental options",
       listCommentsSchema,
       async ({ issueId, after, order, limit }) => {
@@ -294,33 +364,33 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawGetComment",
+      "paperclipGetComment",
       "Get a specific issue comment by id",
-      z.object({ issueId: issueIdSchema, commentId: z.string().uuid() }),
+      z.object({ issueId: issueIdSchema, commentId: z.string().guid() }),
       async ({ issueId, commentId }) =>
         client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/comments/${encodeURIComponent(commentId)}`),
     ),
     makeTool(
-      "paperclawListIssueApprovals",
+      "paperclipListIssueApprovals",
       "List approvals linked to an issue",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/approvals`),
     ),
     makeTool(
-      "paperclawListDocuments",
+      "paperclipListDocuments",
       "List issue documents",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/documents`),
     ),
     makeTool(
-      "paperclawGetDocument",
+      "paperclipGetDocument",
       "Get one issue document by key",
       z.object({ issueId: issueIdSchema, key: documentKeySchema }),
       async ({ issueId, key }) =>
         client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/documents/${encodeURIComponent(key)}`),
     ),
     makeTool(
-      "paperclawListDocumentRevisions",
+      "paperclipListDocumentRevisions",
       "List revisions for an issue document",
       z.object({ issueId: issueIdSchema, key: documentKeySchema }),
       async ({ issueId, key }) =>
@@ -330,13 +400,13 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         ),
     ),
     makeTool(
-      "paperclawListProjects",
+      "paperclipListProjects",
       "List projects in a company",
       z.object({ companyId: companyIdOptional }),
       async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/projects`),
     ),
     makeTool(
-      "paperclawGetProject",
+      "paperclipGetProject",
       "Get a project by id or company-scoped short reference",
       z.object({ projectId: projectIdSchema, companyId: companyIdOptional }),
       async ({ projectId, companyId }) => {
@@ -345,13 +415,13 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawGetIssueWorkspaceRuntime",
+      "paperclipGetIssueWorkspaceRuntime",
       "Get the current execution workspace and runtime services for an issue, including service URLs",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => getIssueWorkspaceRuntime(client, issueId),
     ),
     makeTool(
-      "paperclawControlIssueWorkspaceServices",
+      "paperclipControlIssueWorkspaceServices",
       "Start, stop, or restart the current issue execution workspace runtime services",
       issueWorkspaceRuntimeControlSchema,
       async ({ issueId, action, ...target }) => {
@@ -368,7 +438,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawWaitForIssueWorkspaceService",
+      "paperclipWaitForIssueWorkspaceService",
       "Wait until an issue execution workspace runtime service is running and has a URL when one is exposed",
       waitForIssueWorkspaceServiceSchema,
       async ({ issueId, runtimeServiceId, serviceName, timeoutSeconds }) => {
@@ -394,19 +464,19 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawListGoals",
+      "paperclipListGoals",
       "List goals in a company",
       z.object({ companyId: companyIdOptional }),
       async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/goals`),
     ),
     makeTool(
-      "paperclawGetGoal",
+      "paperclipGetGoal",
       "Get a goal by id",
       z.object({ goalId: goalIdSchema }),
       async ({ goalId }) => client.requestJson("GET", `/goals/${encodeURIComponent(goalId)}`),
     ),
     makeTool(
-      "paperclawListApprovals",
+      "paperclipListApprovals",
       "List approvals in a company",
       z.object({ companyId: companyIdOptional, status: z.string().optional() }),
       async ({ companyId, status }) => {
@@ -415,7 +485,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawCreateApproval",
+      "paperclipCreateApproval",
       "Create a board approval request, optionally linked to one or more issues",
       createApprovalToolSchema,
       async ({ companyId, ...body }) =>
@@ -424,39 +494,39 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawGetApproval",
+      "paperclipGetApproval",
       "Get an approval by id",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}`),
     ),
     makeTool(
-      "paperclawGetApprovalIssues",
+      "paperclipGetApprovalIssues",
       "List issues linked to an approval",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}/issues`),
     ),
     makeTool(
-      "paperclawListApprovalComments",
+      "paperclipListApprovalComments",
       "List comments for an approval",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}/comments`),
     ),
     makeTool(
-      "paperclawCreateIssue",
+      "paperclipCreateIssue",
       "Create a new issue",
       createIssueToolSchema,
       async ({ companyId, ...body }) =>
         client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, { body }),
     ),
     makeTool(
-      "paperclawUpdateIssue",
+      "paperclipUpdateIssue",
       "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work",
       updateIssueToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, { body }),
     ),
     makeTool(
-      "paperclawCheckoutIssue",
+      "paperclipCheckoutIssue",
       "Checkout an issue for an agent",
       checkoutIssueToolSchema,
       async ({ issueId, agentId, expectedStatuses }) =>
@@ -468,20 +538,20 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawReleaseIssue",
+      "paperclipReleaseIssue",
       "Release an issue checkout",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/release`, { body: {} }),
     ),
     makeTool(
-      "paperclawAddComment",
+      "paperclipAddComment",
       "Add a comment to an issue; include resume=true when intentionally requesting follow-up on resumable closed work",
       addCommentToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/comments`, { body }),
     ),
     makeTool(
-      "paperclawSuggestTasks",
+      "paperclipSuggestTasks",
       "Create a suggest_tasks interaction on an issue",
       createSuggestTasksToolSchema,
       async ({ issueId, ...body }) =>
@@ -493,7 +563,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawAskUserQuestions",
+      "paperclipAskUserQuestions",
       "Create an ask_user_questions interaction on an issue",
       createAskUserQuestionsToolSchema,
       async ({ issueId, ...body }) =>
@@ -505,7 +575,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawRequestConfirmation",
+      "paperclipRequestConfirmation",
       "Create a request_confirmation interaction on an issue",
       createRequestConfirmationToolSchema,
       async ({ issueId, ...body }) =>
@@ -517,7 +587,19 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawUpsertIssueDocument",
+      "paperclipRequestCheckboxConfirmation",
+      "Create a request_checkbox_confirmation interaction on an issue",
+      createRequestCheckboxConfirmationToolSchema,
+      async ({ issueId, ...body }) =>
+        client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/interactions`, {
+          body: {
+            kind: "request_checkbox_confirmation",
+            ...body,
+          },
+        }),
+    ),
+    makeTool(
+      "paperclipUpsertIssueDocument",
       "Create or update an issue document",
       upsertDocumentToolSchema,
       async ({ issueId, key, ...body }) =>
@@ -528,12 +610,12 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         ),
     ),
     makeTool(
-      "paperclawRestoreIssueDocumentRevision",
+      "paperclipRestoreIssueDocumentRevision",
       "Restore a prior revision of an issue document",
       z.object({
         issueId: issueIdSchema,
         key: documentKeySchema,
-        revisionId: z.string().uuid(),
+        revisionId: z.string().guid(),
       }),
       async ({ issueId, key, revisionId }) =>
         client.requestJson(
@@ -543,7 +625,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         ),
     ),
     makeTool(
-      "paperclawLinkIssueApproval",
+      "paperclipLinkIssueApproval",
       "Link an approval to an issue",
       z.object({ issueId: issueIdSchema }).merge(linkIssueApprovalSchema),
       async ({ issueId, approvalId }) =>
@@ -552,7 +634,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawUnlinkIssueApproval",
+      "paperclipUnlinkIssueApproval",
       "Unlink an approval from an issue",
       z.object({ issueId: issueIdSchema, approvalId: approvalIdSchema }),
       async ({ issueId, approvalId }) =>
@@ -562,7 +644,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         ),
     ),
     makeTool(
-      "paperclawApprovalDecision",
+      "paperclipApprovalDecision",
       "Approve, reject, request revision, or resubmit an approval",
       approvalDecisionSchema,
       async ({ approvalId, action, decisionNote, payloadJson }) => {
@@ -584,7 +666,7 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
       },
     ),
     makeTool(
-      "paperclawAddApprovalComment",
+      "paperclipAddApprovalComment",
       "Add a comment to an approval",
       z.object({ approvalId: approvalIdSchema, body: z.string().min(1) }),
       async ({ approvalId, body }) =>
@@ -593,8 +675,8 @@ export function createToolDefinitions(client: PaperClawApiClient): ToolDefinitio
         }),
     ),
     makeTool(
-      "paperclawApiRequest",
-      "Make a JSON request to an existing PaperClaw /api endpoint for unsupported operations",
+      "paperclipApiRequest",
+      "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations",
       apiRequestSchema,
       async ({ method, path, jsonBody }) => {
         if (!path.startsWith("/") || path.includes("..")) {

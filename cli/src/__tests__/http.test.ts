@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiConnectionError, ApiRequestError, PaperClawApiClient } from "../client/http.js";
+import { ApiConnectionError, ApiRequestError, PaperclipApiClient } from "../client/http.js";
 
-describe("PaperClawApiClient", () => {
+describe("PaperclipApiClient", () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -12,7 +13,7 @@ describe("PaperClawApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperClawApiClient({
+    const client = new PaperclipApiClient({
       apiBase: "http://localhost:3100",
       apiKey: "token-123",
       runId: "run-abc",
@@ -26,7 +27,7 @@ describe("PaperClawApiClient", () => {
 
     const headers = call[1].headers as Record<string, string>;
     expect(headers.authorization).toBe("Bearer token-123");
-    expect(headers["x-paperclaw-run-id"]).toBe("run-abc");
+    expect(headers["x-paperclip-run-id"]).toBe("run-abc");
     expect(headers["content-type"]).toBe("application/json");
   });
 
@@ -36,7 +37,7 @@ describe("PaperClawApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperClawApiClient({ apiBase: "http://localhost:3100" });
+    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
     const result = await client.get("/api/missing", { ignoreNotFound: true });
     expect(result).toBeNull();
   });
@@ -50,7 +51,7 @@ describe("PaperClawApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperClawApiClient({ apiBase: "http://localhost:3100" });
+    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
 
     await expect(client.post("/api/issues/1/checkout", {})).rejects.toMatchObject({
       status: 409,
@@ -63,7 +64,7 @@ describe("PaperClawApiClient", () => {
     const fetchMock = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperClawApiClient({ apiBase: "http://localhost:3100" });
+    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
 
     await expect(client.post("/api/companies/import/preview", {})).rejects.toBeInstanceOf(ApiConnectionError);
     await expect(client.post("/api/companies/import/preview", {})).rejects.toMatchObject({
@@ -72,13 +73,13 @@ describe("PaperClawApiClient", () => {
       causeMessage: "fetch failed",
     } satisfies Partial<ApiConnectionError>);
     await expect(client.post("/api/companies/import/preview", {})).rejects.toThrow(
-      /Could not reach the PaperClaw API\./,
+      /Could not reach the Paperclip API\./,
     );
     await expect(client.post("/api/companies/import/preview", {})).rejects.toThrow(
       /curl http:\/\/localhost:3100\/api\/health/,
     );
     await expect(client.post("/api/companies/import/preview", {})).rejects.toThrow(
-      /pnpm dev|pnpm paperclaw run/,
+      /pnpm dev|npx paperclipai run/,
     );
   });
 
@@ -90,7 +91,7 @@ describe("PaperClawApiClient", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const recoverAuth = vi.fn().mockResolvedValue("board-token-123");
-    const client = new PaperClawApiClient({
+    const client = new PaperclipApiClient({
       apiBase: "http://localhost:3100",
       recoverAuth,
     });

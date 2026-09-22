@@ -44,7 +44,7 @@ describe("sandbox provider runtime", () => {
     })).rejects.toThrow('Sandbox provider "fake-plugin" is not registered as a built-in provider.');
   });
 
-  it("acquires and resumes fake leases deterministically", async () => {
+  it("does not resume fake leases because the built-in fake provider does not opt in", async () => {
     const lease = await acquireSandboxProviderLease({
       config: {
         provider: "fake",
@@ -56,7 +56,7 @@ describe("sandbox provider runtime", () => {
       issueId: "issue-1",
     });
 
-    expect(lease.providerLeaseId).toBe("sandbox://fake/env-1");
+    expect(lease.providerLeaseId).toMatch(/^sandbox:\/\/fake\/run-1\/[0-9a-f-]+$/);
     expect(lease.metadata).toEqual(expect.objectContaining({
       provider: "fake",
       image: "ubuntu:24.04",
@@ -75,8 +75,9 @@ describe("sandbox provider runtime", () => {
       reusableProviderLeaseId: lease.providerLeaseId,
     });
 
-    expect(resumed.providerLeaseId).toBe(lease.providerLeaseId);
-    expect(resumed.metadata).toEqual(expect.objectContaining({ resumedLease: true }));
+    expect(resumed.providerLeaseId).toMatch(/^sandbox:\/\/fake\/run-2\/[0-9a-f-]+$/);
+    expect(resumed.providerLeaseId).not.toBe(lease.providerLeaseId);
+    expect(resumed.metadata).not.toEqual(expect.objectContaining({ resumedLease: true }));
   });
 
   it("matches reusable fake leases through the selected provider implementation", () => {
@@ -147,18 +148,18 @@ describe("sandbox provider runtime", () => {
   it("reconstructs fake sandbox config from lease metadata for later release", () => {
     const metadata = {
       provider: "fake",
-      image: "paperclaw-test",
+      image: "paperclip-test",
       reuseLease: true,
     };
 
     expect(sandboxConfigFromLeaseMetadata({ metadata })).toEqual({
       provider: "fake",
-      image: "paperclaw-test",
+      image: "paperclip-test",
       reuseLease: true,
     });
     expect(sandboxConfigFromLeaseMetadataLoose({ metadata })).toEqual({
       provider: "fake",
-      image: "paperclaw-test",
+      image: "paperclip-test",
       reuseLease: true,
     });
   });
@@ -185,21 +186,21 @@ describe("sandbox provider runtime", () => {
     expect(sandboxConfigFromLeaseMetadata({
       metadata: {
         provider: "secure-plugin",
-        template: "paperclaw-template",
+        template: "paperclip-template",
       },
     })).toBeNull();
 
     expect(sandboxConfigFromLeaseMetadataLoose({
       metadata: {
         provider: "secure-plugin",
-        template: "paperclaw-template",
+        template: "paperclip-template",
         timeoutMs: 120000,
         reuseLease: true,
         apiKey: "11111111-1111-1111-1111-111111111111",
       },
     })).toEqual({
       provider: "secure-plugin",
-      template: "paperclaw-template",
+      template: "paperclip-template",
       apiKey: "11111111-1111-1111-1111-111111111111",
       timeoutMs: 120000,
       reuseLease: true,

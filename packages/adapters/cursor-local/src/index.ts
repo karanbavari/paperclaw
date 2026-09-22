@@ -1,7 +1,5 @@
-import type { AdapterModelProfileDefinition } from "@kesarcloud/adapter-utils";
-
 export const type = "cursor";
-export const label = "Cursor CLI (local)";
+export const label = "Cursor";
 
 // Cursor CLI is not distributed as an npm package — the official install
 // path is the upstream installer script at cursor.com/install. Other adapters
@@ -58,24 +56,12 @@ const CURSOR_FALLBACK_MODEL_IDS = [
 
 export const models = CURSOR_FALLBACK_MODEL_IDS.map((id) => ({ id, label: id }));
 
-export const modelProfiles: AdapterModelProfileDefinition[] = [
-  {
-    key: "cheap",
-    label: "Cheap",
-    description: "Use Cursor's known Codex mini model as the budget lane instead of assuming auto is cheap.",
-    adapterConfig: {
-      model: "gpt-5.1-codex-mini",
-    },
-    source: "adapter_default",
-  },
-];
-
 export const agentConfigurationDoc = `# cursor agent configuration
 
 Adapter: cursor
 
 Use when:
-- You want PaperClaw to run Cursor Agent CLI locally as the agent runtime
+- You want Paperclip to run Cursor Agent CLI locally as the agent runtime
 - You want Cursor chat session resume across heartbeats via --resume
 - You want structured stream output in run logs via --output-format stream-json
 
@@ -102,7 +88,7 @@ Notes:
 - Runs are executed with: agent -p --output-format stream-json ...
 - Prompts are piped to Cursor via stdin.
 - Sessions are resumed with --resume when stored session cwd matches current cwd.
-- PaperClaw auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$paperclaw" and related skills on local runs.
-- PaperClaw auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
-- Remote sandbox runs prepend "~/.local/bin" to PATH and prefer "~/.local/bin/cursor-agent" when the default Cursor entrypoint is requested, so standard E2B-style installs do not need hardcoded absolute command paths.
+- Paperclip auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$paperclip" and related skills on local runs.
+- Paperclip auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
+- Remote sandbox runs prepend "~/.cursor/bin" and "~/.local/bin" to PATH and prefer the installed absolute entrypoint from one of those directories when the default Cursor command is requested, so installer-managed sandbox leases do not need hardcoded command paths.
 `;

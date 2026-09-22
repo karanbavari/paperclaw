@@ -2,18 +2,18 @@
 
 ## Context
 
-Today release smoke testing for published PaperClaw packages is manual and shell-driven:
+Today release smoke testing for published Paperclip packages is manual and shell-driven:
 
 ```sh
-HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLAW_VERSION=canary ./scripts/docker-onboard-smoke.sh
-HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLAW_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLIPAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLIPAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 That is useful because it exercises the same public install surface users hit:
 
 - Docker
-- `npx @kesarcloud/paperclaw@canary`
-- `npx @kesarcloud/paperclaw@latest`
+- `npx paperclipai@canary`
+- `npx paperclipai@latest`
 - authenticated bootstrap flow
 
 But it still leaves the most important release questions to a human with a browser:
@@ -65,7 +65,7 @@ That is a good base, but it does not validate the public npm package, Docker pat
 `scripts/docker-onboard-smoke.sh` already does useful setup work:
 
 - builds `Dockerfile.onboard-smoke`
-- runs `@kesarcloud/paperclaw@${PAPERCLAW_VERSION}` inside Docker
+- runs `paperclipai@${PAPERCLIPAI_VERSION}` inside Docker
 - waits for health
 - signs up or signs in a smoke admin user
 - generates and accepts the bootstrap CEO invite in authenticated mode
@@ -78,7 +78,7 @@ That means the hard bootstrap problem is mostly solved already. The main gap is 
 The repo already has:
 
 - `.github/workflows/e2e.yml` for manual Playwright runs against local source
-- `.github/workflows/release.yml` for canary publish on `main` and manual stable promotion
+- `.github/workflows/release.yml` for canary publish on `master` and manual stable promotion
 
 So the right move is to extend the current test/release system, not create a parallel one.
 
@@ -105,8 +105,8 @@ Later we can add a second credentialed smoke lane for real model-backed agents.
 
 The current defaults in `scripts/docker-onboard-smoke.sh` should be treated as stable test fixtures:
 
-- email: `smoke-admin@kesarcloud.local`
-- password: `paperclaw-smoke-password`
+- email: `smoke-admin@paperclip.local`
+- password: `paperclip-smoke-password`
 
 The browser test should log in with those exact values unless overridden by env vars.
 
@@ -214,7 +214,7 @@ Recommended triggers:
 
 Recommended inputs:
 
-- `paperclaw_version`
+- `paperclip_version`
   - `canary` or `latest`
 - `host_port`
   - optional, default runner-safe port
@@ -254,7 +254,7 @@ First ship the workflow as manual-only so the harness and test can be stabilized
 
 After `publish_canary` succeeds in `.github/workflows/release.yml`, call the reusable release-smoke workflow with:
 
-- `paperclaw_version=canary`
+- `paperclip_version=canary`
 
 This proves the just-published public canary really boots and onboards.
 
@@ -262,7 +262,7 @@ This proves the just-published public canary really boots and onboards.
 
 After `publish_stable` succeeds, call the same workflow with:
 
-- `paperclaw_version=latest`
+- `paperclip_version=latest`
 
 This gives us post-publish confirmation that the stable dist-tag is healthy.
 
@@ -328,8 +328,8 @@ Tasks:
 Acceptance:
 
 - the suite passes locally against both:
-  - `PAPERCLAW_VERSION=canary`
-  - `PAPERCLAW_VERSION=latest`
+  - `PAPERCLIPAI_VERSION=canary`
+  - `PAPERCLIPAI_VERSION=latest`
 
 ## Phase 3: GitHub Actions workflow
 
@@ -384,8 +384,8 @@ This should stay optional until the token-free lane is trustworthy.
 
 The plan is complete when the implemented system can demonstrate all of the following:
 
-1. A published `@kesarcloud/paperclaw@canary` Docker install can be smoke-tested by Playwright in CI.
-2. A published `@kesarcloud/paperclaw@latest` Docker install can be smoke-tested by Playwright in CI.
+1. A published `paperclipai@canary` Docker install can be smoke-tested by Playwright in CI.
+2. A published `paperclipai@latest` Docker install can be smoke-tested by Playwright in CI.
 3. The test logs into authenticated mode with the smoke credentials.
 4. The test sees onboarding for a fresh instance.
 5. The test completes onboarding in the browser.

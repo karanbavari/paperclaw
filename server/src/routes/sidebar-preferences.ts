@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@kesarcloud/db";
-import { upsertSidebarOrderPreferenceSchema } from "@kesarcloud/shared";
+import type { Db } from "@paperclipai/db";
+import { upsertSidebarOrderPreferenceSchema } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
 import { logActivity, sidebarPreferenceService } from "../services/index.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
@@ -55,6 +55,7 @@ export function sidebarPreferenceRoutes(db: Db) {
         actorId: actor.actorId,
         agentId: actor.agentId,
         runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "sidebar_preferences.project_order_updated",
         entityType: "company",
         entityId: companyId,

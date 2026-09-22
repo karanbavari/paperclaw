@@ -1,11 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
-import os from "node:os";
 import path from "node:path";
+import {
+  expandHomePrefix,
+  resolveDefaultEmbeddedPostgresDir,
+  resolvePaperclipConfigPathForInstance,
+  resolvePaperclipEnvPathForConfig,
+} from "@paperclipai/shared/home-paths";
 
-const DEFAULT_INSTANCE_ID = "default";
 const CONFIG_BASENAME = "config.json";
-const ENV_BASENAME = ".env";
-const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 
 type PartialConfig = {
   database?: {
@@ -22,7 +24,7 @@ export type ResolvedDatabaseTarget =
   | {
       mode: "postgres";
       connectionString: string;
-      source: "DATABASE_URL" | "paperclaw-env" | "config.database.connectionString";
+      source: "DATABASE_URL" | "paperclip-env" | "config.database.connectionString";
       configPath: string;
       envPath: string;
     }
@@ -35,39 +37,6 @@ export type ResolvedDatabaseTarget =
       envPath: string;
     };
 
-function expandHomePrefix(value: string): string {
-  if (value === "~") return os.homedir();
-  if (value.startsWith("~/")) return path.resolve(os.homedir(), value.slice(2));
-  return value;
-}
-
-function resolvePaperClawHomeDir(): string {
-  const envHome = process.env.PAPERCLAW_HOME?.trim();
-  if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".paperclaw");
-}
-
-function resolvePaperClawInstanceId(): string {
-  const raw = process.env.PAPERCLAW_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
-  if (!INSTANCE_ID_RE.test(raw)) {
-    throw new Error(`Invalid PAPERCLAW_INSTANCE_ID '${raw}'.`);
-  }
-  return raw;
-}
-
-function resolveDefaultConfigPath(): string {
-  return path.resolve(
-    resolvePaperClawHomeDir(),
-    "instances",
-    resolvePaperClawInstanceId(),
-    CONFIG_BASENAME,
-  );
-}
-
-function resolveDefaultEmbeddedPostgresDir(): string {
-  return path.resolve(resolvePaperClawHomeDir(), "instances", resolvePaperClawInstanceId(), "db");
-}
-
 function resolveHomeAwarePath(value: string): string {
   return path.resolve(expandHomePrefix(value));
 }
@@ -76,7 +45,7 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
 
   while (true) {
-    const candidate = path.resolve(currentDir, ".paperclaw", CONFIG_BASENAME);
+    const candidate = path.resolve(currentDir, ".paperclip", CONFIG_BASENAME);
     if (existsSync(candidate)) return candidate;
 
     const nextDir = path.resolve(currentDir, "..");
@@ -85,15 +54,15 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   }
 }
 
-function resolvePaperClawConfigPath(): string {
-  if (process.env.PAPERCLAW_CONFIG?.trim()) {
-    return path.resolve(process.env.PAPERCLAW_CONFIG.trim());
+function resolvePaperclipConfigPath(): string {
+  if (process.env.PAPERCLIP_CONFIG?.trim()) {
+    return path.resolve(process.env.PAPERCLIP_CONFIG.trim());
   }
-  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath();
+  return findConfigFileFromAncestors(process.cwd()) ?? resolvePaperclipConfigPathForInstance();
 }
 
-function resolvePaperClawEnvPath(configPath: string): string {
-  return path.resolve(path.dirname(configPath), ENV_BASENAME);
+function resolvePaperclipEnvPath(configPath: string): string {
+  return resolvePaperclipEnvPathForConfig(configPath);
 }
 
 function parseEnvFile(contents: string): Record<string, string> {
@@ -213,8 +182,8 @@ function readConfig(configPath: string): PartialConfig | null {
 }
 
 export function resolveDatabaseTarget(): ResolvedDatabaseTarget {
-  const configPath = resolvePaperClawConfigPath();
-  const envPath = resolvePaperClawEnvPath(configPath);
+  const configPath = resolvePaperclipConfigPath();
+  const envPath = resolvePaperclipEnvPath(configPath);
   const envEntries = readEnvEntries(envPath);
 
   const envUrl = process.env.DATABASE_URL?.trim();
@@ -233,7 +202,7 @@ export function resolveDatabaseTarget(): ResolvedDatabaseTarget {
     return {
       mode: "postgres",
       connectionString: fileEnvUrl,
-      source: "paperclaw-env",
+      source: "paperclip-env",
       configPath,
       envPath,
     };

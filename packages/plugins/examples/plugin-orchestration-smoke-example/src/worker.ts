@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { definePlugin, runWorker, type PluginApiRequestInput } from "@kesarcloud/plugin-sdk";
+import { definePlugin, runWorker, type PluginApiRequestInput } from "@paperclipai/plugin-sdk";
 
 type SmokeInput = {
   companyId: string;

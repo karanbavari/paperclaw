@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import pc from "picocolors";
@@ -60,9 +60,14 @@ function normalizeApiBase(apiBase: string): string {
   return apiBase.trim().replace(/\/+$/, "");
 }
 
+function isTruthyEnv(value: string | undefined): boolean {
+  const v = value?.trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 export function resolveBoardAuthStorePath(overridePath?: string): string {
   if (overridePath?.trim()) return path.resolve(overridePath.trim());
-  if (process.env.PAPERCLAW_AUTH_STORE?.trim()) return path.resolve(process.env.PAPERCLAW_AUTH_STORE.trim());
+  if (process.env.PAPERCLIP_AUTH_STORE?.trim()) return path.resolve(process.env.PAPERCLIP_AUTH_STORE.trim());
   return resolveDefaultCliAuthPath();
 }
 
@@ -169,25 +174,28 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function openUrl(url: string): boolean {
-  const platform = process.platform;
-  try {
-    if (platform === "darwin") {
-      const child = spawn("open", [url], { detached: true, stdio: "ignore" });
-      child.unref();
-      return true;
+export async function openUrl(url: string): Promise<boolean> {
+  const { command, args } =
+    process.platform === "darwin"
+      ? { command: "open", args: [url] }
+      : process.platform === "win32"
+        ? { command: "cmd", args: ["/c", "start", "", url] }
+        : { command: "xdg-open", args: [url] };
+
+  return new Promise<boolean>((resolve) => {
+    let child: ChildProcess;
+    try {
+      child = spawn(command, args, { detached: true, stdio: "ignore" });
+    } catch {
+      resolve(false);
+      return;
     }
-    if (platform === "win32") {
-      const child = spawn("cmd", ["/c", "start", "", url], { detached: true, stdio: "ignore" });
+    child.once("error", () => resolve(false));
+    child.once("spawn", () => {
       child.unref();
-      return true;
-    }
-    const child = spawn("xdg-open", [url], { detached: true, stdio: "ignore" });
-    child.unref();
-    return true;
-  } catch {
-    return false;
-  }
+      resolve(true);
+    });
+  });
 }
 
 export async function loginBoardCli(params: {
@@ -198,6 +206,8 @@ export async function loginBoardCli(params: {
   command?: string;
   storePath?: string;
   print?: boolean;
+  openBrowser?: boolean;
+  publicBaseUrl?: string;
 }): Promise<{ token: string; approvalUrl: string; userId?: string | null }> {
   const apiBase = normalizeApiBase(params.apiBase);
   const createUrl = `${apiBase}/api/cli-auth/challenges`;
@@ -207,21 +217,31 @@ export async function loginBoardCli(params: {
     method: "POST",
     body: JSON.stringify({
       command,
-      clientName: params.clientName?.trim() || "paperclaw cli",
+      clientName: params.clientName?.trim() || "paperclipai cli",
       requestedAccess: params.requestedAccess,
       requestedCompanyId: params.requestedCompanyId?.trim() || null,
     }),
   });
 
-  const approvalUrl = challenge.approvalUrl ?? `${apiBase}${challenge.approvalPath}`;
+  const publicBase = params.publicBaseUrl?.trim() || process.env.PAPERCLIP_PUBLIC_URL?.trim();
+  const approvalUrl = publicBase
+    ? `${normalizeApiBase(publicBase)}${challenge.approvalPath}`
+    : challenge.approvalUrl ?? `${apiBase}${challenge.approvalPath}`;
+
   if (params.print !== false) {
     console.error(pc.bold("Board authentication required"));
     console.error(`Open this URL in your browser to approve CLI access:\n${approvalUrl}`);
   }
 
-  const opened = openUrl(approvalUrl);
-  if (params.print !== false && opened) {
-    console.error(pc.dim("Opened the approval page in your browser."));
+  const wantBrowser = params.openBrowser !== false && !isTruthyEnv(process.env.PAPERCLIP_NO_BROWSER);
+  const opened = wantBrowser ? await openUrl(approvalUrl) : false;
+  if (params.print !== false) {
+    const browserMessage = !wantBrowser
+      ? "Browser open skipped — open the URL above to approve."
+      : opened
+        ? "Opened the approval page in your browser."
+        : "Couldn't open a browser automatically — open the URL above to approve.";
+    console.error(pc.dim(browserMessage));
   }
 
   const expiresAtMs = Date.parse(challenge.expiresAt);

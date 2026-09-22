@@ -3,7 +3,7 @@ title: Companies
 summary: Company CRUD endpoints
 ---
 
-Manage companies within your PaperClaw instance.
+Manage companies within your Paperclip instance.
 
 ## List Companies
 
@@ -11,7 +11,18 @@ Manage companies within your PaperClaw instance.
 GET /api/companies
 ```
 
-Returns all companies the current user/agent has access to.
+Requires a board user. Returns companies where the user has active membership.
+Instance administrators and the local trusted board can list all companies.
+
+For navigation and company selectors, use `GET /api/companies?scope=accessible`.
+This returns only companies the caller can enter through company-scoped routes,
+including for instance administrators. Instance administrator status alone does
+not grant access to a company's contents. The local trusted board can still
+enter all companies. The board UI uses this scope for its company list, so it
+does not select companies the user cannot open.
+The Instance Access screen uses the unscoped directory so administrators can
+manage membership for all companies. A supplied `scope` must be a single
+`accessible` value; empty, unknown, or repeated values return `400`.
 
 ## Get Company
 
@@ -61,7 +72,7 @@ Valid image content types:
 - `image/gif`
 - `image/svg+xml`
 
-Company logo uploads use the normal PaperClaw attachment size limit.
+Company logo uploads use the normal Paperclip attachment size limit.
 
 Then set the company logo by PATCHing the returned `assetId` into `logoAssetId`.
 
@@ -82,7 +93,7 @@ Archives a company. Archived companies are hidden from default listings.
 | `description` | string | Company description |
 | `status` | string | `active`, `paused`, `archived` |
 | `logoAssetId` | string | Optional asset id for the stored logo image |
-| `logoUrl` | string | Optional PaperClaw asset content path for the stored logo image |
+| `logoUrl` | string | Optional Paperclip asset content path for the stored logo image |
 | `budgetMonthlyCents` | number | Monthly budget limit |
 | `createdAt` | string | ISO timestamp |
 | `updatedAt` | string | ISO timestamp |

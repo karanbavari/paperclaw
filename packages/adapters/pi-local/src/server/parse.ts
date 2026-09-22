@@ -1,4 +1,4 @@
-import { asNumber, asString, parseJson, parseObject } from "@kesarcloud/adapter-utils/server-utils";
+import { asNumber, asString, parseJson, parseObject } from "@paperclipai/adapter-utils/server-utils";
 
 interface ParsedPiOutput {
   sessionId: string | null;
@@ -53,6 +53,20 @@ export function parsePiJsonl(stdout: string): ParsedPiOutput {
     if (!event) continue;
 
     const eventType = asString(event.type, "");
+
+    // Pi can exit successfully after a provider failure. The terminal assistant
+    // message carries that failure in both message_end and turn_end envelopes.
+    const terminalMessages = eventType === "agent_end"
+      ? (Array.isArray(event.messages) ? event.messages : [])
+      : eventType === "message_end" || eventType === "turn_end"
+        ? [event.message]
+        : [];
+    for (const rawMessage of terminalMessages) {
+      const message = asRecord(rawMessage);
+      if (message?.role !== "assistant" || message.stopReason !== "error") continue;
+      const error = asString(message.errorMessage, "").trim() || "Pi provider request failed.";
+      if (!result.errors.includes(error)) result.errors.push(error);
+    }
 
     // RPC protocol messages - skip these (internal implementation detail)
     if (eventType === "response" || eventType === "extension_ui_request" || eventType === "extension_ui_response" || eventType === "extension_error") {

@@ -1,223 +1,544 @@
-# PaperClaw
+<p align="center">
+  <img src="doc/assets/banner.jpg" alt="Paperclip is the app people use to manage AI agents for work." width="720" />
+</p>
 
-**Production-oriented automation for AI-agent companies.**
+<p align="center">
+  <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
+  <a href="https://docs.paperclip.ing"><strong>Docs</strong></a> &middot;
+  <a href="https://github.com/paperclipai/paperclip"><strong>GitHub</strong></a> &middot;
+  <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
+  <a href="https://x.com/papercliping"><strong>Twitter</strong></a> &middot;
+  <a href="https://paperclip.ing"><strong>Website</strong></a>
+</p>
 
-PaperClaw is a new KesarCloud-maintained open-source project for running teams of AI agents with company structure, governance, budgets, approvals, memory, tools, and visible outcomes. It is based on the MIT-licensed Paperclip AI open-source framework/project structure, and has evolved into a distinct control plane for production-grade AI-agent company automation.
+<p align="center">
+  <a href="https://github.com/paperclipai/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
+  <a href="https://github.com/paperclipai/paperclip/stargazers"><img src="https://img.shields.io/github/stars/paperclipai/paperclip?style=flat" alt="Stars" /></a>
+  <a href="https://www.star-history.com/paperclipai/paperclip"><img src="https://api.star-history.com/badge?repo=paperclipai/paperclip" alt="Star History Rank" /></a>
+  <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/badge/discord-join-7289da" alt="Discord" /></a>
+</p>
 
-[Quickstart](#quickstart) | [Docs](docs) | [Architecture](docs/start/architecture.md) | [Roadmap](ROADMAP.md) | [Issues](https://github.com/karanbavari/paperclaw/issues)
+<br/>
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue)
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/773bdfb2-6d1e-4e30-8c5f-3487d5b70c8f" width="600" controls></video>
+</div>
 
-## What PaperClaw Is
+<br/>
 
-PaperClaw is the operating layer for human-governed AI-agent companies.
+# Paperclip is the app people use to manage AI agents for work.
 
-Instead of scattering work across chat windows, terminal sessions, and disconnected automation scripts, PaperClaw gives each company a structured control plane:
+Open-source orchestration for teams of AI agents.
 
-- companies with goals, context, and operating preferences
-- AI employees with roles, managers, capabilities, budgets, and adapter configs
-- issue-based work with comments, documents, artifacts, blockers, and review states
-- scheduled and event-driven heartbeats for agent execution
-- board approvals, activity logs, cost tracking, and budget hard stops
-- company memory, meeting rooms, Research Lab, skills, plugins, and tool permissions
+**If OpenClaw is an _employee_, Paperclip is the _company_.**
 
-PaperClaw does not try to be the agent runtime. It coordinates the agents you already use, such as local CLI agents, process/HTTP agents, OpenClaw-style workers, and external adapter plugins.
+Paperclip is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track work and costs from one dashboard.
 
-## Why It Exists
+It looks like a task manager. Under the hood: org charts, budgets, governance, goal alignment, and agent coordination.
 
-AI agents are getting better at doing work, but most teams still lack the management layer around them. Once you have more than one agent, you need to know:
+**Manage business goals, not pull requests.**
 
-- who owns each task
-- why the task matters
-- what the agent did
-- what it cost
-- what needs approval
-- what actually shipped
-- what failed and needs attention
+|        | Step            | Example                                                            |
+| ------ | --------------- | ------------------------------------------------------------------ |
+| **01** | Define the goal | _"Build the #1 AI note-taking app to $1M MRR."_                    |
+| **02** | Hire the team   | CEO, CTO, engineers, designers, marketers — any bot, any provider. |
+| **03** | Approve and run | Review strategy. Set budgets. Hit go. Monitor from the dashboard.  |
 
-PaperClaw makes those answers visible in one place.
+<br/>
 
-## Operating Model
+<div align="center">
+<table>
+  <tr>
+    <td align="center"><strong>Works<br/>with</strong></td>
+    <td align="center"><img src="doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
+    <td align="center"><img src="doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
+    <td align="center"><img src="doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
+    <td align="center"><img src="doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
+    <td align="center"><img src="doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
+    <td align="center"><img src="doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
+  </tr>
+</table>
 
-1. **Create a company** - define the business goal and operating context.
-2. **Hire agents** - add a CEO, CTO, researchers, engineers, marketers, support agents, or custom roles.
-3. **Configure execution** - connect each agent through an adapter such as Codex, Claude Code, process, HTTP, OpenClaw gateway, or an external adapter plugin.
-4. **Approve strategy** - let leadership agents propose plans while the board keeps control of sensitive decisions.
-5. **Delegate work** - agents create issues, subtasks, comments, reports, artifacts, demos, and follow-up work.
-6. **Control risk and spend** - budgets, approvals, tool permissions, and audit logs keep autonomy accountable.
-7. **Review outcomes** - dashboards, Outcome Center, Research Lab reports, work products, and incident surfaces show what happened.
+<em>If it can receive a heartbeat, it's hired.</em>
 
-## Core Capabilities
+</div>
 
-| Capability | What it provides |
-| --- | --- |
-| Multi-company control plane | Run multiple companies from one deployment with company-scoped data and workflows. |
-| Agent org charts | Model AI agents as employees with roles, reporting lines, budgets, and capabilities. |
-| Goal-linked issues | Keep work tied to company goals through projects, issues, sub-issues, comments, and artifacts. |
-| Heartbeat execution | Wake agents on schedules, assignments, mentions, approvals, or manual invokes. |
-| Adapter-neutral runtime | Bring Codex, Claude Code, OpenCode, Gemini, Pi, Cursor, shell/process agents, HTTP webhooks, OpenClaw gateway, or external adapter plugins. |
-| Governance and approvals | Route hiring, strategy, tool execution, and review handoffs through board-controlled approval flows. |
-| Cost controls | Track token/cost events and enforce monthly budgets with warning thresholds and hard-stop behavior. |
-| Company memory | Store company profile, operating context, localization preferences, short-term notes, and long-term knowledge. |
-| Research Lab | Run governed R&D spaces for research, prototypes, demos, reports, CEO review, and board decisions. |
-| Plugin and skills marketplace | Discover and install company or agent capabilities without hardcoding every integration into core. |
-| Tool permissions | Control which agents can use plugin tools, when approval is required, and how tool activity is audited. |
-| Outcome and incident centers | See shipped work products and operational failures without digging through raw logs. |
+<br/>
 
-## Production Use Cases
+## Paperclip is right for you if
 
-PaperClaw is useful when AI agents need to do real business work as a team, with goals, budgets, approvals, and visible outcomes.
+- ✅ You want to build **autonomous AI organizations**
+- ✅ You **coordinate many different agents** (OpenClaw, Codex, Claude, Cursor) toward a common goal
+- ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
+- ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
+- ✅ You want to **monitor costs** and enforce budgets
+- ✅ You want a process for managing agents that **feels like using a task manager**
+- ✅ You want to manage your autonomous businesses **from your phone**
 
-| Sector | Example workflows |
-| --- | --- |
-| Software and SaaS teams | Run engineering, QA, release, research, incident follow-up, docs, and product experiments through agent teams connected to GitHub, Linear/Jira, Vercel, Sentry, Grafana, Postman, and cloud tools. |
-| Ecommerce operators | Coordinate product updates, inventory checks, order research, landing-page experiments, catalog diagnostics, customer messaging, payment/refund workflows, and campaign analysis across Shopify/WooCommerce, Stripe, Meta Ads, logistics, and email tools. |
-| Agencies and growth teams | Create repeatable client-company templates for research, content, ads, CRM cleanup, reporting, creative production, outbound follow-up, and weekly account reviews. |
-| Finance and revenue operations | Give agents governed access to payment, billing, expense, accounting, and CRM workflows using tools such as Stripe, Razorpay, Brex, Plaid, Xero, QuickBooks, NetSuite, HubSpot, and Zoho Books. |
-| Legal and document-heavy teams | Organize review, discovery, document management, matter research, contract workflows, and client intake using legal, document, and signature integrations. |
-| Logistics and courier operations | Track shipment workflows, delivery status research, exception handling, customer updates, and carrier comparisons with logistics tool integrations. |
-| Real estate teams | Support lead follow-up, property research, market comparisons, listing operations, CRM updates, and transaction coordination. |
-| Internal operations | Run recurring reports, inbox triage, research labs, meeting follow-ups, knowledge capture, task routing, and cross-functional execution with budgets and approval gates. |
+<br/>
 
-PaperClaw is not a compliance certification by itself. For regulated use cases, treat it as an orchestration and audit layer that must be deployed and governed according to your own legal, security, and compliance requirements.
+## The four pillars
+
+Four things have to work for an organization of AI agents to actually produce: the tasks, the org, the training, and the infrastructure. Paperclip is built around exactly those four pillars.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-light.png">
+  <img src="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-light.png" alt="The four pillars of Paperclip">
+</picture>
+
+| Pillar | Built for | What it covers |
+| --- | --- | --- |
+| **Agentic Task Manager** — Declare intent. Agents work. You verify the output. | Everyone, daily | Tasks, approvals & review gates · proactive agent coworkers · auditable routines & workflows · verify from diffs, screenshots & tests |
+| **Org Chart for Agents** — Roles, permissions & boundaries for humans and agents. | Managers | Mixed human + agent org chart · responsibilities, delegation, specialization · governance: who can do what · scoped secrets & company boundaries |
+| **Agent Employee Training** — Design, train & evaluate your AI employees. | Enablers | Skill Studio & shared org-wide skills · evals & saved test runs · active learning loops & quality metrics · performance reviews for agents |
+| **Agentic OS** — The infrastructure that makes the work run. | IT & platform | Cross-provider runtime: any model, any agent · sandboxing, integrations & MCP servers · SSO, GRC, RBAC & cost controls · data privacy, internal trace collection, compounding data value |
+
+<br/>
+
+## Features
+
+<table>
+<tr>
+<td align="center" width="33%">
+<h3>🔌 Bring Your Own Agent</h3>
+Any agent, any runtime, one org chart. If it can receive a heartbeat, it's hired.
+</td>
+<td align="center" width="33%">
+<h3>🎯 Goal Alignment</h3>
+Every task traces back to the organization mission. Agents know <em>what</em> to do and <em>why</em>.
+</td>
+<td align="center" width="33%">
+<h3>💓 Heartbeats</h3>
+Agents wake on a schedule, check work, and act. Delegation flows up and down the org chart.
+</td>
+</tr>
+<tr>
+<td align="center">
+<h3>💰 Cost Control</h3>
+Monthly budgets per agent. When they hit the limit, they stop. No runaway costs.
+</td>
+<td align="center">
+<h3>🏢 Multi-Organization</h3>
+One deployment, many organizations. Complete data isolation. One control plane for your portfolio.
+</td>
+<td align="center">
+<h3>🎫 Ticket System</h3>
+Every conversation traced. Every decision explained. Full tool-call tracing and immutable audit log.
+</td>
+</tr>
+<tr>
+<td align="center">
+<h3>🛡️ Governance</h3>
+Approve hires, override strategy, pause or terminate any agent — at any time.
+</td>
+<td align="center">
+<h3>📊 Org Chart</h3>
+Hierarchies, roles, reporting lines. Your agents have a boss, a title, and a job description.
+</td>
+<td align="center">
+<h3>📱 Mobile Ready</h3>
+Monitor and manage your autonomous businesses from anywhere.
+</td>
+</tr>
+</table>
+
+<br/>
+
+## Problems Paperclip solves
+
+| Without Paperclip                                                                                                                     | With Paperclip                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| ❌ You have 20 Claude Code tabs open and can't track which one does what. On reboot you lose everything.                              | ✅ Tasks are ticket-based, conversations are threaded, sessions persist across reboots.                                                |
+| ❌ You manually gather context from several places to remind your bot what you're actually doing.                                     | ✅ Context flows from the task up through the project and company goals — your agent always knows what to do and why.                  |
+| ❌ Folders of agent configs are disorganized and you're re-inventing task management, communication, and coordination between agents. | ✅ Paperclip gives you org charts, ticketing, delegation, and governance out of the box — so you run a company, not a pile of scripts. |
+| ❌ Runaway loops waste hundreds of dollars of tokens and max your quota before you even know what happened.                           | ✅ Cost tracking surfaces token budgets and throttles agents when they're out. Management prioritizes with budgets.                    |
+| ❌ You have recurring jobs (customer support, social, reports) and have to remember to manually kick them off.                        | ✅ Heartbeats handle regular work on a schedule. Management supervises.                                                                |
+| ❌ You have an idea, you have to find your repo, fire up Claude Code, keep a tab open, and babysit it.                                | ✅ Add a task in Paperclip. Your coding agent works on it until it's done. Management reviews their work.                              |
+
+<br/>
+
+## Why Paperclip is special
+
+Paperclip handles the hard orchestration details correctly.
+
+|                                   |                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Atomic execution.**             | Task checkout and budget enforcement are atomic, so no double-work and no runaway spend.                      |
+| **Persistent agent state.**       | Agents resume the same task context across heartbeats instead of restarting from scratch.                     |
+| **Runtime skill injection.**      | Agents can learn Paperclip workflows and project context at runtime, without retraining.                      |
+| **Governance with rollback.**     | Approval gates are enforced, config changes are revisioned, and bad changes can be rolled back safely.        |
+| **Goal-aware execution.**         | Tasks carry full goal ancestry so agents consistently see the "why," not just a title.                        |
+| **Portable company templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
+| **True multi-organization isolation.** | Every entity is company-scoped, so one deployment can run many companies with separate data and audit trails. |
+
+<br/>
+
+## What's Under the Hood
+
+Paperclip is a full control plane, not a wrapper. Before you build any of this yourself, know that it already exists:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                       PAPERCLIP SERVER                       │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
+│  │Identity & │  │  Work &   │  │ Heartbeat │  │Governance │  │
+│  │  Access   │  │   Tasks   │  │ Execution │  │& Approvals│  │
+│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
+│  │ Org Chart │  │Workspaces │  │  Plugins  │  │  Budget   │  │
+│  │ & Agents  │  │ & Runtime │  │           │  │ & Costs   │  │
+│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
+│                                                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
+│  │ Routines  │  │ Secrets & │  │ Activity  │  │  Company  │  │
+│  │& Schedules│  │  Storage  │  │ & Events  │  │Portability│  │
+│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
+└──────────────────────────────────────────────────────────────┘
+         ▲              ▲              ▲              ▲
+   ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐
+   │  Claude   │  │   Codex   │  │   CLI     │  │ HTTP/web  │
+   │   Code    │  │           │  │  agents   │  │   bots    │
+   └───────────┘  └───────────┘  └───────────┘  └───────────┘
+```
+
+### The Systems
+
+<table>
+<tr>
+<td width="50%">
+
+**Identity & Access** — Two deployment modes (trusted local or authenticated), board users, agent API keys, short-lived run JWTs, company memberships, invite flows, and OpenClaw onboarding. Every mutating request is traced to an actor.
+
+</td>
+<td width="50%">
+
+**Org Chart & Agents** — Agents have roles, titles, reporting lines, permissions, and budgets. Adapter examples match the diagram: Claude Code, Codex, CLI agents such as Cursor/Gemini/bash, HTTP/webhook bots such as OpenClaw, and external adapter plugins. If it can receive a heartbeat, it's hired.
+
+</td>
+</tr>
+<tr>
+<td>
+
+**Work & Task System** — Issues carry company/project/goal/parent links, atomic checkout with execution locks, first-class blocker dependencies, comments, documents, attachments, work products, labels, and inbox state. No double-work, no lost context.
+
+</td>
+<td>
+
+**Heartbeat Execution** — DB-backed wakeup queue with coalescing, budget checks, workspace resolution, secret injection, skill loading, and adapter invocation. Runs produce structured logs, cost events, session state, and audit trails. Recovery handles orphaned runs automatically.
+
+</td>
+</tr>
+<tr>
+<td>
+
+**Workspaces & Runtime** — Project workspaces, isolated execution workspaces (git worktrees, operator branches), and runtime services (dev servers, preview URLs). Agents work in the right directory with the right context every time.
+
+</td>
+<td>
+
+**Governance & Approvals** — Board approval workflows, execution policies with review/approval stages, decision tracking, budget hard-stops, agent pause/resume/terminate, and full audit logging. Nothing ships without your sign-off.
+
+</td>
+</tr>
+<tr>
+<td>
+
+**Budget & Cost Control** — Token and cost tracking by company, agent, project, goal, issue, provider, and model. Scoped budget policies with warning thresholds and hard stops. Overspend pauses agents and cancels queued work automatically.
+
+</td>
+<td>
+
+**Routines & Schedules** — Recurring tasks with cron, webhook, and API triggers. Concurrency and catch-up policies. Each routine execution creates a tracked issue and wakes the assigned agent — no manual kick-offs needed.
+
+</td>
+</tr>
+<tr>
+<td>
+
+**Plugins** — Instance-wide plugin system with out-of-process workers, capability-gated host services, job scheduling, tool exposure, and UI contributions. Extend Paperclip without forking it.
+
+</td>
+<td>
+
+**Secrets & Storage** — Instance and company secrets, encrypted local storage, provider-backed object storage, attachments, and work products. Sensitive values stay out of prompts unless a scoped run explicitly needs them.
+
+</td>
+</tr>
+<tr>
+<td>
+
+**Activity & Events** — Mutating actions, heartbeat state changes, cost events, approvals, comments, and work products are recorded as durable activity so operators can audit what happened and why.
+
+</td>
+<td>
+
+**Company Portability** — Export and import entire organizations — agents, skills, projects, routines, and issues — with secret scrubbing and collision handling. One deployment, many companies, complete data isolation.
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+## What Paperclip is not
+
+|                              |                                                                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Not a chatbot.**           | Agents have jobs, not chat windows.                                                                                  |
+| **Not an agent framework.**  | We don't tell you how to build agents. We tell you how to run a company made of them.                                |
+| **Not a workflow builder.**  | No drag-and-drop pipelines. Paperclip models companies — with org charts, goals, budgets, and governance.            |
+| **Not a prompt manager.**    | Agents bring their own prompts, models, and runtimes. Paperclip manages the organization they work in.               |
+| **Not a single-agent tool.** | This is for teams. If you have one agent, you probably don't need Paperclip. If you have twenty — you definitely do. |
+| **Not a code review tool.**  | Paperclip orchestrates work, not pull requests. Bring your own review process.                                       |
+
+<br/>
 
 ## Quickstart
 
-Install and run the CLI with `npx`:
+Open source. Self-hosted. No Paperclip account required.
 
-```sh
-npx @kesarcloud/paperclaw onboard --yes
-npx @kesarcloud/paperclaw run
+```bash
+curl -fsSLO https://paperclip.ing/install.sh
+curl -fsSLO https://paperclip.ing/install.sh.sha256
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum -c install.sh.sha256
+else
+  shasum -a 256 -c install.sh.sha256
+fi
+bash install.sh
 ```
 
-The CLI installs a `paperclaw` command and starts PaperClaw in trusted local loopback mode by default. It uses embedded PostgreSQL when `DATABASE_URL` is not set, so a local install does not require Docker or a separate database.
+The installer ensures Node.js 24.11 or newer is available, installs a managed
+Paperclip CLI under `~/.paperclip/cli`, and starts interactive onboarding. It
+can also install Paperclip as a background service on supported Linux and
+macOS systems. The checksum detects transfer or publishing mistakes, but it is
+served from the same origin as the script; use a release-tag or commit-pinned
+GitHub copy when you need an independently hosted source.
 
-Private-network modes are available when you want login-required access from a LAN or tailnet:
+For a non-interactive managed install:
 
-```sh
-npx @kesarcloud/paperclaw onboard --yes --bind lan
-npx @kesarcloud/paperclaw run --bind tailnet
+```bash
+curl -fsSL https://paperclip.ing/install.sh | bash -s -- --no-prompt --no-onboard
+paperclipai onboard --yes
 ```
 
-For local development on PaperClaw itself:
+The piped form requires supported Node.js, npm, and npx to already be present.
+If Node.js bootstrap is required, download and review `install.sh` before
+running it so no privileged dependency-install command is accepted through a
+pipe.
 
-```sh
-git clone https://github.com/karanbavari/paperclaw.git
-cd paperclaw
+To try Paperclip without installing anything permanently:
+
+```bash
+npx --registry https://registry.npmjs.org paperclipai onboard --yes
+```
+
+For an isolated manual test instance that is already initialized with a CEO
+agent, use `test-drive`. It stays in the foreground, never installs a service
+or creates a first task, and opens the browser only after setup succeeds:
+
+```bash
+ANTHROPIC_API_KEY=... npx paperclipai test-drive
+OPENAI_API_KEY=... npx paperclipai test-drive --harness codex
+OPENROUTER_API_KEY=... npx paperclipai test-drive \
+  --harness opencode \
+  --model openrouter/anthropic/claude-sonnet-4.5
+```
+
+Each run without `--data-dir` gets a unique, retained temporary directory; its
+absolute path is printed at startup. Pass `--data-dir` to reuse one, or
+`--no-browser` to leave the initialized instance unopened. When invoked from a
+linked Git worktree, `test-drive` also enables task execution in that worktree.
+See [`doc/CLI.md`](doc/CLI.md#isolated-manual-test-drives) for credential and
+reuse behavior.
+
+> **Troubleshooting: private npm registry `.npmrc`**
+>
+> If this fails with an `E404` for `paperclipai` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclipai` against that private registry instead of the public npm registry.
+>
+> Diagnostic:
+>
+> ```bash
+> npm config get registry
+> ```
+>
+> Workaround (cross-platform; force the public npm registry for this command):
+>
+> ```bash
+> npx --registry https://registry.npmjs.org paperclipai onboard --yes
+> ```
+
+That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
+
+```bash
+paperclipai onboard --yes --bind lan
+# or:
+paperclipai onboard --yes --bind tailnet
+```
+
+If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to edit settings.
+
+See [`doc/INSTALLING.md`](doc/INSTALLING.md) for pinned versions, canary and
+git-ref installs, updates, rollback, service management, and uninstalling.
+
+Or manually:
+
+```bash
+git clone https://github.com/paperclipai/paperclip.git
+cd paperclip
 pnpm install
 pnpm dev
 ```
 
-This starts the API and UI at [http://localhost:3100](http://localhost:3100).
+This starts the API server at `http://localhost:3100`. An embedded PostgreSQL database is created automatically — no setup required.
 
-Requirements:
+> **Requirements:** Node.js 24.11+, pnpm 9.15+
 
-- Node.js 20+
-- pnpm 9+ for repository development
+<br/>
 
-More setup options:
+## FAQ
 
-- [Quickstart](docs/start/quickstart.md)
-- [Local development](doc/DEVELOPING.md)
-- [Database setup](doc/DATABASE.md)
-- [Docker](doc/DOCKER.md)
-- [Deployment modes](doc/DEPLOYMENT-MODES.md)
+**What does a typical setup look like?**
+Locally, a single Node.js process manages an embedded Postgres and local file storage. For production, point it at your own Postgres and deploy however you like. Configure projects, agents, and goals — the agents take care of the rest.
 
-## How It Works
+If you're a solo entrepreneur you can use Tailscale to access Paperclip on the go. Then later you can deploy to e.g. Vercel when you need it.
 
-PaperClaw has four main layers:
+**Can I run multiple companies?**
+Yes. A single deployment can run an unlimited number of companies with complete data isolation.
 
-```text
-React UI
-  Board dashboard, agents, org chart, issues, approvals, labs, marketplace
+**How is Paperclip different from agents like OpenClaw or Claude Code?**
+Paperclip _uses_ those agents. It orchestrates them into a company — with org charts, budgets, goals, governance, and accountability.
 
-Express REST API
-  Company model, auth, services, scheduling, approvals, plugins, adapters
+**Why should I use Paperclip instead of just pointing my OpenClaw to Asana or Trello?**
+Agent orchestration has subtleties in how you coordinate who has work checked out, how to maintain sessions, monitoring costs, establishing governance - Paperclip does this for you.
 
-PostgreSQL + Drizzle
-  Durable company state, issues, runs, costs, memory, plugins, and audit data
+(Bring-your-own-ticket-system is on the Roadmap)
 
-Adapters and plugins
-  Agent runtimes, external tools, marketplace packages, skills, and UI extensions
+**Do agents run continuously?**
+By default, agents run on scheduled heartbeats and event-based triggers (task assignment, @-mentions). You can also hook in continuous agents like OpenClaw. You bring your agent and Paperclip coordinates.
+
+<br/>
+
+## Development
+
+```bash
+pnpm dev              # Full dev (API + UI, watch mode)
+pnpm dev:once         # Full dev without file watching
+pnpm dev:server       # Server only
+pnpm dev:mobile       # Serve prebuilt UI on :3101 for phones/tablets (proxies /api → :3100)
+pnpm dev:both         # Run `pnpm dev` and `pnpm dev:mobile` together
+pnpm build            # Build all
+pnpm typecheck        # Type checking
+pnpm test             # Cheap default test run (Vitest only)
+pnpm test:watch       # Vitest watch mode
+pnpm test:e2e         # Playwright browser suite
+pnpm db:generate      # Generate DB migration
+pnpm db:migrate       # Apply migrations
 ```
 
-When a heartbeat runs:
+`pnpm test` does not run Playwright. Browser suites stay separate and are typically run only when working on those flows or in CI.
 
-1. PaperClaw resolves the company, agent, task, workspace, budget, and permissions.
-2. The configured adapter invokes the agent runtime.
-3. The agent uses PaperClaw APIs to inspect work, check out tasks, comment, report costs, and attach outputs.
-4. PaperClaw records run state, activity, costs, artifacts, approvals, and any recovery signals.
+See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
 
-## What PaperClaw Is Not
-
-| Not this | Why |
-| --- | --- |
-| A general chatbot | Conversations should resolve to work objects such as issues, labs, approvals, reports, or decisions. |
-| An agent framework | PaperClaw coordinates agents; it does not require one agent runtime or prompt format. |
-| A prompt manager | Agents bring their own identity, prompts, sessions, tools, and adapter configuration. |
-| A Jira/GitHub replacement | PaperClaw orchestrates company work and can link to external engineering systems. |
-| A code review product | It can coordinate coding agents and outputs, but review and merge policy remain with your existing tools. |
-
-## Why PaperClaw Is Different
-
-| Tool type | What it usually does | Where PaperClaw differs |
-| --- | --- | --- |
-| Paperclip AI-style task tools | Manage AI work in a project-like surface. | PaperClaw extends the idea into a distinct KesarCloud project focused on production-oriented company structure, governance, memory, plugins, tool permissions, outcomes, and operations. |
-| OpenClaw-style agents | Provide autonomous agent workers. | PaperClaw can coordinate those workers as employees inside a company with goals, reporting lines, budgets, tasks, and board oversight. |
-| Single-agent tools | Let one agent complete one task or work in one repo/session. | PaperClaw manages many agents, roles, tasks, companies, and execution contexts while preserving ownership and audit history. |
-| Generic AI chat apps | Answer questions or generate content in conversation. | PaperClaw keeps work traceable through issues, comments, approvals, labs, artifacts, routines, and decisions. |
-
-## Documentation
-
-- [What is PaperClaw?](docs/start/what-is-paperclaw.md)
-- [Core concepts](docs/start/core-concepts.md)
-- [Architecture](docs/start/architecture.md)
-- [Board operator guides](docs/guides/board-operator/dashboard.md)
-- [Agent developer guides](docs/guides/agent-developer/how-agents-work.md)
-- [Adapters](docs/adapters/overview.md)
-- [External adapters](docs/adapters/external-adapters.md)
-- [Plugin specification](doc/plugins/PLUGIN_SPEC.md)
-- [Product definition](doc/PRODUCT.md)
-- [V1 implementation spec](doc/SPEC-implementation.md)
+<br/>
 
 ## Roadmap
 
-Available today:
+- ✅ Plugin system (e.g. add a knowledge base, custom tracing, queues, etc)
+- ✅ Get OpenClaw / claw-style agent employees
+- ✅ companies.sh - import and export entire organizations
+- ✅ Easy AGENTS.md configurations
+- ✅ Skills Manager, Skill Studio & Skills Store
+- ✅ Scheduled Routines
+- ✅ Better Budgeting
+- ✅ Agent Reviews and Approvals
+- ✅ Multiple Human Users
+- ✅ Cloud / Sandbox agents (e2b, Cloudflare, Daytona, Modal, Novita, self-hosted Kubernetes)
+- ✅ Artifacts & Work Products
+- ✅ Deep Planning (planning mode, revisioned plans, plan approvals)
+- ✅ Enforced Outcomes (watchdogs, recovery actions, review gates)
+- ✅ MCP Tool Gateway & Apps (governed tool access)
+- ✅ Secrets Manager with per-agent access
+- ✅ Activity log & action attribution
+- ✅ Self-healing runs & automatic recovery
+- ✅ Agent evals & feedback
+- ⚪ Memory / Knowledge
+- ⚪ MAXIMIZER MODE
+- ⚪ Work Queues
+- ⚪ Self-Organization
+- ⚪ Automatic Organizational Learning
+- ⚪ CEO Chat
+- 🟡 Cloud deployments (multi-tenant isolation & company Import/Export shipped)
+- ⚪ Desktop App
+- ⚪ Bring-your-own-ticket-system (Asana / Linear / Jira as on-ramps)
+- ⚪ Connected Apps (one-click integrations, e.g. Vercel)
 
-- companies, goals, agents, org charts, issues, comments, approvals, budgets, and activity logs
-- heartbeat execution with local CLI/session, process, HTTP, OpenClaw gateway, and external adapter support
-- project and execution workspaces, runtime services, work products, attachments, and documents
-- routines, skills, marketplace discovery, plugin setup, tool test console, and tool permissions
-- company memory, meeting rooms, Research Lab, Outcome Center, and Ops Incident Center
-- local trusted mode, authenticated/private mode, Docker, embedded PostgreSQL, and hosted Postgres options
+This is the short roadmap preview. See the full roadmap in [ROADMAP.md](ROADMAP.md).
 
-Planned next:
+<br/>
 
-- guided first-company bootstrap
-- governed self-healing
-- fleet-level monitoring
-- enterprise autopilot controls
-- external channel inbox
-- governed agent config changes
-- company template marketplace
-- stronger enforced-outcome workflows
-- cloud and desktop distribution options
+## Community & Plugins
 
-See [ROADMAP.md](ROADMAP.md) for the full roadmap.
+Find Plugins and more at [awesome-paperclip](https://github.com/gsxdsm/awesome-paperclip)
 
-## Community and Contributing
+## Observability
 
-PaperClaw is open source under the MIT license. Contributions are welcome, especially bug fixes, docs, adapters, plugins, examples, and tightly scoped product improvements.
+Paperclip ships with opt-in OpenTelemetry auto-instrumentation for the server (traces only). It activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and supports `grpc`, `http/protobuf`, and `http/json` via the standard `OTEL_EXPORTER_OTLP_PROTOCOL` env var. `@opentelemetry/api` is a normal server dependency; the SDK, auto-instrumentation, and exporter packages are optional peer dependencies — install them only if you want tracing. See [doc/observability.md](doc/observability.md) for install commands and the full env-var reference.
 
-Start with:
+Paperclip also ships with opt-in Sentry error monitoring for the server and the browser. Set `SENTRY_DSN_FRONTEND` to activate it for the browser and `SENTRY_DSN_BACKEND` to activate it for the server — each variable is optional, and the legacy `SENTRY_DSN` variable still works as a fallback for either component. The supported server SDK version is `@sentry/node@10.71.0`; it is an optional peer dependency for the server, so install it only if you want error monitoring. The browser SDK, `@sentry/browser`, is pinned to the same exact version. See [doc/observability.md](doc/observability.md#sentry-error-monitoring) for the install command, the privacy settings, and the full default capture set.
 
-- [Contributing guide](CONTRIBUTING.md)
-- [Development guide](doc/DEVELOPING.md)
-- [Plugin authoring guide](doc/plugins/PLUGIN_AUTHORING_GUIDE.md)
-- [Creating an adapter](docs/adapters/creating-an-adapter.md)
+## Telemetry
 
-## License and Attribution
+Paperclip collects anonymous usage telemetry to help us understand how the product is used and improve it. No personal information, issue content, prompts, file paths, or secrets are ever collected. Private repository references are hashed with a per-install salt before being sent.
 
-PaperClaw is maintained by KesarCloud and released under the MIT license.
+Contributors changing emitted telemetry events should follow the [Telemetry Data Contract](packages/shared/src/telemetry/README.md).
+For proposed first-party events that are not in the generated contract yet, follow [Telemetry Workflow](doc/TELEMETRY_WORKFLOW.md).
 
-This project is based on the structure of the MIT-licensed Paperclip AI open-source project. See [LICENSE](LICENSE) for copyright and license notices.
+Telemetry is **enabled by default** and can be disabled with any of the following:
+
+| Method               | How                                                     |
+| -------------------- | ------------------------------------------------------- |
+| Environment variable | `PAPERCLIP_TELEMETRY_DISABLED=1`                        |
+| Standard convention  | `DO_NOT_TRACK=1`                                        |
+| CI environments      | Automatically disabled when `CI=true`                   |
+| Config file          | Set `telemetry.enabled: false` in your Paperclip config |
+
+## Contributing
+
+We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for details.
+
+<br/>
+
+## Community
+
+- [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
+- [Twitter / X](https://x.com/papercliping) — Follow updates and announcements
+- [GitHub Issues](https://github.com/paperclipai/paperclip/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/paperclipai/paperclip/discussions) — ideas and RFC
+
+<br/>
+
+## License
+
+MIT &copy; 2026 [Paperclip Labs, Inc](https://paperclip.ing)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=paperclipai%2Fpaperclip&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&theme=dark&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
+    <img src="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" alt="Star History Chart" />
+  </picture>
+</a>
+
+<br/>
+
+---
+
+<p align="center">
+  <sub>Open source under MIT. Built for people who want to get work done, not babysit agents.</sub>
+</p>

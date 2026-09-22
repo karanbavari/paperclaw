@@ -1,4 +1,4 @@
-import type { Issue } from "@kesarcloud/shared";
+import type { Issue } from "@paperclipai/shared";
 
 type IssuePropertiesPanelKeyIssue = Pick<
   Issue,
@@ -22,6 +22,7 @@ type IssuePropertiesPanelKeyIssue = Pick<
   | "blocks"
   | "blockedBy"
   | "ancestors"
+  | "watchdog"
 >;
 
 type IssuePropertiesPanelKeyChild = Pick<Issue, "id" | "updatedAt" | "identifier" | "title">;
@@ -83,6 +84,15 @@ export function buildIssuePropertiesPanelKey(
       title: relation.title,
       status: relation.status,
     })),
+    watchdog: issue.watchdog
+      ? {
+          id: issue.watchdog.id,
+          watchdogAgentId: issue.watchdog.watchdogAgentId,
+          instructions: issue.watchdog.instructions ?? null,
+          status: issue.watchdog.status,
+          watchdogIssueId: issue.watchdog.watchdogIssueId ?? null,
+        }
+      : null,
     parentSummary: issue.ancestors?.[0]
       ? {
           id: issue.ancestors[0].id,

@@ -1,9 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
-import { paperclawConfigSchema, type PaperClawConfig } from "./schema.js";
+import { isDeepStrictEqual } from "node:util";
+import {
+  mergePaperclipConfig,
+  paperclipConfigSchema,
+  type PaperclipConfig,
+} from "./schema.js";
 import {
   resolveDefaultConfigPath,
-  resolvePaperClawInstanceId,
+  resolvePaperclipInstanceId,
 } from "./home.js";
 
 const DEFAULT_CONFIG_BASENAME = "config.json";
@@ -13,7 +18,7 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = absoluteStartDir;
 
   while (true) {
-    const candidate = path.resolve(currentDir, ".paperclaw", DEFAULT_CONFIG_BASENAME);
+    const candidate = path.resolve(currentDir, ".paperclip", DEFAULT_CONFIG_BASENAME);
     if (fs.existsSync(candidate)) {
       return candidate;
     }
@@ -28,8 +33,8 @@ function findConfigFileFromAncestors(startDir: string): string | null {
 
 export function resolveConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
-  if (process.env.PAPERCLAW_CONFIG) return path.resolve(process.env.PAPERCLAW_CONFIG);
-  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolvePaperClawInstanceId());
+  if (process.env.PAPERCLIP_CONFIG) return path.resolve(process.env.PAPERCLIP_CONFIG);
+  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolvePaperclipInstanceId());
 }
 
 function parseJson(filePath: string): unknown {
@@ -83,36 +88,144 @@ function formatValidationError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export function readConfig(configPath?: string): PaperClawConfig | null {
+export function readConfig(configPath?: string): PaperclipConfig | null {
   const filePath = resolveConfigPath(configPath);
   if (!fs.existsSync(filePath)) return null;
   const raw = parseJson(filePath);
   const migrated = migrateLegacyConfig(raw);
-  const parsed = paperclawConfigSchema.safeParse(migrated);
+  const parsed = paperclipConfigSchema.safeParse(migrated);
   if (!parsed.success) {
     throw new Error(`Invalid config at ${filePath}: ${formatValidationError(parsed.error)}`);
   }
   return parsed.data;
 }
 
+function effectiveConfig(config: PaperclipConfig): Record<string, unknown> {
+  const meta = { ...config.$meta } as Record<string, unknown>;
+  delete meta.updatedAt;
+  delete meta.source;
+  return {
+    ...config,
+    $meta: meta,
+  };
+}
+
+function syncDirectory(directoryPath: string): void {
+  let directoryDescriptor: number | null = null;
+  try {
+    directoryDescriptor = fs.openSync(directoryPath, "r");
+    fs.fsyncSync(directoryDescriptor);
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? error.code : null;
+    if (process.platform !== "win32" || !["EACCES", "EINVAL", "EISDIR", "ENOTSUP", "EPERM"].includes(String(code))) {
+      throw error;
+    }
+  } finally {
+    if (directoryDescriptor !== null) fs.closeSync(directoryDescriptor);
+  }
+}
+
+function durableCopyFile(sourcePath: string, destinationPath: string, flags = 0): void {
+  fs.copyFileSync(sourcePath, destinationPath, flags);
+  fs.chmodSync(destinationPath, 0o600);
+
+  const backupDescriptor = fs.openSync(destinationPath, "r");
+  try {
+    fs.fsyncSync(backupDescriptor);
+  } finally {
+    fs.closeSync(backupDescriptor);
+  }
+  syncDirectory(path.dirname(destinationPath));
+}
+
+function atomicWriteFile(filePath: string, contents: string): void {
+  let attempt = 0;
+
+  while (true) {
+    const temporaryPath = `${filePath}.tmp-${process.pid}-${attempt}`;
+    attempt += 1;
+    let fileDescriptor: number | null = null;
+    try {
+      fileDescriptor = fs.openSync(temporaryPath, "wx", 0o600);
+      fs.writeFileSync(fileDescriptor, contents, "utf8");
+      fs.fsyncSync(fileDescriptor);
+      fs.closeSync(fileDescriptor);
+      fileDescriptor = null;
+      fs.renameSync(temporaryPath, filePath);
+      syncDirectory(path.dirname(filePath));
+      return;
+    } catch (error) {
+      if (fileDescriptor !== null) fs.closeSync(fileDescriptor);
+      fs.rmSync(temporaryPath, { force: true });
+      const code = error instanceof Error && "code" in error ? error.code : null;
+      if (code === "EEXIST") continue;
+      throw error;
+    }
+  }
+}
+
+export function backupInvalidConfig(configPath?: string): string {
+  const filePath = resolveConfigPath(configPath);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Cannot back up missing config at ${filePath}`);
+  }
+
+  for (let suffix = 1; ; suffix += 1) {
+    const backupPath = `${filePath}.invalid-${suffix}`;
+    try {
+      durableCopyFile(filePath, backupPath, fs.constants.COPYFILE_EXCL);
+      return backupPath;
+    } catch (error) {
+      const code = error instanceof Error && "code" in error ? error.code : null;
+      if (code === "EEXIST") continue;
+      throw error;
+    }
+  }
+}
+
 export function writeConfig(
-  config: PaperClawConfig,
+  config: PaperclipConfig,
   configPath?: string,
-): void {
+  options: { invalidBackupPath?: string } = {},
+): boolean {
   const filePath = resolveConfigPath(configPath);
   const dir = path.dirname(filePath);
   fs.mkdirSync(dir, { recursive: true });
 
+  let nextConfig = paperclipConfigSchema.parse(config);
+  if (fs.existsSync(filePath)) {
+    try {
+      const source = paperclipConfigSchema.parse(migrateLegacyConfig(parseJson(filePath)));
+      nextConfig = paperclipConfigSchema.parse(mergePaperclipConfig(source, nextConfig));
+      if (isDeepStrictEqual(effectiveConfig(source), effectiveConfig(nextConfig))) {
+        return false;
+      }
+    } catch (error) {
+      const invalidBackupPath = options.invalidBackupPath;
+      if (!invalidBackupPath) {
+        throw new Error(
+          `Refusing to overwrite invalid config at ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      if (
+        !fs.existsSync(invalidBackupPath) ||
+        !fs.readFileSync(filePath).equals(fs.readFileSync(invalidBackupPath))
+      ) {
+        throw new Error(
+          `Refusing to overwrite ${filePath} because it changed after the invalid backup was created`,
+        );
+      }
+    }
+  }
+
   // Backup existing config before overwriting
   if (fs.existsSync(filePath)) {
     const backupPath = filePath + ".backup";
-    fs.copyFileSync(filePath, backupPath);
-    fs.chmodSync(backupPath, 0o600);
+    durableCopyFile(filePath, backupPath);
   }
 
-  fs.writeFileSync(filePath, JSON.stringify(config, null, 2) + "\n", {
-    mode: 0o600,
-  });
+  atomicWriteFile(filePath, JSON.stringify(nextConfig, null, 2) + "\n");
+  return true;
 }
 
 export function configExists(configPath?: string): boolean {

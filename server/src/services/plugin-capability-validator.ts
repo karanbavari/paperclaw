@@ -21,10 +21,10 @@
  */
 import type {
   PluginCapability,
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginUiSlotType,
   PluginLauncherPlacementZone,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 
@@ -55,11 +55,18 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "routines.managed.reset": ["routines.managed"],
   "project.workspaces.list": ["project.workspaces.read"],
   "project.workspaces.get": ["project.workspaces.read"],
+  "execution.workspaces.get": ["execution.workspaces.read"],
   "issues.list": ["issues.read"],
   "issues.get": ["issues.read"],
   "issues.relations.get": ["issue.relations.read"],
   "issue.comments.list": ["issue.comments.read"],
   "issue.comments.get": ["issue.comments.read"],
+  "issue.interactions.list": ["issue.interactions.read"],
+  "issue.interactions.read": ["issue.interactions.read"],
+  "issue.attachments.list": ["issue.attachments.read"],
+  "issue.attachments.get": ["issue.attachments.read"],
+  "approvals.list": ["approvals.read"],
+  "approvals.get": ["approvals.read"],
   "agents.list": ["agents.read"],
   "agents.get": ["agents.read"],
   "agents.managed.get": ["agents.managed"],
@@ -92,12 +99,20 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "issues.requestWakeup": ["issues.wakeup"],
   "issues.requestWakeups": ["issues.wakeup"],
   "issue.comments.create": ["issue.comments.create"],
+  "issue.comments.create_human_attributed": ["issue.comments.create_human_attributed"],
   "issue.interactions.create": ["issue.interactions.create"],
+  "issue.interactions.respond": ["issue.interactions.respond"],
+  "approvals.respond": ["approvals.respond"],
+  "approvals.decide": ["approvals.respond"],
   "activity.log": ["activity.log.write"],
   "metrics.write": ["metrics.write"],
   "telemetry.track": ["telemetry.track"],
   "db.migrate": ["database.namespace.migrate"],
   "db.execute": ["database.namespace.write"],
+  "external.objects.detect": ["external.objects.detect"],
+  "external.objects.read": ["external.objects.read"],
+  "external.objects.write": ["external.objects.write"],
+  "external.objects.refresh": ["external.objects.refresh"],
 
   // Plugin state operations
   "plugin.state.get": ["plugin.state.read"],
@@ -113,7 +128,6 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "webhooks.receive": ["webhooks.receive"],
   "http.request": ["http.outbound"],
   "secrets.resolve": ["secrets.read-ref"],
-  "secrets.upsert": ["secrets.write-ref"],
 
   // Agent tools
   "agent.tools.register": ["agent.tools.register"],
@@ -128,6 +142,11 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "environment.destroyLease": ["environment.drivers.register"],
   "environment.realizeWorkspace": ["environment.drivers.register"],
   "environment.execute": ["environment.drivers.register"],
+  "environment.startInteractiveSetup": ["environment.drivers.register"],
+  "environment.getInteractiveSetup": ["environment.drivers.register"],
+  "environment.captureTemplate": ["environment.drivers.register"],
+  "environment.cancelInteractiveSetup": ["environment.drivers.register"],
+  "environment.deleteTemplate": ["environment.drivers.register"],
 };
 
 /**
@@ -149,6 +168,7 @@ const UI_SLOT_CAPABILITIES: Record<PluginUiSlotType, PluginCapability> = {
   commentAnnotation: "ui.commentAnnotation.register",
   commentContextMenuItem: "ui.action.register",
   settingsPage: "instance.settings.register",
+  companySettingsPage: "instance.settings.register",
   routeSidebar: "ui.sidebar.register",
 };
 
@@ -187,6 +207,7 @@ const FEATURE_CAPABILITIES: Record<string, PluginCapability> = {
   agents: "agents.managed",
   projects: "projects.managed",
   routines: "routines.managed",
+  objectReferences: "external.objects.detect",
 };
 
 // ---------------------------------------------------------------------------
@@ -213,7 +234,7 @@ export interface PluginCapabilityValidator {
    * Check whether a plugin has a specific capability.
    */
   hasCapability(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     capability: PluginCapability,
   ): boolean;
 
@@ -221,7 +242,7 @@ export interface PluginCapabilityValidator {
    * Check whether a plugin has all of the specified capabilities.
    */
   hasAllCapabilities(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     capabilities: PluginCapability[],
   ): CapabilityCheckResult;
 
@@ -229,7 +250,7 @@ export interface PluginCapabilityValidator {
    * Check whether a plugin has at least one of the specified capabilities.
    */
   hasAnyCapability(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     capabilities: PluginCapability[],
   ): boolean;
 
@@ -240,7 +261,7 @@ export interface PluginCapabilityValidator {
    * Unknown operations are rejected by default.
    */
   checkOperation(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     operation: string,
   ): CapabilityCheckResult;
 
@@ -249,7 +270,7 @@ export interface PluginCapabilityValidator {
    * Throws a 403 HttpError if the capability check fails.
    */
   assertOperation(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     operation: string,
   ): void;
 
@@ -258,7 +279,7 @@ export interface PluginCapabilityValidator {
    * Throws a 403 HttpError if the capability is missing.
    */
   assertCapability(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     capability: PluginCapability,
   ): void;
 
@@ -266,7 +287,7 @@ export interface PluginCapabilityValidator {
    * Check whether a plugin can register the given UI slot type.
    */
   checkUiSlot(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     slotType: PluginUiSlotType,
   ): CapabilityCheckResult;
 
@@ -278,7 +299,7 @@ export interface PluginCapabilityValidator {
    * This is useful for install-time validation to give comprehensive feedback.
    */
   validateManifestCapabilities(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
   ): CapabilityCheckResult;
 
   /**
@@ -326,12 +347,12 @@ export function pluginCapabilityValidator(): PluginCapabilityValidator {
   // Internal helpers
   // -----------------------------------------------------------------------
 
-  function capabilitySet(manifest: PaperClawPluginManifestV1): Set<PluginCapability> {
+  function capabilitySet(manifest: PaperclipPluginManifestV1): Set<PluginCapability> {
     return new Set(manifest.capabilities);
   }
 
   function buildForbiddenMessage(
-    manifest: PaperClawPluginManifestV1,
+    manifest: PaperclipPluginManifestV1,
     operation: string,
     missing: PluginCapability[],
   ): string {
@@ -443,9 +464,17 @@ export function pluginCapabilityValidator(): PluginCapabilityValidator {
 
       // Check feature declarations → required capabilities
       for (const [feature, requiredCap] of Object.entries(FEATURE_CAPABILITIES)) {
-        const featureValue = manifest[feature as keyof PaperClawPluginManifestV1];
+        const featureValue = manifest[feature as keyof PaperclipPluginManifestV1];
         if (Array.isArray(featureValue) && featureValue.length > 0) {
           if (!declared.has(requiredCap)) {
+            allMissing.push(requiredCap);
+          }
+        }
+      }
+
+      if ((manifest.objectReferences?.length ?? 0) > 0) {
+        for (const requiredCap of ["external.objects.detect", "external.objects.read"] as const) {
+          if (!declared.has(requiredCap) && !allMissing.includes(requiredCap)) {
             allMissing.push(requiredCap);
           }
         }

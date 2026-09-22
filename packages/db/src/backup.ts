@@ -1,7 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { formatDatabaseBackupResult, runDatabaseBackup } from "./backup-lib.js";
+import {
+  expandHomePrefix,
+  resolveDefaultBackupDir,
+  resolvePaperclipConfigPathForInstance,
+} from "@paperclipai/shared/home-paths";
 
 type PartialConfig = {
   database?: {
@@ -14,30 +18,6 @@ type PartialConfig = {
     };
   };
 };
-
-function expandHomePrefix(value: string): string {
-  if (value === "~") return os.homedir();
-  if (value.startsWith("~/")) return path.resolve(os.homedir(), value.slice(2));
-  return value;
-}
-
-function resolvePaperClawHomeDir(): string {
-  const envHome = process.env.PAPERCLAW_HOME?.trim();
-  if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".paperclaw");
-}
-
-function resolvePaperClawInstanceId(): string {
-  const raw = process.env.PAPERCLAW_INSTANCE_ID?.trim() || "default";
-  if (!/^[a-zA-Z0-9_-]+$/.test(raw)) {
-    throw new Error(`Invalid PAPERCLAW_INSTANCE_ID '${raw}'.`);
-  }
-  return raw;
-}
-
-function resolveDefaultConfigPath(): string {
-  return path.resolve(resolvePaperClawHomeDir(), "instances", resolvePaperClawInstanceId(), "config.json");
-}
 
 function readConfig(configPath: string): PartialConfig | null {
   if (!existsSync(configPath)) return null;
@@ -69,11 +49,7 @@ function resolveConnectionString(config: PartialConfig | null): string {
   }
 
   const port = resolveEmbeddedPort(config);
-  return `postgres://paperclaw:paperclaw@127.0.0.1:${port}/paperclaw`;
-}
-
-function resolveDefaultBackupDir(): string {
-  return path.resolve(resolvePaperClawHomeDir(), "instances", resolvePaperClawInstanceId(), "data", "backups");
+  return `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
 }
 
 function resolveBackupDir(config: PartialConfig | null): string {
@@ -89,7 +65,7 @@ function resolveRetentionDays(config: PartialConfig | null): number {
 }
 
 async function main() {
-  const configPath = resolveDefaultConfigPath();
+  const configPath = resolvePaperclipConfigPathForInstance();
   const config = readConfig(configPath);
   const connectionString = resolveConnectionString(config);
   const backupDir = resolveBackupDir(config);
@@ -104,7 +80,7 @@ async function main() {
       connectionString,
       backupDir,
       retention: { dailyDays: retentionDays, weeklyWeeks: 4, monthlyMonths: 1 },
-      filenamePrefix: "paperclaw",
+      filenamePrefix: "paperclip",
     });
 
     console.log(`Backup saved: ${formatDatabaseBackupResult(result)}`);

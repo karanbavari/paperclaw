@@ -1,57 +1,50 @@
-import os from "node:os";
 import path from "node:path";
-
-const DEFAULT_INSTANCE_ID = "default";
-const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 const PATH_SEGMENT_RE = /^[a-zA-Z0-9_-]+$/;
 const FRIENDLY_PATH_SEGMENT_RE = /[^a-zA-Z0-9._-]+/g;
+import {
+  expandHomePrefix,
+  resolveDefaultBackupDir as resolveSharedDefaultBackupDir,
+  resolveDefaultEmbeddedPostgresDir as resolveSharedDefaultEmbeddedPostgresDir,
+  resolveDefaultLogsDir as resolveSharedDefaultLogsDir,
+  resolveDefaultSecretsKeyFilePath as resolveSharedDefaultSecretsKeyFilePath,
+  resolveDefaultStorageDir as resolveSharedDefaultStorageDir,
+  resolveHomeAwarePath,
+  resolvePaperclipConfigPathForInstance,
+  resolvePaperclipHomeDir,
+  resolvePaperclipInstanceId,
+  resolvePaperclipInstanceRoot,
+} from "@paperclipai/shared/home-paths";
 
-function expandHomePrefix(value: string): string {
-  if (value === "~") return os.homedir();
-  if (value.startsWith("~/")) return path.resolve(os.homedir(), value.slice(2));
-  return value;
-}
-
-export function resolvePaperClawHomeDir(): string {
-  const envHome = process.env.PAPERCLAW_HOME?.trim();
-  if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".paperclaw");
-}
-
-export function resolvePaperClawInstanceId(): string {
-  const raw = process.env.PAPERCLAW_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
-  if (!INSTANCE_ID_RE.test(raw)) {
-    throw new Error(`Invalid PAPERCLAW_INSTANCE_ID '${raw}'.`);
-  }
-  return raw;
-}
-
-export function resolvePaperClawInstanceRoot(): string {
-  return path.resolve(resolvePaperClawHomeDir(), "instances", resolvePaperClawInstanceId());
-}
+export {
+  expandHomePrefix,
+  resolveHomeAwarePath,
+  resolvePaperclipHomeDir,
+  resolvePaperclipInstanceId,
+  resolvePaperclipInstanceRoot,
+};
 
 export function resolveDefaultConfigPath(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "config.json");
+  return resolvePaperclipConfigPathForInstance();
 }
 
 export function resolveDefaultEmbeddedPostgresDir(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "db");
+  return resolveSharedDefaultEmbeddedPostgresDir();
 }
 
 export function resolveDefaultLogsDir(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "logs");
+  return resolveSharedDefaultLogsDir();
 }
 
 export function resolveDefaultSecretsKeyFilePath(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "secrets", "master.key");
+  return resolveSharedDefaultSecretsKeyFilePath();
 }
 
 export function resolveDefaultStorageDir(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "data", "storage");
+  return resolveSharedDefaultStorageDir();
 }
 
 export function resolveDefaultBackupDir(): string {
-  return path.resolve(resolvePaperClawInstanceRoot(), "data", "backups");
+  return resolveSharedDefaultBackupDir();
 }
 
 export function resolveDefaultAgentWorkspaceDir(agentId: string): string {
@@ -59,7 +52,7 @@ export function resolveDefaultAgentWorkspaceDir(agentId: string): string {
   if (!PATH_SEGMENT_RE.test(trimmed)) {
     throw new Error(`Invalid agent id for workspace path '${agentId}'.`);
   }
-  return path.resolve(resolvePaperClawInstanceRoot(), "workspaces", trimmed);
+  return path.resolve(resolvePaperclipInstanceRoot(), "workspaces", trimmed);
 }
 
 function sanitizeFriendlyPathSegment(value: string | null | undefined, fallback = "_default"): string {
@@ -71,6 +64,16 @@ function sanitizeFriendlyPathSegment(value: string | null | undefined, fallback 
   return sanitized || fallback;
 }
 
+/**
+ * Resolve the managed checkout directory for one project:
+ * `<instanceRoot>/projects/<companyId>/<projectId>/<repoName|_default>`.
+ *
+ * Per-project directory isolation invariant: the `projectId` is a distinct path segment, so two
+ * different projects always resolve to sibling directories under `<companyId>/`. One project's
+ * directory can never nest inside, or be a path prefix of, another project's directory. A run that
+ * materializes several referenced projects can therefore place each in its own directory without
+ * collision. See the "distinct, non-nested managed dirs" test in `heartbeat-project-env.test.ts`.
+ */
 export function resolveManagedProjectWorkspaceDir(input: {
   companyId: string;
   projectId: string;
@@ -82,14 +85,10 @@ export function resolveManagedProjectWorkspaceDir(input: {
     throw new Error("Managed project workspace path requires companyId and projectId.");
   }
   return path.resolve(
-    resolvePaperClawInstanceRoot(),
+    resolvePaperclipInstanceRoot(),
     "projects",
     sanitizeFriendlyPathSegment(companyId, "company"),
     sanitizeFriendlyPathSegment(projectId, "project"),
     sanitizeFriendlyPathSegment(input.repoName, "_default"),
   );
-}
-
-export function resolveHomeAwarePath(value: string): string {
-  return path.resolve(expandHomePrefix(value));
 }

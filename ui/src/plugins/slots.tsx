@@ -29,13 +29,14 @@ import {
   type ReactNode,
   type ComponentType,
 } from "react";
+import * as ReactModule from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   PluginLauncherDeclaration,
   PluginUiSlotDeclaration,
   PluginUiSlotEntityType,
   PluginUiSlotType,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { pluginsApi, type PluginUiContribution } from "@/api/plugins";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
@@ -123,9 +124,28 @@ type UsePluginSlotsResult = {
  * Keys are `${pluginKey}:${exportName}` to match manifest slot declarations.
  */
 const registry = new Map<string, RegisteredPluginComponent>();
+const registryListeners = new Set<() => void>();
 
 function buildRegistryKey(pluginKey: string, exportName: string): string {
   return `${pluginKey}:${exportName}`;
+}
+
+function notifyRegistryListeners(): void {
+  for (const listener of registryListeners) {
+    listener();
+  }
+}
+
+function usePluginRegistrySubscription(): void {
+  const [, forceRerender] = useState(0);
+
+  useEffect(() => {
+    const listener = () => forceRerender((tick) => tick + 1);
+    registryListeners.add(listener);
+    return () => {
+      registryListeners.delete(listener);
+    };
+  }, []);
 }
 
 function requiresEntityType(slotType: PluginUiSlotType): boolean {
@@ -149,6 +169,7 @@ export function registerPluginReactComponent(
     kind: "react",
     component,
   });
+  notifyRegistryListeners();
 }
 
 /**
@@ -163,6 +184,7 @@ export function registerPluginWebComponent(
     kind: "web-component",
     tagName,
   });
+  notifyRegistryListeners();
 }
 
 function resolveRegisteredComponent(slot: ResolvedPluginSlot): RegisteredPluginComponent | null {
@@ -174,6 +196,24 @@ export function resolveRegisteredPluginComponent(
   exportName: string,
 ): RegisteredPluginComponent | null {
   return registry.get(buildRegistryKey(pluginKey, exportName)) ?? null;
+}
+
+function isRegisterablePluginExport(exported: unknown): boolean {
+  return typeof exported === "function" || typeof exported === "string";
+}
+
+function collectRegisterableExportNames(
+  mod: Record<string, unknown>,
+  declaredExports: Set<string>,
+): Set<string> {
+  const exportNames = new Set(declaredExports);
+  for (const [exportName, exported] of Object.entries(mod)) {
+    if (exportName === "default") continue;
+    if (isRegisterablePluginExport(exported)) {
+      exportNames.add(exportName);
+    }
+  }
+  return exportNames;
 }
 
 // ---------------------------------------------------------------------------
@@ -216,11 +256,11 @@ function buildPluginUiUrl(contribution: PluginUiContribution): string {
 /**
  * Import a plugin's UI entry module with bare-specifier rewriting.
  *
- * Plugin bundles are built with `external: ["@kesarcloud/plugin-sdk/ui", "react", "react-dom"]`,
+ * Plugin bundles are built with `external: ["@paperclipai/plugin-sdk/ui", "react", "react-dom"]`,
  * so their ESM output contains bare specifier imports like:
  *
  * ```js
- * import { usePluginData } from "@kesarcloud/plugin-sdk/ui";
+ * import { usePluginData } from "@paperclipai/plugin-sdk/ui";
  * import React from "react";
  * ```
  *
@@ -228,7 +268,7 @@ function buildPluginUiUrl(contribution: PluginUiContribution): string {
  * fighting import map timing constraints, we:
  * 1. Fetch the module source text
  * 2. Rewrite bare specifier imports to use blob URLs that re-export from the
- *    host's global bridge registry (`globalThis.__paperclawPluginBridge__`)
+ *    host's global bridge registry (`globalThis.__paperclipPluginBridge__`)
  * 3. Import the rewritten module via a blob URL
  *
  * This approach is compatible with all modern browsers and avoids import map
@@ -244,38 +284,52 @@ function applyJsxRuntimeKey(
   return { ...(props ?? {}), key };
 }
 
+function createReactShimSource(reactModule: object): string {
+  const exportNames = Object.keys(reactModule)
+    .filter((name) => name !== "default" && /^[A-Za-z_$][\w$]*$/.test(name))
+    .sort();
+  const namedExports = exportNames
+    .map((name) => `        export const ${name} = R.${name};`)
+    .join("\n");
+
+  return `
+        const R = globalThis.__paperclipPluginBridge__?.react;
+        if (!R) {
+          throw new Error("Paperclip plugin React runtime is not initialized.");
+        }
+        export default R;
+${namedExports}
+      `;
+}
+
 function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | "react/jsx-runtime" | "sdk-ui"): string {
   if (shimBlobUrls[specifier]) return shimBlobUrls[specifier];
 
   let source: string;
   switch (specifier) {
     case "react":
-      source = `
-        const R = globalThis.__paperclawPluginBridge__?.react;
-        export default R;
-        const { useState, useEffect, useCallback, useMemo, useRef, useContext,
-          createContext, createElement, Fragment, Component, forwardRef,
-          memo, lazy, Suspense, StrictMode, cloneElement, Children,
-          isValidElement, createRef } = R;
-        export { useState, useEffect, useCallback, useMemo, useRef, useContext,
-          createContext, createElement, Fragment, Component, forwardRef,
-          memo, lazy, Suspense, StrictMode, cloneElement, Children,
-          isValidElement, createRef };
-      `;
+      source = createReactShimSource(ReactModule);
       break;
     case "react/jsx-runtime":
+      // Prefer the host's real jsx runtime: rebuilding jsx/jsxs on top of
+      // createElement(type, { children }) drops React's static-children
+      // marking, so dev React emits "unique key" warnings for every
+      // multi-child element rendered by a plugin component.
       source = `
-        const R = globalThis.__paperclawPluginBridge__?.react;
+        const BRIDGE = globalThis.__paperclipPluginBridge__;
+        const RUNTIME = BRIDGE?.reactJsxRuntime;
+        const R = BRIDGE?.react;
         const withKey = ${applyJsxRuntimeKey.toString()};
-        export const jsx = (type, props, key) => R.createElement(type, withKey(props, key));
-        export const jsxs = (type, props, key) => R.createElement(type, withKey(props, key));
-        export const Fragment = R.Fragment;
+        const fallbackJsx = (type, props, key) => R.createElement(type, withKey(props, key));
+        export const jsx = RUNTIME?.jsx ?? fallbackJsx;
+        export const jsxs = RUNTIME?.jsxs ?? fallbackJsx;
+        export const Fragment = RUNTIME?.Fragment ?? R.Fragment;
       `;
       break;
     case "react-dom":
     case "react-dom/client":
       source = `
-        const RD = globalThis.__paperclawPluginBridge__?.reactDom;
+        const RD = globalThis.__paperclipPluginBridge__?.reactDom;
         export default RD;
         const { createRoot, hydrateRoot, createPortal, flushSync } = RD ?? {};
         export { createRoot, hydrateRoot, createPortal, flushSync };
@@ -283,13 +337,13 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
       break;
     case "sdk-ui":
       source = `
-        const SDK = globalThis.__paperclawPluginBridge__?.sdkUi ?? {};
+        const SDK = globalThis.__paperclipPluginBridge__?.sdkUi ?? {};
         function missing(name) {
-          return function MissingPaperClawSdkUiComponent() {
-            throw new Error('PaperClaw plugin UI runtime is not initialized for "' + name + '". Ensure the host loaded the plugin bridge before rendering this UI module.');
+          return function MissingPaperclipSdkUiComponent() {
+            throw new Error('Paperclip plugin UI runtime is not initialized for "' + name + '". Ensure the host loaded the plugin bridge before rendering this UI module.');
           };
         }
-        const { usePluginData, usePluginAction, useHostContext, useHostLocation, useHostNavigation, usePluginStream, usePluginToast } = SDK;
+        const { usePluginData, usePluginAction, useHostContext, useHostLocation, useHostNavigation, usePluginStream, usePluginToast, copyTextToClipboard } = SDK;
         const MetricCard = SDK.MetricCard ?? missing("MetricCard");
         const StatusBadge = SDK.StatusBadge ?? missing("StatusBadge");
         const DataTable = SDK.DataTable ?? missing("DataTable");
@@ -307,7 +361,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
         const AssigneePicker = SDK.AssigneePicker ?? missing("AssigneePicker");
         const ProjectPicker = SDK.ProjectPicker ?? missing("ProjectPicker");
         const ManagedRoutinesList = SDK.ManagedRoutinesList ?? missing("ManagedRoutinesList");
-        export { usePluginData, usePluginAction, useHostContext, useHostLocation, useHostNavigation, usePluginStream, usePluginToast, MetricCard, StatusBadge, DataTable, TimeseriesChart, MarkdownBlock, MarkdownEditor, KeyValueList, ActionBar, LogView, JsonTree, Spinner, ErrorBoundary, FileTree, IssuesList, AssigneePicker, ProjectPicker, ManagedRoutinesList };
+        export { usePluginData, usePluginAction, useHostContext, useHostLocation, useHostNavigation, usePluginStream, usePluginToast, copyTextToClipboard, MetricCard, StatusBadge, DataTable, TimeseriesChart, MarkdownBlock, MarkdownEditor, KeyValueList, ActionBar, LogView, JsonTree, Spinner, ErrorBoundary, FileTree, IssuesList, AssigneePicker, ProjectPicker, ManagedRoutinesList };
       `;
       break;
   }
@@ -325,7 +379,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
  * - `import { ... } from "react";`
  * - `import React from "react";`
  * - `import * as React from "react";`
- * - `import { ... } from "@kesarcloud/plugin-sdk/ui";`
+ * - `import { ... } from "@paperclipai/plugin-sdk/ui";`
  *
  * Also handles re-exports:
  * - `export { ... } from "react";`
@@ -333,10 +387,10 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
 function rewriteBareSpecifiers(source: string): string {
   // Build a mapping of bare specifiers to blob URLs.
   const rewrites: Record<string, string> = {
-    '"@kesarcloud/plugin-sdk/ui"': `"${getShimBlobUrl("sdk-ui")}"`,
-    "'@kesarcloud/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
-    '"@kesarcloud/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
-    "'@kesarcloud/plugin-sdk/ui/hooks'": `'${getShimBlobUrl("sdk-ui")}'`,
+    '"@paperclipai/plugin-sdk/ui"': `"${getShimBlobUrl("sdk-ui")}"`,
+    "'@paperclipai/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
+    '"@paperclipai/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
+    "'@paperclipai/plugin-sdk/ui/hooks'": `'${getShimBlobUrl("sdk-ui")}'`,
     '"react/jsx-runtime"': `"${getShimBlobUrl("react/jsx-runtime")}"`,
     "'react/jsx-runtime'": `'${getShimBlobUrl("react/jsx-runtime")}'`,
     '"react-dom/client"': `"${getShimBlobUrl("react-dom/client")}"`,
@@ -368,7 +422,7 @@ function rewriteBareSpecifiers(source: string): string {
 async function importPluginModule(url: string): Promise<Record<string, unknown>> {
   // Check if the bridge registry is available. If not, fall back to direct
   // import (which will fail on bare specifiers but won't crash the loader).
-  if (!globalThis.__paperclawPluginBridge__) {
+  if (!globalThis.__paperclipPluginBridge__) {
     console.warn("[plugin-loader] Bridge registry not initialized, falling back to direct import");
     return import(/* @vite-ignore */ url);
   }
@@ -403,12 +457,12 @@ async function importPluginModule(url: string): Promise<Record<string, unknown>>
  * component registry.
  *
  * This replaces the previous approach where plugin bundles had to
- * self-register via `window.paperclawPlugins.registerReactComponent()`.
+ * self-register via `window.paperclipPlugins.registerReactComponent()`.
  * Now the host is responsible for importing the module and binding
  * exports to the correct `pluginKey:exportName` registry keys.
  *
  * Plugin modules are loaded with bare-specifier rewriting so that imports
- * of `@kesarcloud/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
+ * of `@paperclipai/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
  * host-provided implementations via the bridge registry.
  *
  * Web-component registrations still work: if the module has a named export
@@ -463,7 +517,8 @@ async function loadPluginModule(contribution: PluginUiContribution): Promise<voi
         }
       }
 
-      for (const exportName of declaredExports) {
+      const exportNames = collectRegisterableExportNames(mod, declaredExports);
+      for (const exportName of exportNames) {
         const exported = mod[exportName];
         if (exported === undefined) {
           console.warn(
@@ -775,6 +830,7 @@ export function PluginSlotMount({
   className,
   missingBehavior = "hidden",
 }: PluginSlotMountProps) {
+  usePluginRegistrySubscription();
   const [, forceRerender] = useState(0);
   const component = resolveRegisteredComponent(slot);
 
@@ -900,4 +956,6 @@ export function _resetPluginModuleLoader(): void {
 }
 
 export const _applyJsxRuntimeKeyForTests = applyJsxRuntimeKey;
+export const _createReactShimSourceForTests = createReactShimSource;
 export const _rewriteBareSpecifiersForTests = rewriteBareSpecifiers;
+export const _collectRegisterableExportNamesForTests = collectRegisterableExportNames;

@@ -1,7 +1,11 @@
+import { randomUUID } from "node:crypto";
+import { access, readFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as ssh from "./ssh.js";
 import * as serverUtils from "./server-utils.js";
 import {
+  cleanupGitHubOperationLaunchers,
+  prepareGitHubOperationLaunchers,
   adapterExecutionTargetUsesManagedHome,
   ensureAdapterExecutionTargetRuntimeCommandInstalled,
   resolveAdapterExecutionTargetCwd,
@@ -26,13 +30,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -45,7 +49,7 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       },
     );
 
-    // runSshCommand owns profile sourcing and the outer `sh -lc` wrapper —
+    // runSshCommand owns profile sourcing and the outer shell wrapper —
     // the caller passes the raw command string. Wrapping it here would
     // double-nest the login shell and re-source profiles after the explicit
     // env override, silently undoing identity-var preservation.
@@ -73,13 +77,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -121,13 +125,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -166,13 +170,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -202,13 +206,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
     expect(adapterExecutionTargetUsesManagedHome({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclaw/workspace",
+      remoteCwd: "/srv/paperclip/workspace",
       spec: {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteCwd: "/srv/paperclaw/workspace",
-        remoteWorkspacePath: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/paperclip/workspace",
         privateKey: null,
         knownHosts: null,
         strictHostKeyChecking: true,
@@ -242,13 +246,13 @@ describe("runAdapterExecutionTargetProcess", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -317,7 +321,7 @@ describe("ensureAdapterExecutionTargetRuntimeCommandInstalled", () => {
 
     expect(runner.execute).toHaveBeenCalledWith(expect.objectContaining({
       command: "sh",
-      args: ["-lc", "npm install -g @google/gemini-cli"],
+      args: ["-c", "npm install -g @google/gemini-cli"],
       cwd: "/remote/workspace",
       env: { PATH: "/usr/bin" },
       timeoutMs: 30_000,
@@ -335,13 +339,13 @@ describe("ensureAdapterExecutionTargetRuntimeCommandInstalled", () => {
       target: {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclaw/workspace",
+        remoteCwd: "/srv/paperclip/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclaw/workspace",
-          remoteWorkspacePath: "/srv/paperclaw/workspace",
+          remoteCwd: "/srv/paperclip/workspace",
+          remoteWorkspacePath: "/srv/paperclip/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -360,13 +364,13 @@ describe("resolveAdapterExecutionTargetCwd", () => {
   const sshTarget = {
     kind: "remote" as const,
     transport: "ssh" as const,
-    remoteCwd: "/srv/paperclaw/workspace",
+    remoteCwd: "/srv/paperclip/workspace",
     spec: {
       host: "ssh.example.test",
       port: 22,
       username: "ssh-user",
-      remoteCwd: "/srv/paperclaw/workspace",
-      remoteWorkspacePath: "/srv/paperclaw/workspace",
+      remoteCwd: "/srv/paperclip/workspace",
+      remoteWorkspacePath: "/srv/paperclip/workspace",
       privateKey: null,
       knownHosts: null,
       strictHostKeyChecking: true,
@@ -375,13 +379,13 @@ describe("resolveAdapterExecutionTargetCwd", () => {
 
   it("falls back to the remote cwd when no adapter cwd is configured", () => {
     expect(resolveAdapterExecutionTargetCwd(sshTarget, "", "/Users/host/repo/server")).toBe(
-      "/srv/paperclaw/workspace",
+      "/srv/paperclip/workspace",
     );
     expect(resolveAdapterExecutionTargetCwd(sshTarget, "   ", "/Users/host/repo/server")).toBe(
-      "/srv/paperclaw/workspace",
+      "/srv/paperclip/workspace",
     );
     expect(resolveAdapterExecutionTargetCwd(sshTarget, null, "/Users/host/repo/server")).toBe(
-      "/srv/paperclaw/workspace",
+      "/srv/paperclip/workspace",
     );
   });
 
@@ -389,15 +393,47 @@ describe("resolveAdapterExecutionTargetCwd", () => {
     expect(
       resolveAdapterExecutionTargetCwd(
         sshTarget,
-        "/srv/paperclaw/custom-agent-dir",
+        "/srv/paperclip/custom-agent-dir",
         "/Users/host/repo/server",
       ),
-    ).toBe("/srv/paperclaw/custom-agent-dir");
+    ).toBe("/srv/paperclip/custom-agent-dir");
   });
 
   it("keeps the local fallback cwd for local targets", () => {
     expect(resolveAdapterExecutionTargetCwd(null, "", "/Users/host/repo/server")).toBe(
       "/Users/host/repo/server",
     );
+  });
+});
+
+
+describe("GitHub launcher lifecycle", () => {
+  it("removes only the completed run's launchers and leaves concurrent runs usable", async () => {
+    const first = { runId: randomUUID(), target: null };
+    const second = { runId: randomUUID(), target: null };
+    try {
+      const a = await prepareGitHubOperationLaunchers({ ...first, cwd: "/tmp", env: {} });
+      const b = await prepareGitHubOperationLaunchers({ ...second, cwd: "/tmp", env: {} });
+      await cleanupGitHubOperationLaunchers(first);
+      await expect(access(a.PAPERCLIP_GITHUB_LAUNCHER_DIR)).rejects.toMatchObject({ code: "ENOENT" });
+      expect(await readFile(`${b.PAPERCLIP_GITHUB_LAUNCHER_DIR}/git`, "utf8")).toContain("PAPERCLIP_GITHUB_BROKER_URL");
+      await cleanupGitHubOperationLaunchers(first); // teardown replay is harmless
+    } finally {
+      await cleanupGitHubOperationLaunchers(first);
+      await cleanupGitHubOperationLaunchers(second);
+    }
+  });
+
+  it("bounds remote cleanup to one run and rejects traversal", async () => {
+    const runner = { execute: vi.fn(async () => ({ exitCode: 0, signal: null, timedOut: false,
+      stdout: "", stderr: "", pid: null, startedAt: new Date().toISOString() })) };
+    const target = { kind: "remote" as const, transport: "sandbox" as const,
+      providerKey: "e2b", remoteCwd: "/remote/workspace", runner };
+    await cleanupGitHubOperationLaunchers({ runId: "finished-run", target });
+    expect(runner.execute).toHaveBeenCalledWith({ command: "sh",
+      args: ["-c", "rm -rf -- '/remote/workspace/.paperclip-runtime/github/finished-run'"],
+      cwd: "/remote/workspace", timeoutMs: 5_000 });
+    await expect(cleanupGitHubOperationLaunchers({ runId: "../other", target })).rejects.toThrow("Invalid GitHub launcher run ID");
+    expect(runner.execute).toHaveBeenCalledTimes(1);
   });
 });

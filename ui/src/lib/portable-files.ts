@@ -1,4 +1,4 @@
-import type { CompanyPortabilityFileEntry } from "@kesarcloud/shared";
+import type { CompanyPortabilityFileEntry } from "@paperclipai/shared";
 
 const contentTypeByExtension: Record<string, string> = {
   ".gif": "image/gif",

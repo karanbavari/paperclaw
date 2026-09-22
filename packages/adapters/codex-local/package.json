@@ -1,14 +1,14 @@
 {
-  "name": "@kesarcloud/adapter-codex-local",
+  "name": "@paperclipai/adapter-codex-local",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/karanbavari/paperclaw",
+  "homepage": "https://github.com/paperclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/karanbavari/paperclaw/issues"
+    "url": "https://github.com/paperclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karanbavari/paperclaw",
+    "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/adapters/codex-local"
   },
   "type": "module",
@@ -46,17 +46,22 @@
     "skills"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/server/codex-auth-merge-decision.cjs src/server/codex-auth-merge-extract.sh dist/server/",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "probe:quota": "pnpm exec tsx src/cli/quota-probe.ts --json"
   },
   "dependencies": {
-    "@kesarcloud/adapter-utils": "workspace:*",
+    "@agentclientprotocol/codex-acp": "^1.6.2",
+    "@paperclipai/adapter-utils": "workspace:*",
+    "@paperclipai/shared": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
-    "typescript": "^5.7.3"
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

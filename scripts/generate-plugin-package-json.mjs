@@ -19,7 +19,7 @@ const sdkPackageJson = JSON.parse(readFileSync(sdkPackageJsonPath, "utf8"));
 const publishConfig = packageJson.publishConfig ?? {};
 const dependencies = {
   ...(packageJson.dependencies ?? {}),
-  "@kesarcloud/plugin-sdk": sdkPackageJson.version,
+  "@paperclipai/plugin-sdk": sdkPackageJson.version,
 };
 
 const publishPackageJson = {
@@ -36,7 +36,7 @@ const publishPackageJson = {
   types: publishConfig.types,
   publishConfig,
   files: packageJson.files,
-  paperclawPlugin: packageJson.paperclawPlugin,
+  paperclipPlugin: packageJson.paperclipPlugin,
   keywords: packageJson.keywords,
   dependencies,
 };

@@ -2,7 +2,7 @@
 
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import type { Issue } from "@kesarcloud/shared";
+import type { Issue } from "@paperclipai/shared";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { issuesApi } from "@/api/issues";
@@ -31,8 +31,10 @@ function makeIssue(overrides: Partial<Issue> = {}): Issue {
     description: null,
     status: "todo",
     priority: "medium",
+    reviewPolicy: null,
     assigneeAgentId: null,
     assigneeUserId: null,
+    responsibleUserId: null,
     checkoutRunId: null,
     executionRunId: null,
     executionAgentNameKey: null,
@@ -54,6 +56,7 @@ function makeIssue(overrides: Partial<Issue> = {}): Issue {
     createdAt: now,
     updatedAt: now,
     ...overrides,
+    workMode: overrides.workMode ?? "standard",
   };
 }
 
@@ -117,7 +120,9 @@ describe("getIssueDetailQueryOptions", () => {
 
     await flush();
 
-    expect(issuesApi.get).toHaveBeenCalledWith("PAP-1442");
+    expect(issuesApi.get).toHaveBeenCalledWith("PAP-1442", {
+      signal: expect.any(AbortSignal),
+    });
     expect(container.textContent).toContain("GitHub Security Advisory body");
 
     await act(async () => {

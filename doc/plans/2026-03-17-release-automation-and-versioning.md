@@ -2,7 +2,7 @@
 
 ## Context
 
-PaperClaw's current release flow is documented in `doc/RELEASING.md` and implemented through:
+Paperclip's current release flow is documented in `doc/RELEASING.md` and implemented through:
 
 - `.github/workflows/release.yml`
 - `scripts/release-lib.sh`
@@ -19,7 +19,7 @@ Today the model is:
 4. publish one or more canaries from that release branch
 5. publish stable from that same branch
 6. push tag + create GitHub Release
-7. merge the release branch back to `main`
+7. merge the release branch back to `master`
 
 That is workable, but it creates friction in exactly the places that should be cheap:
 
@@ -31,7 +31,7 @@ That is workable, but it creates friction in exactly the places that should be c
 
 The target state from this discussion is simpler:
 
-- every push to `main` publishes a canary automatically
+- every push to `master` publishes a canary automatically
 - stable releases are promoted deliberately from a vetted commit
 - versioning is date-driven instead of semantics-driven
 - stable publishing is secure even in a public open-source repository
@@ -39,13 +39,13 @@ The target state from this discussion is simpler:
 
 ## Recommendation In One Sentence
 
-Move PaperClaw to semver-compatible calendar versioning, auto-publish canaries from `main`, promote stable from a chosen tested commit, and use npm trusted publishing plus GitHub environments so no long-lived npm or LLM token needs to live in Actions.
+Move Paperclip to semver-compatible calendar versioning, auto-publish canaries from `master`, promote stable from a chosen tested commit, and use npm trusted publishing plus GitHub environments so no long-lived npm or LLM token needs to live in Actions.
 
 ## Core Decisions
 
 ### 1. Use calendar versions, but keep semver syntax
 
-The repo and npm tooling still assume semver-shaped version strings in many places. That does not mean PaperClaw must keep semver as a product policy. It does mean the version format should remain semver-valid.
+The repo and npm tooling still assume semver-shaped version strings in many places. That does not mean Paperclip must keep semver as a product policy. It does mean the version format should remain semver-valid.
 
 Recommended format:
 
@@ -79,23 +79,23 @@ This is effectively CalVer on semver rails.
 
 This is not semver in spirit anymore. It is semver in syntax only.
 
-That tradeoff is probably acceptable for PaperClaw, but it should be explicit:
+That tradeoff is probably acceptable for Paperclip, but it should be explicit:
 
 - consumers no longer infer compatibility from `major/minor/patch`
 - release notes become the compatibility signal
 - downstream users should prefer exact pins or deliberate upgrades
 
-This is especially relevant for public library packages like `@kesarcloud/shared`, `@kesarcloud/db`, and the adapter packages.
+This is especially relevant for public library packages like `@paperclipai/shared`, `@paperclipai/db`, and the adapter packages.
 
 ### 3. Drop release branches for normal publishing
 
-If every merge to `main` publishes a canary, the current `release/X.Y.Z` train model becomes more ceremony than value.
+If every merge to `master` publishes a canary, the current `release/X.Y.Z` train model becomes more ceremony than value.
 
 Recommended replacement:
 
-- `main` is the only canary train
-- every push to `main` can publish a canary
-- stable is published from a chosen commit or canary tag on `main`
+- `master` is the only canary train
+- every push to `master` can publish a canary
+- stable is published from a chosen commit or canary tag on `master`
 
 This matches the workflow you actually want:
 
@@ -109,8 +109,8 @@ This is the most important mechanical constraint.
 
 npm can move dist-tags, but it does not let you rename an already-published version. That means:
 
-- you can move `latest` to `paperclaw@1.2.3`
-- you cannot turn `paperclaw@2026.317.0-canary.8` into `paperclaw@2026.317.0`
+- you can move `latest` to `paperclipai@1.2.3`
+- you cannot turn `paperclipai@2026.317.0-canary.8` into `paperclipai@2026.317.0`
 
 So "promote canary to stable" really means:
 
@@ -181,10 +181,10 @@ Recommended environments:
 Recommended policy:
 
 - `npm-canary`
-  - allowed branch: `main`
+  - allowed branch: `master`
   - no human reviewer required
 - `npm-stable`
-  - allowed branch: `main`
+  - allowed branch: `master`
   - required reviewer enabled
   - prevent self-review enabled
   - admin bypass disabled
@@ -262,11 +262,11 @@ That is phase-two hardening work, not a phase-one requirement.
 
 Trigger:
 
-- `push` on `main`
+- `push` on `master`
 
 Steps:
 
-1. checkout the merged `main` commit
+1. checkout the merged `master` commit
 2. run verification on that exact commit
 3. compute canary version for current UTC date
 4. version public packages to `YYYY.MDD.P-canary.N`
@@ -346,7 +346,7 @@ These current invariants should be removed from the happy path:
 
 Replace them with:
 
-- canary must run from `main`
+- canary must run from `master`
 - stable may run from a pinned `source_ref`
 
 ### 3. Keep Changesets only if it stays helpful
@@ -365,7 +365,7 @@ Recommended implementation order:
 2. replace version computation with a small explicit versioning script
 3. if Changesets keeps fighting the model, remove it from release publishing entirely
 
-PaperClaw's release problem is now "publish the whole fixed package set at one explicit version", not "derive the next semantic bump from human intent".
+Paperclip's release problem is now "publish the whole fixed package set at one explicit version", not "derive the next semantic bump from human intent".
 
 ### 4. Add a dedicated versioning script
 
@@ -416,7 +416,7 @@ That is more complex operationally, so I would not start there unless package co
 
 ### 3. Auto-canary means more publish traffic
 
-Publishing on every `main` merge means:
+Publishing on every `master` merge means:
 
 - more npm versions
 - more git tags
@@ -441,7 +441,7 @@ That is acceptable if canaries stay clearly separate:
 
 ### Phase 2: Canary automation
 
-1. Add canary workflow on `push` to `main`
+1. Add canary workflow on `push` to `master`
 2. Add explicit calendar-version computation
 3. Add canary git tagging
 4. Remove changelog requirement from canaries
@@ -464,11 +464,11 @@ That is acceptable if canaries stay clearly separate:
 
 ## Concrete Recommendation
 
-PaperClaw should adopt this model:
+Paperclip should adopt this model:
 
 - stable versions: `YYYY.MDD.P`
 - canary versions: `YYYY.MDD.P-canary.N`
-- canaries auto-published on every push to `main`
+- canaries auto-published on every push to `master`
 - stables manually promoted from a chosen tested commit or canary tag
 - no release branches in the default path
 - no canary changelog files

@@ -1,11 +1,11 @@
-# PaperClaw UI Spec
+# Paperclip UI Spec
 
 Status: Draft
 Date: 2026-02-17
 
 ## 1. Design Philosophy
 
-PaperClaw's UI is a professional-grade control plane, not a toy dashboard. It should feel like the kind of tool you live in all day — fast, keyboard-driven, information-dense without being cluttered, dark-themed by default. Every pixel should earn its place.
+Paperclip's UI is a professional-grade control plane, not a toy dashboard. It should feel like the kind of tool you live in all day — fast, keyboard-driven, information-dense without being cluttered, dark-themed by default. Every pixel should earn its place.
 
 Design principles:
 
@@ -40,7 +40,8 @@ Priority indicators:
 
 ### Typography
 
-- **Font:** System font stack (Inter if loaded, else `-apple-system, BlinkMacSystemFont, 'Segoe UI'`)
+- **Font:** Bundled Inter v4.1 variable WOFF2 for sans text, loaded from `/fonts/InterVariable.woff2` and `/fonts/InterVariable-Italic.woff2`, with `Inter`, `ui-sans-serif`, `system-ui`, `-apple-system`, `BlinkMacSystemFont`, and `'Segoe UI'` fallbacks.
+- **Mono:** System monospace stack via the `font-mono` token (`ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `Liberation Mono`, `Courier New`, `monospace`).
 - **Body:** 13px / 1.5 line-height
 - **Labels/metadata:** 11px / uppercase tracking
 - **Headings:** 14-18px / semi-bold, never all-caps
@@ -192,7 +193,7 @@ The breadcrumb bar sits above the main content and properties panel. It serves a
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│ Projects › PaperClaw › Issues › CLIP-42  [⭐] [···]     [🔔] [⬜] │
+│ Projects › Paperclip › Issues › CLIP-42  [⭐] [···]     [🔔] [⬜] │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -437,7 +438,7 @@ Triggered by the sidebar pencil icon, keyboard shortcut `C`, or the `+` buttons 
 - `···` more button reveals: Goal, Start date, Target date, Billing code, Parent issue.
 
 **Footer:**
-- Attachment button (paperclaw icon).
+- Attachment button (paperclip icon).
 - "Create more" toggle — when on, creating an issue clears the form and stays open for rapid entry.
 - "Create issue" primary button.
 
@@ -475,7 +476,7 @@ Similar to the issue list but for projects.
 ┌─────────────────────────────────────────────────────────┐
 │ Projects                                [+ New project] │
 ├─────────────────────────────────────────────────────────┤
-│ [icon] PaperClaw Auth     Backlog     CTO     Feb 20   │
+│ [icon] Paperclip Auth     Backlog     CTO     Feb 20   │
 │ [icon] Marketing Site     In Progress CMO     Mar 01   │
 │ [icon] API v2             Planned     CTO     Mar 15   │
 └─────────────────────────────────────────────────────────┘

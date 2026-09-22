@@ -1,7 +1,16 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { readConfig, writeConfig, configExists, resolveConfigPath } from "../config/store.js";
-import type { PaperClawConfig } from "../config/schema.js";
+import {
+  backupInvalidConfig,
+  readConfig,
+  writeConfig,
+  configExists,
+  resolveConfigPath,
+} from "../config/store.js";
+import {
+  findPaperclipConfigKeyWarnings,
+  type PaperclipConfig,
+} from "../config/schema.js";
 import { ensureLocalSecretsKeyFile } from "../config/secrets-key.js";
 import { promptDatabase } from "../prompts/database.js";
 import { promptLlm } from "../prompts/llm.js";
@@ -13,9 +22,9 @@ import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
   resolveDefaultLogsDir,
-  resolvePaperClawInstanceId,
+  resolvePaperclipInstanceId,
 } from "../config/home.js";
-import { printPaperClawCliBanner } from "../utils/banner.js";
+import { printPaperclipCliBanner } from "../utils/banner.js";
 
 type Section = "llm" | "database" | "logging" | "server" | "storage" | "secrets";
 
@@ -28,8 +37,8 @@ const SECTION_LABELS: Record<Section, string> = {
   secrets: "Secrets",
 };
 
-function defaultConfig(): PaperClawConfig {
-  const instanceId = resolvePaperClawInstanceId();
+function defaultConfig(): PaperclipConfig {
+  const instanceId = resolvePaperclipInstanceId();
   return {
     $meta: {
       version: 1,
@@ -76,26 +85,51 @@ export async function configure(opts: {
   config?: string;
   section?: string;
 }): Promise<void> {
-  printPaperClawCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclaw configure ")));
+  printPaperclipCliBanner();
+  p.intro(pc.bgCyan(pc.black(" paperclip configure ")));
   const configPath = resolveConfigPath(opts.config);
 
   if (!configExists(opts.config)) {
-    p.log.error("No config file found. Run `paperclaw onboard` first.");
+    p.log.error("No config file found. Run `paperclipai onboard` first.");
     p.outro("");
+    process.exitCode = 1;
     return;
   }
 
-  let config: PaperClawConfig;
+  let config: PaperclipConfig;
+  let invalidBackupPath: string | undefined;
   try {
     config = readConfig(opts.config) ?? defaultConfig();
+    for (const warning of findPaperclipConfigKeyWarnings(config)) {
+      p.log.warn(`Unknown config key ${warning.path}; did you mean ${warning.suggestion}? It will be preserved.`);
+    }
   } catch (err) {
-    p.log.message(
-      pc.yellow(
-        `Existing config is invalid. Loading defaults so you can repair it now.\n${err instanceof Error ? err.message : String(err)}`,
-      ),
+    const backupPath = backupInvalidConfig(opts.config);
+    p.log.warn(
+      `Existing config is invalid. Preserved the original bytes at ${backupPath}.\n${err instanceof Error ? err.message : String(err)}`,
     );
+
+    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+      p.log.error(
+        `Refusing to replace ${configPath} without confirmation. Rerun interactively to repair from defaults; the original and ${backupPath} are unchanged.`,
+      );
+      p.outro("");
+      process.exitCode = 1;
+      return;
+    }
+
+    const repair = await p.confirm({
+      message: `Repair from defaults? The invalid original is backed up at ${backupPath}.`,
+      initialValue: false,
+    });
+    if (p.isCancel(repair) || !repair) {
+      p.cancel(`Configuration left unchanged. Invalid backup: ${backupPath}`);
+      process.exitCode = 1;
+      return;
+    }
+
     config = defaultConfig();
+    invalidBackupPath = backupPath;
   }
 
   let section: Section | undefined = opts.section as Section | undefined;
@@ -103,6 +137,7 @@ export async function configure(opts: {
   if (section && !SECTION_LABELS[section]) {
     p.log.error(`Unknown section: ${section}. Choose from: ${Object.keys(SECTION_LABELS).join(", ")}`);
     p.outro("");
+    process.exitCode = 1;
     return;
   }
 
@@ -168,7 +203,7 @@ export async function configure(opts: {
           } else if (keyResult.status === "skipped_provider") {
             p.log.message(pc.dim("Skipping local key file management for non-local provider"));
           } else {
-            p.log.message(pc.dim("Skipping local key file management because PAPERCLAW_SECRETS_MASTER_KEY is set"));
+            p.log.message(pc.dim("Skipping local key file management because PAPERCLIP_SECRETS_MASTER_KEY is set"));
           }
         }
         break;
@@ -177,8 +212,15 @@ export async function configure(opts: {
     config.$meta.updatedAt = new Date().toISOString();
     config.$meta.source = "configure";
 
-    writeConfig(config, opts.config);
-    p.log.success(`${SECTION_LABELS[section]} configuration updated.`);
+    const written = writeConfig(config, opts.config, {
+      invalidBackupPath,
+    });
+    invalidBackupPath = undefined;
+    if (written) {
+      p.log.success(`${SECTION_LABELS[section]} configuration updated.`);
+    } else {
+      p.log.message(pc.dim(`${SECTION_LABELS[section]} configuration unchanged.`));
+    }
 
     // If section was provided via CLI flag, don't loop
     if (opts.section) {

@@ -1,83 +1,90 @@
-# PaperClaw MCP Server
+# Paperclip MCP Server
 
-Model Context Protocol server for PaperClaw.
+Model Context Protocol server for Paperclip.
 
-This package is a thin MCP wrapper over the existing PaperClaw REST API. It does
+This package is a thin MCP wrapper over the existing Paperclip REST API. It does
 not talk to the database directly and it does not reimplement business logic.
 
 ## Authentication
 
 The server reads its configuration from environment variables:
 
-- `PAPERCLAW_API_URL` - PaperClaw base URL, for example `http://localhost:3100`
-- `PAPERCLAW_API_KEY` - bearer token used for `/api` requests
-- `PAPERCLAW_COMPANY_ID` - optional default company for company-scoped tools
-- `PAPERCLAW_AGENT_ID` - optional default agent for checkout helpers
-- `PAPERCLAW_RUN_ID` - optional run id forwarded on mutating requests
+- `PAPERCLIP_API_URL` - Paperclip base URL, for example `http://localhost:3100`
+- `PAPERCLIP_API_KEY` - bearer token used for `/api` requests
+- `PAPERCLIP_COMPANY_ID` - optional default company for company-scoped tools
+- `PAPERCLIP_AGENT_ID` - optional default agent for checkout helpers
+- `PAPERCLIP_RUN_ID` - optional run id forwarded on mutating requests
+
+Inside an active heartbeat, Paperclip also injects `PAPERCLIP_RUNTIME_TOOLS_*` variables. They enable the run-scoped `connections_search` and `connection_request` tools and expire with the run.
 
 ## Usage
 
 ```sh
-npx -y @kesarcloud/mcp-server
+npx -y @paperclipai/mcp-server
 ```
 
 Or locally in this repo:
 
 ```sh
-pnpm --filter @kesarcloud/mcp-server build
+pnpm --filter @paperclipai/mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 
 ## Tool Surface
 
+Run-scoped connection tools:
+
+- `connections_search`
+- `connection_request`
+
 Read tools:
 
-- `paperclawMe`
-- `paperclawInboxLite`
-- `paperclawListAgents`
-- `paperclawGetAgent`
-- `paperclawListIssues`
-- `paperclawGetIssue`
-- `paperclawGetHeartbeatContext`
-- `paperclawListComments`
-- `paperclawGetComment`
-- `paperclawListIssueApprovals`
-- `paperclawListDocuments`
-- `paperclawGetDocument`
-- `paperclawListDocumentRevisions`
-- `paperclawListProjects`
-- `paperclawGetProject`
-- `paperclawGetIssueWorkspaceRuntime`
-- `paperclawWaitForIssueWorkspaceService`
-- `paperclawListGoals`
-- `paperclawGetGoal`
-- `paperclawListApprovals`
-- `paperclawGetApproval`
-- `paperclawGetApprovalIssues`
-- `paperclawListApprovalComments`
+- `paperclipMe`
+- `paperclipInboxLite`
+- `paperclipListAgents`
+- `paperclipGetAgent`
+- `paperclipListIssues`
+- `paperclipGetIssue`
+- `paperclipGetHeartbeatContext`
+- `paperclipListComments`
+- `paperclipGetComment`
+- `paperclipListIssueApprovals`
+- `paperclipListDocuments`
+- `paperclipGetDocument`
+- `paperclipListDocumentRevisions`
+- `paperclipListProjects`
+- `paperclipGetProject`
+- `paperclipGetIssueWorkspaceRuntime`
+- `paperclipWaitForIssueWorkspaceService`
+- `paperclipListGoals`
+- `paperclipGetGoal`
+- `paperclipListApprovals`
+- `paperclipGetApproval`
+- `paperclipGetApprovalIssues`
+- `paperclipListApprovalComments`
 
 Write tools:
 
-- `paperclawCreateIssue`
-- `paperclawUpdateIssue`
-- `paperclawCheckoutIssue`
-- `paperclawReleaseIssue`
-- `paperclawAddComment`
-- `paperclawSuggestTasks`
-- `paperclawAskUserQuestions`
-- `paperclawRequestConfirmation`
-- `paperclawUpsertIssueDocument`
-- `paperclawRestoreIssueDocumentRevision`
-- `paperclawControlIssueWorkspaceServices`
-- `paperclawCreateApproval`
-- `paperclawLinkIssueApproval`
-- `paperclawUnlinkIssueApproval`
-- `paperclawApprovalDecision`
-- `paperclawAddApprovalComment`
+- `paperclipCreateIssue`
+- `paperclipUpdateIssue`
+- `paperclipCheckoutIssue`
+- `paperclipReleaseIssue`
+- `paperclipAddComment`
+- `paperclipSuggestTasks`
+- `paperclipAskUserQuestions`
+- `paperclipRequestConfirmation`
+- `paperclipUpsertIssueDocument`
+- `paperclipRestoreIssueDocumentRevision`
+- `paperclipControlIssueWorkspaceServices`
+- `paperclipCreateApproval`
+- `paperclipLinkIssueApproval`
+- `paperclipUnlinkIssueApproval`
+- `paperclipApprovalDecision`
+- `paperclipAddApprovalComment`
 
 Escape hatch:
 
-- `paperclawApiRequest`
+- `paperclipApiRequest`
 
-`paperclawApiRequest` is limited to paths under `/api` and JSON bodies. It is
+`paperclipApiRequest` is limited to paths under `/api` and JSON bodies. It is
 meant for endpoints that do not yet have a dedicated MCP tool.

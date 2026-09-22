@@ -11,12 +11,12 @@ import {
 } from "lucide-react";
 import { BreadcrumbBar } from "@/components/BreadcrumbBar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { CompanyRail } from "@/components/CompanyRail";
 import { CompanySwitcher } from "@/components/CompanySwitcher";
 import { KeyboardShortcutsCheatsheetContent } from "@/components/KeyboardShortcutsCheatsheet";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PageTabBar } from "@/components/PageTabBar";
 import { Sidebar } from "@/components/Sidebar";
+import { PluginLauncherProvider } from "@/plugins/launchers";
 import { SidebarAccountMenu } from "@/components/SidebarAccountMenu";
 import { SidebarCompanyMenu } from "@/components/SidebarCompanyMenu";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -39,7 +39,7 @@ import {
   storybookIssues,
   storybookProjects,
   storybookSidebarBadges,
-} from "../fixtures/paperclawData";
+} from "../fixtures/paperclipData";
 
 function Section({
   eyebrow,
@@ -51,9 +51,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclaw-story__frame overflow-hidden">
+    <section className="paperclip-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclaw-story__label">{eyebrow}</div>
+        <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -75,7 +75,6 @@ function SidebarShell({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <div className="h-[520px] overflow-hidden border border-border bg-background">
       <div className="flex h-full min-h-0">
-        <CompanyRail />
         <div className={cn("overflow-hidden transition-[width]", collapsed ? "w-0" : "w-60")}>
           <Sidebar />
         </div>
@@ -221,13 +220,13 @@ function CommandEmptySurface() {
 
 function NavigationLayoutStories() {
   return (
-    <div className="paperclaw-story">
+    <div className="paperclip-story">
       <RouteSetter to="/PAP/projects/board-ui/issues" />
-      <main className="paperclaw-story__inner max-w-[1320px] space-y-6">
-        <section className="paperclaw-story__frame p-6">
+      <main className="paperclip-story__inner max-w-[1320px] space-y-6">
+        <section className="paperclip-story__frame p-6">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <div className="paperclaw-story__label">Navigation and layout</div>
+              <div className="paperclip-story__label">Navigation and layout</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sidebar, command, tabs, and mobile chrome</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Fixture-backed navigation states for the board shell: company switching, dense work navigation,
@@ -249,22 +248,14 @@ function NavigationLayoutStories() {
           </div>
         </Section>
 
-        <Section eyebrow="Company rail" title="Multi-company rail with selected, inactive, live, and unread indicators">
-          <div className="h-[420px] w-[72px] overflow-hidden border border-border bg-background">
-            <CompanyRail />
-          </div>
-        </Section>
-
         <Section eyebrow="Menus" title="Account, company, and switcher menus in open state">
           <div className="grid gap-5 xl:grid-cols-3">
             <div className="relative h-[440px] overflow-hidden border border-border bg-background">
               <div className="absolute bottom-0 left-0 w-72">
                 <SidebarAccountMenu
                   deploymentMode="authenticated"
-                  instanceSettingsTarget="/instance/settings/general"
                   open
                   onOpenChange={() => undefined}
-                  version="0.3.1"
                 />
               </div>
             </div>
@@ -343,6 +334,17 @@ function NavigationLayoutStories() {
 const meta = {
   title: "Product/Navigation & Layout",
   component: NavigationLayoutStories,
+  // Sidebar mounts PluginLauncherOutlet unconditionally once a company is
+  // selected; without this provider the story raced company selection and
+  // intermittently threw "usePluginLauncherRuntime must be used within
+  // PluginLauncherProvider".
+  decorators: [
+    (Story) => (
+      <PluginLauncherProvider>
+        <Story />
+      </PluginLauncherProvider>
+    ),
+  ],
   parameters: {
     docs: {
       description: {
@@ -358,3 +360,30 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const BoardChromeMatrix: Story = {};
+
+// PAP-10676 verification harness: renders the real Sidebar at a fixed width so a
+// screenshot of the expanded state and a screenshot of the pinned-collapsed rail
+// can be overlaid. The icon column must be pixel-identical between the two — the
+// only difference should be the labels (sr-only in the rail). Playwright toggles
+// collapse via the in-sidebar control, so this exercises the real context path.
+function SidebarIconAlignmentHarness() {
+  return (
+    <PluginLauncherProvider>
+      <div className="paperclip-story">
+        <RouteSetter to="/PAP/projects/board-ui/issues" />
+        <div className="flex min-h-[760px] items-start justify-center bg-muted/30 p-8">
+          <div
+            data-testid="sidebar-align-frame"
+            className="h-[700px] w-60 overflow-hidden border border-border bg-background"
+          >
+            <Sidebar />
+          </div>
+        </div>
+      </div>
+    </PluginLauncherProvider>
+  );
+}
+
+export const SidebarIconAlignment: Story = {
+  render: () => <SidebarIconAlignmentHarness />,
+};

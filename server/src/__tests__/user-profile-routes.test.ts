@@ -12,7 +12,7 @@ import {
   createDb,
   issueComments,
   issues,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -37,7 +37,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
   let agentId!: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclaw-user-profile-route-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-user-profile-route-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -59,7 +59,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `U${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

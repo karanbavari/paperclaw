@@ -6,8 +6,8 @@ import { SystemNoticeUxLab } from "@/pages/SystemNoticeUxLab";
 
 function StoryFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="paperclaw-story">
-      <main className="paperclaw-story__inner">{children}</main>
+    <div className="paperclip-story">
+      <main className="paperclip-story__inner">{children}</main>
     </div>
   );
 }

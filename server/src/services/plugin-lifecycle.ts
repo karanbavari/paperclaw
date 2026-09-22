@@ -36,12 +36,12 @@
  * @see PLUGIN_SPEC.md §12.5 — Graceful Shutdown Policy
  */
 import { EventEmitter } from "node:events";
-import type { Db } from "@kesarcloud/db";
+import type { Db } from "@paperclipai/db";
 import type {
   PluginStatus,
   PluginRecord,
-  PaperClawPluginManifestV1,
-} from "@kesarcloud/shared";
+  PaperclipPluginManifestV1,
+} from "@paperclipai/shared";
 import { pluginRegistryService } from "./plugin-registry.js";
 import { pluginLoader, type PluginLoader } from "./plugin-loader.js";
 import type { PluginWorkerManager, WorkerStartOptions } from "./plugin-worker-manager.js";
@@ -776,19 +776,47 @@ export function pluginLifecycleManager(
         );
       }
 
+      const supportsRuntimeActivation =
+        typeof pluginLoaderInstance.hasRuntimeServices === "function"
+        && typeof pluginLoaderInstance.loadSingle === "function"
+        && typeof pluginLoaderInstance.unloadSingle === "function"
+        && pluginLoaderInstance.hasRuntimeServices();
+
+      if (supportsRuntimeActivation) {
+        log.info(
+          { pluginId, pluginKey: plugin.pluginKey },
+          "plugin lifecycle: reloading plugin (re-reading manifest, re-applying pending migrations, restarting worker)",
+        );
+
+        // Full deactivate+reactivate cycle (not just `handle.restart()`) so that:
+        //   - the manifest is re-read from disk, picking up newly declared
+        //     `migrations/*.sql` files and any other manifest changes,
+        //   - `applyMigrations` runs idempotently against the up-to-date
+        //     migrations directory — pending migrations get applied, already-
+        //     applied ones are skipped via the `pluginMigrations` table,
+        //   - the worker subprocess is replaced with one loading the freshly
+        //     built bundle.
+        //
+        // Bouncing the worker process alone (`handle.restart()`) leaves plugin
+        // schema out of sync with worker code whenever a hot reload adds a new
+        // migration, which makes downstream queries fail against missing tables.
+        await deactivatePluginRuntime(pluginId, plugin.pluginKey);
+        await activateReadyPlugin(pluginId);
+      } else {
+        // No runtime activation services wired in (e.g. state-only test harness)
+        // — fall back to a bare worker subprocess bounce.
+        log.info(
+          { pluginId, pluginKey: plugin.pluginKey },
+          "plugin lifecycle: restarting worker (runtime services unavailable; skipping migration re-apply)",
+        );
+        await handle.restart();
+        emitDomain("plugin.worker_stopped", { pluginId, pluginKey: plugin.pluginKey });
+        emitDomain("plugin.worker_started", { pluginId, pluginKey: plugin.pluginKey });
+      }
+
       log.info(
         { pluginId, pluginKey: plugin.pluginKey },
-        "plugin lifecycle: restarting worker",
-      );
-
-      await handle.restart();
-
-      emitDomain("plugin.worker_stopped", { pluginId, pluginKey: plugin.pluginKey });
-      emitDomain("plugin.worker_started", { pluginId, pluginKey: plugin.pluginKey });
-
-      log.info(
-        { pluginId, pluginKey: plugin.pluginKey },
-        "plugin lifecycle: worker restarted",
+        "plugin lifecycle: plugin reloaded",
       );
     },
 

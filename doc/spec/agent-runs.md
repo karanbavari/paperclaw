@@ -7,7 +7,7 @@ Scope: Agent execution runtime, adapter protocol, wakeup orchestration, and live
 
 ## 1. Document Role
 
-This spec defines how PaperClaw actually runs agents while staying runtime-agnostic.
+This spec defines how Paperclip actually runs agents while staying runtime-agnostic.
 
 - `doc/SPEC-implementation.md` remains the V1 baseline contract.
 - This document adds concrete subsystem detail for agent execution, including local CLI adapters, runtime state persistence, wakeup scheduling, and browser live updates.
@@ -17,12 +17,12 @@ This spec defines how PaperClaw actually runs agents while staying runtime-agnos
 
 The following intentions are explicitly preserved in this spec:
 
-1. PaperClaw is adapter-agnostic. The key is a protocol, not a specific runtime.
+1. Paperclip is adapter-agnostic. The key is a protocol, not a specific runtime.
 2. We still need default built-ins to make the system useful immediately.
 3. First two built-ins are `claude-local` and `codex-local`.
 4. Those adapters run local CLIs directly on the host machine, unsandboxed.
 5. Agent config includes working directory and initial/default prompt.
-6. Heartbeats run the configured adapter process, PaperClaw manages lifecycle, and on exit PaperClaw parses JSON output and updates state.
+6. Heartbeats run the configured adapter process, Paperclip manages lifecycle, and on exit Paperclip parses JSON output and updates state.
 7. Session IDs and token usage must be persisted so later heartbeats can resume.
 8. Adapters should support status updates (short message + color) and optional streaming logs.
 9. UI should support prompt template "pills" for variable insertion.
@@ -251,6 +251,13 @@ Runs local `claude` CLI directly.
   "model": "optional-model-id",
   "maxTurnsPerRun": 1000,
   "dangerouslySkipPermissions": true,
+  "filesystemScope": "workspace",
+  "filesystemExtraPaths": [
+    "/opt/toolchains",
+    {"path": "/var/cache/pnpm", "access": "rw"}
+  ],
+  "networkScope": "allowlist",
+  "networkAllowlist": ["api.anthropic.com"],
   "env": {"KEY": "VALUE"},
   "extraArgs": [],
   "timeoutSec": 1800,
@@ -288,6 +295,13 @@ Runs local `codex` CLI directly.
   "model": "optional-model-id",
   "search": false,
   "dangerouslyBypassApprovalsAndSandbox": true,
+  "filesystemScope": "workspace",
+  "filesystemExtraPaths": [
+    "/opt/toolchains",
+    {"path": "/var/cache/pnpm", "access": "rw"}
+  ],
+  "networkScope": "allowlist",
+  "networkAllowlist": ["api.openai.com"],
   "env": {"KEY": "VALUE"},
   "extraArgs": [],
   "timeoutSec": 1800,
@@ -302,6 +316,10 @@ Runs local `codex` CLI directly.
 - Unsandboxed mode: add `--dangerously-bypass-approvals-and-sandbox` when enabled
 - Optional search mode: add `--search`
 
+For Linux local coding adapters, `filesystemScope: "workspace"` adds host-level filesystem confinement around the CLI process. It is disabled by default and independent of the CLI's own approval or sandbox flags. Paperclip uses Bubblewrap to expose the active workspace and adapter-managed config/home, creates a private `/tmp`, and hides other host paths. `filesystemExtraPaths` can expose additional absolute paths read-only (string or `access: "ro"`) or writable (`access: "rw"`).
+
+`networkScope` is also disabled by default and can be enabled independently or together with filesystem confinement. `"deny"` creates a private network namespace with no egress. `"allowlist"` keeps direct sockets blocked and injects an HTTP(S) proxy that accepts only exact `networkAllowlist` hostnames (optionally with a port); list the coding provider endpoint and every other required API origin explicitly. For example, a standard Codex API-key setup normally needs `api.openai.com`, while Claude setups may need `api.anthropic.com` or their configured Bedrock, Vertex, or gateway origins. Wildcards are intentionally unsupported. Install `bwrap` on the Paperclip host before enabling either scope. Auto engine selection uses the CLI lane while a scope is enabled; explicit ACP mode is rejected because ACP processes are not yet covered by the spawn wrapper.
+
 ### Output parsing
 
 Codex emits JSONL events. Parse line-by-line and extract:
@@ -313,7 +331,7 @@ Codex emits JSONL events. Parse line-by-line and extract:
    - `cached_input_tokens`
    - `output_tokens`
 
-Codex JSONL currently may not include cost; store token usage and leave cost null/unknown unless available.
+Codex JSONL currently may not include cost; store token usage as per-run totals and mark the ledger row `unpriced` unless a cost is available.
 
 ## 7.3 Common local adapter process handling
 
@@ -527,7 +545,7 @@ Runtime log storage is deployment-configured (not per-agent by default).
   "runLogStore": {
     "type": "local_file | object_store | postgres",
     "basePath": "./data/run-logs",
-    "bucket": "paperclaw-run-logs",
+    "bucket": "paperclip-run-logs",
     "prefix": "runs/",
     "compress": true,
     "maxInlineExcerptBytes": 32768
@@ -561,7 +579,7 @@ Rules:
 - `run.source`
 - `run.startedAt`
 - `heartbeat.reason`
-- `paperclaw.skill` (shared PaperClaw skill text block)
+- `paperclip.skill` (shared Paperclip skill text block)
 - `credentials.apiBaseUrl`
 - `credentials.apiKey` (optional, sensitive)
 
@@ -581,7 +599,7 @@ Rules:
 ## 10.5 Security notes for credentials
 
 1. Credentials in prompt are allowed for initial simplicity but discouraged.
-2. Preferred transport is env vars (`PAPERCLAW_*`) injected at runtime.
+2. Preferred transport is env vars (`PAPERCLIP_*`) injected at runtime.
 3. Prompt preview and logs must redact sensitive values.
 
 ## 11. Realtime Status Delivery

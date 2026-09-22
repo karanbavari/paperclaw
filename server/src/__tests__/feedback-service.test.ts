@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { writePaperClawSkillSyncPreference } from "@kesarcloud/adapter-utils/server-utils";
+import { writePaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
 import {
   agents,
   companies,
@@ -20,22 +20,34 @@ import {
   issueComments,
   issueDocuments,
   issues,
-} from "@kesarcloud/db";
+} from "@paperclipai/db";
 import { feedbackService } from "../services/feedback.ts";
-import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.ts";
+import {
+  getEmbeddedPostgresTestSupport,
+  startEmbeddedPostgresTestDatabase,
+} from "./helpers/embedded-postgres.ts";
+
+const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
+const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
+
+if (!embeddedPostgresSupport.supported) {
+  console.warn(
+    `Skipping embedded Postgres feedback service tests on this host: ${embeddedPostgresSupport.reason ?? "unsupported environment"}`,
+  );
+}
 
 async function closeDbClient(db: ReturnType<typeof createDb> | undefined) {
   await db?.$client?.end?.({ timeout: 0 });
 }
 
-describe("feedbackService.saveIssueVote", () => {
+describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
   let db!: ReturnType<typeof createDb>;
   let svc!: ReturnType<typeof feedbackService>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let tempDirs: string[] = [];
 
   beforeAll(async () => {
-    const started = await startEmbeddedPostgresTestDatabase("paperclaw-feedback-service-");
+    const started = await startEmbeddedPostgresTestDatabase("paperclip-feedback-service-");
     db = createDb(started.connectionString);
     svc = feedbackService(db);
     tempDb = started;
@@ -75,7 +87,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `F${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -124,7 +136,7 @@ describe("feedbackService.saveIssueVote", () => {
     // Random UUIDs occasionally produce digit pairs like "4880-8614" that
     // cross segment boundaries and match the phone pattern.
     const runId = "abcde123-face-beef-cafe-abcdef654321";
-    const instructionsDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-feedback-instructions-"));
+    const instructionsDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-feedback-instructions-"));
     tempDirs.push(instructionsDir);
     const instructionsPath = path.join(instructionsDir, "AGENTS.md");
     fs.writeFileSync(
@@ -135,7 +147,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `R${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -144,10 +156,10 @@ describe("feedbackService.saveIssueVote", () => {
       {
         id: randomUUID(),
         companyId,
-        key: "karanbavari/paperclaw/paperclaw",
-        slug: "paperclaw",
-        name: "PaperClaw",
-        markdown: "# PaperClaw",
+        key: "paperclipai/paperclip/paperclip",
+        slug: "paperclip",
+        name: "Paperclip",
+        markdown: "# Paperclip",
         sourceType: "catalog",
         sourceLocator: null,
         sourceRef: null,
@@ -174,7 +186,7 @@ describe("feedbackService.saveIssueVote", () => {
       role: "engineer",
       status: "active",
       adapterType: "codex_local",
-      adapterConfig: writePaperClawSkillSyncPreference(
+      adapterConfig: writePaperclipSkillSyncPreference(
         {
           model: "gpt-5.4",
           instructionsBundleMode: "external",
@@ -182,7 +194,7 @@ describe("feedbackService.saveIssueVote", () => {
           instructionsEntryFile: "AGENTS.md",
           instructionsFilePath: instructionsPath,
         },
-        ["karanbavari/paperclaw/paperclaw", "octo/research/public-skill"],
+        ["paperclipai/paperclip/paperclip", "octo/research/public-skill"],
       ),
       runtimeConfig: {
         heartbeat: {
@@ -279,7 +291,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `D${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -348,7 +360,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -606,7 +618,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
   });
 
-  it("builds a detailed sanitized shared bundle with issue and agent context", async () => {
+  it("builds a sanitized shared bundle without reading external instruction roots", async () => {
     const { companyId, issueId, targetCommentId, runId } = await seedIssueWithRichAgentComment();
 
     await svc.saveIssueVote({
@@ -638,8 +650,8 @@ describe("feedbackService.saveIssueVote", () => {
 
     expect(trace?.status).toBe("pending");
     expect(trace?.exportId).toMatch(/^fbexp_/);
-    expect(trace?.schemaVersion).toBe("paperclaw-feedback-envelope-v2");
-    expect(trace?.bundleVersion).toBe("paperclaw-feedback-bundle-v2");
+    expect(trace?.schemaVersion).toBe("paperclip-feedback-envelope-v2");
+    expect(trace?.bundleVersion).toBe("paperclip-feedback-bundle-v2");
     expect(trace?.payloadDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(primaryContent?.createdByRunId).toBe(runId);
     expect(String(primaryContent?.body)).toContain("[REDACTED]");
@@ -650,8 +662,12 @@ describe("feedbackService.saveIssueVote", () => {
     expect(sourceRun?.id).toBe(runId);
     expect(JSON.stringify(sourceRun)).toContain("gpt-5.4");
     expect(skillItems?.[1]?.sourceLocator).toBe("https://github.com/octo/research/tree/main/skills/public-skill");
-    expect(String(instructions?.entryBody)).toContain("[REDACTED]");
-    expect(String(instructions?.entryBody)).not.toContain("secret-value");
+    expect(instructions).toBeNull();
+    expect(runtime?.configuredInstructionsBundleMode).toBe("external");
+    expect(runtime?.configuredInstructionsFilePath).toBeNull();
+    expect(runtime?.configuredInstructionsRootPath).toBeNull();
+    expect(JSON.stringify(bundle)).not.toContain("secret-value");
+    expect(JSON.stringify(bundle)).not.toContain("private-workspace");
   });
 
   it("keeps earlier local votes local when a later vote enables sharing", async () => {
@@ -698,15 +714,15 @@ describe("feedbackService.saveIssueVote", () => {
 
     expect(localTrace?.status).toBe("local_only");
     expect(localTrace?.exportId).toBeNull();
-    expect(localTrace?.payloadVersion).toBe("paperclaw-feedback-v1");
+    expect(localTrace?.payloadVersion).toBe("paperclip-feedback-v1");
     expect(localTrace?.payloadSnapshot?.bundle).toBeNull();
     expect(sharedTrace?.status).toBe("pending");
     expect(sharedTrace?.exportId).toMatch(/^fbexp_/);
-    expect(sharedTrace?.payloadVersion).toBe("paperclaw-feedback-v1");
+    expect(sharedTrace?.payloadVersion).toBe("paperclip-feedback-v1");
   });
 
   it("captures Claude project session artifacts as full traces", async () => {
-    const claudeRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-feedback-claude-"));
+    const claudeRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-feedback-claude-"));
     tempDirs.push(claudeRoot);
     const sessionId = randomUUID();
     const projectDir = path.join(claudeRoot, "projects", "workspace-1");
@@ -780,7 +796,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("captures OpenCode message and part files as full traces", async () => {
-    const opencodeRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclaw-feedback-opencode-"));
+    const opencodeRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-feedback-opencode-"));
     tempDirs.push(opencodeRoot);
     const sessionId = "ses_test_feedback_trace";
     const sessionDir = path.join(opencodeRoot, "storage", "session", "global");
@@ -870,7 +886,7 @@ describe("feedbackService.saveIssueVote", () => {
       JSON.stringify([{ content: "Verify exported traces" }]),
       "utf8",
     );
-    vi.stubEnv("PAPERCLAW_OPENCODE_STORAGE_DIR", opencodeRoot);
+    vi.stubEnv("PAPERCLIP_OPENCODE_STORAGE_DIR", opencodeRoot);
     const uploadTraceBundle = vi.fn().mockResolvedValue({ objectKey: "feedback-traces/test.json" });
     const flushingSvc = feedbackService(db, {
       shareClient: {
@@ -917,7 +933,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "PaperClaw",
+      name: "Paperclip",
       issuePrefix: `H${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -995,7 +1011,7 @@ describe("feedbackService.saveIssueVote", () => {
       issueIdentifier: traces[0]?.issueIdentifier,
       captureStatus: expect.stringMatching(/^(full|partial|unavailable)$/),
       envelope: {
-        destination: "paperclaw_labs_feedback_v1",
+        destination: "paperclip_labs_feedback_v1",
         exportId: traces[0]?.exportId,
       },
     });

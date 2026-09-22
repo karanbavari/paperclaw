@@ -8,7 +8,7 @@ import type {
   RoutineRunSummary,
   RoutineTrigger,
   RoutineTriggerSecretMaterial,
-} from "@kesarcloud/shared";
+} from "@paperclipai/shared";
 import { activityApi } from "./activity";
 import { api } from "./client";
 

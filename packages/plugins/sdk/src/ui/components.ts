@@ -1,7 +1,7 @@
 /**
  * Shared UI component declarations for plugin frontends.
  *
- * These components are exported from `@kesarcloud/plugin-sdk/ui` and are
+ * These components are exported from `@paperclipai/plugin-sdk/ui` and are
  * provided by the host at runtime.  They match the host's design tokens and
  * visual language, reducing the boilerplate needed to build consistent plugin UIs.
  *
@@ -13,7 +13,7 @@
  * only the type declarations; the runtime implementations are injected via the
  * host module registry.
  *
- * @see PLUGIN_SPEC.md §19.6 — Shared Components In `@kesarcloud/plugin-sdk/ui`
+ * @see PLUGIN_SPEC.md §19.6 — Shared Components In `@paperclipai/plugin-sdk/ui`
  */
 
 import type React from "react";
@@ -338,6 +338,7 @@ export interface IssuesListFilters {
   originId?: string;
   descendantOf?: string;
   includeRoutineExecutions?: boolean;
+  includeLiveDescendantSummary?: boolean;
 }
 
 export interface IssuesListProps {
@@ -420,6 +421,12 @@ export interface ManagedRoutineMissingRef {
   resourceKey: string;
 }
 
+export interface ManagedRoutineDefaultDrift {
+  changedFields: string[];
+  defaultTitle?: string | null;
+  defaultDescription?: string | null;
+}
+
 export interface ManagedRoutinesListItem {
   key: string;
   title: string;
@@ -434,6 +441,7 @@ export interface ManagedRoutinesListItem {
   lastRunStatus?: string | null;
   managedByPluginDisplayName?: string | null;
   missingRefs?: ManagedRoutineMissingRef[];
+  defaultDrift?: ManagedRoutineDefaultDrift | null;
 }
 
 export interface ManagedRoutinesListProps {
@@ -466,7 +474,7 @@ export interface ManagedRoutinesListProps {
  * @see PLUGIN_SPEC.md §19.6 — Shared Components
  */
 function createSdkUiComponent<TProps>(name: string): React.ComponentType<TProps> {
-  return function PaperClawSdkUiComponent(props: TProps) {
+  return function PaperclipSdkUiComponent(props: TProps) {
     return renderSdkUiComponent(name, props) as React.ReactNode;
   };
 }
@@ -502,7 +510,7 @@ export const TimeseriesChart = createSdkUiComponent<TimeseriesChartProps>("Times
 export const MarkdownBlock = createSdkUiComponent<MarkdownBlockProps>("MarkdownBlock");
 
 /**
- * Renders PaperClaw's shared Markdown editor.
+ * Renders Paperclip's shared Markdown editor.
  *
  * @see PLUGIN_SPEC.md §19.6 — Shared Components
  */
@@ -556,7 +564,7 @@ export const ErrorBoundary = createSdkUiComponent<ErrorBoundaryProps>("ErrorBoun
  *
  * @example
  * ```tsx
- * import { FileTree, type FileTreeNode } from "@kesarcloud/plugin-sdk/ui";
+ * import { FileTree, type FileTreeNode } from "@paperclipai/plugin-sdk/ui";
  *
  * const nodes: FileTreeNode[] = [
  *   { name: "README.md", path: "README.md", kind: "file", children: [] },
@@ -568,7 +576,7 @@ export const ErrorBoundary = createSdkUiComponent<ErrorBoundaryProps>("ErrorBoun
 export const FileTree = createSdkUiComponent<FileTreeProps>("FileTree");
 
 /**
- * Renders PaperClaw's native issue list component for company-scoped plugin
+ * Renders Paperclip's native issue list component for company-scoped plugin
  * pages that need a standard board issue view.
  */
 export const IssuesList = createSdkUiComponent<IssuesListProps>("IssuesList");
@@ -584,6 +592,6 @@ export const AssigneePicker = createSdkUiComponent<AssigneePickerProps>("Assigne
 export const ProjectPicker = createSdkUiComponent<ProjectPickerProps>("ProjectPicker");
 
 /**
- * Renders PaperClaw's native managed routines list for plugin settings pages.
+ * Renders Paperclip's native managed routines list for plugin settings pages.
  */
 export const ManagedRoutinesList = createSdkUiComponent<ManagedRoutinesListProps>("ManagedRoutinesList");

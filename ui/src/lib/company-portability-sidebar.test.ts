@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Agent, Project } from "@kesarcloud/shared";
+import type { Agent, Project } from "@paperclipai/shared";
 import {
   buildPortableAgentSlugMap,
   buildPortableProjectSlugMap,
@@ -46,6 +46,7 @@ function makeProject(id: string, name: string): Project {
     leadAgentId: null,
     targetDate: null,
     color: null,
+    icon: null,
     env: null,
     pauseReason: null,
     pausedAt: null,
