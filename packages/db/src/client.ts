@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate as migratePg } from "drizzle-orm/postgres-js/migrator";
 import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -16,6 +17,7 @@ function createUtilitySql(url: string) {
 }
 
 type RegisteredPostgresClient = ReturnType<typeof postgres>;
+type PaperClawDatabase = PostgresJsDatabase<typeof schema> & { $client: RegisteredPostgresClient };
 
 /**
  * Derives a registry key from a connection URL's host and port only. We must
@@ -255,7 +257,7 @@ export function postgresJsOptions(options: DatabaseClientOptions): Record<string
   return driverOptions;
 }
 
-export function createDb(url: string, options?: DatabaseClientOptions) {
+export function createDb(url: string, options?: DatabaseClientOptions): PaperClawDatabase {
   const resolved = resolveDatabaseClientOptions(options ?? databaseClientOptionsFromEnv());
   const sql = postgres(url, postgresJsOptions(resolved));
   const key = hostPortKeyOrNull(url);
@@ -263,7 +265,7 @@ export function createDb(url: string, options?: DatabaseClientOptions) {
   // The registry keeps the real client (teardown must end the actual pool);
   // drizzle gets the retrying face so a pooler-recycled socket replays the
   // query instead of failing the request that happened to draw it.
-  return drizzlePg(withTransientWriteRetry(sql), { schema });
+  return drizzlePg(withTransientWriteRetry(sql), { schema }) as unknown as PaperClawDatabase;
 }
 
 export async function getPostgresDataDirectory(url: string): Promise<string | null> {
@@ -1019,7 +1021,7 @@ export async function applyPendingMigrations(url: string): Promise<void> {
     const sql = createUtilitySql(url);
     try {
       const db = drizzlePg(sql);
-      await migratePg(db, { migrationsFolder: MIGRATIONS_FOLDER });
+      await migratePg(db as Parameters<typeof migratePg>[0], { migrationsFolder: MIGRATIONS_FOLDER });
     } finally {
       await sql.end();
     }
@@ -1100,7 +1102,7 @@ export async function migratePostgresIfEmpty(url: string): Promise<MigrationBoot
     }
 
     const db = drizzlePg(sql);
-    await migratePg(db, { migrationsFolder: MIGRATIONS_FOLDER });
+    await migratePg(db as Parameters<typeof migratePg>[0], { migrationsFolder: MIGRATIONS_FOLDER });
 
     return { migrated: true, reason: "migrated-empty-db", tableCount: 0 };
   } finally {

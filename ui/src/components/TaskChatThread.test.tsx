@@ -12,10 +12,10 @@ import type {
   IssueDocument,
   IssueQueuedCommentQueue,
   IssueThreadInteraction,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { heartbeatsApi } from "@/api/heartbeats";
 import { nativeRunEventsToTranscript } from "./transcript/native-run-events";
-import type { HeartbeatRunEvent } from "@paperclipai/shared";
+import type { HeartbeatRunEvent } from "@kesarcloud/shared";
 
 const transcriptState = vi.hoisted(() => ({
   transcriptByRun: new Map(),
@@ -2409,7 +2409,7 @@ describe("TaskChatThread composer alignment", () => {
     const dock = container.querySelector(
       '[data-testid="task-chat-composer-dock"]',
     );
-    const composer = container.querySelector(".paperclip-task-chat-composer");
+    const composer = container.querySelector(".paperclaw-task-chat-composer");
     const send = container.querySelector(
       '[data-testid="task-chat-composer-send"]',
     );

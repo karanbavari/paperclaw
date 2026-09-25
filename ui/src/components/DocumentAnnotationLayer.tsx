@@ -3,7 +3,7 @@ import { AlertTriangle, MessageSquarePlus } from "lucide-react";
 import type {
   DocumentAnnotationAnchorState,
   DocumentAnnotationThreadStatus,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -19,7 +19,7 @@ import {
   recordMarkdownMutations,
   recordSelectionChange,
 } from "@/lib/document-annotation-debug";
-import type { DocumentAnnotationAnchorSelector } from "@paperclipai/shared";
+import type { DocumentAnnotationAnchorSelector } from "@kesarcloud/shared";
 
 export interface AnnotationOverlayThread {
   id: string;
@@ -396,13 +396,13 @@ export function DocumentAnnotationLayer({
       ? new window.MutationObserver((mutations) => {
         if (selectionDebugEnabled) {
           const markdownMutations = mutations.filter((mutation) =>
-            Boolean(elementFromNode(mutation.target)?.closest(".paperclip-markdown")),
+            Boolean(elementFromNode(mutation.target)?.closest(".paperclaw-markdown")),
           );
           if (markdownMutations.length > 0) recordMarkdownMutations(markdownMutations.length);
         }
         const onlyLayerMutations = mutations.every((mutation) => {
           const target = elementFromNode(mutation.target);
-          return !!target?.closest(".paperclip-doc-annotation-layer, .paperclip-doc-annotation-visual-layer");
+          return !!target?.closest(".paperclaw-doc-annotation-layer, .paperclaw-doc-annotation-visual-layer");
         });
         if (!onlyLayerMutations) schedule();
       })

@@ -60,8 +60,8 @@ describe("sandbox callback bridge", () => {
           (args[0] === "-c" || args[0] === "-lc") &&
           typeof args[1] === "string"
         ) {
-          env.PAPERCLIP_TEST_STDIN = input.stdin;
-          args[1] = `printf '%s' \"$PAPERCLIP_TEST_STDIN\" | (${args[1]})`;
+          env.PAPERCLAW_TEST_STDIN = input.stdin;
+          args[1] = `printf '%s' \"$PAPERCLAW_TEST_STDIN\" | (${args[1]})`;
         }
         try {
           const result = await execFile(command, args, {
@@ -506,7 +506,7 @@ describe("sandbox callback bridge", () => {
           makeDirs: async () => {},
           listJsonFiles: async () => {
             throw new Error(
-              "list /remote/.paperclip-runtime/gemini/paperclip-bridge/queue/requests failed with exit code 255: kex_exchange_identification: read: Connection reset by peer",
+              "list /remote/.paperclaw-runtime/gemini/paperclip-bridge/queue/requests failed with exit code 255: kex_exchange_identification: read: Connection reset by peer",
             );
           },
           readTextFile: async () => {
@@ -599,7 +599,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("keeps the queue-directory setup on the startup step but resets the poll loop store", async () => {
-    // The worker starts inside the measured `bridge.paperclip` step. Its awaited
+    // The worker starts inside the measured `bridge.paperclaw` step. Its awaited
     // queue-directory setup is startup work, so a `makeDir` `sandbox.exec` span
     // must keep the active step and its `criticalPath` flag. The long-lived poll
     // loop runs run-time execs for the whole run, so a loop `sandbox.exec` span
@@ -619,7 +619,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.paperclaw",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -666,7 +666,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("test_paperclip_loop_exec_parents_to_run_context", async () => {
-    // The worker starts inside the measured `bridge.paperclip` step. Its awaited
+    // The worker starts inside the measured `bridge.paperclaw` step. Its awaited
     // queue-directory setup is startup work and keeps the active step. The poll
     // loop shell stays outside that store. But a per-request unit of work is
     // run-time work, so the worker runs each request under the current-run
@@ -690,7 +690,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.paperclaw",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -803,7 +803,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.paperclaw",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -921,7 +921,7 @@ describe("sandbox callback bridge", () => {
     await expect(readdir(directories.responsesDir)).resolves.toEqual([]);
     await expect(
       readdir(directories.responsesDir).then((entries) =>
-        entries.filter((entry) => entry.endsWith(".tmp") || entry.includes(".paperclip-write.lock")),
+        entries.filter((entry) => entry.endsWith(".tmp") || entry.includes(".paperclaw-write.lock")),
       ),
     ).resolves.toEqual([]);
   });
@@ -1146,7 +1146,7 @@ describe("sandbox callback bridge", () => {
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
     const remoteAssetDir = path.posix.join(
       remoteWorkspaceDir,
-      ".paperclip-runtime",
+      ".paperclaw-runtime",
       "codex",
       "paperclip-bridge",
       "server",
@@ -1183,9 +1183,9 @@ describe("sandbox callback bridge", () => {
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".paperclaw-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-bridge-upload.lock",
+            entry === ".paperclaw-bridge-upload.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1198,7 +1198,7 @@ describe("sandbox callback bridge", () => {
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
     const remoteAssetDir = path.posix.join(
       remoteWorkspaceDir,
-      ".paperclip-runtime",
+      ".paperclaw-runtime",
       "codex",
       "paperclip-bridge",
       "server",
@@ -1237,9 +1237,9 @@ describe("sandbox callback bridge", () => {
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".paperclaw-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-bridge-upload.lock",
+            entry === ".paperclaw-bridge-upload.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1256,7 +1256,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".paperclaw-process-session-script.lock");
     const body = "console.log('process session remote script v1');\n";
 
     let execCount = 0;
@@ -1298,9 +1298,9 @@ describe("sandbox callback bridge", () => {
       readdir(remoteDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".paperclaw-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-process-session-script.lock",
+            entry === ".paperclaw-process-session-script.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1311,7 +1311,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".paperclaw-process-session-script.lock");
     const body = "console.log('process session remote script v2');\n";
 
     // Pre-seed the remote with a DIFFERENT script (a prior/stale build).
@@ -1339,7 +1339,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".paperclaw-process-session-script.lock");
 
     // A runner whose exec fails: the hash-gate cannot be evaluated. The write
     // must surface the failure, never swallow it and re-upload behind a green
@@ -1552,11 +1552,11 @@ describe("sandbox callback bridge", () => {
       timeoutMs: 30_000,
     });
 
-    await client.makeDir("/workspace/.paperclip-runtime/codex/paperclip-bridge/queue");
+    await client.makeDir("/workspace/.paperclaw-runtime/codex/paperclip-bridge/queue");
 
     expect(runner.execute).toHaveBeenCalledWith(expect.objectContaining({
       env: {
-        PAPERCLIP_SANDBOX_EXEC_CHANNEL: "bridge",
+        PAPERCLAW_SANDBOX_EXEC_CHANNEL: "bridge",
       },
     }));
   });
@@ -3049,9 +3049,9 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: String(blockedPort),
+        PAPERCLAW_BRIDGE_QUEUE_DIR: queueDir,
+        PAPERCLAW_BRIDGE_TOKEN: "test-token",
+        PAPERCLAW_BRIDGE_PORT: String(blockedPort),
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3082,10 +3082,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "duplex_v1",
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: "0",
+        PAPERCLAW_API_BRIDGE_MODE: "duplex_v1",
+        PAPERCLAW_BRIDGE_QUEUE_DIR: queueDir,
+        PAPERCLAW_BRIDGE_TOKEN: "test-token",
+        PAPERCLAW_BRIDGE_PORT: "0",
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3098,7 +3098,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain("Unsupported PAPERCLIP_API_BRIDGE_MODE: duplex_v1");
+    expect(stderr).toContain("Unsupported PAPERCLAW_API_BRIDGE_MODE: duplex_v1");
   }, 15_000);
 
   it("exits nonzero for an unknown bridge mode instead of starting the queue gateway", async () => {
@@ -3114,10 +3114,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "totally_unknown_mode",
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: "0",
+        PAPERCLAW_API_BRIDGE_MODE: "totally_unknown_mode",
+        PAPERCLAW_BRIDGE_QUEUE_DIR: queueDir,
+        PAPERCLAW_BRIDGE_TOKEN: "test-token",
+        PAPERCLAW_BRIDGE_PORT: "0",
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3130,7 +3130,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain("Unsupported PAPERCLIP_API_BRIDGE_MODE: totally_unknown_mode");
+    expect(stderr).toContain("Unsupported PAPERCLAW_API_BRIDGE_MODE: totally_unknown_mode");
   }, 15_000);
 
   it("test_http2_gateway_writes_no_frame_between_ready_and_the_preface", async () => {
@@ -3162,10 +3162,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "http2_v1",
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: String(assignedPort),
-        PAPERCLIP_BRIDGE_NONCE: nonce,
+        PAPERCLAW_API_BRIDGE_MODE: "http2_v1",
+        PAPERCLAW_BRIDGE_TOKEN: "test-token",
+        PAPERCLAW_BRIDGE_PORT: String(assignedPort),
+        PAPERCLAW_BRIDGE_NONCE: nonce,
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -3247,12 +3247,12 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "http2_v1",
-        PAPERCLIP_BRIDGE_TOKEN: options.bridgeToken,
-        PAPERCLIP_BRIDGE_PORT: String(assignedPort),
-        PAPERCLIP_BRIDGE_NONCE: "test-nonce",
+        PAPERCLAW_API_BRIDGE_MODE: "http2_v1",
+        PAPERCLAW_BRIDGE_TOKEN: options.bridgeToken,
+        PAPERCLAW_BRIDGE_PORT: String(assignedPort),
+        PAPERCLAW_BRIDGE_NONCE: "test-nonce",
         ...(options.maxBodyBytes != null
-          ? { PAPERCLIP_BRIDGE_MAX_BODY_BYTES: String(options.maxBodyBytes) }
+          ? { PAPERCLAW_BRIDGE_MAX_BODY_BYTES: String(options.maxBodyBytes) }
           : {}),
       },
       stdio: ["pipe", "pipe", "pipe"],

@@ -89,13 +89,13 @@ real request.
 You never choose this; Paperclip resolves it and the wizard shows none of it.
 Recorded here for security review and diagnostics. In preference order:
 
-1. **Deployment-preconfigured client.** `PAPERCLIP_TOOL_OAUTH_<PROVIDER>_CLIENT_ID`
-   / `_SECRET`, or the unsuffixed `PAPERCLIP_TOOL_OAUTH_CLIENT_ID` / `_SECRET`.
+1. **Deployment-preconfigured client.** `PAPERCLAW_TOOL_OAUTH_<PROVIDER>_CLIENT_ID`
+   / `_SECRET`, or the unsuffixed `PAPERCLAW_TOOL_OAUTH_CLIENT_ID` / `_SECRET`.
    Always wins when set.
 2. **Client ID Metadata Document (CIMD).** When the authorization server
    advertises `client_id_metadata_document_supported`, Paperclip presents the URL
    of its own published metadata document as the `client_id`. Nothing is
-   registered. **Requires a public HTTPS base URL** (`PAPERCLIP_PUBLIC_URL`):
+   registered. **Requires a public HTTPS base URL** (`PAPERCLAW_PUBLIC_URL`):
    the authorization server has to fetch that document server-to-server, so
    loopback and plain-HTTP deployments fall through to the next tier.
    The document is served unauthenticated at `/api/tools/oauth/client-metadata`
@@ -130,7 +130,7 @@ Every OAuth endpoint address is chosen by the remote server — in discovered
 metadata, in a `WWW-Authenticate` hint, in a pasted config, or in a gallery
 default — and the authorization endpoint additionally becomes a top-level browser
 navigation. All of them are parsed by one shared validator
-(`checkOAuthEndpointUrl` in `@paperclipai/shared`) and must be:
+(`checkOAuthEndpointUrl` in `@kesarcloud/shared`) and must be:
 
 - **`https:`.** Plain `http:` is refused, except for a loopback host under the
   local-development policy (the same policy that allows private remote
@@ -204,10 +204,10 @@ the normal unit, browser, and CI-required suites. Run it only against an
 already-running, browser-reachable HTTPS Paperclip instance with these bindings
 provided by the execution environment:
 
-- `PAPERCLIP_E2E_BASE_URL`, `PAPERCLIP_E2E_EMAIL`, and
-  `PAPERCLIP_DEV_LOGIN_PASSWORD` for the target instance;
-- `PAPERCLIP_API_URL`, `PAPERCLIP_API_KEY`, `PAPERCLIP_RUN_ID`, and
-  `PAPERCLIP_TASK_ID` for the control plane;
+- `PAPERCLAW_E2E_BASE_URL`, `PAPERCLAW_E2E_EMAIL`, and
+  `PAPERCLAW_DEV_LOGIN_PASSWORD` for the target instance;
+- `PAPERCLAW_API_URL`, `PAPERCLAW_API_KEY`, `PAPERCLAW_RUN_ID`, and
+  `PAPERCLAW_TASK_ID` for the control plane;
 - the approved on-demand secret binding
   `access.notion_generic_flow_test_account`, delivered by the agent secret API
   under its normalized key `generic-flow-test-account`, for the existing Notion
@@ -232,7 +232,7 @@ post-callback screenshots, enables and invokes only `notion-get-self`, proves
 `notion-create-pages` remains locally denied, and removes its uniquely named
 connection in a `finally` cleanup. Its `summary.json` and PNG files contain
 sanitized IDs, decisions, outcomes, and endpoint origins/paths only; they
-default to `PAPERCLIP_RUN_SCRATCH_DIR`, or to `NOTION_EVIDENCE_DIR` when set.
+default to `PAPERCLAW_RUN_SCRATCH_DIR`, or to `NOTION_EVIDENCE_DIR` when set.
 
 Run the credential-free harness checks with:
 

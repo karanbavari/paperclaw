@@ -14,8 +14,8 @@ identity, isolation behavior, and conformance coverage are defined.
 | ACPX (Claude, Codex) | `acpxPermissionMode` | `approve-all`, `approve-reads`, `deny-all` | `approve-reads` |
 
 The browser-safe source of truth for labels, defaults, and configuration
-validation is `PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES` in
-`@paperclipai/adapter-utils`. Native process boundaries validate the pinned
+validation is `PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES` in
+`@kesarcloud/adapter-utils`. Native process boundaries validate the pinned
 provider value again; they must not silently accept an unknown mode.
 
 “Full auto” means the harness does not pause for a duplicate approval inside

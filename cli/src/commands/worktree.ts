@@ -25,12 +25,12 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   resolveCanonicalWorktreeSeedSource,
   resolveRegisteredWorktreeSeedSource,
-} from "@paperclipai/shared/worktree-seed-source";
+} from "@kesarcloud/shared/worktree-seed-source";
 import {
   readWorktreePortRegistry,
   withWorktreePortRegistryLock,
   writeWorktreePortRegistry,
-} from "@paperclipai/shared/worktree-port-registry";
+} from "@kesarcloud/shared/worktree-port-registry";
 import {
   applyPendingMigrations,
   agents,
@@ -65,7 +65,7 @@ import {
   formatEmbeddedPostgresError,
   loadWithoutEmbeddedPostgresExitHooks,
   prepareEmbeddedPostgresNativeRuntime,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolvePaperclipEnvFile } from "../config/env.js";
 import { expandHomePrefix } from "../config/home.js";
@@ -270,7 +270,7 @@ function nonEmpty(value: string | null | undefined): string | null {
 }
 
 function isCurrentSourceConfigPath(sourceConfigPath: string): boolean {
-  const currentConfigPath = process.env.PAPERCLIP_CONFIG;
+  const currentConfigPath = process.env.PAPERCLAW_CONFIG;
   if (!currentConfigPath || currentConfigPath.trim().length === 0) {
     return false;
   }
@@ -308,11 +308,11 @@ function resolveWorktreeMakeName(name: string): string {
 }
 
 function resolveWorktreeHome(explicit?: string): string {
-  return explicit ?? process.env.PAPERCLIP_WORKTREES_DIR ?? DEFAULT_WORKTREE_HOME;
+  return explicit ?? process.env.PAPERCLAW_WORKTREES_DIR ?? DEFAULT_WORKTREE_HOME;
 }
 
 function resolveWorktreeStartPoint(explicit?: string): string | undefined {
-  return explicit ?? nonEmpty(process.env.PAPERCLIP_WORKTREE_START_POINT) ?? undefined;
+  return explicit ?? nonEmpty(process.env.PAPERCLAW_WORKTREE_START_POINT) ?? undefined;
 }
 
 type ConfiguredStorage = {
@@ -588,11 +588,11 @@ async function findAvailablePort(preferredPort: number, reserved = new Set<numbe
 
 function resolveRepoManagedWorktreesRoot(cwd: string): string | null {
   const normalized = path.resolve(cwd);
-  const marker = `${path.sep}.paperclip${path.sep}worktrees${path.sep}`;
+  const marker = `${path.sep}.paperclaw${path.sep}worktrees${path.sep}`;
   const index = normalized.indexOf(marker);
   if (index === -1) return null;
   const repoRoot = normalized.slice(0, index);
-  return path.resolve(repoRoot, ".paperclip", "worktrees");
+  return path.resolve(repoRoot, ".paperclaw", "worktrees");
 }
 
 function collectClaimedWorktreePorts(
@@ -609,7 +609,7 @@ function collectClaimedWorktreePorts(
   const configPaths = new Set<string>();
   for (const configPath of registeredConfigPaths) {
     const resolvedConfigPath = path.resolve(configPath);
-    if (resolvedConfigPath !== path.resolve(cwd, ".paperclip", "config.json") && existsSync(resolvedConfigPath)) {
+    if (resolvedConfigPath !== path.resolve(cwd, ".paperclaw", "config.json") && existsSync(resolvedConfigPath)) {
       configPaths.add(resolvedConfigPath);
     }
   }
@@ -629,7 +629,7 @@ function collectClaimedWorktreePorts(
   if (repoManagedWorktreesRoot && existsSync(repoManagedWorktreesRoot)) {
     for (const entry of readdirSync(repoManagedWorktreesRoot, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const configPath = path.resolve(repoManagedWorktreesRoot, entry.name, ".paperclip", "config.json");
+      const configPath = path.resolve(repoManagedWorktreesRoot, entry.name, ".paperclaw", "config.json");
       if (existsSync(configPath)) {
         configPaths.add(configPath);
       }
@@ -858,7 +858,7 @@ export function resolveSourceConfigPath(opts: WorktreeInitOptions): string {
   if (!opts.fromDataDir && !opts.fromInstance) {
     return resolveConfigPath();
   }
-  const sourceHome = path.resolve(expandHomePrefix(opts.fromDataDir ?? "~/.paperclip"));
+  const sourceHome = path.resolve(expandHomePrefix(opts.fromDataDir ?? "~/.paperclaw"));
   const sourceInstanceId = sanitizeWorktreeInstanceId(opts.fromInstance ?? "default");
   return path.resolve(sourceHome, "instances", sourceInstanceId, "config.json");
 }
@@ -921,12 +921,12 @@ export function resolveWorktreeReseedTargetPaths(input: {
   rootPath: string;
 }): WorktreeLocalPaths {
   const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(input.configPath));
-  const homeDir = nonEmpty(envEntries.PAPERCLIP_HOME);
-  const instanceId = nonEmpty(envEntries.PAPERCLIP_INSTANCE_ID);
+  const homeDir = nonEmpty(envEntries.PAPERCLAW_HOME);
+  const instanceId = nonEmpty(envEntries.PAPERCLAW_INSTANCE_ID);
 
   if (!homeDir || !instanceId) {
     throw new Error(
-      `Target config ${input.configPath} does not look like a worktree-local Paperclip instance. Expected PAPERCLIP_HOME and PAPERCLIP_INSTANCE_ID in the adjacent .env.`,
+      `Target config ${input.configPath} does not look like a worktree-local Paperclip instance. Expected PAPERCLAW_HOME and PAPERCLAW_INSTANCE_ID in the adjacent .env.`,
     );
   }
 
@@ -947,7 +947,7 @@ function resolveExistingGitWorktree(selector: string, cwd: string): MergeSourceC
       worktree: directPath,
       branch: null,
       branchLabel: path.basename(directPath),
-      hasPaperclipConfig: existsSync(path.resolve(directPath, ".paperclip", "config.json")),
+      hasPaperclipConfig: existsSync(path.resolve(directPath, ".paperclaw", "config.json")),
       isCurrent: directPath === path.resolve(cwd),
     };
   }
@@ -967,7 +967,7 @@ async function ensureRepairTargetWorktree(input: {
 }): Promise<ResolvedWorktreeRepairTarget | null> {
   const cwd = process.cwd();
   const currentRoot = path.resolve(cwd);
-  const currentConfigPath = path.resolve(currentRoot, ".paperclip", "config.json");
+  const currentConfigPath = path.resolve(currentRoot, ".paperclaw", "config.json");
 
   if (!input.selector) {
     if (isPrimaryGitWorktree(cwd)) {
@@ -986,7 +986,7 @@ async function ensureRepairTargetWorktree(input: {
   if (existing) {
     return {
       rootPath: existing.worktree,
-      configPath: path.resolve(existing.worktree, ".paperclip", "config.json"),
+      configPath: path.resolve(existing.worktree, ".paperclaw", "config.json"),
       label: existing.branchLabel,
       branchName: existing.branchLabel === "(detached)" ? null : existing.branchLabel,
       created: false,
@@ -997,7 +997,7 @@ async function ensureRepairTargetWorktree(input: {
   const branchName = validateGitBranchName(repoRoot, input.selector);
   const targetPath = path.resolve(
     repoRoot,
-    ".paperclip",
+    ".paperclaw",
     "worktrees",
     resolveRepairWorktreeDirName(branchName),
   );
@@ -1029,7 +1029,7 @@ async function ensureRepairTargetWorktree(input: {
 
   return {
     rootPath: targetPath,
-    configPath: path.resolve(targetPath, ".paperclip", "config.json"),
+    configPath: path.resolve(targetPath, ".paperclaw", "config.json"),
     label: branchName,
     branchName,
     created: true,
@@ -1065,8 +1065,8 @@ export function copySeededSecretsKey(input: {
 
   const allowProcessEnvFallback = isCurrentSourceConfigPath(input.sourceConfigPath);
   const sourceInlineMasterKey =
-    nonEmpty(input.sourceEnvEntries.PAPERCLIP_SECRETS_MASTER_KEY) ??
-    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERCLIP_SECRETS_MASTER_KEY) : null);
+    nonEmpty(input.sourceEnvEntries.PAPERCLAW_SECRETS_MASTER_KEY) ??
+    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERCLAW_SECRETS_MASTER_KEY) : null);
   if (sourceInlineMasterKey) {
     writeFileSync(input.targetKeyFilePath, sourceInlineMasterKey, {
       encoding: "utf8",
@@ -1081,8 +1081,8 @@ export function copySeededSecretsKey(input: {
   }
 
   const sourceKeyFileOverride =
-    nonEmpty(input.sourceEnvEntries.PAPERCLIP_SECRETS_MASTER_KEY_FILE) ??
-    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE) : null);
+    nonEmpty(input.sourceEnvEntries.PAPERCLAW_SECRETS_MASTER_KEY_FILE) ??
+    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE) : null);
   const sourceConfiguredKeyPath = sourceKeyFileOverride ?? input.sourceConfig.secrets.localEncrypted.keyFilePath;
   const sourceKeyFilePath = resolveRuntimeLikePath(sourceConfiguredKeyPath, input.sourceConfigPath);
 
@@ -1841,7 +1841,7 @@ type LegacyWorktreeSeedPendingMarker = {
 
 function resolveSeedInstanceId(configPath: string): string {
   const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(configPath));
-  return nonEmpty(envEntries.PAPERCLIP_INSTANCE_ID)
+  return nonEmpty(envEntries.PAPERCLAW_INSTANCE_ID)
     ?? sanitizeWorktreeInstanceId(path.basename(path.dirname(path.resolve(configPath))));
 }
 
@@ -2240,7 +2240,7 @@ export async function ensureWorktreeSeeded(
       })
     : null;
   const registeredBaseWorkspaceCwd = opts.registeredBaseWorkspaceCwd
-    ?? nonEmpty(process.env.PAPERCLIP_WORKSPACE_BASE_CWD)
+    ?? nonEmpty(process.env.PAPERCLAW_WORKSPACE_BASE_CWD)
     ?? null;
   if (!initialManifest && !legacyPending && !hasExplicitSource && !registeredBaseWorkspaceCwd) {
     if (existsSync(markers.lock)) {
@@ -2250,11 +2250,11 @@ export async function ensureWorktreeSeeded(
     return { seeded: false, reason: "legacy_unmarked" };
   }
   const registeredProjectWorkspaceId = opts.registeredProjectWorkspaceId
-    ?? nonEmpty(process.env.PAPERCLIP_PROJECT_WORKSPACE_ID)
+    ?? nonEmpty(process.env.PAPERCLAW_PROJECT_WORKSPACE_ID)
     ?? null;
   const expectedCompanyId = opts.expectedCompanyId
-    ?? nonEmpty(process.env.PAPERCLIP_SEED_EXPECTED_COMPANY_ID)
-    ?? nonEmpty(process.env.PAPERCLIP_COMPANY_ID)
+    ?? nonEmpty(process.env.PAPERCLAW_SEED_EXPECTED_COMPANY_ID)
+    ?? nonEmpty(process.env.PAPERCLAW_COMPANY_ID)
     ?? undefined;
   if (!explicitSourceConfigPath && registeredBaseWorkspaceCwd && (!registeredProjectWorkspaceId || !expectedCompanyId)) {
     throw new Error(
@@ -2429,7 +2429,7 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   if (opts.force) {
     // Only remove the specific files we're about to rewrite, not the whole
     // repoConfigDir — that directory can contain sibling state such as
-    // <repo>/.paperclip/worktrees/ holding every repo-managed worktree
+    // <repo>/.paperclaw/worktrees/ holding every repo-managed worktree
     // checkout, and a recursive rmSync here would nuke them all.
     rmSync(paths.configPath, { force: true });
     rmSync(paths.envPath, { force: true });
@@ -2489,16 +2489,16 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   });
   const sourceEnvEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(sourceConfigPath));
   const existingAgentJwtSecret =
-    nonEmpty(sourceEnvEntries.PAPERCLIP_AGENT_JWT_SECRET) ??
-    nonEmpty(process.env.PAPERCLIP_AGENT_JWT_SECRET);
+    nonEmpty(sourceEnvEntries.PAPERCLAW_AGENT_JWT_SECRET) ??
+    nonEmpty(process.env.PAPERCLAW_AGENT_JWT_SECRET);
   const existingToolActionSigningSecret =
-    nonEmpty(sourceEnvEntries.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET) ??
-    nonEmpty(process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET);
+    nonEmpty(sourceEnvEntries.PAPERCLAW_TOOL_ACTION_SIGNING_SECRET) ??
+    nonEmpty(process.env.PAPERCLAW_TOOL_ACTION_SIGNING_SECRET);
   mergePaperclipEnvEntries(
     {
       ...buildWorktreeEnvEntries(paths, branding),
-      ...(existingAgentJwtSecret ? { PAPERCLIP_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
-      ...(existingToolActionSigningSecret ? { PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: existingToolActionSigningSecret } : {}),
+      ...(existingAgentJwtSecret ? { PAPERCLAW_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
+      ...(existingToolActionSigningSecret ? { PAPERCLAW_TOOL_ACTION_SIGNING_SECRET: existingToolActionSigningSecret } : {}),
     },
     paths.envPath,
   );
@@ -2813,7 +2813,7 @@ function toMergeSourceChoices(cwd: string): MergeSourceChoice[] {
       worktree: worktreePath,
       branch: entry.branch,
       branchLabel,
-      hasPaperclipConfig: existsSync(path.resolve(worktreePath, ".paperclip", "config.json")),
+      hasPaperclipConfig: existsSync(path.resolve(worktreePath, ".paperclaw", "config.json")),
       isCurrent: worktreePath === currentCwd,
     };
   });
@@ -2999,10 +2999,10 @@ export async function worktreeEnvCommand(opts: WorktreeEnvOptions): Promise<void
   const envPath = resolvePaperclipEnvFile(configPath);
   const envEntries = readPaperclipEnvEntries(envPath);
   const out = {
-    PAPERCLIP_CONFIG: configPath,
-    ...(envEntries.PAPERCLIP_HOME ? { PAPERCLIP_HOME: envEntries.PAPERCLIP_HOME } : {}),
-    ...(envEntries.PAPERCLIP_INSTANCE_ID ? { PAPERCLIP_INSTANCE_ID: envEntries.PAPERCLIP_INSTANCE_ID } : {}),
-    ...(envEntries.PAPERCLIP_CONTEXT ? { PAPERCLIP_CONTEXT: envEntries.PAPERCLIP_CONTEXT } : {}),
+    PAPERCLAW_CONFIG: configPath,
+    ...(envEntries.PAPERCLAW_HOME ? { PAPERCLAW_HOME: envEntries.PAPERCLAW_HOME } : {}),
+    ...(envEntries.PAPERCLAW_INSTANCE_ID ? { PAPERCLAW_INSTANCE_ID: envEntries.PAPERCLAW_INSTANCE_ID } : {}),
+    ...(envEntries.PAPERCLAW_CONTEXT ? { PAPERCLAW_CONTEXT: envEntries.PAPERCLAW_CONTEXT } : {}),
     ...envEntries,
   };
 
@@ -3036,7 +3036,7 @@ async function closeDb(db: ClosableDb): Promise<void> {
 export function resolveCurrentWorktreeEndpoint(): ResolvedWorktreeEndpoint {
   const cwd = path.resolve(process.cwd());
   const rootPath = detectGitWorkspaceInfo(cwd)?.root ?? cwd;
-  const localConfigPath = path.join(rootPath, ".paperclip", "config.json");
+  const localConfigPath = path.join(rootPath, ".paperclaw", "config.json");
   return {
     rootPath,
     configPath: existsSync(localConfigPath) ? localConfigPath : resolveConfigPath(),
@@ -3055,7 +3055,7 @@ function resolveAttachmentLookupStorages(input: {
     input.targetEndpoint.configPath,
     ...toMergeSourceChoices(process.cwd())
       .filter((choice) => choice.hasPaperclipConfig)
-      .map((choice) => path.resolve(choice.worktree, ".paperclip", "config.json")),
+      .map((choice) => path.resolve(choice.worktree, ".paperclaw", "config.json")),
   ];
   const seen = new Set<string>();
   const storages: ConfiguredStorage[] = [];
@@ -3626,7 +3626,7 @@ function resolveEndpointFromChoice(choice: MergeSourceChoice): ResolvedWorktreeE
   }
   return {
     rootPath: choice.worktree,
-    configPath: path.resolve(choice.worktree, ".paperclip", "config.json"),
+    configPath: path.resolve(choice.worktree, ".paperclaw", "config.json"),
     label: choice.branchLabel,
     isCurrent: false,
   };
@@ -3653,9 +3653,9 @@ function resolveWorktreeEndpointFromSelector(
     if (allowCurrent && directPath === currentEndpoint.rootPath) {
       return currentEndpoint;
     }
-    const configPath = path.resolve(directPath, ".paperclip", "config.json");
+    const configPath = path.resolve(directPath, ".paperclaw", "config.json");
     if (!existsSync(configPath)) {
-      throw new Error(`Resolved worktree path ${directPath} does not contain .paperclip/config.json.`);
+      throw new Error(`Resolved worktree path ${directPath} does not contain .paperclaw/config.json.`);
     }
     return {
       rootPath: directPath,
@@ -4317,7 +4317,7 @@ async function runWorktreeReseed(opts: WorktreeReseedOptions): Promise<void> {
       instanceId: targetPaths.instanceId,
       seedMode,
       preserveLiveWork: opts.preserveLiveWork,
-      expectedCompanyId: nonEmpty(process.env.PAPERCLIP_SEED_EXPECTED_COMPANY_ID) ?? undefined,
+      expectedCompanyId: nonEmpty(process.env.PAPERCLAW_SEED_EXPECTED_COMPANY_ID) ?? undefined,
       seedDatabase: seedWorktreeDatabase,
     });
     spinner.stop(`Reseeded ${targetEndpoint.label} (${seedMode}).`);
@@ -4383,7 +4383,7 @@ export async function worktreeRepairCommand(opts: WorktreeRepairOptions): Promis
   const targetConfig = existsSync(target.configPath) ? readConfig(target.configPath) : null;
   const targetEnvEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(target.configPath));
   const targetHasWorktreeEnv = Boolean(
-    nonEmpty(targetEnvEntries.PAPERCLIP_HOME) && nonEmpty(targetEnvEntries.PAPERCLIP_INSTANCE_ID),
+    nonEmpty(targetEnvEntries.PAPERCLAW_HOME) && nonEmpty(targetEnvEntries.PAPERCLAW_INSTANCE_ID),
   );
 
   if (targetConfig && targetHasWorktreeEnv && opts.noSeed) {
@@ -4445,11 +4445,11 @@ export function registerWorktreeCommands(program: Command): void {
     .command("worktree:make")
     .description("Create ~/NAME as a git worktree, then initialize an isolated Paperclip instance inside it")
     .argument("<name>", "Worktree name — auto-prefixed with paperclip- if needed (created at ~/paperclip-NAME)")
-    .option("--start-point <ref>", "Remote ref to base the new branch on (env: PAPERCLIP_WORKTREE_START_POINT)")
+    .option("--start-point <ref>", "Remote ref to base the new branch on (env: PAPERCLAW_WORKTREE_START_POINT)")
     .option("--instance <id>", "Explicit isolated instance id")
-    .option("--home <path>", `Home root for worktree instances (env: PAPERCLIP_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERCLAW_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source PAPERCLIP_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERCLAW_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config", "default")
     .option("--server-port <port>", "Preferred server port", (value) => Number(value))
     .option("--db-port <port>", "Preferred embedded Postgres port", (value) => Number(value))
@@ -4464,9 +4464,9 @@ export function registerWorktreeCommands(program: Command): void {
     .description("Create repo-local config/env and an isolated instance for this worktree")
     .option("--name <name>", "Display name used to derive the instance id")
     .option("--instance <id>", "Explicit isolated instance id")
-    .option("--home <path>", `Home root for worktree instances (env: PAPERCLIP_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERCLAW_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source PAPERCLIP_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERCLAW_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config", "default")
     .option("--server-port <port>", "Preferred server port", (value) => Number(value))
     .option("--db-port <port>", "Preferred embedded Postgres port", (value) => Number(value))
@@ -4488,7 +4488,7 @@ export function registerWorktreeCommands(program: Command): void {
     .description("Seed a seed-pending worktree database exactly once from its source instance")
     .option("-c, --config <path>", "Path to the target worktree config file")
     .option("--from-config <path>", "Source config.json to seed from (defaults to the seed-pending marker)")
-    .option("--from-data-dir <path>", "Source PAPERCLIP_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERCLAW_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config")
     .option("--preserve-live-work", "Do not quarantine copied agent work or workspace runtime services", false)
     .action(worktreeEnsureSeededCommand);
@@ -4518,7 +4518,7 @@ export function registerWorktreeCommands(program: Command): void {
     .option("--from <worktree>", "Source worktree path, directory name, branch name, or current")
     .option("--to <worktree>", "Target worktree path, directory name, branch name, or current (defaults to current)")
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source PAPERCLIP_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERCLAW_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config")
     .option("--seed-mode <mode>", "Seed profile: minimal or full (default: full)", "full")
     .option("--preserve-live-work", "Do not quarantine copied agent work or workspace runtime services in the seeded worktree", false)
@@ -4530,10 +4530,10 @@ export function registerWorktreeCommands(program: Command): void {
   worktree
     .command("repair")
     .description("Create or repair a linked worktree-local Paperclip instance without touching the primary checkout")
-    .option("--branch <name>", "Existing branch/worktree selector to repair, or a branch name to create under .paperclip/worktrees")
-    .option("--home <path>", `Home root for worktree instances (env: PAPERCLIP_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--branch <name>", "Existing branch/worktree selector to repair, or a branch name to create under .paperclaw/worktrees")
+    .option("--home <path>", `Home root for worktree instances (env: PAPERCLAW_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source PAPERCLIP_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERCLAW_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config (default: default)")
     .option("--seed-mode <mode>", "Seed profile: minimal or full (default: minimal)", "minimal")
     .option("--preserve-live-work", "Do not quarantine copied agent work or workspace runtime services in the seeded worktree", false)
@@ -4546,7 +4546,7 @@ export function registerWorktreeCommands(program: Command): void {
     .description("Safely remove a worktree, its branch, and its isolated instance data")
     .argument("<name>", "Worktree name — auto-prefixed with paperclip- if needed")
     .option("--instance <id>", "Explicit instance id (if different from the worktree name)")
-    .option("--home <path>", `Home root for worktree instances (env: PAPERCLIP_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERCLAW_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--force", "Bypass safety checks (uncommitted changes, unique commits)", false)
     .action(worktreeCleanupCommand);
 }

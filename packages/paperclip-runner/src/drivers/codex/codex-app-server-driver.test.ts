@@ -317,7 +317,7 @@ function makeDriver(
       HOME: "/isolated/home",
       CODEX_HOME: "/isolated/codex",
       LANG: "C.UTF-8",
-      PAPERCLIP_API_KEY: "must-not-pass",
+      PAPERCLAW_API_KEY: "must-not-pass",
       RANDOM_SKILL_PATH: "/skills/unrelated",
     },
     now: () => new Date("2026-08-08T12:00:00.000Z"),
@@ -1296,9 +1296,9 @@ describe("Codex app-server Codex driver", () => {
           'default_permissions="paperclip-runner-workspace-only"',
         ),
         expect.stringContaining(
-          "permissions.paperclip-runner-workspace-only.filesystem=",
+          "permissions.paperclaw-runner-workspace-only.filesystem=",
         ),
-        "permissions.paperclip-runner-workspace-only.network.enabled=false",
+        "permissions.paperclaw-runner-workspace-only.network.enabled=false",
         'shell_environment_policy.inherit="none"',
         expect.stringContaining(
           'shell_environment_policy.set={PATH="/bin",LANG="C.UTF-8"}',

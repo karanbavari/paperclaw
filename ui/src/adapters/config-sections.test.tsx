@@ -8,7 +8,6 @@ import { ClaudeLocalAdvancedFields } from "./claude-local/config-fields";
 import { GeminiLocalConfigFields } from "./gemini-local/config-fields";
 import { ProcessConfigFields } from "./process/config-fields";
 import { OpenClawGatewayConfigFields } from "./openclaw-gateway/config-fields";
-import { HermesGatewayConfigFields } from "./hermes-gateway/config-fields";
 
 function renderSection(
   Component: ComponentType<AdapterConfigFieldsProps>,
@@ -109,12 +108,9 @@ describe("adapter configuration sections", () => {
     expect(advanced).toContain('value="worker.js, --quiet"');
   });
 
-  it.each([
-    ["openclaw_gateway", OpenClawGatewayConfigFields],
-    ["hermes_gateway", HermesGatewayConfigFields],
-  ] as const)(
-    "moves %s timeouts without changing their values",
-    (type, Component) => {
+  it("moves OpenClaw timeouts without changing their values", () => {
+      const type = "openclaw_gateway";
+      const Component = OpenClawGatewayConfigFields;
       const config = { timeoutSec: 37 };
       expect(
         renderSection(Component, type, "configuration", config),
@@ -122,6 +118,5 @@ describe("adapter configuration sections", () => {
       expect(renderSection(Component, type, "runPolicy", config)).toContain(
         'value="37"',
       );
-    },
-  );
+    });
 });

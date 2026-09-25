@@ -26,7 +26,7 @@ import {
   toolProfileBindings,
   companyMemberships,
   instanceUserRoles,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   AgentPermissions,
   EmailEndpointSetupInput,
@@ -35,7 +35,7 @@ import type {
   EmailThreadSummary,
   EmailPublicationSummary,
   EmailEnvelope,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { badRequest, conflict, forbidden, notFound } from "../errors.js";
 import { environmentService } from "./environments.js";
 import { resolveExecutionWorkspaceEnvironmentId } from "./execution-workspace-policy.js";
@@ -1755,7 +1755,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
           text: input.text,
           ...recipients,
           ...(attachments.length ? { attachments } : {}),
-          headers: { "X-Paperclip-Publication-Id": pub.id },
+          headers: { "X-PaperClaw-Publication-Id": pub.id },
         },
         pub.id,
         input.replyToMessageId,

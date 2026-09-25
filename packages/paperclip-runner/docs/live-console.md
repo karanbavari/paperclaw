@@ -14,7 +14,7 @@ import or change Paperclip server, UI, database, or control-plane code.
 ## Start it
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:live-console
+pnpm --filter @kesarcloud/paperclip-runner console:live-console
 ```
 
 Then open `http://127.0.0.1:4180/` and choose **Live console**.
@@ -27,8 +27,8 @@ Two environment variables change the driver behind the console:
 
 | Variable | Default | Effect |
 | --- | --- | --- |
-| `PAPERCLIP_LIVE_CONSOLE_DRIVER` | `demo` | `codex` starts the real `codex app-server` driver behind the same routes |
-| `PAPERCLIP_LIVE_CONSOLE_CHUNK_DELAY_MS` | `45` | Milliseconds between streamed chunks in the demo driver |
+| `PAPERCLAW_LIVE_CONSOLE_DRIVER` | `demo` | `codex` starts the real `codex app-server` driver behind the same routes |
+| `PAPERCLAW_LIVE_CONSOLE_CHUNK_DELAY_MS` | `45` | Milliseconds between streamed chunks in the demo driver |
 
 ## Where state comes from
 
@@ -130,13 +130,13 @@ component file carries a raw colour, pixel, or font value.
 ## Verification
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @kesarcloud/paperclip-runner exec vitest run \
   src/mock-core/live-console-scripted-driver.test.ts \
   src/mock-core/live-console-demo-server.test.ts \
   devtools/browser/src/live/transcript-model.test.ts
-pnpm --filter @paperclipai/paperclip-runner test:browser
-pnpm --filter @paperclipai/paperclip-runner check:browser-tokens
-pnpm --filter @paperclipai/paperclip-runner check:forbidden-imports
+pnpm --filter @kesarcloud/paperclip-runner test:browser
+pnpm --filter @kesarcloud/paperclip-runner check:browser-tokens
+pnpm --filter @kesarcloud/paperclip-runner check:forbidden-imports
 ```
 
 See the [tutorial](tutorials/live-console.md).

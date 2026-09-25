@@ -2838,7 +2838,7 @@ function resolveBuildOwnedCliArtifact(
   const resolved = candidates.find((candidate) => existsSync(candidate));
   if (resolved) return resolved;
   throw new Error(
-    `runner_local_provider_artifact_missing: ${artifact} is absent; build @paperclipai/paperclip-runner TypeScript artifacts with build:typescript before starting a local JS-backed provider`,
+    `runner_local_provider_artifact_missing: ${artifact} is absent; build @kesarcloud/paperclip-runner TypeScript artifacts with build:typescript before starting a local JS-backed provider`,
   );
 }
 
@@ -2864,7 +2864,7 @@ function acpxProviderPackageAuthority(
   // resolves dependencies from <workspace>/node_modules. `pnpm deploy` makes
   // the package itself the deployment root and owns <deploy>/node_modules/.pnpm.
   // The older npm-installed portable shape nests the scoped package at
-  // <deploy>/node_modules/@paperclipai/paperclip-runner. The verifier always
+  // <deploy>/node_modules/@kesarcloud/paperclip-runner. The verifier always
   // receives the directory that owns node_modules, regardless of which
   // portable shape launched the already-authenticated sidecar.
   const sourceDependencyRoot = resolve(ownerPackageRoot, "../..");
@@ -3056,8 +3056,8 @@ function withRunnerdProviderTrace(
 ): NodeJS.ProcessEnv {
   const result = { ...environment };
   for (const key of [
-    "PAPERCLIP_PROVIDER_TRACE_PATH",
-    "PAPERCLIP_PROVIDER_TRACE_MAX_BYTES",
+    "PAPERCLAW_PROVIDER_TRACE_PATH",
+    "PAPERCLAW_PROVIDER_TRACE_MAX_BYTES",
   ] as const) {
     const value = source?.[key];
     if (value !== undefined) result[key] = value;
@@ -3074,19 +3074,19 @@ export function createCapabilityRunnerdProviderEnvironment(input: {
   acpxSidecarPath?: string;
 }): NodeJS.ProcessEnv {
   const commonIdentity = {
-    PAPERCLIP_RUNNER_INSTANCE_ID: input.identity.runnerInstanceId,
-    PAPERCLIP_RUN_ID: input.identity.runId,
-    PAPERCLIP_NORMALIZED_SESSION_ID: input.identity.normalizedSessionId,
+    PAPERCLAW_RUNNER_INSTANCE_ID: input.identity.runnerInstanceId,
+    PAPERCLAW_RUN_ID: input.identity.runId,
+    PAPERCLAW_NORMALIZED_SESSION_ID: input.identity.normalizedSessionId,
     ...(input.hasRuntimeContext
-      ? { PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH: input.runtimeContextPath }
+      ? { PAPERCLAW_NATIVE_RUNTIME_CONTEXT_PATH: input.runtimeContextPath }
       : {}),
   };
   if (input.provider === "opencode") {
     return {
       ...createSanitizedOpenCodeRunnerEnvironment(input.options.environment),
-      PAPERCLIP_OPENCODE_PERMISSION_MODE:
+      PAPERCLAW_OPENCODE_PERMISSION_MODE:
         input.options.opencodePermissionMode ?? "ask",
-      PAPERCLIP_OPENCODE_RUNTIME_DIR:
+      PAPERCLAW_OPENCODE_RUNTIME_DIR:
         input.options.opencodeRuntimeDirectory ??
         resolve(input.options.stateDirectory ?? tmpdir(), "opencode"),
       ...commonIdentity,
@@ -3104,7 +3104,7 @@ export function createCapabilityRunnerdProviderEnvironment(input: {
       ? null : nativeMcpLaunchBinding(input.options.environment ?? {});
     return {
       ...(assignedGateway ? {
-        PAPERCLIP_NATIVE_MCP_TOKEN: assignedGateway.token,
+        PAPERCLAW_NATIVE_MCP_TOKEN: assignedGateway.token,
       } : {}),
       ...createSanitizedAcpxSpawnInput(
         input.options.environment,
@@ -3114,13 +3114,13 @@ export function createCapabilityRunnerdProviderEnvironment(input: {
       // The verified sidecar bundle cannot use import.meta.url while Node
       // executes it through /proc/self/fd. Anchor its closed provider package
       // lookups at the package that owns the already-authenticated bundle.
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: providerPackageAuthority.root,
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST:
+      PAPERCLAW_ACPX_PROVIDER_PACKAGE_ROOT: providerPackageAuthority.root,
+      PAPERCLAW_ACPX_PROVIDER_PACKAGE_MANIFEST:
         providerPackageAuthority.manifest,
       ...(input.options.providerRecoveryPolicy ===
       "allow_replacement_after_governed_wait"
         ? {
-            PAPERCLIP_ACPX_PROVIDER_RECOVERY_POLICY:
+            PAPERCLAW_ACPX_PROVIDER_RECOVERY_POLICY:
               "allow_replacement_after_governed_wait",
           }
         : {}),
@@ -3185,9 +3185,9 @@ const OPEN_CODE_RUNNER_ENVIRONMENT_KEYS = new Set([
   "WINDIR",
   "RUST_BACKTRACE",
   "OPENROUTER_API_KEY",
-  "PAPERCLIP_NATIVE_MCP_NAME",
-  "PAPERCLIP_NATIVE_MCP_URL",
-  "PAPERCLIP_NATIVE_MCP_TOKEN",
+  "PAPERCLAW_NATIVE_MCP_NAME",
+  "PAPERCLAW_NATIVE_MCP_URL",
+  "PAPERCLAW_NATIVE_MCP_TOKEN",
 ]);
 
 function createSanitizedOpenCodeRunnerEnvironment(
@@ -3595,7 +3595,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
           cwd:
             typeof snapshot.cwd === "string" && snapshot.cwd.length > 0
               ? snapshot.cwd
-              : (this.options.environment?.PAPERCLIP_WORKSPACE_CWD ??
+              : (this.options.environment?.PAPERCLAW_WORKSPACE_CWD ??
                 this.options.runnerFilesystemRoot ??
                 tmpdir()),
           turns: recoveredTurns,
@@ -3894,7 +3894,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
   }
 
   recordTraceInterpretation(input: CodexTraceInterpretation): void {
-    const tracePath = this.options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH;
+    const tracePath = this.options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH;
     if (!tracePath) return;
     const traceResult = appendCodexDriverInterpretationTrace(
       this.#traceFrameIndex,
@@ -4212,7 +4212,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       }
     }
     this.#flushPendingTraceRehydrations();
-    const tracePath = this.options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH;
+    const tracePath = this.options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH;
     if (tracePath) {
       const incomplete =
         this.#traceRehydrationSpoolOverflow ||
@@ -6053,7 +6053,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         this.#queue.push({
           method,
           params,
-          ...(this.options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH
+          ...(this.options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH
             ? {
                 paperclipTrace: {
                   sourceEventId: event.sourceEventId,
@@ -6063,7 +6063,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             : {}),
         });
       }
-      if (this.options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH) {
+      if (this.options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH) {
         const pending = {
           sourceEventId: event.sourceEventId,
           eventType: event.eventType,
@@ -6071,7 +6071,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         };
         const traceResult = appendRunnerdRehydrationTrace(
           this.#traceFrameIndex,
-          this.options.environment.PAPERCLIP_PROVIDER_TRACE_PATH,
+          this.options.environment.PAPERCLAW_PROVIDER_TRACE_PATH,
           pending.sourceEventId,
           pending.eventType,
           pending.visibleNotificationCount,
@@ -6216,7 +6216,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
   }
 
   #flushPendingTraceRehydrations(): void {
-    const tracePath = this.options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH;
+    const tracePath = this.options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH;
     if (!tracePath) return;
     const retry: PendingTraceRehydration[] = [];
     for (const pending of this.#pendingTraceRehydrations) {

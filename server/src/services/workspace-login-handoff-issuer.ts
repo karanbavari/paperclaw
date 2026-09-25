@@ -14,9 +14,9 @@
  */
 
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { authUsers, instanceUserRoles, workspaceRuntimeServices } from "@paperclipai/db";
-import type { WorkspaceReadiness } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import { authUsers, instanceUserRoles, workspaceRuntimeServices } from "@kesarcloud/db";
+import type { WorkspaceReadiness } from "@kesarcloud/shared";
 import {
   buildWorkspaceHandoffExchangeUrl,
   issueWorkspaceHandoffTicket,

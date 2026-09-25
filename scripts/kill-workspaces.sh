@@ -62,16 +62,16 @@ append_runtime_dir() {
   fi
 }
 
-paperclip_home="$(expand_home "${PAPERCLIP_HOME:-$HOME/.paperclip}")"
-paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
+paperclip_home="$(expand_home "${PAPERCLAW_HOME:-$HOME/.paperclaw}")"
+paperclip_instance_id="${PAPERCLAW_INSTANCE_ID:-default}"
 append_runtime_dir "$paperclip_home/instances/$paperclip_instance_id/runtime-services"
 
-if [[ "${PAPERCLIP_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
+if [[ "${PAPERCLAW_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for dir in \
-    "$HOME"/.paperclip/instances/*/runtime-services \
-    "$HOME"/.paperclip-worktrees/instances/*/runtime-services \
-    "$REPO_ROOT"/.paperclip/instances/*/runtime-services \
-    "$REPO_ROOT"/.paperclip/runtime-services/instances/*/runtime-services
+    "$HOME"/.paperclaw/instances/*/runtime-services \
+    "$HOME"/.paperclaw-worktrees/instances/*/runtime-services \
+    "$REPO_ROOT"/.paperclaw/instances/*/runtime-services \
+    "$REPO_ROOT"/.paperclaw/runtime-services/instances/*/runtime-services
   do
     append_runtime_dir "$dir"
   done
@@ -79,8 +79,8 @@ if [[ "${PAPERCLIP_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for sibling_root in "$REPO_PARENT"/paperclip*; do
     [[ -d "$sibling_root" ]] || continue
     for dir in \
-      "$sibling_root"/.paperclip/instances/*/runtime-services \
-      "$sibling_root"/.paperclip/runtime-services/instances/*/runtime-services
+      "$sibling_root"/.paperclaw/instances/*/runtime-services \
+      "$sibling_root"/.paperclaw/runtime-services/instances/*/runtime-services
     do
       append_runtime_dir "$dir"
     done

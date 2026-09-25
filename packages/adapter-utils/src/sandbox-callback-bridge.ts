@@ -49,7 +49,7 @@ const DEFAULT_BRIDGE_MAX_BODY_BYTES = 10 * 1024 * 1024 + BRIDGE_MULTIPART_FRAMIN
 // round trip finishes in well under one second, so 10s is far above a normal
 // iteration and never false-fires on a slow-but-live call. It is also well
 // under the in-sandbox 30s response deadline
-// (PAPERCLIP_BRIDGE_RESPONSE_TIMEOUT_MS), so the host loop fails fast and writes
+// (PAPERCLAW_BRIDGE_RESPONSE_TIMEOUT_MS), so the host loop fails fast and writes
 // 503 responses before the in-sandbox client gives up. A silently unresponsive
 // sandbox channel makes a client call hang with no reject; this timeout turns
 // that hang into a caught error, so the poll loop can back off and retry while
@@ -85,14 +85,14 @@ const BACKSTOP_WRITE_RETRY_MS = 50;
 const MAX_TRANSIENT_ITERATION_BACKOFF_MS = 5_000;
 const REMOTE_WRITE_BASE64_CHUNK_SIZE = 32 * 1024;
 export const SANDBOX_CALLBACK_BRIDGE_ENTRYPOINT = "paperclip-bridge-server.mjs";
-const SANDBOX_EXEC_CHANNEL_ENV = "PAPERCLIP_SANDBOX_EXEC_CHANNEL";
+const SANDBOX_EXEC_CHANNEL_ENV = "PAPERCLAW_SANDBOX_EXEC_CHANNEL";
 const SANDBOX_EXEC_CHANNEL_BRIDGE = "bridge";
 
 // The bridge modes the generated gateway supports. The file mode polls a
 // request/response queue on disk. The http2 mode runs one Node HTTP/2 client
 // session directly on stdin/stdout, after it sends the one READY line the
 // host readiness gate expects. The generated `.mjs` selects the mode from
-// `PAPERCLIP_API_BRIDGE_MODE`. The generated gateway rejects every other
+// `PAPERCLAW_API_BRIDGE_MODE`. The generated gateway rejects every other
 // value with a fixed startup error, including the retired duplex transport.
 // HTTP/2 is the preferred transport. `queue_v1` is the soft-deprecated fallback.
 const SANDBOX_CALLBACK_BRIDGE_FILE_MODE = "queue_v1";
@@ -474,21 +474,21 @@ export function buildSandboxCallbackBridgeEnv(input: {
   maxBodyBytes?: number | null;
 }): Record<string, string> {
   return {
-    PAPERCLIP_API_BRIDGE_MODE: SANDBOX_CALLBACK_BRIDGE_FILE_MODE,
-    PAPERCLIP_BRIDGE_QUEUE_DIR: input.queueDir,
-    PAPERCLIP_BRIDGE_TOKEN: input.bridgeToken,
-    PAPERCLIP_BRIDGE_HOST: input.host?.trim() || "127.0.0.1",
-    PAPERCLIP_BRIDGE_PORT: String(input.port && input.port > 0 ? Math.trunc(input.port) : 0),
-    PAPERCLIP_BRIDGE_POLL_INTERVAL_MS: String(
+    PAPERCLAW_API_BRIDGE_MODE: SANDBOX_CALLBACK_BRIDGE_FILE_MODE,
+    PAPERCLAW_BRIDGE_QUEUE_DIR: input.queueDir,
+    PAPERCLAW_BRIDGE_TOKEN: input.bridgeToken,
+    PAPERCLAW_BRIDGE_HOST: input.host?.trim() || "127.0.0.1",
+    PAPERCLAW_BRIDGE_PORT: String(input.port && input.port > 0 ? Math.trunc(input.port) : 0),
+    PAPERCLAW_BRIDGE_POLL_INTERVAL_MS: String(
       normalizeTimeoutMs(input.pollIntervalMs, DEFAULT_BRIDGE_POLL_INTERVAL_MS),
     ),
-    PAPERCLIP_BRIDGE_RESPONSE_TIMEOUT_MS: String(
+    PAPERCLAW_BRIDGE_RESPONSE_TIMEOUT_MS: String(
       normalizeTimeoutMs(input.responseTimeoutMs, DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS),
     ),
-    PAPERCLIP_BRIDGE_MAX_QUEUE_DEPTH: String(
+    PAPERCLAW_BRIDGE_MAX_QUEUE_DEPTH: String(
       normalizeTimeoutMs(input.maxQueueDepth, DEFAULT_BRIDGE_MAX_QUEUE_DEPTH),
     ),
-    PAPERCLIP_BRIDGE_MAX_BODY_BYTES: String(
+    PAPERCLAW_BRIDGE_MAX_BODY_BYTES: String(
       normalizeTimeoutMs(input.maxBodyBytes, DEFAULT_BRIDGE_MAX_BODY_BYTES),
     ),
   };
@@ -548,14 +548,14 @@ export function createFileSystemSandboxCallbackBridgeQueueClient(): SandboxCallb
       // onto the final `.json` path. A direct `writeFile` truncates the final
       // path first, so a `.json`-only reader (the stdin poller) can see an
       // empty or partial file. The atomic rename never exposes partial content.
-      const tempPath = `${remotePath}.paperclip-upload.decoded`;
+      const tempPath = `${remotePath}.paperclaw-upload.decoded`;
       await fs.writeFile(tempPath, body, "utf8");
       await fs.rename(tempPath, remotePath);
     },
     writeResponseFile: async (responsePath, body, options = {}) => {
       const responseDir = path.posix.dirname(responsePath);
       const tempPath = `${responsePath}.tmp`;
-      const lockDir = `${responsePath}.paperclip-write.lock`;
+      const lockDir = `${responsePath}.paperclaw-write.lock`;
       const lockPidFile = `${lockDir}/pid`;
       if (options.requestPath) {
         const requestExists = await pathExists(options.requestPath);
@@ -701,8 +701,8 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
       // then moves the complete decoded content onto the final `.json` path.
       // A direct `> remotePath` redirect truncates the final path before the
       // decode writes it, so a reader can see an empty or partial file.
-      const tempPath = `${remotePath}.paperclip-upload.b64`;
-      const decodedPath = `${remotePath}.paperclip-upload.decoded`;
+      const tempPath = `${remotePath}.paperclaw-upload.b64`;
+      const decodedPath = `${remotePath}.paperclaw-upload.decoded`;
       await runChecked(
         `prepare upload ${remotePath}`,
         `mkdir -p ${shellQuote(remoteDir)} && rm -f ${shellQuote(tempPath)} ${shellQuote(decodedPath)} && : > ${shellQuote(tempPath)}`,
@@ -722,7 +722,7 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
     writeResponseFile: async (responsePath, body, options = {}) => {
       const responseDir = path.posix.dirname(responsePath);
       const tempPath = `${responsePath}.tmp`;
-      const lockDir = `${responsePath}.paperclip-write.lock`;
+      const lockDir = `${responsePath}.paperclaw-write.lock`;
       const requestPath = options.requestPath?.trim() || "";
       const result = await runShell(
         input.runner,
@@ -1463,7 +1463,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
 
   // Start the long-lived poll loop outside the measured startup-step store.
   // The `makeDir` calls above are startup work and must keep the active
-  // `bridge.paperclip` step. The loop runs run-time execs for the whole run,
+  // `bridge.paperclaw` step. The loop runs run-time execs for the whole run,
   // so each loop `sandbox.exec` span must not parent to the ended step or copy
   // its `criticalPath` flag. `runWithoutActiveStep` empties the store for the
   // loop only; Node keeps the empty store on every later poll continuation.
@@ -1668,7 +1668,7 @@ export async function syncRemoteTextFileWithHashSkip(input: {
   const timeoutMs = normalizeTimeoutMs(input.timeoutMs, DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS);
   const shellCommand = preferredShellForSandbox(input.shellCommand);
   const remotePartial = `${input.remotePath}.partial`;
-  const remoteUploadPath = `${input.remotePath}.paperclip-upload.b64`;
+  const remoteUploadPath = `${input.remotePath}.paperclaw-upload.b64`;
   const base64Body = toBuffer(Buffer.from(input.body, "utf8")).toString("base64");
   const sha256 = createHash("sha256").update(input.body, "utf8").digest("hex");
 
@@ -1761,7 +1761,7 @@ export async function syncSandboxCallbackBridgeEntrypoint(input: {
     body: entrypointSource,
     label: "Sandbox callback bridge entrypoint",
     action: "sync sandbox callback bridge entrypoint",
-    lockDir: path.posix.join(input.assetRemoteDir, ".paperclip-bridge-upload.lock"),
+    lockDir: path.posix.join(input.assetRemoteDir, ".paperclaw-bridge-upload.lock"),
     timeoutMs: input.timeoutMs,
     shellCommand: input.shellCommand,
   });
@@ -2204,23 +2204,23 @@ import path from "node:path";
 import http2 from "node:http2";
 import { Duplex } from "node:stream";
 
-const bridgeMode = process.env.PAPERCLIP_API_BRIDGE_MODE || "${SANDBOX_CALLBACK_BRIDGE_FILE_MODE}";
-const queueDir = process.env.PAPERCLIP_BRIDGE_QUEUE_DIR;
-const bridgeToken = process.env.PAPERCLIP_BRIDGE_TOKEN;
-const host = process.env.PAPERCLIP_BRIDGE_HOST || "127.0.0.1";
-const port = Number(process.env.PAPERCLIP_BRIDGE_PORT || "0");
+const bridgeMode = process.env.PAPERCLAW_API_BRIDGE_MODE || "${SANDBOX_CALLBACK_BRIDGE_FILE_MODE}";
+const queueDir = process.env.PAPERCLAW_BRIDGE_QUEUE_DIR;
+const bridgeToken = process.env.PAPERCLAW_BRIDGE_TOKEN;
+const host = process.env.PAPERCLAW_BRIDGE_HOST || "127.0.0.1";
+const port = Number(process.env.PAPERCLAW_BRIDGE_PORT || "0");
 // The host assigns the loopback port and passes it through the launch
 // environment. The gateway binds exactly this port; it never selects a
 // different one. The host also passes one random per-open nonce here. The
 // gateway echoes it in the READY frame so the host correlates READY with this
 // channel open. The nonce is a liveness signal, not authentication.
-const bridgeNonce = process.env.PAPERCLIP_BRIDGE_NONCE || "";
-const pollIntervalMs = Number(process.env.PAPERCLIP_BRIDGE_POLL_INTERVAL_MS || "100");
+const bridgeNonce = process.env.PAPERCLAW_BRIDGE_NONCE || "";
+const pollIntervalMs = Number(process.env.PAPERCLAW_BRIDGE_POLL_INTERVAL_MS || "100");
 const responseTimeoutMs = Number(
-  process.env.PAPERCLIP_BRIDGE_RESPONSE_TIMEOUT_MS || "${DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS}",
+  process.env.PAPERCLAW_BRIDGE_RESPONSE_TIMEOUT_MS || "${DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS}",
 );
-const maxQueueDepth = Number(process.env.PAPERCLIP_BRIDGE_MAX_QUEUE_DEPTH || "${DEFAULT_BRIDGE_MAX_QUEUE_DEPTH}");
-const maxBodyBytes = Number(process.env.PAPERCLIP_BRIDGE_MAX_BODY_BYTES || "${DEFAULT_BRIDGE_MAX_BODY_BYTES}");
+const maxQueueDepth = Number(process.env.PAPERCLAW_BRIDGE_MAX_QUEUE_DEPTH || "${DEFAULT_BRIDGE_MAX_QUEUE_DEPTH}");
+const maxBodyBytes = Number(process.env.PAPERCLAW_BRIDGE_MAX_BODY_BYTES || "${DEFAULT_BRIDGE_MAX_BODY_BYTES}");
 // The header allowlist. Both the file gateway and the http2 gateway strip an
 // inbound request to these headers before they forward it. One copy serves both
 // modes. The route allowlist stays on the host: both modes forward a request to
@@ -2228,7 +2228,7 @@ const maxBodyBytes = Number(process.env.PAPERCLIP_BRIDGE_MAX_BODY_BYTES || "${DE
 const allowedHeaders = new Set(${JSON.stringify([...DEFAULT_SANDBOX_CALLBACK_BRIDGE_HEADER_ALLOWLIST])});
 
 if (!bridgeToken) {
-  throw new Error("PAPERCLIP_BRIDGE_TOKEN is required.");
+  throw new Error("PAPERCLAW_BRIDGE_TOKEN is required.");
 }
 // Closed allowlist for the bridge mode. The generated gateway supports exactly
 // two transports: http2 and the file-mode queue. Every other value, including
@@ -2240,10 +2240,10 @@ if (
   bridgeMode !== "${SANDBOX_CALLBACK_BRIDGE_HTTP2_MODE}" &&
   bridgeMode !== "${SANDBOX_CALLBACK_BRIDGE_FILE_MODE}"
 ) {
-  throw new Error("Unsupported PAPERCLIP_API_BRIDGE_MODE: " + bridgeMode);
+  throw new Error("Unsupported PAPERCLAW_API_BRIDGE_MODE: " + bridgeMode);
 }
 if (bridgeMode !== "${SANDBOX_CALLBACK_BRIDGE_HTTP2_MODE}" && !queueDir) {
-  throw new Error("PAPERCLIP_BRIDGE_QUEUE_DIR and PAPERCLIP_BRIDGE_TOKEN are required.");
+  throw new Error("PAPERCLAW_BRIDGE_QUEUE_DIR and PAPERCLAW_BRIDGE_TOKEN are required.");
 }
 
 // A crashed gateway is a dead loopback port for the rest of the run: nothing
@@ -2807,7 +2807,7 @@ function runHttp2Gateway() {
   // positive loopback port, and the gateway binds exactly that port or exits
   // nonzero. It never selects a different port.
   if (!Number.isInteger(port) || port <= 0) {
-    diag("http2 gateway requires a positive assigned PAPERCLIP_BRIDGE_PORT; got " + String(port));
+    diag("http2 gateway requires a positive assigned PAPERCLAW_BRIDGE_PORT; got " + String(port));
     process.exit(1);
   }
   server.on("error", (error) => {
@@ -2844,6 +2844,6 @@ if (bridgeMode === "${SANDBOX_CALLBACK_BRIDGE_HTTP2_MODE}") {
 } else if (bridgeMode === "${SANDBOX_CALLBACK_BRIDGE_FILE_MODE}") {
   await runFileGateway();
 } else {
-  throw new Error("Unsupported PAPERCLIP_API_BRIDGE_MODE: " + bridgeMode);
+  throw new Error("Unsupported PAPERCLAW_API_BRIDGE_MODE: " + bridgeMode);
 }`;
 }

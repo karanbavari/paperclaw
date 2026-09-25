@@ -20,7 +20,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageTabBar } from "../components/PageTabBar";
+import { ProductPage, ProductPageHeader, ProductSection } from "../components/ProductPage";
+import { EmptyState } from "../components/EmptyState";
 import { Field } from "../components/agent-config-primitives";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
@@ -59,8 +62,8 @@ function label(value: string) {
 }
 
 function statusTone(status: string) {
-  if (status === "approved" || status === "active") return "text-emerald-700 bg-emerald-50 border-emerald-200";
-  if (status === "proposed") return "text-amber-700 bg-amber-50 border-amber-200";
+  if (status === "approved" || status === "active") return "text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800";
+  if (status === "proposed") return "text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800";
   return "text-muted-foreground bg-muted border-border";
 }
 
@@ -189,18 +192,19 @@ export function CompanyMemory() {
   const canCreateMemory = newTitle.trim().length > 0 && newBody.trim().length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <Brain className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <h1 className="truncate text-lg font-semibold">Memory</h1>
-        </div>
-      </div>
+    <ProductPage>
+      <ProductPageHeader
+        title="Memory"
+        description="Keep the company's profile and shared knowledge available to every agent."
+        icon={Brain}
+      />
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-5">
         <PageTabBar items={TABS} value={tab} onValueChange={setTab} align="start" />
 
         <TabsContent value="profile" className="space-y-4">
+          <ProductSection title="Company profile" description="The background and operating context agents should know.">
+          <div className="space-y-5 p-4 sm:p-5">
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Registered since">
               <Input
@@ -216,26 +220,24 @@ export function CompanyMemory() {
               />
             </Field>
             <Field label="Language">
-              <select
-                value={profileDraft.defaultLanguage ?? "en"}
-                onChange={(event) => setProfileField("defaultLanguage", event.target.value as UpdateCompanyProfile["defaultLanguage"])}
-                className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-              >
+              <Select value={profileDraft.defaultLanguage ?? "en"} onValueChange={(value) => setProfileField("defaultLanguage", value as UpdateCompanyProfile["defaultLanguage"])}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
                 {COMPANY_PROFILE_LANGUAGE_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.label}</option>
+                  <SelectItem key={option.code} value={option.code}>{option.label}</SelectItem>
                 ))}
-              </select>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Currency">
-              <select
-                value={profileDraft.defaultCurrency ?? "USD"}
-                onChange={(event) => setProfileField("defaultCurrency", event.target.value as UpdateCompanyProfile["defaultCurrency"])}
-                className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-              >
+              <Select value={profileDraft.defaultCurrency ?? "USD"} onValueChange={(value) => setProfileField("defaultCurrency", value as UpdateCompanyProfile["defaultCurrency"])}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
                 {COMPANY_PROFILE_CURRENCY_OPTIONS.map((option) => (
-                  <option key={option.code} value={option.code}>{option.code} - {option.label}</option>
+                  <SelectItem key={option.code} value={option.code}>{option.code} - {option.label}</SelectItem>
                 ))}
-              </select>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Website">
               <Input
@@ -244,18 +246,15 @@ export function CompanyMemory() {
               />
             </Field>
             <Field label="Timezone">
-              <select
-                value={profileDraft.timezone ?? ""}
-                onChange={(event) =>
-                  setProfileField("timezone", (event.target.value || null) as UpdateCompanyProfile["timezone"])
-                }
-                className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-              >
-                <option value="">Unset</option>
+              <Select value={profileDraft.timezone ?? "__unset__"} onValueChange={(value) => setProfileField("timezone", (value === "__unset__" ? null : value) as UpdateCompanyProfile["timezone"])}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Unset" /></SelectTrigger>
+                <SelectContent>
+                <SelectItem value="__unset__">Unset</SelectItem>
                 {COMPANY_PROFILE_TIMEZONE_OPTIONS.map((value) => (
-                  <option key={value} value={value}>{value}</option>
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
                 ))}
-              </select>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Contact email">
               <Input
@@ -325,6 +324,8 @@ export function CompanyMemory() {
               </div>
             ) : null}
           </div>
+          </div>
+          </ProductSection>
         </TabsContent>
 
         <TabsContent value="knowledge" className="space-y-4">
@@ -389,7 +390,8 @@ export function CompanyMemory() {
         </TabsContent>
 
         <TabsContent value="recall" className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+          <ProductSection title="Recall preview" description="Check which memories an agent would retrieve for a topic.">
+          <div className="grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_220px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -399,17 +401,17 @@ export function CompanyMemory() {
                 placeholder="Customer policy, onboarding, pricing..."
               />
             </div>
-            <select
-              value={recallAgentId}
-              onChange={(event) => setRecallAgentId(event.target.value)}
-              className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-            >
-              <option value="">Any agent</option>
+            <Select value={recallAgentId || "__any__"} onValueChange={(value) => setRecallAgentId(value === "__any__" ? "" : value)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Any agent" /></SelectTrigger>
+              <SelectContent>
+              <SelectItem value="__any__">Any agent</SelectItem>
               {(agentsQuery.data ?? []).map((agent) => (
-                <option key={agent.id} value={agent.id}>{agent.name}</option>
+                <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>
               ))}
-            </select>
+              </SelectContent>
+            </Select>
           </div>
+          </ProductSection>
           <MemoryList
             items={recallQueryResult.data?.items ?? []}
             loading={recallQueryResult.isFetching}
@@ -419,7 +421,7 @@ export function CompanyMemory() {
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </ProductPage>
   );
 }
 
@@ -441,33 +443,32 @@ function MemoryToolbar({
   lockType?: boolean;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px_150px]">
+    <ProductSection title="Find memory" description="Search and filter the company's stored knowledge.">
+    <div className="grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_170px_150px]">
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input className="pl-8" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search memory..." />
       </div>
-      <select
-        value={memoryType}
-        disabled={lockType}
-        onChange={(event) => setMemoryType(event.target.value as CompanyMemoryType | "all")}
-        className="h-9 rounded-md border border-border bg-background px-2 text-sm disabled:opacity-70"
-      >
-        <option value="all">All types</option>
+      <Select value={memoryType} disabled={lockType} onValueChange={(value) => setMemoryType(value as CompanyMemoryType | "all")}>
+        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+        <SelectContent>
+        <SelectItem value="all">All types</SelectItem>
         {COMPANY_MEMORY_TYPES.map((type) => (
-          <option key={type} value={type}>{label(type)}</option>
+          <SelectItem key={type} value={type}>{label(type)}</SelectItem>
         ))}
-      </select>
-      <select
-        value={status}
-        onChange={(event) => setStatus(event.target.value as CompanyMemoryStatus | "all")}
-        className="h-9 rounded-md border border-border bg-background px-2 text-sm"
-      >
-        <option value="all">All status</option>
+        </SelectContent>
+      </Select>
+      <Select value={status} onValueChange={(value) => setStatus(value as CompanyMemoryStatus | "all")}>
+        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+        <SelectContent>
+        <SelectItem value="all">All statuses</SelectItem>
         {COMPANY_MEMORY_STATUSES.map((value) => (
-          <option key={value} value={value}>{label(value)}</option>
+          <SelectItem key={value} value={value}>{label(value)}</SelectItem>
         ))}
-      </select>
+        </SelectContent>
+      </Select>
     </div>
+    </ProductSection>
   );
 }
 
@@ -497,22 +498,26 @@ function MemoryComposer({
   onSubmit: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-md border border-border p-3">
+    <ProductSection title="Add memory" description="Write a fact or note that agents can use later.">
+    <div className="space-y-4 p-4 sm:p-5">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_150px_150px]">
-        <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Title" />
-        <select value={kind} onChange={(event) => setKind(event.target.value as CompanyMemoryKind)} className="h-9 rounded-md border border-border bg-background px-2 text-sm">
-          {COMPANY_MEMORY_KINDS.map((value) => <option key={value} value={value}>{label(value)}</option>)}
-        </select>
-        <select value={scope} onChange={(event) => setScope(event.target.value as CompanyMemoryScopeType)} className="h-9 rounded-md border border-border bg-background px-2 text-sm">
-          {COMPANY_MEMORY_SCOPE_TYPES.map((value) => <option key={value} value={value}>{label(value)}</option>)}
-        </select>
+        <Input aria-label="Memory title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Title" />
+        <Select value={kind} onValueChange={(value) => setKind(value as CompanyMemoryKind)}>
+          <SelectTrigger className="w-full" aria-label="Memory kind"><SelectValue /></SelectTrigger>
+          <SelectContent>{COMPANY_MEMORY_KINDS.map((value) => <SelectItem key={value} value={value}>{label(value)}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={scope} onValueChange={(value) => setScope(value as CompanyMemoryScopeType)}>
+          <SelectTrigger className="w-full" aria-label="Memory scope"><SelectValue /></SelectTrigger>
+          <SelectContent>{COMPANY_MEMORY_SCOPE_TYPES.map((value) => <SelectItem key={value} value={value}>{label(value)}</SelectItem>)}</SelectContent>
+        </Select>
       </div>
-      <Textarea value={body} onChange={(event) => setBody(event.target.value)} rows={4} placeholder="Memory body" />
+      <Textarea aria-label="Memory body" value={body} onChange={(event) => setBody(event.target.value)} rows={4} placeholder="Memory body" />
       <Button size="sm" onClick={onSubmit} disabled={!canSubmit || isPending}>
         <Database className="h-4 w-4" />
         Add Memory
       </Button>
     </div>
+    </ProductSection>
   );
 }
 
@@ -541,20 +546,20 @@ function MemoryList({
   recall?: boolean;
 }) {
   if (loading && items.length === 0) {
-    return <div className="rounded-md border border-border p-5 text-sm text-muted-foreground">Loading memory...</div>;
+    return <ProductSection><div className="p-6 text-sm text-muted-foreground">Loading memory...</div></ProductSection>;
   }
   if (items.length === 0) {
-    return <div className="rounded-md border border-border p-5 text-sm text-muted-foreground">No memory items.</div>;
+    return <ProductSection><EmptyState icon={Brain} message="No memory items yet." /></ProductSection>;
   }
   return (
-    <div className="divide-y divide-border rounded-md border border-border">
+    <ProductSection><div className="divide-y divide-border">
       {items.map((item) => (
-        <div key={item.id} className="space-y-2 p-3">
+        <div key={item.id} className="space-y-2 px-4 py-4 sm:px-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <h2 className="truncate text-sm font-medium">{item.title}</h2>
-                <span className={cn("rounded border px-1.5 py-0.5 text-[10px] uppercase", statusTone(item.status))}>
+                <span className={cn("rounded-md border px-2 py-0.5 text-xs font-medium", statusTone(item.status))}>
                   {label(item.status)}
                 </span>
                 {recall && item.recallScore !== undefined ? (
@@ -572,12 +577,12 @@ function MemoryList({
             </div>
             <div className="flex shrink-0 items-center gap-1">
               {item.status === "proposed" ? (
-                <Button size="icon-sm" variant="ghost" onClick={() => onApprove(item.id)} title="Approve">
+                <Button size="icon-sm" variant="ghost" onClick={() => onApprove(item.id)} aria-label={`Approve ${item.title}`} title="Approve">
                   <Check className="h-4 w-4" />
                 </Button>
               ) : null}
               {item.status !== "archived" ? (
-                <Button size="icon-sm" variant="ghost" onClick={() => onArchive(item.id)} title="Archive">
+                <Button size="icon-sm" variant="ghost" onClick={() => onArchive(item.id)} aria-label={`Archive ${item.title}`} title="Archive">
                   <Archive className="h-4 w-4" />
                 </Button>
               ) : null}
@@ -591,6 +596,6 @@ function MemoryList({
           ) : null}
         </div>
       ))}
-    </div>
+    </div></ProductSection>
   );
 }

@@ -21,6 +21,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn, formatDateTime } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { MetricCard } from "../components/MetricCard";
+import { ProductPage, ProductPageHeader, ProductSection } from "../components/ProductPage";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { StatusBadge } from "../components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -339,10 +340,15 @@ export function OpsIncidentCenter() {
   const actionBusy = budgetMutation.isPending || watchdogMutation.isPending || releaseMutation.isPending;
 
   return (
-    <div className="space-y-5">
+    <ProductPage>
+      <ProductPageHeader
+        title="Ops"
+        description="Monitor incidents, recovery, and the actions that need a decision."
+        icon={ShieldAlert}
+      />
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 [&>*]:rounded-lg [&>*]:border [&>*]:border-border [&>*]:bg-card">
         <MetricCard
           icon={ShieldAlert}
           value={data?.critical ?? 0}
@@ -369,7 +375,8 @@ export function OpsIncidentCenter() {
         />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 xl:flex-row xl:items-center">
+      <ProductSection title="Find incidents" description="Narrow the operations queue without losing its current state.">
+      <div className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center">
         <div className="relative xl:max-w-xs xl:flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -437,9 +444,16 @@ export function OpsIncidentCenter() {
           </Select>
         </div>
       </div>
+      </ProductSection>
 
       {items.length === 0 ? (
-        <EmptyState icon={ShieldAlert} message="No active operations incidents." />
+        <ProductSection>
+          <EmptyState
+            icon={ShieldAlert}
+            title="No active incidents"
+            message="Operations alerts and recovery actions will appear here."
+          />
+        </ProductSection>
       ) : (
         <>
           <div className={cn("grid gap-3", error ? "opacity-70" : undefined)}>
@@ -485,6 +499,6 @@ export function OpsIncidentCenter() {
           </div>
         </>
       )}
-    </div>
+    </ProductPage>
   );
 }

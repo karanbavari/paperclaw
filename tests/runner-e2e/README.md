@@ -30,7 +30,7 @@ Shell variables take precedence over the local file. The recognized names are:
 - `ANTHROPIC_API_KEY`
 - `OPENROUTER_API_KEY`
 - `DAYTONA_API_KEY`
-- `PAPERCLIP_E2E_DAYTONA_IMAGE` (Daytona only)
+- `PAPERCLAW_E2E_DAYTONA_IMAGE` (Daytona only)
 
 The image must be an immutable `image@sha256:...` reference. The launcher
 reports missing variable names but never prints values. It passes raw provider
@@ -50,7 +50,7 @@ runner binaries:
 ```bash
 pnpm install
 pnpm exec playwright install chromium
-pnpm --filter @paperclipai/paperclip-runner build:runner-binaries
+pnpm --filter @kesarcloud/paperclip-runner build:runner-binaries
 ```
 
 List cells without loading credentials or starting Paperclip:
@@ -147,7 +147,7 @@ GitHub discovery is simulated, scoped to a fixture-only credential; repository
 permissions and mutations remain real. Run it with:
 
 ```bash
-pnpm --filter @paperclipai/ui build
+pnpm --filter @kesarcloud/ui build
 pnpm test:e2e tests/e2e/agent-chat.spec.ts
 # Against a dedicated authenticated test instance configured per that suite:
 pnpm test:e2e:multiuser-authenticated --grep 'agent chats'
@@ -169,7 +169,7 @@ AND semantics. `--id` is exclusive with dimension selectors and `--all`.
 selector, an empty selection, or a run with no explicit selector exits before
 Paperclip starts. `--max-parallel <n>` controls the number of isolated
 profile/environment/case harnesses that can overlap (default 1, also configurable
-with `PAPERCLIP_E2E_MAX_PARALLEL`). Headed/UI/debug runs are forced to one worker.
+with `PAPERCLAW_E2E_MAX_PARALLEL`). Headed/UI/debug runs are forced to one worker.
 The Plan case is still sequential internally because its turns share one task;
 it runs in parallel with unrelated scenarios.
 
@@ -205,8 +205,8 @@ image="ghcr.io/paperclipai/paperclip-daytona-runner:e2e-content-${content_id}"
 if ! docker buildx imagetools inspect "$image" >/dev/null 2>&1; then
   docker buildx build \
     --platform linux/amd64 \
-    --build-arg "PAPERCLIP_RUNNER_CONTENT_ID=${content_id}" \
-    --build-arg "PAPERCLIP_RUNNER_SOURCE_REVISION=${source_revision}" \
+    --build-arg "PAPERCLAW_RUNNER_CONTENT_ID=${content_id}" \
+    --build-arg "PAPERCLAW_RUNNER_SOURCE_REVISION=${source_revision}" \
     --file docker/daytona-runner/Dockerfile \
     --tag "$image" \
     --push \
@@ -223,7 +223,7 @@ stored separately as image provenance. CI reads that provenance back from a
 reused image when it builds the controller-side provider pack, preserving the
 exact manifest match required to avoid restaging the pack into Daytona.
 
-Resolve the manifest digest and set `PAPERCLIP_E2E_DAYTONA_IMAGE` to
+Resolve the manifest digest and set `PAPERCLAW_E2E_DAYTONA_IMAGE` to
 `ghcr.io/paperclipai/paperclip-daytona-runner@sha256:...`. The repository
 workflow signs that digest with Cosign/OIDC and verifies that it is publicly
 pullable, includes the provider pack, and advertises `dial_ws_loopback`,

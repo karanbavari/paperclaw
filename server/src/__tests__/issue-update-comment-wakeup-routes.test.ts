@@ -627,7 +627,7 @@ describe("issue update comment wakeups", () => {
 
     const res = await request(await createApp())
       .post(`/api/issues/${existing.id}/comments`)
-      .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
+      .set("X-PaperClaw-Run-Id", SOURCE_RUN_ID)
       .send({ body: "Plan ready for review." });
 
     expect(res.status).toBe(201);
@@ -661,7 +661,7 @@ describe("issue update comment wakeups", () => {
 
     const res = await request(await createApp())
       .post(`/api/issues/${existing.id}/comments`)
-      .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
+      .set("X-PaperClaw-Run-Id", SOURCE_RUN_ID)
       .send({
         body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
       });
@@ -750,7 +750,7 @@ describe("issue update comment wakeups", () => {
     const req = method === "post"
       ? request(app).post(`/api/issues/${existing.id}/comments`)
       : request(app).patch(`/api/issues/${existing.id}`);
-    if (!humanComment) req.set("X-Paperclip-Run-Id", SOURCE_RUN_ID);
+    if (!humanComment) req.set("X-PaperClaw-Run-Id", SOURCE_RUN_ID);
     const explicitResume = scenario === "completed_explicit_resume" ? { resume: true } : {};
     const res = await req.send(method === "post" ? { body, ...explicitResume } : { comment: body, ...explicitResume });
     expect(res.status).toBe(method === "post" ? 201 : 200);
@@ -804,7 +804,7 @@ describe("issue update comment wakeups", () => {
 
     const res = await request(await createApp())
       .post(`/api/issues/${existing.id}/comments`)
-      .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
+      .set("X-PaperClaw-Run-Id", SOURCE_RUN_ID)
       .send({ body: "Resume intentionally.", resume: true });
 
     expect(res.status).toBe(201);

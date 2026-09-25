@@ -11,7 +11,7 @@ import {
   heartbeatRuns,
   issueCreateIdempotencyKeys,
   issues,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -314,7 +314,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
     const response = await request(app)
       .post(`/api/companies/${companyId}/issues`)
-      .set("X-Paperclip-Run-Id", runId)
+      .set("X-PaperClaw-Run-Id", runId)
       .send({ parentId: parent.id, title: "Attributed create" })
       .expect(201);
     const [created] = await db.select().from(issues).where(eq(issues.id, response.body.id));

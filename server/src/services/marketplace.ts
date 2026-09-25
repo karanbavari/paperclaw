@@ -37,8 +37,8 @@ import {
   type MarketplaceSkillListResponse,
 } from "@kesarcloud/shared";
 import {
-  readPaperClawSkillSyncPreference,
-  writePaperClawSkillSyncPreference,
+  readPaperclipSkillSyncPreference,
+  writePaperclipSkillSyncPreference,
 } from "@kesarcloud/adapter-utils/server-utils";
 import { notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
@@ -456,8 +456,8 @@ export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
     const packageJson = await fs.readFile(packageJsonPath, "utf8")
       .then((content) => JSON.parse(content) as Record<string, unknown>)
       .catch(() => null);
-    const manifestPath = typeof packageJson?.paperclawPlugin === "object" && packageJson.paperclawPlugin !== null
-      ? (packageJson.paperclawPlugin as Record<string, unknown>).manifest
+    const manifestPath = typeof packageJson?.paperclipPlugin === "object" && packageJson.paperclipPlugin !== null
+      ? (packageJson.paperclipPlugin as Record<string, unknown>).manifest
       : null;
     const resolvedManifestPath = typeof manifestPath === "string"
       ? path.resolve(localPath, manifestPath)
@@ -535,14 +535,14 @@ export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
     const targets = await resolveAssignmentTargets(companyId, request);
     const assignedAgentIds: string[] = [];
     for (const agent of targets) {
-      const current = readPaperClawSkillSyncPreference(agent.adapterConfig as Record<string, unknown>);
+      const current = readPaperclipSkillSyncPreference(agent.adapterConfig as Record<string, unknown>);
       const nextDesired = Array.from(new Set([...current.desiredSkills, skillKey]));
       if (nextDesired.length === current.desiredSkills.length && nextDesired.every((item, index) => item === current.desiredSkills[index])) {
         assignedAgentIds.push(agent.id);
         continue;
       }
       await agents.update(agent.id, {
-        adapterConfig: writePaperClawSkillSyncPreference(agent.adapterConfig as Record<string, unknown>, nextDesired),
+        adapterConfig: writePaperclipSkillSyncPreference(agent.adapterConfig as Record<string, unknown>, nextDesired),
       }, {
         recordRevision: {
           createdByAgentId: actor.agentId,
@@ -559,7 +559,7 @@ export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
     const detail = await fetchCatalogDetail(request.skillId);
     if (!detail) throw notFound("Marketplace skill not found");
     const warnings: string[] = [];
-    let imported = null as Awaited<ReturnType<typeof skills.createCatalogSkill>> | null;
+    let imported = null as Awaited<ReturnType<typeof skills.createLocalSkill>> | null;
     if (detail.installSource) {
       try {
         const result = await skills.importFromSource(companyId, detail.installSource);
@@ -570,8 +570,7 @@ export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
       }
     }
     if (!imported) {
-      imported = await skills.createCatalogSkill(companyId, {
-        key: `catalog/${detail.categorySlug}/${detail.slug}`,
+      imported = await skills.createLocalSkill(companyId, {
         slug: detail.slug,
         name: detail.name,
         description: detail.description,
@@ -582,12 +581,8 @@ export function marketplaceService(db: Db, deps: MarketplacePluginDeps = {}) {
           "",
           detail.sourceUrl ? `Source: ${detail.sourceUrl}` : "",
         ].filter(Boolean).join("\n"),
-        sourceLocator: detail.installSource ?? detail.sourceUrl,
-        metadata: {
-          marketplaceSkillId: detail.id,
-          marketplaceCategorySlug: detail.categorySlug,
-          marketplaceCategoryName: detail.categoryName,
-        },
+        homepageUrl: detail.sourceUrl,
+        categories: [detail.categorySlug],
       });
     }
     const assignedAgentIds = await assignSkillToAgents(companyId, imported.key, request, actor);

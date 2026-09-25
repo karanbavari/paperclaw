@@ -21,6 +21,12 @@ import {
   GanttChartSquare,
   LayoutGrid,
   Users,
+  Brain,
+  Store,
+  MessageCircle,
+  Microscope,
+  PackageCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -194,6 +200,11 @@ export function Sidebar({ children }: { children?: ReactNode }) {
 
         <SidebarSection label="Work" collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
           <SidebarNavItem to="/issues" label="Tasks" icon={CircleCheck} />
+          <SidebarNavItem to="/outcomes" label="Outcomes" icon={PackageCheck} />
+          <SidebarNavItem to="/ops" label="Ops" icon={ShieldAlert} />
+          <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />
+          <SidebarNavItem to="/meetings" label="Meetings" icon={MessagesSquare} />
+          <SidebarNavItem to="/research-labs" label="Research Lab" icon={Microscope} />
           {streamlinedUiEnabled ? (
             <>
               <SidebarNavItem to="/projects" label="Projects" icon={FolderOpen} />
@@ -242,6 +253,8 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           >
             <SidebarNavItem to="/agents" label="Agents" icon={Users} />
             <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
+            <SidebarNavItem to="/memory" label="Memory" icon={Brain} />
+            <SidebarNavItem to="/marketplace" label="Marketplace" icon={Store} />
             <SidebarNavItem to="/apps" label="Connectors" icon={Unplug} />
             <SidebarNavItem to="/activity" label="Audit" icon={History} />
           </SidebarSection>
@@ -261,6 +274,8 @@ export function Sidebar({ children }: { children?: ReactNode }) {
               collapsible={{ open: organizationOpen, onOpenChange: setOrganizationOpen }}
             >
               <SidebarNavItem to="/org" label="Org" icon={Network} />
+              <SidebarNavItem to="/memory" label="Memory" icon={Brain} />
+              <SidebarNavItem to="/marketplace" label="Marketplace" icon={Store} />
               <SidebarNavItem to="/apps" label="Connectors" icon={Unplug} />
               <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
               <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />

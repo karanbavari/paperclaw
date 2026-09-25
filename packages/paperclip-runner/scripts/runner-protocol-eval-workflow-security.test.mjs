@@ -45,7 +45,7 @@ test("pull request CI builds the canonical Evalbook viewer", async () => {
 
   assert.match(
     buildJob,
-    /name: Build Runner Evalbook viewer[\s\S]*pnpm --filter @paperclipai\/paperclip-runner build:issue-thread/u,
+    /name: Build Runner Evalbook viewer[\s\S]*pnpm --filter @kesarcloud\/paperclip-runner build:issue-thread/u,
   );
 });
 
@@ -107,7 +107,7 @@ test("resolves both repositories immutably and bounds total matrix concurrency",
   assert.match(workflow, /matrix_1/u);
   assert.match(
     workflow,
-    /pnpm --filter @paperclipai\/paperclip-runner deploy --prod/u,
+    /pnpm --filter @kesarcloud\/paperclip-runner deploy --prod/u,
   );
   assert.match(
     workflow,
@@ -157,7 +157,7 @@ test("publishes only the separately sanitized Evalbook through trusted OIDC code
   assert.match(publisher, /publish-runner-protocol-eval-history\.mjs/u);
   assert.match(publisher, /runner-protocol-evals/u);
   assert.match(publisher, /runner-protocol-viewer-/u);
-  assert.match(publisher, /PAPERCLIP_RUNNER_PROTOCOL_EVAL_VIEWER_DIR/u);
+  assert.match(publisher, /PAPERCLAW_RUNNER_PROTOCOL_EVAL_VIEWER_DIR/u);
   assert.match(publisher, /url: \$\{\{ steps\.publish\.outputs\.report_url \}\}/u);
   assert.match(publisher, /Publish versioned report and refresh the root index\n\s+id: publish/u);
   assert.doesNotMatch(publisher, /(?:OPENAI|ANTHROPIC|OPENROUTER)_API_KEY/u);

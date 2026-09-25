@@ -43,17 +43,17 @@ const {
   syncDirectoryToSsh: vi.fn(async () => undefined),
   startAdapterExecutionTargetPaperclipBridge: vi.fn(async () => ({
     env: {
-      PAPERCLIP_API_URL: "http://127.0.0.1:4310",
-      PAPERCLIP_API_KEY: "bridge-token",
-      PAPERCLIP_API_BRIDGE_MODE: "queue_v1",
+      PAPERCLAW_API_URL: "http://127.0.0.1:4310",
+      PAPERCLAW_API_KEY: "bridge-token",
+      PAPERCLAW_API_BRIDGE_MODE: "queue_v1",
     },
     stop: async () => {},
   })),
 }));
 
-vi.mock("@paperclipai/adapter-utils/server-utils", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/server-utils")>(
-    "@paperclipai/adapter-utils/server-utils",
+vi.mock("@kesarcloud/adapter-utils/server-utils", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/server-utils")>(
+    "@kesarcloud/adapter-utils/server-utils",
   );
   return {
     ...actual,
@@ -63,9 +63,9 @@ vi.mock("@paperclipai/adapter-utils/server-utils", async () => {
   };
 });
 
-vi.mock("@paperclipai/adapter-utils/ssh", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/ssh")>(
-    "@paperclipai/adapter-utils/ssh",
+vi.mock("@kesarcloud/adapter-utils/ssh", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/ssh")>(
+    "@kesarcloud/adapter-utils/ssh",
   );
   return {
     ...actual,
@@ -76,9 +76,9 @@ vi.mock("@paperclipai/adapter-utils/ssh", async () => {
   };
 });
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
   );
   return {
     ...actual,
@@ -105,7 +105,7 @@ describe("gemini remote execution", () => {
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const alternateWorkspaceDir = path.join(rootDir, "workspace-other");
-    const managedRemoteWorkspace = "/remote/workspace/.paperclip-runtime/runs/run-1/workspace";
+    const managedRemoteWorkspace = "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace";
     await mkdir(workspaceDir, { recursive: true });
     await mkdir(alternateWorkspaceDir, { recursive: true });
 
@@ -181,7 +181,7 @@ describe("gemini remote execution", () => {
     expect(prepareWorkspaceForSshExecution).toHaveBeenCalledTimes(1);
     expect(syncDirectoryToSsh).toHaveBeenCalledTimes(1);
     expect(syncDirectoryToSsh).toHaveBeenCalledWith(expect.objectContaining({
-      remoteDir: `${managedRemoteWorkspace}/.paperclip-runtime/gemini/skills`,
+      remoteDir: `${managedRemoteWorkspace}/.paperclaw-runtime/gemini/skills`,
       followSymlinks: true,
     }));
     expect(runSshCommand).toHaveBeenCalledWith(
@@ -205,8 +205,8 @@ describe("gemini remote execution", () => {
     const call = runChildProcess.mock.calls[0] as unknown as
       | [string, string, string[], { env: Record<string, string>; remoteExecution?: { remoteCwd: string } | null }]
       | undefined;
-    expect(call?.[3].env.PAPERCLIP_WORKSPACE_CWD).toBe(managedRemoteWorkspace);
-    expect(JSON.parse(call?.[3].env.PAPERCLIP_WORKSPACES_JSON ?? "[]")).toEqual([
+    expect(call?.[3].env.PAPERCLAW_WORKSPACE_CWD).toBe(managedRemoteWorkspace);
+    expect(JSON.parse(call?.[3].env.PAPERCLAW_WORKSPACES_JSON ?? "[]")).toEqual([
       {
         workspaceId: "workspace-1",
         cwd: managedRemoteWorkspace,
@@ -219,8 +219,8 @@ describe("gemini remote execution", () => {
         repoRef: "feature/other",
       },
     ]);
-    expect(call?.[3].env.PAPERCLIP_API_URL).toBe("http://127.0.0.1:4310");
-    expect(call?.[3].env.PAPERCLIP_API_BRIDGE_MODE).toBe("queue_v1");
+    expect(call?.[3].env.PAPERCLAW_API_URL).toBe("http://127.0.0.1:4310");
+    expect(call?.[3].env.PAPERCLAW_API_BRIDGE_MODE).toBe("queue_v1");
     expect(call?.[3].env.GEMINI_CLI_TRUST_WORKSPACE).toBe("true");
     expect(call?.[3].env.TERM).toBe("xterm-256color");
     expect(call?.[3].env.COLORTERM).toBe("truecolor");
@@ -307,14 +307,14 @@ describe("gemini remote execution", () => {
     expect(settingsWrite).toBeDefined();
     expect(settingsWrite).toContain("gemini-api-key");
     // The managed HOME lives under the per-run runtime root, never a real home.
-    expect(settingsWrite).toContain(".paperclip-runtime");
+    expect(settingsWrite).toContain(".paperclaw-runtime");
   });
 
   it("resumes saved Gemini sessions for remote SSH execution only when the identity matches", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-gemini-remote-resume-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
-    const managedRemoteWorkspace = "/remote/workspace/.paperclip-runtime/runs/run-ssh-resume/workspace";
+    const managedRemoteWorkspace = "/remote/workspace/.paperclaw-runtime/runs/run-ssh-resume/workspace";
     await mkdir(workspaceDir, { recursive: true });
 
     await execute({

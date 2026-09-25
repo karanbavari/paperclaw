@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { pluginOperationIssueOriginKind } from "@paperclipai/shared";
+import { pluginOperationIssueOriginKind } from "@kesarcloud/shared";
 import type {
   PaperclipPluginManifestV1,
   PluginCapability,
@@ -22,7 +22,7 @@ import type {
   Agent,
   Goal,
   Approval,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import type {
   EventFilter,
   PluginContext,
@@ -913,6 +913,10 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
       async resolve(secretRef) {
         requireCapability(manifest, capabilitySet, "secrets.read-ref");
         return `resolved:${secretRef}`;
+      },
+      async upsert(input) {
+        requireCapability(manifest, capabilitySet, "secrets.write-ref");
+        return { secretRef: randomUUID(), name: input.name, latestVersion: 1 };
       },
     },
     activity: {

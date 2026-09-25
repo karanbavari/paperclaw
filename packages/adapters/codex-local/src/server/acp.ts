@@ -8,35 +8,35 @@ import type {
   AdapterEnvironmentTestResult,
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils";
 import {
   parseLocalProcessFilesystemScope,
   parseLocalProcessNetworkScope,
-} from "@paperclipai/adapter-utils/local-process-sandbox";
-import { inferOpenAiCompatibleBiller } from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils/local-process-sandbox";
+import { inferOpenAiCompatibleBiller } from "@kesarcloud/adapter-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   readAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@kesarcloud/adapter-utils/execution-target";
 import {
   DEFAULT_ACP_ENGINE_MODE,
   DEFAULT_ACP_ENGINE_NON_INTERACTIVE_PERMISSIONS,
   DEFAULT_ACP_ENGINE_PERMISSION_MODE,
   DEFAULT_ACP_ENGINE_WARM_HANDLE_IDLE_MS,
-} from "@paperclipai/adapter-utils/acpx-engine/constants";
+} from "@kesarcloud/adapter-utils/acpx-engine/constants";
 import type {
   AcpxEngineExecutorOptions,
   AcpxRemoteManagedHomeContext,
   AcpxRemoteManagedHomeResult,
-} from "@paperclipai/adapter-utils/acpx-engine/execute";
+} from "@kesarcloud/adapter-utils/acpx-engine/execute";
 import {
   asNumber,
   asString,
   asStringArray,
   parseObject,
-} from "@paperclipai/adapter-utils/server-utils";
-import { createWorkspaceRestoreTeardown } from "@paperclipai/adapter-utils/workspace-restore-teardown";
+} from "@kesarcloud/adapter-utils/server-utils";
+import { createWorkspaceRestoreTeardown } from "@kesarcloud/adapter-utils/workspace-restore-teardown";
 import { normalizeCodexModel } from "../index.js";
 import { classifyCodexAuthRefreshFailure } from "./parse.js";
 import { copyBackCodexAuth } from "./codex-auth-copyback.js";
@@ -139,7 +139,7 @@ export function buildCodexAcpConfig(config: Record<string, unknown>): Record<str
   );
 
   const env = parseObject(config.env);
-  let networkAccess = env.PAPERCLIP_CODEX_ACP_NETWORK_ACCESS !== "false";
+  let networkAccess = env.PAPERCLAW_CODEX_ACP_NETWORK_ACCESS !== "false";
   const extraArgs = asStringArray(config.extraArgs);
   for (const arg of extraArgs.length > 0 ? extraArgs : asStringArray(config.args)) {
     const match = /^(?:(?:--config=|-c=?)\s*)?sandbox_workspace_write\.network_access\s*=\s*(true|false)\s*$/.exec(arg);
@@ -148,7 +148,7 @@ export function buildCodexAcpConfig(config: Record<string, unknown>): Record<str
 
   return {
     ...config,
-    env: { ...env, PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: String(networkAccess) },
+    env: { ...env, PAPERCLAW_CODEX_ACP_NETWORK_ACCESS: String(networkAccess) },
     agent: "codex",
     mode,
     permissionMode,
@@ -330,7 +330,7 @@ export function createCodexAcpExecutor(options: CodexAcpExecutorOptions = {}): C
   return async (ctx) => {
     let currentExecutor = executor;
     if (!currentExecutor) {
-      const { createAcpxEngineExecutor } = await import("@paperclipai/adapter-utils/acpx-engine/execute");
+      const { createAcpxEngineExecutor } = await import("@kesarcloud/adapter-utils/acpx-engine/execute");
       currentExecutor = createAcpxEngineExecutor(withCodexAcpDefaults(options));
       executor = currentExecutor;
     }

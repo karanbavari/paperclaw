@@ -7,7 +7,7 @@
  * tree so published server packages have no workspace runtime dependency.
  * Keep server imports pointed at this relative boundary.
  */
-type RunnerModule = typeof import("@paperclipai/paperclip-runner");
+type RunnerModule = typeof import("@kesarcloud/paperclip-runner");
 
 export type {
   PaperclipJsonValue,
@@ -55,11 +55,11 @@ export type {
   RunnerProcessLaunchSpec,
   StrictCompletionContractInput,
   TransportCloseReason,
-} from "@paperclipai/paperclip-runner";
+} from "@kesarcloud/paperclip-runner";
 export type DurablePrpControlPlane =
-  import("@paperclipai/paperclip-runner").DurablePrpControlPlane;
+  import("@kesarcloud/paperclip-runner").DurablePrpControlPlane;
 export type PaperclipSemanticDispatcher =
-  import("@paperclipai/paperclip-runner").PaperclipSemanticDispatcher;
+  import("@kesarcloud/paperclip-runner").PaperclipSemanticDispatcher;
 
 const sourceUrl = new URL(
   "../../../../packages/paperclip-runner/src/index.ts",
@@ -80,9 +80,9 @@ export const CAPABILITY_SEMANTIC_TOOL_CATALOG =
 export const HarnessRuntimeRequestResolutionError =
   runner.HarnessRuntimeRequestResolutionError;
 export const NATIVE_RUNTIME_ASSET_SCHEMA = runner.NATIVE_RUNTIME_ASSET_SCHEMA;
-export const PAPERCLIP_EXECUTION_PROMPT = runner.PAPERCLIP_EXECUTION_PROMPT;
-export const PAPERCLIP_EXECUTION_PROMPT_REVISION =
-  runner.PAPERCLIP_EXECUTION_PROMPT_REVISION;
+export const PAPERCLAW_EXECUTION_PROMPT = runner.PAPERCLAW_EXECUTION_PROMPT;
+export const PAPERCLAW_EXECUTION_PROMPT_REVISION =
+  runner.PAPERCLAW_EXECUTION_PROMPT_REVISION;
 export const acpxRuntimeSessionDirectoryName =
   runner.acpxRuntimeSessionDirectoryName;
 export const canonicalNativeRuntimeContextDigest =
@@ -91,8 +91,8 @@ export const createNativeSessionBackend = runner.createNativeSessionBackend;
 export const createPaperclipRunnerAuthorizedToolSet =
   runner.createPaperclipRunnerAuthorizedToolSet;
 export const createRunnerdCodexTransport: (
-  options?: import("@paperclipai/paperclip-runner").RunnerdCodexTransportOptions,
-) => import("@paperclipai/paperclip-runner").RunnerdCodexTransport =
+  options?: import("@kesarcloud/paperclip-runner").RunnerdCodexTransportOptions,
+) => import("@kesarcloud/paperclip-runner").RunnerdCodexTransport =
   runner.createRunnerdCodexTransport;
 export const defaultCapabilityRunnerdBinary =
   runner.defaultCapabilityRunnerdBinary;

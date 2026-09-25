@@ -2,22 +2,22 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext, AdapterInvocationMeta } from "@paperclipai/adapter-utils";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterExecutionContext, AdapterInvocationMeta } from "@kesarcloud/adapter-utils";
+import { runChildProcess } from "@kesarcloud/adapter-utils/server-utils";
 
 // Wrap the shared staging seam in a call-recording spy that still delegates to
 // the real implementation (a runner-backed sandbox test exercises it end to
 // end against the local sandbox stand-in). This lets a test assert the exact
 // `assets` the Claude remote managed-home seam sends it without changing any
 // real behavior for the other tests.
-vi.mock("@paperclipai/adapter-utils/execution-target", async (importActual) => {
-  const actual = await importActual<typeof import("@paperclipai/adapter-utils/execution-target")>();
+vi.mock("@kesarcloud/adapter-utils/execution-target", async (importActual) => {
+  const actual = await importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>();
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
   };
 });
-import { prepareAdapterExecutionTargetRuntime } from "@paperclipai/adapter-utils/execution-target";
+import { prepareAdapterExecutionTargetRuntime } from "@kesarcloud/adapter-utils/execution-target";
 import {
   buildClaudeAcpConfig,
   createClaudeAcpExecutor,
@@ -80,8 +80,8 @@ type FakeRuntimeTurn = {
 const tempRoots: string[] = [];
 const originalNodeVersion = process.version;
 const originalEnv: Record<string, string | undefined> = {
-  PAPERCLIP_HOME: process.env.PAPERCLIP_HOME,
-  PAPERCLIP_INSTANCE_ID: process.env.PAPERCLIP_INSTANCE_ID,
+  PAPERCLAW_HOME: process.env.PAPERCLAW_HOME,
+  PAPERCLAW_INSTANCE_ID: process.env.PAPERCLAW_INSTANCE_ID,
   CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
 };
 
@@ -695,9 +695,9 @@ describe("claude_local ACP lane", () => {
   });
 
   it("stages the skill bundle inside the sandbox but never syncs it back into the host workspace", async () => {
-    // The staged skill bundle lives under `.paperclip-runtime/claude/skills`,
+    // The staged skill bundle lives under `.paperclaw-runtime/claude/skills`,
     // inside the same in-sandbox directory the workspace restore reads. The
-    // restore excludes the whole `.paperclip-runtime` tree
+    // restore excludes the whole `.paperclaw-runtime` tree
     // (`sandbox-managed-runtime.ts`'s `restoreExclude` list) for every asset
     // key alike, so this proves it for the new "skills" asset specifically.
     const root = await makeTempRoot("paperclip-claude-acp-skills-no-syncback-");
@@ -748,7 +748,7 @@ describe("claude_local ACP lane", () => {
     // during the run, under the in-sandbox skill root the prompt names.
     const prompt = String(runtimes[0]?.startInputs[0]?.text ?? "");
     const inSandboxSkillRoot = prompt.match(/Skill root: (\S+)/)![1]!;
-    expect(inSandboxSkillRoot).toContain(path.join(remoteCwd, ".paperclip-runtime"));
+    expect(inSandboxSkillRoot).toContain(path.join(remoteCwd, ".paperclaw-runtime"));
     await expect(
       fs.readFile(path.join(inSandboxSkillRoot, "review", "SKILL.md"), "utf8"),
     ).resolves.toContain("review skill");
@@ -756,7 +756,7 @@ describe("claude_local ACP lane", () => {
     // run wrote inside the workspace proper...
     await expect(fs.readFile(path.join(localCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     // ...but not the staged runtime directory the skill bundle staged into.
-    await expect(fs.access(path.join(localCwd, ".paperclip-runtime"))).rejects.toThrow();
+    await expect(fs.access(path.join(localCwd, ".paperclaw-runtime"))).rejects.toThrow();
   });
 
   it("passes the exact configured Fable 5.1 ID through ANTHROPIC_MODEL on the ACP lane", async () => {
@@ -848,8 +848,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLAW_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     const meta: AdapterInvocationMeta[] = [];
@@ -888,7 +888,7 @@ describe("claude_local ACP lane", () => {
     // C2 — CLAUDE_CONFIG_DIR repointed onto an in-sandbox path, distinct from the
     // host shared config dir.
     expect(remappedConfigDir).not.toBe(sharedClaudeConfig);
-    expect(remappedConfigDir).toContain(".paperclip-runtime");
+    expect(remappedConfigDir).toContain(".paperclaw-runtime");
     expect(remappedConfigDir.endsWith("/config")).toBe(true);
     // Seeded: settings.json was materialized into the in-sandbox config dir (the
     // local runner uses the host FS, so this is a real host path).
@@ -914,8 +914,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLAW_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     // The runtime writes a NEW file into the in-sandbox workspace during the turn.
@@ -984,8 +984,8 @@ describe("claude_local ACP lane", () => {
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
     await fs.writeFile(path.join(localCwd, "hello.txt"), "hi", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLAW_INSTANCE_ID = "test";
 
     // The runtime writes a new file into the in-sandbox workspace during the
     // turn, so the teardown's restore has something to copy back — and a new
@@ -1074,8 +1074,8 @@ describe("claude_local ACP lane", () => {
       JSON.stringify({ permissions: { defaultMode: "acceptEdits" } }),
       "utf8",
     );
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLAW_INSTANCE_ID = "test";
 
     const meta: AdapterInvocationMeta[] = [];
     const logs: string[] = [];
@@ -1118,7 +1118,7 @@ describe("claude_local ACP lane", () => {
     expect(meta[0]?.env?.CLAUDE_CONFIG_DIR).toBe(path.posix.join(remoteCwd, ".claude-config"));
     expect(meta[0]?.env?.CLAUDE_CONFIG_DIR).not.toBe(operatorConfigDir);
     // No managed config seed is materialized — the operator dir is authoritative.
-    expect(String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "")).not.toContain(".paperclip-runtime");
+    expect(String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "")).not.toContain(".paperclaw-runtime");
     expect(logs.join("")).toContain(
       `Remapped operator CLAUDE_CONFIG_DIR from host path ${operatorConfigDir}`,
     );
@@ -1142,8 +1142,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLAW_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     const meta: AdapterInvocationMeta[] = [];
@@ -1188,7 +1188,7 @@ describe("claude_local ACP lane", () => {
     const remappedConfigDir = String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "");
     // The un-portable host path is dropped; managed config is seeded in-sandbox.
     expect(remappedConfigDir).not.toBe(operatorConfigDir);
-    expect(remappedConfigDir).toContain(".paperclip-runtime");
+    expect(remappedConfigDir).toContain(".paperclaw-runtime");
     expect(remappedConfigDir.endsWith("/config")).toBe(true);
     await expect(fs.readFile(path.join(remappedConfigDir, "settings.json"), "utf8")).resolves.toContain(
       "permissions",

@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@paperclipai/adapter-utils";
+import type { TranscriptEntry } from "@kesarcloud/adapter-utils";
 
 /**
  * Strip ANSI escape sequences (CSI, OSC) from terminal text.

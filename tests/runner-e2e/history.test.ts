@@ -68,8 +68,8 @@ function result(execution: MatrixExecution, status: "passed" | "failed") {
 
 describe("runner E2E campaign history", () => {
   it("records the resolved paid target instead of the trusted workflow checkout", () => {
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_SHA", "target-sha");
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_REF", "refs/heads/target");
+    vi.stubEnv("PAPERCLAW_RUNNER_E2E_SOURCE_SHA", "target-sha");
+    vi.stubEnv("PAPERCLAW_RUNNER_E2E_SOURCE_REF", "refs/heads/target");
     vi.stubEnv("GITHUB_SHA", "trusted-master-sha");
     vi.stubEnv("GITHUB_REF", "refs/heads/master");
     const execution = runnerMatrix[0]!;
@@ -634,31 +634,31 @@ describe("historical publication security", () => {
       validateHistoryDestination({
         bucket: "paperclip-runner-e2e-history",
         prefix: "/runner-e2e/",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.paperclaw.ai/",
       }),
     ).toEqual({
       prefix: "runner-e2e",
-      publicBaseUrl: "https://history.paperclip.ai",
+      publicBaseUrl: "https://history.paperclaw.ai",
     });
     expect(() =>
       validateHistoryDestination({
         bucket: "paperclip-runner-e2e-history",
         prefix: "../unsafe",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.paperclaw.ai/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
         bucket: "paperclip-runner-e2e-history",
         prefix: "runner-e2e?other",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.paperclaw.ai/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
         bucket: "paperclip-runner-e2e-history",
         prefix: "runner-e2e",
-        publicBaseUrl: "http://history.paperclip.ai/",
+        publicBaseUrl: "http://history.paperclaw.ai/",
       }),
     ).toThrow("credential-free HTTPS");
   });

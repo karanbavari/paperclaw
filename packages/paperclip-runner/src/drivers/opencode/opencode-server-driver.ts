@@ -37,8 +37,8 @@ import type {
   PaperclipQuestionSet,
 } from "../../contracts/harness-driver.js";
 import {
-  PAPERCLIP_QUESTION_SET_SCHEMA,
-  PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+  PAPERCLAW_QUESTION_SET_SCHEMA,
+  PAPERCLAW_RUNTIME_REQUEST_SCHEMA_V2,
   harnessRuntimeInputExpiredOutcome,
   harnessRuntimeRequestOutcome,
   parseHarnessRuntimeRequestResolution,
@@ -280,10 +280,10 @@ export class OpenCodeServerDriver implements HarnessDriver {
     await mkdir(root, { recursive: true, mode: 0o700 });
     await writeFile(join(root, "workspace"), `${cwd}\n`, { mode: 0o600 });
     const trace = await createProviderTraceFileSink({
-      path: this.#options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH,
+      path: this.#options.environment?.PAPERCLAW_PROVIDER_TRACE_PATH,
       provider: "opencode",
       channel: "typescript_opencode_native",
-      maxBytes: this.#options.environment?.PAPERCLIP_PROVIDER_TRACE_MAX_BYTES,
+      maxBytes: this.#options.environment?.PAPERCLAW_PROVIDER_TRACE_MAX_BYTES,
     });
     let lastError: unknown = null;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -1073,7 +1073,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       "runtime_request.created",
       {
         request: {
-          schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+          schema: PAPERCLAW_RUNTIME_REQUEST_SCHEMA_V2,
           requestKind: "runtime",
           requestId,
           type: "input",
@@ -1128,7 +1128,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       "runtime_request.created",
       {
         request: {
-          schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+          schema: PAPERCLAW_RUNTIME_REQUEST_SCHEMA_V2,
           requestKind: "runtime",
           requestId,
           type: "permission",
@@ -2134,7 +2134,7 @@ export function normalizeOpenCodeQuestionSet(
     },
   );
   return parsePaperclipQuestionSet({
-    schema: PAPERCLIP_QUESTION_SET_SCHEMA,
+    schema: PAPERCLAW_QUESTION_SET_SCHEMA,
     title: text(metadata.title, "OpenCode needs your input").slice(0, 1_000),
     ...(text(metadata.description)
       ? { description: text(metadata.description).slice(0, 4_000) }

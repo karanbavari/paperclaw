@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { IssueAttachment, IssueWorkProduct } from "@paperclipai/shared";
+import type { IssueAttachment, IssueWorkProduct } from "@kesarcloud/shared";
 import { expect } from "storybook/test";
 import { RichWorkProductCard } from "../../src/components/task-chat/RichWorkProductCard";
 import { TaskChatBubble } from "../../src/components/task-chat/TaskChatBubble";
@@ -99,7 +99,7 @@ const KINDS: CardKind[] = [
     type: "preview_url",
     provider: "custom",
     title: "Rich cards preview",
-    url: "https://preview.paperclip.ing/rich-cards",
+    url: "https://preview.paperclaw.ing/rich-cards",
     metadata: {},
   },
   {

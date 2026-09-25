@@ -19,7 +19,7 @@ vi.mock("@daytonaio/sdk", () => ({
 
 import { performSyncIn } from "./file-sync.js";
 import { __setDaytonaPluginContextForTest } from "./plugin.js";
-import type { PluginContext, PluginSyncOperation } from "@paperclipai/plugin-sdk";
+import type { PluginContext, PluginSyncOperation } from "@kesarcloud/plugin-sdk";
 
 // One recorded in-sandbox command, so a test can assert the exact cleanup command.
 interface RecordedCommand {
@@ -73,7 +73,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
     await fs.writeFile(path.join(sourceDir, "README.md"), "referenced project\n", "utf8");
 
     const remoteDir = "/workspace";
-    const targetPath = "/workspace/.paperclip-runtime/test-adapter/project-abc";
+    const targetPath = "/workspace/.paperclaw-runtime/test-adapter/project-abc";
     const uploadedDestinations: string[] = [];
     const commands: RecordedCommand[] = [];
     // Fail the extract round trip (the only command that runs `tar -xf`).
@@ -100,10 +100,10 @@ describe("daytona file-sync inbound scratch cleanup", () => {
     ).rejects.toThrow(/syncIn extract/);
 
     // The runtime uploaded exactly one reserved scratch tar under the workspace
-    // root. Its name carries the reserved `.paperclip-upload-` prefix.
+    // root. Its name carries the reserved `.paperclaw-upload-` prefix.
     expect(uploadedDestinations).toHaveLength(1);
     const scratchTar = uploadedDestinations[0];
-    expect(scratchTar).toContain(".paperclip-upload-");
+    expect(scratchTar).toContain(".paperclaw-upload-");
     expect(scratchTar.startsWith(`${remoteDir}/`)).toBe(true);
 
     // The failure path swept the scratch tar: a standalone `rm -f` of the exact
@@ -127,7 +127,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
     await fs.writeFile(path.join(sourceDir, "README.md"), "referenced project\n", "utf8");
 
     const remoteDir = "/workspace";
-    const targetPath = "/workspace/.paperclip-runtime/test-adapter/project-abc";
+    const targetPath = "/workspace/.paperclaw-runtime/test-adapter/project-abc";
     const uploadedDestinations: string[] = [];
     const commands: RecordedCommand[] = [];
     // No failure: every command succeeds, so the extract's own `rm -f` clears the
@@ -239,7 +239,7 @@ function createRecordingSandbox(input: {
       executeCommand: async (command: string) => {
         input.commands.push({ command });
         if (command.includes("mkdir -p")) {
-          return { exitCode: 0, result: input.probeReportsZstd ? "PAPERCLIP_ZSTD_AVAILABLE\n" : "" };
+          return { exitCode: 0, result: input.probeReportsZstd ? "PAPERCLAW_ZSTD_AVAILABLE\n" : "" };
         }
         return { exitCode: 0, result: "" };
       },
@@ -380,7 +380,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
 
       // Cleanup on success: no reserved scratch (raw or `.zst`) remains.
       const remaining = await fs.readdir(remoteDir);
-      expect(remaining.filter((name) => name.includes(".paperclip-upload"))).toHaveLength(0);
+      expect(remaining.filter((name) => name.includes(".paperclaw-upload"))).toHaveLength(0);
     });
 
     it("removes the private compressed host temp directory after a successful sync", async () => {
@@ -551,7 +551,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
 
       await expect(fs.stat(targetPath)).rejects.toThrow(); // never promoted
       const remaining = await fs.readdir(remoteDir);
-      expect(remaining.filter((name) => name.includes(".paperclip-upload"))).toHaveLength(0); // scratch swept
+      expect(remaining.filter((name) => name.includes(".paperclaw-upload"))).toHaveLength(0); // scratch swept
     });
 
     it("applies mapping.mode via chmod before promotion, when set", async () => {
@@ -882,7 +882,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
         process: {
           executeCommand: async (command: string) => {
             commands.push({ command });
-            return { exitCode: 0, result: command.includes("mkdir -p") ? "PAPERCLIP_ZSTD_AVAILABLE\n" : "" };
+            return { exitCode: 0, result: command.includes("mkdir -p") ? "PAPERCLAW_ZSTD_AVAILABLE\n" : "" };
           },
         },
         fs: {
@@ -919,7 +919,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
         process: {
           executeCommand: async (command: string) => ({
             exitCode: 0,
-            result: command.includes("mkdir -p") ? "PAPERCLIP_ZSTD_AVAILABLE\n" : "",
+            result: command.includes("mkdir -p") ? "PAPERCLAW_ZSTD_AVAILABLE\n" : "",
           }),
         },
         fs: {
@@ -960,7 +960,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
         process: {
           executeCommand: async (command: string, _cwd?: string, _env?: unknown, timeoutSeconds?: number) => {
             seenTimeouts.push(timeoutSeconds);
-            return { exitCode: 0, result: command.includes("mkdir -p") ? "PAPERCLIP_ZSTD_AVAILABLE\n" : "" };
+            return { exitCode: 0, result: command.includes("mkdir -p") ? "PAPERCLAW_ZSTD_AVAILABLE\n" : "" };
           },
         },
         fs: {

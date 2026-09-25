@@ -19,7 +19,7 @@ import {
   type MeetingSummary,
 } from "@kesarcloud/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
-import { resolvePaperClawInstanceRoot } from "../home-paths.js";
+import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 
 const RUNNING_MEETING_MESSAGE_STATUSES = new Set(["queued", "running"]);
 const MAX_MEETING_DELEGATION_DEPTH = 3;
@@ -202,7 +202,7 @@ function renderMarkdown(detail: MeetingDetail) {
 
 function resolveMeetingMarkdownPath(companyId: string, meetingId: string) {
   const relativePath = path.join("meetings", safeSegment(companyId), `${safeSegment(meetingId)}.md`);
-  const absolutePath = path.resolve(resolvePaperClawInstanceRoot(), "data", relativePath);
+  const absolutePath = path.resolve(resolvePaperclipInstanceRoot(), "data", relativePath);
   return { relativePath: path.join("data", relativePath), absolutePath };
 }
 
@@ -517,7 +517,7 @@ export function meetingService(db: Db) {
               meetingId: input.meetingId,
               meetingMessageId: responseMessage.id,
               meetingDelegationDepth: 0,
-              paperclawMeeting: {
+              paperclipMeeting: {
                 id: input.meetingId,
                 title: detail.title,
                 topic: detail.topic,
@@ -669,7 +669,7 @@ export function meetingService(db: Db) {
                   meetingId: input.meetingId,
                   meetingMessageId: delegatedMessage.id,
                   meetingDelegationDepth: depth + 1,
-                  paperclawMeeting: {
+                  paperclipMeeting: {
                     id: input.meetingId,
                     title: detail.title,
                     topic: detail.topic,

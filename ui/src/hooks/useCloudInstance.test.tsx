@@ -42,7 +42,7 @@ describe("useCloudInstance", () => {
       managed: true,
       managedBy: "paperclip-cloud",
       stackSlug: "acme",
-      cloudBaseUrl: "https://app.paperclip.app",
+      cloudBaseUrl: "https://app.paperclaw.app",
     };
     queryClient.setQueryData<HealthStatus>(queryKeys.health, { status: "ok", cloud });
     const root = createRoot(container);

@@ -1,4 +1,4 @@
-import { connectionPurposeTransportSchema } from "@paperclipai/shared";
+import { connectionPurposeTransportSchema } from "@kesarcloud/shared";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
 import { canBrowseProjectRepositoryGrant, mergeProjectRepository } from "./project-repositories.js";
 import { captureRunIdentity } from "./run-identity.js";
@@ -20,7 +20,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   agents,
   connectionGrantMembers,
@@ -59,7 +59,7 @@ import {
   toolProfiles,
   toolRuntimeMetricCounters,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   AppDefinition,
   ConnectionGrantKind,
@@ -142,7 +142,7 @@ import type {
   UnbindToolProfileBinding,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   CLASS3_STATIC_LEASE_ALLOWLIST,
   GITHUB_CONNECTOR_PROFILES,
@@ -160,19 +160,19 @@ import {
   resolveConnectionMethodServerUrl,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   checkMcpRemoteHeaderName,
   checkMcpRemoteHeaderValue,
   mcpRemoteHeaderNameFromConfigPath,
   mcpRemoteHeaderRejectionMessage,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   checkOAuthEndpointUrl,
   oauthEndpointUrlRejectionMessage,
   type OAuthEndpointKind,
   type OAuthEndpointUrlRejection,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   badRequest,
   conflict,
@@ -3297,12 +3297,12 @@ export function toolAccessService(
   }
 
   function tokenBrokerAllowedPrivateHosts(): Set<string> {
-    const configured = (process.env.PAPERCLIP_TOKEN_BROKER_ALLOWED_HOSTS ?? "")
+    const configured = (process.env.PAPERCLAW_TOKEN_BROKER_ALLOWED_HOSTS ?? "")
       .split(/[,\s]+/)
       .map(normalizeTokenBrokerAllowedHost)
       .filter((host): host is string => host !== null);
     const pagesApiHost = normalizeTokenBrokerAllowedHost(
-      process.env.PAPERCLIP_PAGES_API_URL ?? "",
+      process.env.PAPERCLAW_PAGES_API_URL ?? "",
     );
     if (pagesApiHost) configured.push(pagesApiHost);
     return new Set(configured);
@@ -3386,8 +3386,8 @@ export function toolAccessService(
    */
   function firstPartyOrigins(candidate?: string | null): string[] {
     const configured =
-      process.env.PAPERCLIP_PUBLIC_URL?.trim() ||
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim() ||
+      process.env.PAPERCLAW_PUBLIC_URL?.trim() ||
+      process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL?.trim() ||
       process.env.BETTER_AUTH_URL?.trim() ||
       process.env.BETTER_AUTH_BASE_URL?.trim() ||
       null;
@@ -3462,8 +3462,8 @@ export function toolAccessService(
   function trustedRuntimeHost() {
     return (
       options.trustedLocalStdioRuntimeHost ??
-      process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST ??
-      process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST ??
+      process.env.PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST ??
+      process.env.PAPERCLAW_TOOL_RUNTIME_TRUSTED_HOST ??
       null
     );
   }
@@ -3659,7 +3659,7 @@ export function toolAccessService(
     return Boolean(
       applicationKey === "paperclip-pages" ||
       applicationKey === "paperclip.pages" ||
-      applicationKey === "pages.paperclip" ||
+      applicationKey === "pages.paperclaw" ||
       readConfigString(config, "connectionType") === "pages" ||
       readConfigString(config, "service") === "pages" ||
       readConfigString(broker, "connectionType") === "pages" ||
@@ -4219,7 +4219,7 @@ export function toolAccessService(
       readConfigString(config, "tokenExchangeUrl") ??
       readConfigString(config, "pagesTokenExchangeUrl");
     if (url) return url;
-    const pagesApiBase = process.env.PAPERCLIP_PAGES_API_URL?.trim();
+    const pagesApiBase = process.env.PAPERCLAW_PAGES_API_URL?.trim();
     if (isPages && pagesApiBase)
       return new URL(
         "/v1/tokens/exchange",
@@ -8727,7 +8727,7 @@ export function toolAccessService(
     provider: string,
     suffix: "CLIENT_ID" | "CLIENT_SECRET",
   ) {
-    return `PAPERCLIP_TOOL_OAUTH_${provider.replace(/[^a-z0-9]+/gi, "_").toUpperCase()}_${suffix}`;
+    return `PAPERCLAW_TOOL_OAUTH_${provider.replace(/[^a-z0-9]+/gi, "_").toUpperCase()}_${suffix}`;
   }
 
   function oauthClientConfig(provider: string) {
@@ -8738,11 +8738,11 @@ export function toolAccessService(
       clientSecretEnv,
       clientId:
         process.env[clientIdEnv] ??
-        process.env.PAPERCLIP_TOOL_OAUTH_CLIENT_ID ??
+        process.env.PAPERCLAW_TOOL_OAUTH_CLIENT_ID ??
         null,
       clientSecret:
         process.env[clientSecretEnv] ??
-        process.env.PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET ??
+        process.env.PAPERCLAW_TOOL_OAUTH_CLIENT_SECRET ??
         null,
     };
   }
@@ -17396,7 +17396,7 @@ export function toolAccessService(
       ]);
       const repositories = new Map<
         string,
-        import("@paperclipai/shared").ProjectRepository
+        import("@kesarcloud/shared").ProjectRepository
       >();
       let connectionCount = 0;
       let failedConnectionCount = 0;

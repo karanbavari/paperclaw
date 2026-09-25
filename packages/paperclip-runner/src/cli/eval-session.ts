@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  PAPERCLAW_EXECUTION_PROMPT,
+  PAPERCLAW_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   composeNativeSystemInstructions,
   nativeRuntimePromptDigest,
@@ -16,7 +16,7 @@ import {
 } from "../contracts/runtime-context.js";
 import { projectCapabilityDevtools } from "../devtools/index.js";
 import { resolveQualifiedAcpxProfile } from "../drivers/acpx/qualified-profiles.js";
-import { PAPERCLIP_RUNNER_BUILD_METADATA } from "../evals/build-metadata.js";
+import { PAPERCLAW_RUNNER_BUILD_METADATA } from "../evals/build-metadata.js";
 import { projectCapabilityIssueThread } from "../issue-thread/live-projection.js";
 import {
   CapabilityLiveSessionService,
@@ -80,7 +80,7 @@ export async function prepareEvalRuntimeContext(
   workingDirectory: string,
 ): Promise<NativeRuntimeContextSnapshot> {
   const contextRoot = await mkdtemp(
-    resolve(workingDirectory, ".paperclip-eval-runtime-context-"),
+    resolve(workingDirectory, ".paperclaw-eval-runtime-context-"),
   );
   const instructionRoot = resolve(contextRoot, "instructions");
   const entryPath = "AGENTS.md";
@@ -112,14 +112,14 @@ export async function prepareEvalRuntimeContext(
   await chmod(instructionRoot, 0o555);
 
   const semanticCatalogDigest =
-    PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog.sha256.replace(
+    PAPERCLAW_RUNNER_BUILD_METADATA.semanticCatalog.sha256.replace(
       /^sha256:/,
       "",
     );
   const context = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: PAPERCLAW_EXECUTION_PROMPT_REVISION,
+      text: PAPERCLAW_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -348,7 +348,7 @@ export async function runEvalSessionCli(
     await writeFile(cli.outputPath, `${JSON.stringify({
       schema: "paperclip-runner/eval-session-artifact/v1",
       attemptId: request.attemptId,
-      build: PAPERCLIP_RUNNER_BUILD_METADATA,
+      build: PAPERCLAW_RUNNER_BUILD_METADATA,
       runnerd: { path: "[withheld]", sha256: `sha256:${actualDigest}` },
       requestedModel: request.model,
       provider: requestedProvider,
@@ -421,7 +421,7 @@ export async function runEvalSessionCli(
       attemptId: request.attemptId,
       infrastructureError: error instanceof Error ? error.message : String(error),
       infrastructureFailure: failureClass(error),
-      build: PAPERCLIP_RUNNER_BUILD_METADATA,
+      build: PAPERCLAW_RUNNER_BUILD_METADATA,
       runnerd: { path: "[withheld]", sha256: `sha256:${actualDigest}` },
       requestedModel: request.model,
       provider: requestedProvider,

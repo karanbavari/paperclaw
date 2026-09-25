@@ -7,27 +7,27 @@ import type { AdapterExecutionContext, AdapterExecutionResult } from "@kesarclou
 import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@kesarcloud/adapter-utils/execution-target";
 import {
   DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
-  applyPaperClawWorkspaceEnv,
+  applyPaperclipWorkspaceEnv,
   asNumber,
   asString,
   buildInvocationEnvForLogs,
-  buildPaperClawEnv,
+  buildPaperclipEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
   joinPromptSections,
-  materializePaperClawSkillCopy,
+  materializePaperclipSkillCopy,
   parseObject,
-  readPaperClawRuntimeSkillEntries,
+  readPaperclipRuntimeSkillEntries,
   renderPaperClawLocalizationPrompt,
   renderPaperClawMemoryPrompt,
-  renderPaperClawWakePrompt,
+  renderPaperclipWakePrompt,
   renderPaperClawMeetingPrompt,
   renderPaperClawDirectChatPrompt,
   renderTemplate,
-  resolvePaperClawDesiredSkillNames,
-  shapePaperClawWorkspaceEnvForExecution,
-  stringifyPaperClawWakePayload,
-  type PaperClawSkillEntry,
+  resolvePaperclipDesiredSkillNames,
+  shapePaperclipWorkspaceEnvForExecution,
+  stringifyPaperclipWakePayload,
+  type PaperclipSkillEntry,
 } from "@kesarcloud/adapter-utils/server-utils";
 import { shellQuote } from "@kesarcloud/adapter-utils/ssh";
 import {
@@ -274,7 +274,7 @@ async function hashPathContents(
 }
 
 async function buildSkillSetKey(input: {
-  skills: PaperClawSkillEntry[];
+  skills: PaperclipSkillEntry[];
   label: string;
 }): Promise<string> {
   const hash = createHash("sha256");
@@ -289,9 +289,9 @@ async function buildSkillSetKey(input: {
 
 async function resolveSelectedRuntimeSkills(
   config: Record<string, unknown>,
-): Promise<{ allSkills: PaperClawSkillEntry[]; selectedSkills: PaperClawSkillEntry[]; desiredSkillNames: string[] }> {
-  const allSkills = await readPaperClawRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkillNames = resolvePaperClawDesiredSkillNames(config, allSkills);
+): Promise<{ allSkills: PaperclipSkillEntry[]; selectedSkills: PaperclipSkillEntry[]; desiredSkillNames: string[] }> {
+  const allSkills = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkillNames = resolvePaperclipDesiredSkillNames(config, allSkills);
   const desiredSet = new Set(desiredSkillNames);
   return {
     allSkills,
@@ -318,7 +318,7 @@ async function prepareClaudeSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperClawSkillCopy(entry.source, target);
+      const result = await materializePaperclipSkillCopy(entry.source, target);
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
@@ -390,8 +390,8 @@ async function removeSkillTarget(target: string): Promise<boolean> {
 
 async function reconcileManagedCodexSkills(input: {
   skillsHome: string;
-  allSkills: PaperClawSkillEntry[];
-  selectedSkills: PaperClawSkillEntry[];
+  allSkills: PaperclipSkillEntry[];
+  selectedSkills: PaperclipSkillEntry[];
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<void> {
   const desired = new Set(input.selectedSkills.map((entry) => entry.runtimeName));
@@ -464,7 +464,7 @@ async function prepareCodexSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperClawSkillCopy(entry.source, target);
+      const result = await materializePaperclipSkillCopy(entry.source, target);
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
@@ -629,7 +629,7 @@ async function buildRuntime(input: {
   ctx: AdapterExecutionContext;
 }): Promise<AcpxPreparedRuntime> {
   const { runId, agent, config, context, authToken } = input.ctx;
-  const workspaceContext = parseObject(context.paperclawWorkspace);
+  const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
   const workspaceStrategy = asString(workspaceContext.strategy, "");
@@ -652,7 +652,7 @@ async function buildRuntime(input: {
     remoteExecutionIdentity && typeof remoteExecutionIdentity.remoteCwd === "string"
       ? remoteExecutionIdentity.remoteCwd
       : cwd;
-  const shapedWorkspaceEnv = shapePaperClawWorkspaceEnvForExecution({
+  const shapedWorkspaceEnv = shapePaperclipWorkspaceEnvForExecution({
     workspaceCwd: effectiveWorkspaceCwd,
     workspaceWorktreePath,
     executionTargetIsRemote: remoteExecutionIdentity !== null,
@@ -674,7 +674,7 @@ async function buildRuntime(input: {
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.PAPERCLAW_API_KEY === "string" && envConfig.PAPERCLAW_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperClawEnv(agent), PAPERCLAW_RUN_ID: runId };
+  const env: Record<string, string> = { ...buildPaperclipEnv(agent), PAPERCLAW_RUN_ID: runId };
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim()) ||
     (typeof context.issueId === "string" && context.issueId.trim()) ||
@@ -689,7 +689,7 @@ async function buildRuntime(input: {
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const wakePayloadJson = stringifyPaperClawWakePayload(context.paperclawWake);
+  const wakePayloadJson = stringifyPaperclipWakePayload(context.paperclipWake);
   if (wakeTaskId) env.PAPERCLAW_TASK_ID = wakeTaskId;
   if (wakeReason) env.PAPERCLAW_WAKE_REASON = wakeReason;
   if (wakeCommentId) env.PAPERCLAW_WAKE_COMMENT_ID = wakeCommentId;
@@ -697,7 +697,7 @@ async function buildRuntime(input: {
   if (approvalStatus) env.PAPERCLAW_APPROVAL_STATUS = approvalStatus;
   if (linkedIssueIds.length > 0) env.PAPERCLAW_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   if (wakePayloadJson) env.PAPERCLAW_WAKE_PAYLOAD_JSON = wakePayloadJson;
-  applyPaperClawWorkspaceEnv(env, {
+  applyPaperclipWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
     workspaceStrategy,
@@ -735,7 +735,7 @@ async function buildRuntime(input: {
     skillsIdentity = preparedSkills.identity;
     skillCommandNotes.push(...preparedSkills.commandNotes);
   } else {
-    const desired = resolvePaperClawDesiredSkillNames(config, await readPaperClawRuntimeSkillEntries(config, __moduleDir));
+    const desired = resolvePaperclipDesiredSkillNames(config, await readPaperclipRuntimeSkillEntries(config, __moduleDir));
     skillsIdentity = { mode: "custom_unsupported", desiredSkillNames: desired };
     if (desired.length > 0) {
       skillCommandNotes.push("Selected PaperClaw skills are tracked only; ACPX custom commands do not expose a runtime skill contract yet.");
@@ -900,16 +900,16 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     !resumedSession && bootstrapPromptTemplate.trim().length > 0
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
-  const wakePrompt = renderPaperClawWakePrompt(context.paperclawWake, { resumedSession });
-  const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclawMeeting);
-  const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclawDirectChat);
+  const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, { resumedSession });
+  const meetingPrompt = renderPaperClawMeetingPrompt(context.paperclipMeeting);
+  const directChatPrompt = renderPaperClawDirectChatPrompt(context.paperclipDirectChat);
   const localizationPrompt = renderPaperClawLocalizationPrompt(context.paperclawLocalization);
-  const memoryPrompt = renderPaperClawMemoryPrompt(context.paperclawMemory);
+  const memoryPrompt = renderPaperClawMemoryPrompt(context.paperclipMemory);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
   const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
-  const sessionHandoffNote = asString(context.paperclawSessionHandoffMarkdown, "").trim();
-  const taskContextNote = asString(context.paperclawTaskMarkdown, "").trim();
+  const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+  const taskContextNote = asString(context.paperclipTaskMarkdown, "").trim();
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
     localizationPrompt,

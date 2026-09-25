@@ -142,7 +142,7 @@ function shellQuote(value: string) {
 }
 
 function mergeRuntimeExcludes(entries: string[] | undefined): string[] {
-  return [...new Set([".paperclip-runtime", ...(entries ?? [])])];
+  return [...new Set([".paperclaw-runtime", ...(entries ?? [])])];
 }
 
 // Largest base64 body we hand to the runner as a single stdin string. Normal
@@ -287,7 +287,7 @@ export function createCommandManagedRuntimeClient(input: {
       const total = buffer.byteLength;
       const encodedLength = base64EncodedLength(total);
       const remoteDir = path.posix.dirname(remotePath);
-      const remoteTempPath = buildUniqueStagingPath({ targetPath: remotePath, suffix: ".paperclip-upload" });
+      const remoteTempPath = buildUniqueStagingPath({ targetPath: remotePath, suffix: ".paperclaw-upload" });
       const canUseSingleStreamProgressPath = input.runner.supportsSingleStreamStdinProgress === true;
 
       try {
@@ -452,7 +452,7 @@ export function createCommandManagedRuntimeClient(input: {
               const tarBytes = await fs.readFile(archivePath);
               const remoteTarPath = buildUniqueStagingPath({
                 targetPath: mapping.targetPath,
-                suffix: ".paperclip-syncin.tar",
+                suffix: ".paperclaw-syncin.tar",
               });
               cleanupPaths.push(remoteTarPath);
               await client.writeFile(remoteTarPath, bufferToArrayBuffer(tarBytes));

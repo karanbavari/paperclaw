@@ -7,7 +7,7 @@ import {
   heartbeatRuns,
   issueRecoveryActions,
   issues,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

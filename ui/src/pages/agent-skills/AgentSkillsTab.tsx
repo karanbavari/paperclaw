@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, ChevronDown, Loader2, Search, Store, X } from "lucide-react";
-import type { Agent, AgentDesiredSkillEntry } from "@paperclipai/shared";
+import type { Agent, AgentDesiredSkillEntry } from "@kesarcloud/shared";
 import { agentsApi } from "../../api/agents";
 import { companySkillsApi } from "../../api/companySkills";
 import { instanceSettingsApi } from "../../api/instanceSettings";
@@ -31,7 +31,7 @@ const MATERIALIZATION_NOTE =
   "Enabled skills are materialized into the stable Paperclip-managed prompt bundle on the agent's next run.";
 
 /** Company skill key of the Paperclip core skill that carries beta releases. */
-const PAPERCLIP_CORE_SKILL_KEY = "paperclipai/paperclip/paperclip";
+const PAPERCLAW_CORE_SKILL_KEY = "paperclipai/paperclip/paperclip";
 
 /** Build the desired-skill sync payload, carrying any active version pins. */
 export function toDesiredSkillPayload(
@@ -94,7 +94,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
   const betaSkillsEnabled = experimentalSettings?.enableBetaSkills === true;
 
   const paperclipCoreSkill = useMemo(
-    () => (companySkills ?? []).find((skill) => skill.key === PAPERCLIP_CORE_SKILL_KEY) ?? null,
+    () => (companySkills ?? []).find((skill) => skill.key === PAPERCLAW_CORE_SKILL_KEY) ?? null,
     [companySkills, skillSnapshot],
   );
 
@@ -350,13 +350,13 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
     // runtime context, so disabling an enabled row would only trap stale data.
     const legacyPaperclipBlocked = agent.adapterType === "paperclip_runner"
       && variant === "available"
-      && row.key === PAPERCLIP_CORE_SKILL_KEY;
+      && row.key === PAPERCLAW_CORE_SKILL_KEY;
     const rowDisabled = unsupported || legacyPaperclipBlocked;
     const rowDisabledReason = legacyPaperclipBlocked
       ? "Paperclip Runner uses native semantic coordination and cannot attach the legacy Paperclip operational skill."
       : unsupportedMessage;
     const showReleasePicker =
-      releasePickerActive && variant === "enabled" && row.key === PAPERCLIP_CORE_SKILL_KEY;
+      releasePickerActive && variant === "enabled" && row.key === PAPERCLAW_CORE_SKILL_KEY;
     const pinnedVersionId = versionPins[row.key] ?? null;
     const pinnedRelease = pinnedVersionId
       ? paperclipReleases.find((release) => release.id === pinnedVersionId) ?? null

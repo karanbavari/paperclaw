@@ -637,7 +637,7 @@ describe("provider-neutral events", () => {
         type: "tool_call",
         tag: "tool_call",
         toolCallId: "mcp-1",
-        title: "mcp.paperclip.get_task_context",
+        title: "mcp.paperclaw.get_task_context",
         kind: "other",
         status: "pending",
         text: "Starting",

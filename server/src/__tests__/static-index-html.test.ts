@@ -20,11 +20,11 @@ describe("static SPA fallback HTML", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cloud-html-"));
     tempDirs.push(dir);
     fs.writeFileSync(path.join(dir, "index.html"), "<html><body>App</body></html>");
-    vi.stubEnv("PAPERCLIP_CLOUD_UI_SNIPPET", '<script src="https://example.com/chat.js"></script>');
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", undefined);
-    vi.stubEnv("PAPERCLIP_MANAGED_CONFIG", undefined);
+    vi.stubEnv("PAPERCLAW_CLOUD_UI_SNIPPET", '<script src="https://example.com/chat.js"></script>');
+    vi.stubEnv("PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN", undefined);
+    vi.stubEnv("PAPERCLAW_MANAGED_CONFIG", undefined);
     expect(readBrandedStaticIndexHtml(dir)).not.toContain("chat.js");
-    vi.stubEnv("PAPERCLIP_MANAGED_CONFIG", "{}");
+    vi.stubEnv("PAPERCLAW_MANAGED_CONFIG", "{}");
     expect(readBrandedStaticIndexHtml(dir)).toContain('chat.js"></script>\n</body>');
   });
 

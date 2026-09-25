@@ -49,11 +49,11 @@ describe("Paperclip Cloud connector", () => {
   it("refreshes capabilities after enrollment and rejects stale cache writes", async () => {
     const keys = config().config;
     const env = {
-      PAPERCLIP_CLOUD_CONNECTOR_BASE_URL: keys.baseUrl,
-      PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID: keys.instanceId,
-      PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT: keys.environment,
-      PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY: keys.signPrivateKey,
-      PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY: keys.sealPrivateKey,
+      PAPERCLAW_CLOUD_CONNECTOR_BASE_URL: keys.baseUrl,
+      PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID: keys.instanceId,
+      PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT: keys.environment,
+      PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY: keys.signPrivateKey,
+      PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY: keys.sealPrivateKey,
     };
     let completeOldRequest!: (response: Response) => void;
     const request = vi.spyOn(globalThis, "fetch")
@@ -438,23 +438,23 @@ describe("Paperclip Cloud connector", () => {
   it("requires an all-or-nothing environment configuration and loopback for HTTP", () => {
     expect(paperclipCloudConnectorConfigFromEnv({})).toBeNull();
     expect(() => paperclipCloudConnectorConfigFromEnv({
-      PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID: instanceId,
+      PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID: instanceId,
     })).toThrowError(/incomplete/);
     expect(() => paperclipCloudConnectorConfigFromEnv({
-      PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID: instanceId,
-      PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY: "key",
-      PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY: "key",
-      PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT: "development",
-      PAPERCLIP_CLOUD_CONNECTOR_BASE_URL: "http://my.example.test",
+      PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID: instanceId,
+      PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY: "key",
+      PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY: "key",
+      PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT: "development",
+      PAPERCLAW_CLOUD_CONNECTOR_BASE_URL: "http://my.example.test",
     })).toThrowError(/HTTPS/);
     const legacyError = (() => {
       try {
         paperclipCloudConnectorConfigFromEnv({
-          PAPERCLIP_ID_CONNECTOR_INSTANCE_ID: instanceId,
-          PAPERCLIP_ID_CONNECTOR_SIGN_PRIVATE_KEY: "key",
-          PAPERCLIP_ID_CONNECTOR_SEAL_PRIVATE_KEY: "key",
-          PAPERCLIP_ID_CONNECTOR_ENVIRONMENT: "development",
-          PAPERCLIP_ID_CONNECTOR_BASE_URL: "https://id.paperclip.app",
+          PAPERCLAW_ID_CONNECTOR_INSTANCE_ID: instanceId,
+          PAPERCLAW_ID_CONNECTOR_SIGN_PRIVATE_KEY: "key",
+          PAPERCLAW_ID_CONNECTOR_SEAL_PRIVATE_KEY: "key",
+          PAPERCLAW_ID_CONNECTOR_ENVIRONMENT: "development",
+          PAPERCLAW_ID_CONNECTOR_BASE_URL: "https://id.paperclaw.app",
         });
         return null;
       } catch (error) {
@@ -467,8 +467,8 @@ describe("Paperclip Cloud connector", () => {
 
   it("keeps gallery capability discovery available during incomplete enrollment", async () => {
     await expect(paperclipCloudConnectorCapabilitiesFromEnv({
-      PAPERCLIP_CLOUD_CONNECTOR_BASE_URL: "https://my-staging.paperclip.app",
-      PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT: "staging",
+      PAPERCLAW_CLOUD_CONNECTOR_BASE_URL: "https://my-staging.paperclaw.app",
+      PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT: "staging",
     })).resolves.toEqual([]);
   });
 });

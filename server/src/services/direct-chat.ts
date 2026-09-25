@@ -577,7 +577,7 @@ export function directChatService(db: Db) {
             taskKey: `direct-chat:${thread.id}:message:${responseMessage.id}`,
             directChatThreadId: thread.id,
             directChatMessageId: responseMessage.id,
-            paperclawDirectChat: {
+            paperclipDirectChat: {
               id: thread.id,
               responseMessageId: responseMessage.id,
               company: {

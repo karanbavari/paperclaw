@@ -3,7 +3,7 @@ import {
   findPaperclipConfigKeyWarnings,
   paperclipConfigSchema,
   type PaperclipConfig,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { ZodError } from "zod";
 import { resolvePaperclipConfigPath } from "./paths.js";
 

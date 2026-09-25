@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 const root = process.cwd();
 const corpus =
-  process.env.PAPERCLIP_CONTENT_TEMPLATES ??
+  process.env.PAPERCLAW_CONTENT_TEMPLATES ??
   path.resolve(
     root,
     "../../paperclip-content/research/connections/vercel/templates",

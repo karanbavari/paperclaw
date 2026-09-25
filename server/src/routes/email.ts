@@ -4,8 +4,8 @@ import {
   emailConnectionSchema,
   emailEndpointSetupSchema,
   emailSendSchema,
-} from "@paperclipai/shared";
-import type { Db } from "@paperclipai/db";
+} from "@kesarcloud/shared";
+import type { Db } from "@kesarcloud/db";
 import { validate } from "../middleware/validate.js";
 import { assertBoard, assertCompanyAccess, hasCompanyAccess } from "./authz.js";
 import { emailConnectionService } from "../services/email-connections.js";

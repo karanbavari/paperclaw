@@ -533,7 +533,7 @@ async function runSmoke({ config, chromium }) {
   const connectionName = `PostHog live self-test ${startedAt.toISOString()}`;
   const outputDirectory = process.env.POSTHOG_EVIDENCE_DIR
     ? path.resolve(process.env.POSTHOG_EVIDENCE_DIR)
-    : path.join(process.env.PAPERCLIP_RUN_SCRATCH_DIR || process.cwd(), `posthog-live-${runKey}`);
+    : path.join(process.env.PAPERCLAW_RUN_SCRATCH_DIR || process.cwd(), `posthog-live-${runKey}`);
   await mkdir(outputDirectory, { recursive: true });
 
   const summary = {
@@ -586,12 +586,12 @@ async function runSmoke({ config, chromium }) {
       }
     });
 
-    activeCheckpoint = "A.paperclip-login";
+    activeCheckpoint = "A.paperclaw-login";
     await gotoPaperclipPage(
       page,
       new URL("/auth?next=/", config.baseUrl).toString(),
       page.locator("#email"),
-      "A.paperclip-login",
+      "A.paperclaw-login",
       "email_field_missing",
     );
     await page.locator("#email").fill(config.email);
@@ -601,9 +601,9 @@ async function runSmoke({ config, chromium }) {
     );
     await page.getByRole("button", { name: /^sign in$/i }).click();
     const loginResponse = await loginResponsePromise;
-    if (!loginResponse.ok()) fail("A.paperclip-login", `http_${loginResponse.status()}`);
+    if (!loginResponse.ok()) fail("A.paperclaw-login", `http_${loginResponse.status()}`);
     await page.waitForURL((url) => url.pathname !== "/auth", { timeout: 30_000 }).catch(() => {
-      fail("A.paperclip-login", "login_redirect_missing");
+      fail("A.paperclaw-login", "login_redirect_missing");
     });
 
     activeCheckpoint = "A.company-selection";
@@ -887,7 +887,7 @@ async function runSmoke({ config, chromium }) {
     };
 
     activeCheckpoint = "E.create-proof-issue";
-    const parentIssueId = process.env.POSTHOG_PROOF_PARENT_ISSUE_ID || process.env.PAPERCLIP_TASK_ID;
+    const parentIssueId = process.env.POSTHOG_PROOF_PARENT_ISSUE_ID || process.env.PAPERCLAW_TASK_ID;
     if (!parentIssueId) fail("E.create-proof-issue", "parent_issue_id_missing");
     const child = await apiJson(
       context.request,

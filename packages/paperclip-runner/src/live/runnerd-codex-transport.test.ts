@@ -39,8 +39,8 @@ import * as durableControlPlane from "../control-plane/durable-prp-control-plane
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  PAPERCLAW_EXECUTION_PROMPT,
+  PAPERCLAW_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   type NativeRuntimeContextSnapshot,
@@ -93,7 +93,7 @@ import {
 
 // Explicit private-artifact test lane; production/default dist is never changed.
 const defaultCapabilityRunnerdBinary = () =>
-  process.env.PAPERCLIP_ATTACH_TRANSITION_RUNNER ??
+  process.env.PAPERCLAW_ATTACH_TRANSITION_RUNNER ??
   qualifiedCapabilityRunnerdBinary();
 
 async function expectTurnStarted(
@@ -3075,7 +3075,7 @@ it("keeps a scoped npm-installed package inside its portable dependency root", a
   const deployedPackageRoot = join(
     deploymentRoot,
     "node_modules",
-    "@paperclipai",
+    "@kesarcloud",
     "paperclip-runner",
   );
   await mkdir(join(deployedPackageRoot, "dist", "cli"), { recursive: true });
@@ -3154,7 +3154,7 @@ it("preserves OpenCode runtime bindings when a durable runner is respawned", () 
         HOME: "/host/home",
         CODEX_HOME: "/host/codex-home",
         DATABASE_URL: "must-not-reach-runnerd",
-        PAPERCLIP_API_KEY: "must-not-reach-runnerd",
+        PAPERCLAW_API_KEY: "must-not-reach-runnerd",
         NODE_OPTIONS: "--require=/untrusted/bootstrap.cjs",
       },
       opencodeCommand: "/provider-pack/opencode",
@@ -3173,20 +3173,20 @@ it("preserves OpenCode runtime bindings when a durable runner is respawned", () 
     hasRuntimeContext: true,
   });
   expect(environment).toMatchObject({
-    PAPERCLIP_OPENCODE_PERMISSION_MODE: "deny",
-    PAPERCLIP_OPENCODE_RUNTIME_DIR: "/isolated/session/opencode",
-    PAPERCLIP_RUNNER_INSTANCE_ID: "runner-1",
-    PAPERCLIP_RUN_ID: "run-1",
-    PAPERCLIP_NORMALIZED_SESSION_ID: "session-1",
-    PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH: "/isolated/runtime-context.json",
+    PAPERCLAW_OPENCODE_PERMISSION_MODE: "deny",
+    PAPERCLAW_OPENCODE_RUNTIME_DIR: "/isolated/session/opencode",
+    PAPERCLAW_RUNNER_INSTANCE_ID: "runner-1",
+    PAPERCLAW_RUN_ID: "run-1",
+    PAPERCLAW_NORMALIZED_SESSION_ID: "session-1",
+    PAPERCLAW_NATIVE_RUNTIME_CONTEXT_PATH: "/isolated/runtime-context.json",
     OPENROUTER_API_KEY: "test-provider-key",
   });
   expect(environment.HOME).toBeUndefined();
   expect(environment.CODEX_HOME).toBeUndefined();
   expect(environment.DATABASE_URL).toBeUndefined();
-  expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+  expect(environment.PAPERCLAW_API_KEY).toBeUndefined();
   expect(environment.NODE_OPTIONS).toBeUndefined();
-  expect(environment.PAPERCLIP_OPENCODE_COMMAND).toBeUndefined();
+  expect(environment.PAPERCLAW_OPENCODE_COMMAND).toBeUndefined();
 
   const defaultPermissionEnvironment =
     createCapabilityRunnerdProviderEnvironment({
@@ -3208,7 +3208,7 @@ it("preserves OpenCode runtime bindings when a durable runner is respawned", () 
       runtimeContextPath: "/isolated/runtime-context.json",
       hasRuntimeContext: false,
     });
-  expect(defaultPermissionEnvironment.PAPERCLIP_OPENCODE_PERMISSION_MODE).toBe(
+  expect(defaultPermissionEnvironment.PAPERCLAW_OPENCODE_PERMISSION_MODE).toBe(
     "ask",
   );
 });
@@ -3222,7 +3222,7 @@ it("passes the configured Codex API key only through the provider process enviro
         PATH: "/bin",
         OPENAI_API_KEY: "configured-provider-key",
         CODEX_API_KEY: "configured-automation-key",
-        PAPERCLIP_API_KEY: "must-not-reach-provider",
+        PAPERCLAW_API_KEY: "must-not-reach-provider",
       },
     },
     identity: {
@@ -3244,7 +3244,7 @@ it("passes the configured Codex API key only through the provider process enviro
     OPENAI_API_KEY: "configured-provider-key",
     CODEX_API_KEY: "configured-automation-key",
   });
-  expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+  expect(environment.PAPERCLAW_API_KEY).toBeUndefined();
 });
 
 it("passes only the Anthropic credential to Claude Managed runnerd", () => {
@@ -3255,10 +3255,10 @@ it("passes only the Anthropic credential to Claude Managed runnerd", () => {
       environment: {
         PATH: "/bin",
         ANTHROPIC_API_KEY: "anthropic-canary",
-        PAPERCLIP_NATIVE_MCP_NAME: "paperclip",
-        PAPERCLIP_NATIVE_MCP_URL: "https://paperclip.example/mcp",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "must-not-reach-provider",
-        PAPERCLIP_API_KEY: "must-not-reach-provider",
+        PAPERCLAW_NATIVE_MCP_NAME: "paperclip",
+        PAPERCLAW_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        PAPERCLAW_NATIVE_MCP_TOKEN: "must-not-reach-provider",
+        PAPERCLAW_API_KEY: "must-not-reach-provider",
         DATABASE_URL: "must-not-reach-provider",
       },
     },
@@ -3277,14 +3277,14 @@ it("passes only the Anthropic credential to Claude Managed runnerd", () => {
   expect(environment).toMatchObject({
     PATH: "/bin",
     ANTHROPIC_API_KEY: "anthropic-canary",
-    PAPERCLIP_RUNNER_INSTANCE_ID: "runner-1",
-    PAPERCLIP_RUN_ID: "run-1",
-    PAPERCLIP_NORMALIZED_SESSION_ID: "session-1",
+    PAPERCLAW_RUNNER_INSTANCE_ID: "runner-1",
+    PAPERCLAW_RUN_ID: "run-1",
+    PAPERCLAW_NORMALIZED_SESSION_ID: "session-1",
   });
-  expect(environment.PAPERCLIP_NATIVE_MCP_NAME).toBeUndefined();
-  expect(environment.PAPERCLIP_NATIVE_MCP_URL).toBeUndefined();
-  expect(environment.PAPERCLIP_NATIVE_MCP_TOKEN).toBeUndefined();
-  expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+  expect(environment.PAPERCLAW_NATIVE_MCP_NAME).toBeUndefined();
+  expect(environment.PAPERCLAW_NATIVE_MCP_URL).toBeUndefined();
+  expect(environment.PAPERCLAW_NATIVE_MCP_TOKEN).toBeUndefined();
+  expect(environment.PAPERCLAW_API_KEY).toBeUndefined();
   expect(environment.DATABASE_URL).toBeUndefined();
 });
 
@@ -3306,8 +3306,8 @@ it("uses file-backed AWS workload identity without forwarding access keys or Pap
         AWS_ACCESS_KEY_ID: "must-not-reach-provider",
         AWS_SECRET_ACCESS_KEY: "must-not-reach-provider",
         AWS_SESSION_TOKEN: "must-not-reach-provider",
-        PAPERCLIP_NATIVE_MCP_URL: "https://paperclip.example/mcp",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "must-not-reach-provider",
+        PAPERCLAW_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        PAPERCLAW_NATIVE_MCP_TOKEN: "must-not-reach-provider",
       },
     },
     identity: {
@@ -3335,8 +3335,8 @@ it("uses file-backed AWS workload identity without forwarding access keys or Pap
   expect(environment.AWS_PROFILE).toBeUndefined();
   expect(environment.AWS_CONFIG_FILE).toBeUndefined();
   expect(environment.AWS_SHARED_CREDENTIALS_FILE).toBeUndefined();
-  expect(environment.PAPERCLIP_NATIVE_MCP_URL).toBeUndefined();
-  expect(environment.PAPERCLIP_NATIVE_MCP_TOKEN).toBeUndefined();
+  expect(environment.PAPERCLAW_NATIVE_MCP_URL).toBeUndefined();
+  expect(environment.PAPERCLAW_NATIVE_MCP_TOKEN).toBeUndefined();
 });
 
 it.each([
@@ -3348,7 +3348,7 @@ it.each([
       "CLAUDE_CODE_OAUTH_TOKEN",
       "OPENAI_API_KEY",
       "CODEX_API_KEY",
-      "PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET",
+      "PAPERCLAW_ACPX_CODEX_AUTH_JSON_SECRET",
     ],
   },
   {
@@ -3358,7 +3358,7 @@ it.each([
       "OPENROUTER_API_KEY",
       "OPENAI_API_KEY",
       "CODEX_API_KEY",
-      "PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET",
+      "PAPERCLAW_ACPX_CODEX_AUTH_JSON_SECRET",
     ],
   },
   {
@@ -3368,7 +3368,7 @@ it.each([
       "OPENROUTER_API_KEY",
       "ANTHROPIC_API_KEY",
       "CLAUDE_CODE_OAUTH_TOKEN",
-      "PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET",
+      "PAPERCLAW_ACPX_CODEX_AUTH_JSON_SECRET",
     ],
   },
 ])(
@@ -3380,7 +3380,7 @@ it.each([
       CLAUDE_CODE_OAUTH_TOKEN: "claude-oauth-canary",
       OPENAI_API_KEY: "openai-canary",
       CODEX_API_KEY: "codex-canary",
-      PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "managed-codex-canary",
+      PAPERCLAW_ACPX_CODEX_AUTH_JSON_SECRET: "managed-codex-canary",
     };
     const environment = createCapabilityRunnerdProviderEnvironment({
       provider: "acpx",
@@ -3391,10 +3391,10 @@ it.each([
         environment: {
           PATH: "/bin",
           ...credentialEnvironment,
-          PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: "/attacker/package-root",
-          PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST:
+          PAPERCLAW_ACPX_PROVIDER_PACKAGE_ROOT: "/attacker/package-root",
+          PAPERCLAW_ACPX_PROVIDER_PACKAGE_MANIFEST:
             "/attacker/package-root/package.json",
-          PAPERCLIP_API_KEY: "must-not-reach-provider",
+          PAPERCLAW_API_KEY: "must-not-reach-provider",
           DATABASE_URL: "must-not-reach-provider",
         },
       },
@@ -3415,18 +3415,18 @@ it.each([
 
     expect(environment).toMatchObject({
       PATH: "/bin",
-      PAPERCLIP_RUNNER_INSTANCE_ID: "runner-1",
-      PAPERCLIP_RUN_ID: "run-1",
-      PAPERCLIP_NORMALIZED_SESSION_ID: "session-1",
-      PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH: "/isolated/runtime-context.json",
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: "/verified/provider-pack",
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST:
+      PAPERCLAW_RUNNER_INSTANCE_ID: "runner-1",
+      PAPERCLAW_RUN_ID: "run-1",
+      PAPERCLAW_NORMALIZED_SESSION_ID: "session-1",
+      PAPERCLAW_NATIVE_RUNTIME_CONTEXT_PATH: "/isolated/runtime-context.json",
+      PAPERCLAW_ACPX_PROVIDER_PACKAGE_ROOT: "/verified/provider-pack",
+      PAPERCLAW_ACPX_PROVIDER_PACKAGE_MANIFEST:
         "/verified/provider-pack/package.json",
     });
     for (const key of allowed)
       expect(environment[key]).toBe(credentialEnvironment[key]);
     for (const key of denied) expect(environment[key]).toBeUndefined();
-    expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(environment.PAPERCLAW_API_KEY).toBeUndefined();
     expect(environment.DATABASE_URL).toBeUndefined();
   },
 );
@@ -3470,13 +3470,13 @@ it("denies the isolated Codex home without denying a remote execution workspace"
       PATH: "/usr/local/bin:/usr/bin:/bin",
     },
     codexHome:
-      "/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home",
+      "/workspaces/task/.paperclaw-runtime/paperclip-runner/sessions/session/filesystem/codex-home",
     readOnlyRoots: ["/usr/local"],
   });
   const serialized = args.join("\n");
 
   expect(serialized).toContain(
-    '"/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
+    '"/workspaces/task/.paperclaw-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
   );
   expect(serialized).not.toContain('"/workspaces/task"="none"');
   expect(serialized).not.toContain('"/workspaces/task/.codex"="none"');
@@ -3488,7 +3488,7 @@ it("rejects remote OpenCode before spawn when provider-pack paths are absent", a
   const { transport } = createCapabilityRunnerdCodexTransport({
     provider: "opencode",
     stateDirectory: root,
-    runnerFilesystemRoot: "/workspaces/task/.paperclip-runtime/session",
+    runnerFilesystemRoot: "/workspaces/task/.paperclaw-runtime/session",
   });
   try {
     await expect(
@@ -3914,8 +3914,8 @@ function assignedRuntimeContext(
   const digest = "0".repeat(64);
   const value = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: PAPERCLAW_EXECUTION_PROMPT_REVISION,
+      text: PAPERCLAW_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -5353,7 +5353,7 @@ it.each([
     environment: {
       PATH: process.env.PATH,
       HOME: join(tmpdir(), "runnerd-stop-host-home"),
-      PAPERCLIP_WORKSPACE_CWD: stateDirectory,
+      PAPERCLAW_WORKSPACE_CWD: stateDirectory,
     },
     approvalPolicy: "never",
     transportFactory: () => bundle.transport,
@@ -5421,7 +5421,7 @@ it("binds an immediately failed durable turn before exposing its terminal", asyn
     environment: {
       PATH: process.env.PATH,
       HOME: join(tmpdir(), "runnerd-fast-terminal-host-home"),
-      PAPERCLIP_WORKSPACE_CWD: stateDirectory,
+      PAPERCLAW_WORKSPACE_CWD: stateDirectory,
     },
     approvalPolicy: "never",
     transportFactory: () => bundle.transport,
@@ -5636,8 +5636,8 @@ it("captures exact provider frames and correlates Rust and TypeScript interpreta
     codexArgs: fakeCodexArgs(traceDirectory, "--structured-activity"),
     stateDirectory: join(traceDirectory, "state"),
     environment: {
-      PAPERCLIP_PROVIDER_TRACE_PATH: tracePath,
-      PAPERCLIP_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
+      PAPERCLAW_PROVIDER_TRACE_PATH: tracePath,
+      PAPERCLAW_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
     },
   });
   const driver = new CodexAppServerDriver({
@@ -5647,7 +5647,7 @@ it("captures exact provider frames and correlates Rust and TypeScript interpreta
     environment: {
       PATH: process.env.PATH,
       HOME: hostHome,
-      PAPERCLIP_WORKSPACE_CWD: traceDirectory,
+      PAPERCLAW_WORKSPACE_CWD: traceDirectory,
     },
     approvalPolicy: "never",
     transportFactory: () => bundle.transport,
@@ -6311,7 +6311,7 @@ it.each([false, true])(
     };
     const bundle = createCapabilityRunnerdCodexTransport({
       runnerBinary:
-        process.env.PAPERCLIP_ATTACH_TRANSITION_RUNNER ??
+        process.env.PAPERCLAW_ATTACH_TRANSITION_RUNNER ??
         defaultCapabilityRunnerdBinary(),
       codexCommand: fakeCodex,
       codexArgs: fakeCodexArgs(
@@ -6509,7 +6509,7 @@ it.each([
   ),
   ...[
     "attach-wait",
-    ...(process.env.PAPERCLIP_ATTACH_TRANSITION_LEGACY_RUNNER
+    ...(process.env.PAPERCLAW_ATTACH_TRANSITION_LEGACY_RUNNER
       ? ["attach-capability"]
       : []),
   ].map((recoveryFault) => ({
@@ -6517,7 +6517,7 @@ it.each([
     routed: true,
     recoveryFault,
   })),
-  ...(process.env.PAPERCLIP_ATTACH_TRANSITION_LEGACY_RUNNER
+  ...(process.env.PAPERCLAW_ATTACH_TRANSITION_LEGACY_RUNNER
     ? [
         {
           lossPoint: "after-result",
@@ -6749,8 +6749,8 @@ it.each([
     const options = {
       runnerBinary:
         recoveryFault === "attach-capability"
-          ? process.env.PAPERCLIP_ATTACH_TRANSITION_LEGACY_RUNNER!
-          : (process.env.PAPERCLIP_ATTACH_TRANSITION_RUNNER ??
+          ? process.env.PAPERCLAW_ATTACH_TRANSITION_LEGACY_RUNNER!
+          : (process.env.PAPERCLAW_ATTACH_TRANSITION_RUNNER ??
             defaultCapabilityRunnerdBinary()),
       codexCommand: fakeCodex,
       codexArgs: fakeCodexArgs(
@@ -6767,7 +6767,7 @@ it.each([
         return {
           runnerInstanceId: randomUUID(),
           environmentLeaseId:
-            process.env.PAPERCLIP_ATTACH_TRANSITION_FIXTURE_SCOPE ===
+            process.env.PAPERCLAW_ATTACH_TRANSITION_FIXTURE_SCOPE ===
             "transient"
               ? runId
               : randomUUID(),
@@ -6970,7 +6970,7 @@ it.each([
       );
       commitSpy.mockRestore();
       const fixtureOutput =
-        process.env.PAPERCLIP_ATTACH_TRANSITION_FIXTURE_DIRECTORY;
+        process.env.PAPERCLAW_ATTACH_TRANSITION_FIXTURE_DIRECTORY;
       if (fixtureOutput && recoveryFault === "none") {
         const retainedArtifact = join(fixtureOutput, "paperclip-runnerd");
         await cp(options.runnerBinary, retainedArtifact, { force: false });
@@ -7042,7 +7042,7 @@ it.each([
       ).toHaveLength(1);
       if (recoveryFault === "legacy-parser") {
         const legacyBinary =
-          process.env.PAPERCLIP_ATTACH_TRANSITION_LEGACY_RUNNER!;
+          process.env.PAPERCLAW_ATTACH_TRANSITION_LEGACY_RUNNER!;
         const legacyDigest = `sha256:${createHash("sha256")
           .update(await readFile(legacyBinary))
           .digest("hex")}`;
@@ -8069,9 +8069,9 @@ it("cold-restores a suspended provider session under its durable run binding", a
     ),
     stateDirectory,
     environment: {
-      PAPERCLIP_GITHUB_BROKER_TOKEN: "test-run-A-capability",
-      PAPERCLIP_PROVIDER_TRACE_PATH: tracePath,
-      PAPERCLIP_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
+      PAPERCLAW_GITHUB_BROKER_TOKEN: "test-run-A-capability",
+      PAPERCLAW_PROVIDER_TRACE_PATH: tracePath,
+      PAPERCLAW_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
     },
     lifecyclePolicy: { mode: "per_turn" as const, idleTimeoutMs: null },
     runtimeContext: assignedRuntimeContext(skillRoot, instructionRoot),
@@ -8142,7 +8142,7 @@ it("cold-restores a suspended provider session under its durable run binding", a
   };
   const rotated = createCapabilityRunnerdCodexTransport({
     ...options,
-    environment: { ...options.environment, PAPERCLIP_GITHUB_BROKER_TOKEN: "test-run-B-capability" },
+    environment: { ...options.environment, PAPERCLAW_GITHUB_BROKER_TOKEN: "test-run-B-capability" },
     codexArgs: options.codexArgs.map((arg) => arg.replace('/run/A', '/run/B')),
     resumeDynamicTools: dynamicTools,
     resumeCompletionContract: {
@@ -8852,14 +8852,14 @@ it("persists an active provider as settled before bounded suspension", async () 
 
 it.each(["claude", "codex"] as const)("keeps the explicitly assigned gateway in the %s runner environment", (agent) => {
   const gateway = {
-    PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned",
-    PAPERCLIP_NATIVE_MCP_URL: "http://127.0.0.1:3100/mcp/gateway",
-    PAPERCLIP_NATIVE_MCP_TOKEN: "fixture-scoped-gateway-token-1234567890",
+    PAPERCLAW_NATIVE_MCP_NAME: "paperclip-assigned",
+    PAPERCLAW_NATIVE_MCP_URL: "http://127.0.0.1:3100/mcp/gateway",
+    PAPERCLAW_NATIVE_MCP_TOKEN: "fixture-scoped-gateway-token-1234567890",
   };
   const environment = createCapabilityRunnerdProviderEnvironment({
     provider: "acpx",
     options: { provider: "acpx", acpxAgent: agent, environment: {
-      PATH: "/bin", ...gateway, PAPERCLIP_API_KEY: "must-not-cross", DATABASE_URL: "must-not-cross",
+      PATH: "/bin", ...gateway, PAPERCLAW_API_KEY: "must-not-cross", DATABASE_URL: "must-not-cross",
     } },
     identity: { runnerInstanceId: "runner-1", environmentLeaseId: "lease-1", runId: "run-1",
       normalizedSessionId: "session-1", turnId: "turn-1", itemId: "item-1" },
@@ -8867,6 +8867,6 @@ it.each(["claude", "codex"] as const)("keeps the explicitly assigned gateway in 
     acpxSidecarPath: "/verified/provider-pack/dist/cli/acpx-runtime-sidecar.cjs",
   });
   expect(environment).toMatchObject(gateway);
-  expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+  expect(environment.PAPERCLAW_API_KEY).toBeUndefined();
   expect(environment.DATABASE_URL).toBeUndefined();
 });

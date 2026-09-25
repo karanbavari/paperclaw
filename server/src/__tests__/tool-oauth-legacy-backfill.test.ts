@@ -10,7 +10,7 @@ import {
   secretAccessEvents,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { eq } from "drizzle-orm";
 import {
   getEmbeddedPostgresTestSupport,

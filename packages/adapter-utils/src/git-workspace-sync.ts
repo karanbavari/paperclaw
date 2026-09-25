@@ -19,7 +19,7 @@ export interface GitWorkspaceSnapshot {
   repositories?: Array<{ path: string; snapshot: GitWorkspaceSnapshot }>;
 }
 
-export const PROJECT_REPOSITORIES_DIR = ".paperclip-repositories";
+export const PROJECT_REPOSITORIES_DIR = ".paperclaw-repositories";
 
 export interface ExpensiveWorkspaceGitInput {
   localDir: string;

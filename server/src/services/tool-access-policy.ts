@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, desc, eq, gt, inArray, ne, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   agents,
   heartbeatRuns,
@@ -21,7 +21,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRateLimitCounters,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   ToolAccessDecision,
   ToolAccessDecisionInput,
@@ -40,8 +40,8 @@ import type {
   ToolRedactedValueSummary,
   ToolTrustRuleArgumentFilters,
   ToolRiskLevel,
-} from "@paperclipai/shared";
-import { toolPolicyConditionsSchema } from "@paperclipai/shared";
+} from "@kesarcloud/shared";
+import { toolPolicyConditionsSchema } from "@kesarcloud/shared";
 import { badRequest, conflict, notFound, unprocessable } from "../errors.js";
 import {
   effectiveToolProfileBindings,

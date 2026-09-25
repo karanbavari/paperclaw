@@ -26,7 +26,7 @@ import {
   type IssueComment,
   upsertIssueDocumentSchema,
   upsertIssueFeedbackVoteSchema,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   addCommonClientOptions,
   apiPath,

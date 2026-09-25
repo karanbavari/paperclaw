@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "packageName": "@paperclipai/teams-catalog",
+  "packageName": "@kesarcloud/teams-catalog",
   "packageVersion": "0.1.0",
-  "generatedAt": "2026-06-04T18:03:41.262Z",
+  "generatedAt": "2026-09-22T22:57:12.753Z",
   "teams": [
     {
       "id": "paperclipai:bundled:company-defaults:core-exec-team",
@@ -336,7 +336,7 @@
         },
         {
           "path": ".paperclip.yaml",
-          "kind": "extension",
+          "kind": "other",
           "sizeBytes": 81,
           "sha256": "54babf05ba130ec54a143abf01581d99c0ac2936fd0d929bf0e0edd00e29d861"
         },

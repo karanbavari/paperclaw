@@ -110,7 +110,7 @@ import {
   // Instance settings
   patchInstanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 
 extendZodWithOpenApi(z);
 

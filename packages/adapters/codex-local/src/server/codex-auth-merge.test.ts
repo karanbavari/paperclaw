@@ -10,7 +10,7 @@ import {
   prepareSandboxManagedRuntime,
   type SandboxManagedRuntimeClient,
   type SandboxSyncOperation,
-} from "@paperclipai/adapter-utils/sandbox-managed-runtime";
+} from "@kesarcloud/adapter-utils/sandbox-managed-runtime";
 import { buildCodexAuthInboundProvision } from "./codex-auth-merge-scripts.js";
 
 const execFile = promisify(execFileCallback);
@@ -63,7 +63,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
     const localHomeDir = path.join(rootDir, "local-codex-home");
-    const remoteHomeDir = path.join(remoteWorkspaceDir, ".paperclip-runtime", "codex", "home");
+    const remoteHomeDir = path.join(remoteWorkspaceDir, ".paperclaw-runtime", "codex", "home");
     await mkdir(localWorkspaceDir, { recursive: true });
     await mkdir(localHomeDir, { recursive: true });
     await mkdir(remoteHomeDir, { recursive: true });
@@ -453,7 +453,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
     const localHomeDir = path.join(rootDir, "local-codex-home");
-    const remoteHomeDir = path.join(remoteWorkspaceDir, ".paperclip-runtime", "codex", "home");
+    const remoteHomeDir = path.join(remoteWorkspaceDir, ".paperclaw-runtime", "codex", "home");
     await mkdir(localWorkspaceDir, { recursive: true });
     await mkdir(localHomeDir, { recursive: true });
     await mkdir(remoteHomeDir, { recursive: true });

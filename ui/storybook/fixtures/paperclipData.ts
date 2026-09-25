@@ -20,15 +20,15 @@ import type {
   SecretProviderDescriptor,
   SidebarBadges,
   WorkspaceRuntimeService,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import type { RunForIssue } from "@/api/activity";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 
 const now = new Date("2026-04-20T12:00:00.000Z");
 const recent = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000);
 const storybookRepoRoot = "~/paperclip";
-const storybookWorkspaceRoot = `${storybookRepoRoot}/.paperclip/workspaces`;
-const storybookWorktreeRoot = `${storybookRepoRoot}/.paperclip/worktrees`;
+const storybookWorkspaceRoot = `${storybookRepoRoot}/.paperclaw/workspaces`;
+const storybookWorktreeRoot = `${storybookRepoRoot}/.paperclaw/worktrees`;
 
 export const storybookCompanies: Company[] = [
   {
@@ -391,7 +391,7 @@ const storybookWorkspaceRuntime = {
       id: "typecheck-ui",
       name: "UI typecheck",
       kind: "job",
-      command: "pnpm --filter @paperclipai/ui typecheck",
+      command: "pnpm --filter @kesarcloud/ui typecheck",
       cwd: ".",
     },
   ],
@@ -657,7 +657,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
       defaultRef: "master",
       repoName: "paperclip",
       localFolder: storybookRepoRoot,
-      managedFolder: ".paperclip/worktrees/storybook",
+      managedFolder: ".paperclaw/worktrees/storybook",
       effectiveLocalFolder: storybookRepoRoot,
       origin: "local_folder",
     },
@@ -1717,7 +1717,7 @@ export const storybookSecretProviderHealth = {
       status: "ok" as const,
       message: "Encryption key loaded; permissions OK.",
       warnings: [] as string[],
-      backupGuidance: ["Backup ~/.paperclip/instances/default/secrets/key separately from the database."],
+      backupGuidance: ["Backup ~/.paperclaw/instances/default/secrets/key separately from the database."],
     },
     {
       provider: "aws_secrets_manager" as const,

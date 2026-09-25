@@ -47,9 +47,9 @@ vi.mock("./acp.js", () => ({
       : { engine: "acp", explicit: false },
 }));
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
   );
   return {
     ...actual,
@@ -102,7 +102,7 @@ describe("claude_local ACP startup fallback", () => {
 
   it("trusts the Paperclip API URL when network access is allowlisted", async () => {
     const paperclipApiUrl = "http://127.0.0.1:4310";
-    vi.stubEnv("PAPERCLIP_API_URL", paperclipApiUrl);
+    vi.stubEnv("PAPERCLAW_API_URL", paperclipApiUrl);
     const ctx = buildContext({ engine: "cli", networkScope: "allowlist" });
 
     await execute(ctx as never);

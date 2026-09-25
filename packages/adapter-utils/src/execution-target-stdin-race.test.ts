@@ -55,11 +55,11 @@ describe("stdin file race (parent PAP-4037)", () => {
 
     const env: Record<string, string> = {
       ...process.env,
-      PAPERCLIP_PROCESS_SESSION_DIR: sessionDir,
-      PAPERCLIP_PROCESS_SESSION_COMMAND_B64: commandPayload,
+      PAPERCLAW_PROCESS_SESSION_DIR: sessionDir,
+      PAPERCLAW_PROCESS_SESSION_COMMAND_B64: commandPayload,
     };
     if (options?.maxRetries != null) {
-      env.PAPERCLIP_PROCESS_SESSION_STDIN_MAX_RETRIES = String(options.maxRetries);
+      env.PAPERCLAW_PROCESS_SESSION_STDIN_MAX_RETRIES = String(options.maxRetries);
     }
 
     const child = spawn(process.execPath, [wrapperPath], {
@@ -344,7 +344,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-stdin-host-order",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -443,7 +443,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-stdin-stop-order",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -572,7 +572,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     expect(finalizeScript).toBeDefined();
     expect(finalizeScript).toContain(`mv `);
     expect(finalizeScript).not.toContain(`> '${jsonPath}'`);
-    expect(finalizeScript).toContain(`> '${jsonPath}.paperclip-upload.decoded'`);
+    expect(finalizeScript).toContain(`> '${jsonPath}.paperclaw-upload.decoded'`);
   });
 
   it("never exposes a partial .json file under a concurrent reader (command-managed host write)", async () => {
@@ -722,9 +722,9 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
           [
             `const fs = require("fs");`,
             `const path = require("path");`,
-            `const target = process.env.PAPERCLIP_TEST_FAKE_BIRTHTIME_TARGET;`,
-            `const mode = process.env.PAPERCLIP_TEST_FAKE_BIRTHTIME_MODE;`,
-            `const sessionDir = process.env.PAPERCLIP_PROCESS_SESSION_DIR;`,
+            `const target = process.env.PAPERCLAW_TEST_FAKE_BIRTHTIME_TARGET;`,
+            `const mode = process.env.PAPERCLAW_TEST_FAKE_BIRTHTIME_MODE;`,
+            `const sessionDir = process.env.PAPERCLAW_PROCESS_SESSION_DIR;`,
             `if (target && mode && sessionDir) {`,
             `  const resolvedTarget = path.resolve(target === "stdinDir" ? path.join(sessionDir, "stdin") : sessionDir);`,
             `  const originalLstat = fs.promises.lstat.bind(fs.promises);`,
@@ -775,11 +775,11 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
           [
             `const fs = require("fs");`,
             `const path = require("path");`,
-            `const mode = process.env.PAPERCLIP_TEST_PROBE_SWAP_MODE;`,
-            `const seq = process.env.PAPERCLIP_TEST_PROBE_SWAP_SEQ;`,
-            `const symlinkTarget = process.env.PAPERCLIP_TEST_PROBE_SWAP_SYMLINK_TARGET;`,
+            `const mode = process.env.PAPERCLAW_TEST_PROBE_SWAP_MODE;`,
+            `const seq = process.env.PAPERCLAW_TEST_PROBE_SWAP_SEQ;`,
+            `const symlinkTarget = process.env.PAPERCLAW_TEST_PROBE_SWAP_SYMLINK_TARGET;`,
             `if (mode && seq) {`,
-            `  const expectedName = ".paperclip-birthtime-probe-" + process.pid + "-" + seq;`,
+            `  const expectedName = ".paperclaw-birthtime-probe-" + process.pid + "-" + seq;`,
             `  let swapped = false;`,
             `  const originalLstat = fs.promises.lstat.bind(fs.promises);`,
             `  fs.promises.lstat = async (candidatePath, opts) => {`,
@@ -826,9 +826,9 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
           [
             `const fs = require("fs");`,
             `const path = require("path");`,
-            `const seq = process.env.PAPERCLIP_TEST_FSTAT_FAILURE_SEQ;`,
+            `const seq = process.env.PAPERCLAW_TEST_FSTAT_FAILURE_SEQ;`,
             `if (seq) {`,
-            `  const expectedName = ".paperclip-birthtime-probe-" + process.pid + "-" + seq;`,
+            `  const expectedName = ".paperclaw-birthtime-probe-" + process.pid + "-" + seq;`,
             `  const originalOpen = fs.promises.open.bind(fs.promises);`,
             `  fs.promises.open = async (targetPath, flags, mode) => {`,
             `    const handle = await originalOpen(targetPath, flags, mode);`,
@@ -895,26 +895,26 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
 
     const env: Record<string, string> = {
       ...process.env,
-      PAPERCLIP_PROCESS_SESSION_DIR: sessionDir,
-      PAPERCLIP_PROCESS_SESSION_COMMAND_B64: commandPayload,
+      PAPERCLAW_PROCESS_SESSION_DIR: sessionDir,
+      PAPERCLAW_PROCESS_SESSION_COMMAND_B64: commandPayload,
     };
-    if (options?.maxRetries != null) env.PAPERCLIP_PROCESS_SESSION_STDIN_MAX_RETRIES = String(options.maxRetries);
-    if (options?.terminateGraceMs != null) env.PAPERCLIP_PROCESS_SESSION_TERMINATE_GRACE_MS = String(options.terminateGraceMs);
+    if (options?.maxRetries != null) env.PAPERCLAW_PROCESS_SESSION_STDIN_MAX_RETRIES = String(options.maxRetries);
+    if (options?.terminateGraceMs != null) env.PAPERCLAW_PROCESS_SESSION_TERMINATE_GRACE_MS = String(options.terminateGraceMs);
 
     const execArgv: string[] = [];
     if (options?.fakeBirthtime) {
-      env.PAPERCLIP_TEST_FAKE_BIRTHTIME_TARGET = options.fakeBirthtime.target;
-      env.PAPERCLIP_TEST_FAKE_BIRTHTIME_MODE = options.fakeBirthtime.mode;
+      env.PAPERCLAW_TEST_FAKE_BIRTHTIME_TARGET = options.fakeBirthtime.target;
+      env.PAPERCLAW_TEST_FAKE_BIRTHTIME_MODE = options.fakeBirthtime.mode;
       execArgv.push("--require", await getFakeBirthtimePreloadPath());
     }
     if (options?.probeSwap) {
-      env.PAPERCLIP_TEST_PROBE_SWAP_SEQ = String(options.probeSwap.seq);
-      env.PAPERCLIP_TEST_PROBE_SWAP_MODE = options.probeSwap.mode;
-      if (options.probeSwap.symlinkTarget) env.PAPERCLIP_TEST_PROBE_SWAP_SYMLINK_TARGET = options.probeSwap.symlinkTarget;
+      env.PAPERCLAW_TEST_PROBE_SWAP_SEQ = String(options.probeSwap.seq);
+      env.PAPERCLAW_TEST_PROBE_SWAP_MODE = options.probeSwap.mode;
+      if (options.probeSwap.symlinkTarget) env.PAPERCLAW_TEST_PROBE_SWAP_SYMLINK_TARGET = options.probeSwap.symlinkTarget;
       execArgv.push("--require", await getProbeSwapPreloadPath());
     }
     if (options?.fstatFailure) {
-      env.PAPERCLIP_TEST_FSTAT_FAILURE_SEQ = String(options.fstatFailure.seq);
+      env.PAPERCLAW_TEST_FSTAT_FAILURE_SEQ = String(options.fstatFailure.seq);
       execArgv.push("--require", await getFstatFailurePreloadPath());
     }
 
@@ -1059,7 +1059,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: input.runId,
       target,
-      runtimeRootDir: path.posix.join(input.rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(input.rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1100,7 +1100,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     // The emitted wrapper script's own path is unique to this test (it lives
     // under this test's fresh temp root), so a `ps` grep on it identifies
     // only this test's wrapper process, not a sibling test's.
-    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclip-runtime", "acpx", "process-sessions");
+    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclaw-runtime", "acpx", "process-sessions");
     try {
       expect(isPidAlive(session.pid)).toBe(true);
       await waitFor(async () => (await findLivePidsByArgvSubstring(wrapperScriptSubstring)).length > 0, 4_000);
@@ -1185,7 +1185,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-forged-exit",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1219,7 +1219,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     await bridge!.stop();
     const elapsedMs = Date.now() - start;
 
-    const finalizeWrites = scripts.filter((script) => script.includes("base64 -d") && script.includes(".paperclip-upload.decoded"));
+    const finalizeWrites = scripts.filter((script) => script.includes("base64 -d") && script.includes(".paperclaw-upload.decoded"));
     // stdinEnd, then shutdown: both control messages still land.
     expect(finalizeWrites.length).toBeGreaterThanOrEqual(2);
     const removeScript = scripts.find((script) => script.trim().startsWith("rm -rf"));
@@ -1285,7 +1285,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-forged-only",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1349,7 +1349,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-no-signal",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1410,8 +1410,8 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
       cwd: targetDir,
       env: {
         ...process.env,
-        PAPERCLIP_PROCESS_SESSION_DIR: linkDir,
-        PAPERCLIP_PROCESS_SESSION_COMMAND_B64: commandPayload,
+        PAPERCLAW_PROCESS_SESSION_DIR: linkDir,
+        PAPERCLAW_PROCESS_SESSION_COMMAND_B64: commandPayload,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -1445,7 +1445,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
       command: process.execPath,
       args: [
         "-e",
-        "process.stdout.write(JSON.stringify(Object.keys(process.env).filter((k) => k.startsWith('PAPERCLIP_PROCESS_SESSION'))));process.exit(0)",
+        "process.stdout.write(JSON.stringify(Object.keys(process.env).filter((k) => k.startsWith('PAPERCLAW_PROCESS_SESSION'))));process.exit(0)",
       ],
     });
     await waitFor(() => wrapper.frames.some((frame) => frame.type === "exit"), 4_000);
@@ -1520,7 +1520,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-normal-exit",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1602,7 +1602,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-never-acks",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1754,7 +1754,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-lost-identity",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".paperclaw-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1775,7 +1775,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     await waitFor(async () => (await readFile(pidFile, "utf8").catch(() => "")).trim().length > 0, 8_000);
     const pid = Number.parseInt((await readFile(pidFile, "utf8")).trim(), 10);
     expect(isPidAlive(pid)).toBe(true);
-    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclip-runtime", "acpx", "process-sessions");
+    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclaw-runtime", "acpx", "process-sessions");
     await waitFor(async () => (await findLivePidsByArgvSubstring(wrapperScriptSubstring)).length > 0, 4_000);
 
     await bridge!.stop();
@@ -1972,15 +1972,15 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
       cwd: sessionDir,
       env: {
         ...process.env,
-        PAPERCLIP_PROCESS_SESSION_DIR: sessionDir,
-        PAPERCLIP_PROCESS_SESSION_COMMAND_B64: commandPayload,
+        PAPERCLAW_PROCESS_SESSION_DIR: sessionDir,
+        PAPERCLAW_PROCESS_SESSION_COMMAND_B64: commandPayload,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
 
     // Wins the race to the probe path against the wrapper's own probe write.
     // nextProbeFileName() is deterministic: it names
-    // ".paperclip-birthtime-probe-<pid>-1" on the wrapper's first probe call,
+    // ".paperclaw-birthtime-probe-<pid>-1" on the wrapper's first probe call,
     // which always targets sessionDir. child.pid is available synchronously
     // right after spawn() returns, well before the freshly spawned process
     // has loaded Node or parsed its own script, so this synchronous
@@ -1988,7 +1988,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     // sandbox peer racing to pre-create the path would have, so it gives the
     // strongest proof: the real wrapper process, under the real race, must
     // still refuse to follow the link.
-    const probePath = path.join(sessionDir, `.paperclip-birthtime-probe-${child.pid}-1`);
+    const probePath = path.join(sessionDir, `.paperclaw-birthtime-probe-${child.pid}-1`);
     symlinkSync(probeLinkTarget, probePath);
 
     let stderrText = "";
@@ -2032,7 +2032,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.paperclaw-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => !(await lstat(probePath).then(() => true).catch(() => false)), 4_000);
     await expect(lstat(probePath)).rejects.toThrow();
   }, 15_000);
@@ -2052,7 +2052,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.paperclaw-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => (await readFile(probePath, "utf8").catch(() => null)) === "peer-owned-content", 4_000);
     // The wrapper's own cleanup call already ran (the preload only swaps the
     // path the moment the wrapper itself checks it). This delay proves that
@@ -2076,7 +2076,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.paperclaw-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => await lstat(probePath).then((stats) => stats.isDirectory()).catch(() => false), 4_000);
     await delay(200);
     expect((await lstat(probePath)).isDirectory()).toBe(true);
@@ -2101,7 +2101,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.paperclaw-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => await lstat(probePath).then((stats) => stats.isSymbolicLink()).catch(() => false), 4_000);
     await delay(200);
     expect((await lstat(probePath)).isSymbolicLink()).toBe(true);
@@ -2136,7 +2136,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     // remove it by path alone: it leaves the file exactly as it created it,
     // rather than risking removal of a different entry a peer may have put
     // at the same path.
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.paperclaw-birthtime-probe-${wrapper.pid}-1`);
     expect((await lstat(probePath)).isFile()).toBe(true);
   }, 15_000);
 });

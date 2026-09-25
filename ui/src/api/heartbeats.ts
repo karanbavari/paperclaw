@@ -1,11 +1,12 @@
-import type { IssueRecoveryAction } from "@paperclipai/shared";
+import type { IssueRecoveryAction } from "@kesarcloud/shared";
 import type {
   HeartbeatRun,
   HeartbeatRunEvent,
+  InstanceSchedulerHeartbeatAgent,
   WorkspaceOperation,
   ProviderTraceFrame,
   ProviderTraceMetadata,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { api, type RequestOptions } from "./client";
 
@@ -99,7 +100,7 @@ export type RuntimeRequestResolution =
   | { action: "accept" | "accept_for_session" | "decline" | "cancel" }
   | { action: "submit"; answers: Record<string, { answers: string[] }> }
   | { action: "submit"; content: Record<string, unknown> }
-  | { action: "submit"; response: import("@paperclipai/adapter-utils").PaperclipQuestionResponse };
+  | { action: "submit"; response: import("@kesarcloud/adapter-utils").PaperclipQuestionResponse };
 
 export interface HeartbeatRunListOptions {
   summary?: boolean;
@@ -242,4 +243,6 @@ export const heartbeatsApi = {
       `/companies/${companyId}/live-runs${qs ? `?${qs}` : ""}`,
     );
   },
+  listInstanceSchedulerAgents: () =>
+    api.get<InstanceSchedulerHeartbeatAgent[]>("/instance/scheduler-heartbeats"),
 };

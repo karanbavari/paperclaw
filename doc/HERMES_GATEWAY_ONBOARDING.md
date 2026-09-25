@@ -15,7 +15,7 @@ Paperclip ships both Hermes adapters as built-ins:
 
 No Adapter manager installation is required for normal use. Adapter manager is
 only needed when you intentionally install an external
-`@paperclipai/hermes-paperclip-adapter` package to override or shadow a built-in
+`@kesarcloud/hermes-paperclip-adapter` package to override or shadow a built-in
 adapter while developing the Hermes package. If the external override is paused
 or removed, Paperclip restores the built-in `hermes_local` / `hermes_gateway`
 adapter.
@@ -31,7 +31,7 @@ Keep these credentials distinct:
   stores the same value as `agentDefaultsPayload.apiKey` so it can call Hermes.
 - Paperclip agent key: created after the board approves the join request and
   claimed once by the Hermes agent. Hermes uses this key as
-  `PAPERCLIP_API_KEY` when it calls Paperclip.
+  `PAPERCLAW_API_KEY` when it calls Paperclip.
 
 Do not reuse the Hermes gateway key as the Paperclip agent key. The Hermes
 gateway key authenticates Paperclip-to-Hermes traffic; the claimed Paperclip key
@@ -106,9 +106,9 @@ Important URL roles:
 
 - `agentDefaultsPayload.apiBaseUrl` is the Hermes gateway URL that Paperclip
   calls.
-- `agentDefaultsPayload.paperclipApiUrl` is the Paperclip base URL that Hermes
+- `agentDefaultsPayload.paperclawApiUrl` is the Paperclip base URL that Hermes
   can call after approval and key claim.
-- `PAPERCLIP_API_URL` / `PAPERCLIP_API_KEY` are injected runtime values for
+- `PAPERCLAW_API_URL` / `PAPERCLAW_API_KEY` are injected runtime values for
   Hermes-originated Paperclip API calls after the agent is approved.
 
 ## Approve And Claim
@@ -142,8 +142,8 @@ For a fresh Docker-backed Hermes gateway and end-to-end Paperclip join/run
 verification, use:
 
 ```sh
-PAPERCLIP_API_URL=http://127.0.0.1:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL=http://127.0.0.1:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
 pnpm smoke:hermes-gateway-e2e
 ```
 
@@ -164,8 +164,8 @@ and stored adapter config, use the join-only helper:
 ```sh
 API_SERVER_ENABLED=true API_SERVER_KEY='<gateway-key>' hermes gateway run --replace --accept-hooks
 
-PAPERCLIP_API_URL=http://127.0.0.1:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL=http://127.0.0.1:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
 HERMES_GATEWAY_API_BASE_URL=http://127.0.0.1:8642 \
 HERMES_GATEWAY_API_KEY='<gateway-key>' \
 pnpm smoke:hermes-gateway-join
@@ -188,6 +188,6 @@ Use these entry points depending on who is driving setup:
   verification and `pnpm smoke:hermes-gateway-join` for an already-running
   gateway.
 - Adapter development override: Adapter manager can install
-  `@paperclipai/hermes-paperclip-adapter` as an external override, but normal
+  `@kesarcloud/hermes-paperclip-adapter` as an external override, but normal
   operators should use the built-in `hermes_local` and `hermes_gateway`
   adapters.

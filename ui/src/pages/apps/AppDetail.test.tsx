@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getAppStoreDefinition } from "@paperclipai/shared";
+import { getAppStoreDefinition } from "@kesarcloud/shared";
 import { AppDetail } from "./AppDetail";
 import { APP_TABS } from "./app-tabs";
 
@@ -1418,7 +1418,7 @@ describe("AppDetail", () => {
     mockParams.tab = "permissions";
     getConnectionMock.mockResolvedValue(perUserConnection());
     startPersonalAuthorizationMock.mockResolvedValue({
-      url: "https://my.paperclip.app/connections/confirm?session=legacy",
+      url: "https://my.paperclaw.app/connections/confirm?session=legacy",
       handoff: { kind: "paperclip_cloud", session },
     });
 

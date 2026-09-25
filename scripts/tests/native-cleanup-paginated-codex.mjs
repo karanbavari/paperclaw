@@ -1,7 +1,7 @@
 // Opt-in real Codex qualification; no model turn or live account data.
 // Run from the repository root:
 // node --import ./server/node_modules/tsx/dist/loader.mjs scripts/tests/native-cleanup-paginated-codex.mjs
-// PAPERCLIP_TEST_CODEX_BINARY may select the exact installed Codex 0.153.4 binary.
+// PAPERCLAW_TEST_CODEX_BINARY may select the exact installed Codex 0.153.4 binary.
 // Fresh synthetic fixture directories are retained for inspection; never reuse live homes.
 import { spawn, execFileSync } from "node:child_process";
 import {
@@ -21,7 +21,7 @@ import { createInterface } from "node:readline";
 import { createHash } from "node:crypto";
 import { rebaseRetainedNativeCleanupProviderHome } from "../../server/src/services/native-runtime/native-session-executor.ts";
 
-const codexBinary = process.env.PAPERCLIP_TEST_CODEX_BINARY ?? "codex";
+const codexBinary = process.env.PAPERCLAW_TEST_CODEX_BINARY ?? "codex";
 if (
   execFileSync(codexBinary, ["--version"], {
     encoding: "utf8",

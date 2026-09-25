@@ -9,7 +9,7 @@ import {
   deriveViteHmrPort,
   RUNTIME_EXPOSURE_APP_PORT_MAX,
   RUNTIME_EXPOSURE_APP_PORT_MIN,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 
 import type { BrokerClient, BrokerListenerRequest } from "./runtime-exposure/broker-client.js";
 import {
@@ -33,13 +33,13 @@ const HANDLE = "handle-abcdef1234567890";
 // back in and restores the harness value afterwards.
 let previousHttpsMode: string | undefined;
 beforeEach(() => {
-  previousHttpsMode = process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS;
-  process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS = "auto";
+  previousHttpsMode = process.env.PAPERCLAW_MANAGED_RUNTIME_HTTPS;
+  process.env.PAPERCLAW_MANAGED_RUNTIME_HTTPS = "auto";
 });
 
 afterEach(async () => {
-  if (previousHttpsMode === undefined) delete process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS;
-  else process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS = previousHttpsMode;
+  if (previousHttpsMode === undefined) delete process.env.PAPERCLAW_MANAGED_RUNTIME_HTTPS;
+  else process.env.PAPERCLAW_MANAGED_RUNTIME_HTTPS = previousHttpsMode;
   // These tests spawn real loopback backends on dedicated-range ports; reap them
   // rather than leaving one squatting 42xxx/52xxx for every test in the file.
   await resetRuntimeServicesForTests({ terminateProcesses: true });
@@ -66,7 +66,7 @@ let guestDir: string;
  *
  * Reproduces the behaviour that actually broke the lanes: `scripts/dev-runner.ts`
  * on plain master derives its bind mode from its own `--bind` / `--bind-host`
- * argv and **ignores `PAPERCLIP_BIND` / `PAPERCLIP_MANAGED_RUNTIME_EXPOSURE`
+ * argv and **ignores `PAPERCLAW_BIND` / `PAPERCLAW_MANAGED_RUNTIME_EXPOSURE`
  * entirely** — so env-only hardening cannot reach it. `--bind lan` therefore
  * means `0.0.0.0`, which the broker must refuse.
  */
@@ -354,7 +354,7 @@ function startInput(options?: {
         services: [{
           name: options?.serviceName ?? "preview",
           command: options?.command ?? serviceCommand(),
-          env: { PAPERCLIP_PUBLIC_URL: "http://127.0.0.1:3100" },
+          env: { PAPERCLAW_PUBLIC_URL: "http://127.0.0.1:3100" },
           port: options?.port ?? { type: "auto", envKey: "PORT" },
           // These lifecycle tests spawn real servers; cold CI startup can take
           // five seconds before the first listener is ready.

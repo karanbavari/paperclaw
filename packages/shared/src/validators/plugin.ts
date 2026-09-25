@@ -1218,6 +1218,29 @@ export const patchPluginConfigSchema = z.object({
 
 export type PatchPluginConfig = z.infer<typeof patchPluginConfigSchema>;
 
+export const pluginSetupPatchSchema = z.object({
+  status: z.enum(["not_started", "in_progress", "complete", "dismissed"]).optional(),
+  currentStepKey: z.string().min(1).nullable().optional(),
+  completedStepKeys: z.array(z.string().min(1)).optional(),
+  manuallyCompletedStepKeys: z.array(z.string().min(1)).optional(),
+  dismissedAt: z.string().datetime().nullable().optional(),
+  completedAt: z.string().datetime().nullable().optional(),
+});
+
+export type PluginSetupPatch = z.infer<typeof pluginSetupPatchSchema>;
+
+export const pluginToolConsoleTestRequestSchema = z.object({
+  companyId: z.string().guid(),
+  parameters: z.unknown().optional(),
+  projectId: z.string().guid().nullable().optional(),
+  agentId: z.string().guid().nullable().optional(),
+  timeoutMs: z.number().int().min(1_000).max(120_000).nullable().optional(),
+});
+
+export type PluginToolConsoleTestRequestInput = z.infer<
+  typeof pluginToolConsoleTestRequestSchema
+>;
+
 // ---------------------------------------------------------------------------
 // Plugin status update
 // ---------------------------------------------------------------------------

@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductPage, ProductPageHeader, ProductWorkspace } from "../components/ProductPage";
 import { agentsApi } from "../api/agents";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { projectsApi } from "../api/projects";
@@ -65,10 +66,10 @@ function label(value: string) {
 }
 
 function statusClass(status: string) {
-  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "rejected" || status === "trashed") return "border-rose-200 bg-rose-50 text-rose-700";
-  if (status === "board_review" || status === "ceo_review") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (status === "researching" || status === "prototype_running") return "border-blue-200 bg-blue-50 text-blue-700";
+  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300";
+  if (status === "rejected" || status === "trashed") return "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300";
+  if (status === "board_review" || status === "ceo_review") return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
+  if (status === "researching" || status === "prototype_running") return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300";
   return "border-border bg-muted text-muted-foreground";
 }
 
@@ -87,7 +88,7 @@ function LabListItem({
     <Link
       to={`/research-labs/${lab.id}`}
       className={cn(
-        "block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-accent/40",
+        "block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
         active && "bg-accent text-foreground",
       )}
     >
@@ -167,11 +168,13 @@ function NewLabDialog({
 
         <div className="grid gap-4">
           <Input
+            aria-label="Lab title"
             placeholder="Lab title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
           <Textarea
+            aria-label="Lab objective"
             placeholder="Objective, constraints, expected output"
             value={objective}
             onChange={(event) => setObjective(event.target.value)}
@@ -179,7 +182,7 @@ function NewLabDialog({
           />
           <div className="grid gap-3 md:grid-cols-3">
             <Select value={labType} onValueChange={(value) => setLabType(value as ResearchLabType)}>
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full" aria-label="Lab type"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {LAB_TYPES.map((item) => (
                   <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
@@ -187,7 +190,7 @@ function NewLabDialog({
               </SelectContent>
             </Select>
             <Select value={projectId ?? NONE_VALUE} onValueChange={(value) => setProjectId(value === NONE_VALUE ? null : value)}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Project" /></SelectTrigger>
+              <SelectTrigger className="w-full" aria-label="Project"><SelectValue placeholder="Project" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE_VALUE}>No project</SelectItem>
                 {projects.map((project) => (
@@ -196,7 +199,7 @@ function NewLabDialog({
               </SelectContent>
             </Select>
             <Select value={workspaceId ?? NONE_VALUE} onValueChange={(value) => setWorkspaceId(value === NONE_VALUE ? null : value)}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Workspace" /></SelectTrigger>
+              <SelectTrigger className="w-full" aria-label="Workspace"><SelectValue placeholder="Workspace" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE_VALUE}>No workspace</SelectItem>
                 {workspaces.map((workspace) => (
@@ -326,7 +329,7 @@ function LabDetailPanel({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <Microscope className="h-4 w-4 text-muted-foreground" />
-              <h1 className="truncate text-lg font-semibold">{lab.title}</h1>
+              <h2 className="truncate text-base font-semibold">{lab.title}</h2>
               <Badge variant="outline" className={cn(statusClass(lab.status))}>{label(lab.status)}</Badge>
             </div>
             <div className="mt-1 text-sm text-muted-foreground">
@@ -349,15 +352,19 @@ function LabDetailPanel({
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section className="space-y-4">
-            <Input value={title} onChange={(event) => setTitle(event.target.value)} />
+            <div className="space-y-2"><label className="text-sm font-medium" htmlFor="research-lab-title">Title</label>
+            <Input id="research-lab-title" value={title} onChange={(event) => setTitle(event.target.value)} /></div>
+            <div className="space-y-2"><label className="text-sm font-medium" htmlFor="research-lab-objective">Objective</label>
             <Textarea
+              id="research-lab-objective"
               value={objective}
               onChange={(event) => setObjective(event.target.value)}
               className="min-h-28"
             />
+            </div>
             <div className="grid gap-3 md:grid-cols-3">
               <Select value={labType} onValueChange={(value) => setLabType(value as ResearchLabType)}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full" aria-label="Lab type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {LAB_TYPES.map((item) => (
                     <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
@@ -365,7 +372,7 @@ function LabDetailPanel({
                 </SelectContent>
               </Select>
               <Select value={projectId ?? NONE_VALUE} onValueChange={(value) => setProjectId(value === NONE_VALUE ? null : value)}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Project" /></SelectTrigger>
+                <SelectTrigger className="w-full" aria-label="Project"><SelectValue placeholder="Project" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>No project</SelectItem>
                   {projects.map((project) => (
@@ -374,7 +381,7 @@ function LabDetailPanel({
                 </SelectContent>
               </Select>
               <Select value={workspaceId ?? NONE_VALUE} onValueChange={(value) => setWorkspaceId(value === NONE_VALUE ? null : value)}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Workspace" /></SelectTrigger>
+                <SelectTrigger className="w-full" aria-label="Workspace"><SelectValue placeholder="Workspace" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>No workspace</SelectItem>
                   {workspaces.map((workspace) => (
@@ -384,8 +391,9 @@ function LabDetailPanel({
               </Select>
             </div>
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">Demo URLs</div>
+              <label htmlFor="research-lab-demo-urls" className="text-sm font-medium">Demo URLs</label>
               <Textarea
+                id="research-lab-demo-urls"
                 value={demoUrlsText}
                 onChange={(event) => setDemoUrlsText(event.target.value)}
                 placeholder="https://localhost:3101"
@@ -393,12 +401,13 @@ function LabDetailPanel({
               />
             </div>
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">Final report for CEO and Board</div>
+              <label htmlFor="research-lab-report" className="text-sm font-medium">Final report for CEO and Board</label>
               <Textarea
+                id="research-lab-report"
                 value={finalReport}
                 onChange={(event) => setFinalReport(event.target.value)}
                 placeholder="Summary, evidence, demo links, risks, next recommended action..."
-                className="min-h-72 font-mono text-sm"
+                className="min-h-56 text-sm leading-6"
               />
             </div>
             <div className="flex flex-wrap justify-between gap-2">
@@ -625,12 +634,19 @@ export function ResearchLab() {
   const actionPending = ceoMutation.isPending || boardMutation.isPending || archiveMutation.isPending || trashMutation.isPending;
 
   return (
-    <div className="flex h-full min-h-0 bg-background">
-      <aside className="hidden w-80 shrink-0 border-r border-border md:flex md:flex-col">
+    <ProductPage>
+      <ProductPageHeader
+        title="Research Lab"
+        description="Plan experiments, capture evidence, and prepare reports for review."
+        icon={Microscope}
+        actions={<Button size="sm" onClick={() => setShowNewLab(true)}><Plus className="size-4" />New lab</Button>}
+      />
+    <ProductWorkspace>
+      <aside className="hidden w-72 shrink-0 border-r border-border bg-muted/20 md:flex md:flex-col lg:w-80">
         <div className="flex h-12 items-center justify-between border-b border-border px-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <FlaskConical className="h-4 w-4 text-muted-foreground" />
-            Research Lab
+            All labs
           </div>
           <Button variant="ghost" size="icon-sm" onClick={() => setShowNewLab(true)}>
             <Plus className="h-4 w-4" />
@@ -650,10 +666,27 @@ export function ResearchLab() {
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col">
+        {labsQuery.error ? (
+          <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {labsQuery.error instanceof Error ? labsQuery.error.message : "Could not load research labs."}
+          </div>
+        ) : null}
+        {labs.length > 0 && !showNewLab ? (
+          <div className="border-b border-border p-3 md:hidden">
+            <Select value={activeLabId ?? ""} onValueChange={(id) => navigate(`/research-labs/${id}`)}>
+              <SelectTrigger className="w-full" aria-label="Choose research lab"><SelectValue placeholder="Choose lab" /></SelectTrigger>
+              <SelectContent>{labs.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        ) : null}
         {detailQuery.isLoading && activeLabId ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Loading research lab...
+          </div>
+        ) : detailQuery.error ? (
+          <div className="flex flex-1 items-center justify-center p-6 text-sm text-destructive">
+            {detailQuery.error instanceof Error ? detailQuery.error.message : "Could not load this lab."}
           </div>
         ) : lab ? (
           <LabDetailPanel
@@ -673,7 +706,7 @@ export function ResearchLab() {
           <div className="flex flex-1 items-center justify-center p-6">
             <div className="max-w-sm text-center">
               <Microscope className="mx-auto h-8 w-8 text-muted-foreground" />
-              <h1 className="mt-3 text-lg font-semibold">Research Lab</h1>
+              <h2 className="mt-3 text-lg font-semibold">No research lab selected</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Start an isolated R&D workspace for competitor research, prototypes, tests, and board-ready reports.
               </p>
@@ -695,6 +728,7 @@ export function ResearchLab() {
         onOpenChange={setShowNewLab}
         onCreate={(input) => createMutation.mutate({ ...input, demoUrls: [], artifacts: [] })}
       />
-    </div>
+    </ProductWorkspace>
+    </ProductPage>
   );
 }

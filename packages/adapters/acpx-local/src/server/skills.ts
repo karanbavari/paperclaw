@@ -6,8 +6,8 @@ import type {
   AdapterSkillSnapshot,
 } from "@kesarcloud/adapter-utils";
 import {
-  readPaperClawRuntimeSkillEntries,
-  resolvePaperClawDesiredSkillNames,
+  readPaperclipRuntimeSkillEntries,
+  resolvePaperclipDesiredSkillNames,
 } from "@kesarcloud/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -34,9 +34,9 @@ function unsupportedDetail(): string {
 
 async function buildAcpxSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
   const acpxAgent = normalizeAcpxSkillAgent(config);
-  const availableEntries = await readPaperClawRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
   const availableByKey = new Map(availableEntries.map((entry) => [entry.key, entry]));
-  const desiredSkills = resolvePaperClawDesiredSkillNames(config, availableEntries);
+  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
   const desiredSet = new Set(desiredSkills);
   const supported = acpxAgent !== "custom";
   const warnings: string[] = supported
@@ -52,15 +52,17 @@ async function buildAcpxSkillSnapshot(config: Record<string, unknown>): Promise<
       runtimeName: entry.runtimeName,
       desired,
       managed: true,
-      state: desired ? "configured" : "available",
-      origin: entry.required ? "paperclaw_required" : "company_managed",
-      originLabel: entry.required ? "Required by PaperClaw" : "Managed by PaperClaw",
+      state: entry.sourceStatus === "missing" ? "missing" : desired ? "configured" : "available",
+      origin: "company_managed",
+      originLabel: "Managed by PaperClaw",
       readOnly: false,
       sourcePath: entry.source,
       targetPath: null,
-      detail: desired ? (supported ? configuredDetail(acpxAgent) : unsupportedDetail()) : null,
-      required: Boolean(entry.required),
-      requiredReason: entry.requiredReason ?? null,
+      detail: entry.sourceStatus === "missing"
+        ? entry.missingDetail ?? "The selected skill source is unavailable."
+        : desired
+          ? (supported ? configuredDetail(acpxAgent) : unsupportedDetail())
+          : null,
     };
   });
 

@@ -17,7 +17,7 @@ describe("OpenCode runnerd proxy permission mode", () => {
 
   it("rejects an unknown mode", () => {
     expect(() => parseOpenCodeProxyPermissionMode("approve-all")).toThrow(
-      "PAPERCLIP_OPENCODE_PERMISSION_MODE is invalid",
+      "PAPERCLAW_OPENCODE_PERMISSION_MODE is invalid",
     );
   });
 });

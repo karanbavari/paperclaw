@@ -2,12 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { config as loadDotenv, parse as parseEnvFileContents } from "dotenv";
-import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@paperclipai/shared/env-file";
+import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@kesarcloud/shared/env-file";
 import { resolveConfigPath } from "./store.js";
 
-const JWT_SECRET_ENV_KEY = "PAPERCLIP_AGENT_JWT_SECRET";
-const TOOL_ACTION_SIGNING_SECRET_ENV_KEY = "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET";
-const PAPERCLIP_OWNED_ENV_KEY_PATTERN = /^PAPERCLIP_[A-Z0-9_]+$/;
+const JWT_SECRET_ENV_KEY = "PAPERCLAW_AGENT_JWT_SECRET";
+const TOOL_ACTION_SIGNING_SECRET_ENV_KEY = "PAPERCLAW_TOOL_ACTION_SIGNING_SECRET";
+const PAPERCLAW_OWNED_ENV_KEY_PATTERN = /^PAPERCLAW_[A-Z0-9_]+$/;
 function resolveEnvFilePath(configPath?: string) {
   return path.resolve(path.dirname(resolveConfigPath(configPath)), ".env");
 }
@@ -36,7 +36,7 @@ function emptyEnvFileContents() {
 function paperclipOwnedEntries(entries: Record<string, string>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(entries).filter(
-      ([key, value]) => PAPERCLIP_OWNED_ENV_KEY_PATTERN.test(key) && value.trim().length > 0,
+      ([key, value]) => PAPERCLAW_OWNED_ENV_KEY_PATTERN.test(key) && value.trim().length > 0,
     ),
   );
 }

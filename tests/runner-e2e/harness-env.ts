@@ -3,26 +3,26 @@ import { CREDENTIAL_NAMES } from "./types.js";
 import type { MatrixExecution } from "./types.js";
 
 const DATABASE_KEYS = ["DATABASE_URL", "DATABASE_MIGRATION_URL"] as const;
-const AMBIENT_PAPERCLIP_CREDENTIAL_KEYS = [
-  "PAPERCLIP_API_KEY",
-  "PAPERCLIP_AGENT_API_KEY",
-  "PAPERCLIP_TASK_BRIDGE_TOKEN",
-  "PAPERCLIP_SETUP_TOKEN",
-  "PAPERCLIP_SECRETS_MASTER_KEY",
-  "PAPERCLIP_SECRETS_MASTER_KEY_FILE",
+const AMBIENT_PAPERCLAW_CREDENTIAL_KEYS = [
+  "PAPERCLAW_API_KEY",
+  "PAPERCLAW_AGENT_API_KEY",
+  "PAPERCLAW_TASK_BRIDGE_TOKEN",
+  "PAPERCLAW_SETUP_TOKEN",
+  "PAPERCLAW_SECRETS_MASTER_KEY",
+  "PAPERCLAW_SECRETS_MASTER_KEY_FILE",
 ] as const;
 const GENERATED_SERVER_SECRET_KEYS = [
-  "PAPERCLIP_AGENT_JWT_SECRET",
-  "PAPERCLIP_DECISION_SIGNING_SECRET",
-  "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET",
+  "PAPERCLAW_AGENT_JWT_SECRET",
+  "PAPERCLAW_DECISION_SIGNING_SECRET",
+  "PAPERCLAW_TOOL_ACTION_SIGNING_SECRET",
   "BETTER_AUTH_SECRET",
 ] as const;
 const AMBIENT_EXTERNAL_STATE_KEYS = [
-  "PAPERCLIP_STORAGE_S3_BUCKET",
-  "PAPERCLIP_STORAGE_S3_REGION",
-  "PAPERCLIP_STORAGE_S3_ENDPOINT",
-  "PAPERCLIP_STORAGE_S3_PREFIX",
-  "PAPERCLIP_STORAGE_S3_FORCE_PATH_STYLE",
+  "PAPERCLAW_STORAGE_S3_BUCKET",
+  "PAPERCLAW_STORAGE_S3_REGION",
+  "PAPERCLAW_STORAGE_S3_ENDPOINT",
+  "PAPERCLAW_STORAGE_S3_PREFIX",
+  "PAPERCLAW_STORAGE_S3_FORCE_PATH_STYLE",
 ] as const;
 const PROVIDER_SECRET_KEY = /^(?:OPENAI|ANTHROPIC|OPENROUTER|DAYTONA)(?:_|$)/;
 
@@ -48,7 +48,7 @@ export function runnerE2EServerControlPaths(temporaryRoot: string) {
 export function resolvePaperclipRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   repositoryRoot: string,
-  configuredPath = process.env.PAPERCLIP_RUNNER_BINARY,
+  configuredPath = process.env.PAPERCLAW_RUNNER_BINARY,
   platform: NodeJS.Platform = process.platform,
 ): string | undefined {
   if (configuredPath?.trim()) return configuredPath;
@@ -76,7 +76,7 @@ export function resolvePaperclipRunnerBinaryForHarness(
 export function resolvePaperclipRemoteRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   runnerBinary: string | undefined,
-  configuredPath = process.env.PAPERCLIP_RUNNER_REMOTE_BINARY_PATH,
+  configuredPath = process.env.PAPERCLAW_RUNNER_REMOTE_BINARY_PATH,
   platform: NodeJS.Platform = process.platform,
 ): string | undefined {
   if (configuredPath?.trim()) return configuredPath;
@@ -108,7 +108,7 @@ export function buildRunnerE2EProcessEnvironment(
   // Hiring needs the opt-in native API surface. Scope this to the explicit
   // manual hiring story; production and other suites retain their defaults.
   if (executions.some((e) => e.suite.id === "everyday-workflows" && e.task.id === "hire-reuse")) {
-    result.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "true";
+    result.PAPERCLAW_RUNNER_API_TOOLS_ENABLED = "true";
   }
   if (
     executions.length > 0 &&
@@ -139,7 +139,7 @@ export function buildPaperclipServerEnvironment(
   for (const key of [
     ...CREDENTIAL_NAMES,
     ...DATABASE_KEYS,
-    ...AMBIENT_PAPERCLIP_CREDENTIAL_KEYS,
+    ...AMBIENT_PAPERCLAW_CREDENTIAL_KEYS,
     ...AMBIENT_EXTERNAL_STATE_KEYS,
   ]) {
     delete result[key];
@@ -157,8 +157,8 @@ export function assertIsolatedServerEnvironment(
     configPath: string;
   },
 ) {
-  const home = env.PAPERCLIP_HOME;
-  const config = env.PAPERCLIP_CONFIG;
+  const home = env.PAPERCLAW_HOME;
+  const config = env.PAPERCLAW_CONFIG;
   if (home !== expected.paperclipHome || config !== expected.configPath) {
     throw new Error(
       "Paperclip server environment does not use the allocated home/config paths",
@@ -180,7 +180,7 @@ export function assertIsolatedServerEnvironment(
   for (const key of [
     ...CREDENTIAL_NAMES,
     ...DATABASE_KEYS,
-    ...AMBIENT_PAPERCLIP_CREDENTIAL_KEYS,
+    ...AMBIENT_PAPERCLAW_CREDENTIAL_KEYS,
     ...AMBIENT_EXTERNAL_STATE_KEYS,
   ]) {
     if (env[key])

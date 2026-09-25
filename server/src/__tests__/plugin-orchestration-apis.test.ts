@@ -25,7 +25,7 @@ import {
   pluginManagedResources,
   plugins,
   projects,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -332,7 +332,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@paperclipai/plugin-llm-wiki",
+      packageName: "@kesarcloud/plugin-llm-wiki",
       version: "0.1.0",
       manifestJson: {
         id: "paperclipai.plugin-llm-wiki",
@@ -349,7 +349,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
             folderKey: "wiki-root",
             displayName: "Wiki root",
             access: "readWrite",
-            requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+            requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclaw"],
             requiredFiles: ["WIKI.md", "AGENTS.md"],
           },
         ],
@@ -379,7 +379,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
               folderKey: "wiki-root",
               displayName: "Wiki root",
               access: "readWrite",
-              requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+              requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclaw"],
               requiredFiles: ["WIKI.md", "AGENTS.md"],
             },
           ],
@@ -392,7 +392,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       folderKey: "wiki-root",
       path: root,
       access: "readWrite",
-      requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+      requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclaw"],
       requiredFiles: ["WIKI.md", "AGENTS.md"],
     });
     expect(configured.healthy).toBe(false);

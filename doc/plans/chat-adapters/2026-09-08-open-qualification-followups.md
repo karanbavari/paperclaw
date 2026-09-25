@@ -765,7 +765,7 @@ notice, started only after that run completed and answered once. The deliberate
 14.775/13.144s once started. GitHub's first final safely deferred once before
 provider I/O when authorization was busy, then succeeded on attempt 2; no blind
 unknown-delivery replay. All scoped publications/actions settled and reactions
-cleared. Live receipts: `.paperclip-runtime/chat-adapters-live/live83-final-receipts.json`.
+cleared. Live receipts: `.paperclaw-runtime/chat-adapters-live/live83-final-receipts.json`.
 
 The landing agent owns the consolidated current-master candidate (393 files),
 including the separate process-Stop fix qualified by 252 recovery tests and a
@@ -1371,7 +1371,7 @@ deployment/rejection visibility, not provider message delivery. Server 69 was
 not restarted during this proxy-only change.
 
 All local runtime material is under ignored
-`.paperclip-runtime/chat-adapters-live/`, including:
+`.paperclaw-runtime/chat-adapters-live/`, including:
 
 - `start-server.sh`: configured isolated startup, no embedded credentials.
 - `server-experimental-landing-78.log`: current server log.

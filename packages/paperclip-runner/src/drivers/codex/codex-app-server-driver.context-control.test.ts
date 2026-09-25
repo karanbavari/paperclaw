@@ -106,9 +106,9 @@ describe("Codex app-server Codex driver", () => {
           'default_permissions="paperclip-runner-workspace-only"',
         ),
         expect.stringContaining(
-          "permissions.paperclip-runner-workspace-only.filesystem=",
+          "permissions.paperclaw-runner-workspace-only.filesystem=",
         ),
-        "permissions.paperclip-runner-workspace-only.network.enabled=false",
+        "permissions.paperclaw-runner-workspace-only.network.enabled=false",
         'shell_environment_policy.inherit="none"',
         expect.stringContaining(
           'shell_environment_policy.set={PATH="/bin",LANG="C.UTF-8"}',

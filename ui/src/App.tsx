@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from "react";
-import type { ToolConnectionCredentialSource } from "@paperclipai/shared";
+import type { ToolConnectionCredentialSource } from "@kesarcloud/shared";
 import { Navigate, Outlet, Route, Routes, useActiveCompanyPrefix, useLocation, useParams } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
@@ -33,6 +33,8 @@ import { Projects } from "./pages/Projects";
 import { ProjectDetail } from "./pages/ProjectDetail";
 import { ProjectWorkspaceDetail } from "./pages/ProjectWorkspaceDetail";
 import { Workspaces } from "./pages/Workspaces";
+import { OutcomeCenter } from "./pages/OutcomeCenter";
+import { OpsIncidentCenter } from "./pages/OpsIncidentCenter";
 import { Issues } from "./pages/Issues";
 import { Search } from "./pages/Search";
 import { IssueDetail } from "./pages/IssueDetail";
@@ -48,6 +50,9 @@ import { ExecutionWorkspaceDetail } from "./pages/ExecutionWorkspaceDetail";
 import { Goals } from "./pages/Goals";
 import { Artifacts } from "./pages/Artifacts";
 import { GoalDetail } from "./pages/GoalDetail";
+import { Meetings } from "./pages/Meetings";
+import { DirectChat } from "./pages/DirectChat";
+import { ResearchLab } from "./pages/ResearchLab";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { CompanyActivity } from "./pages/audit/CompanyActivity";
@@ -58,6 +63,9 @@ import { DecisionQueuePage } from "./pages/DecisionQueuePage";
 import { BoardChat } from "./pages/BoardChat";
 import { CompanySettings } from "./pages/CompanySettings";
 import { CompanyEnvironments } from "./pages/CompanyEnvironments";
+import { CompanyToolPermissions } from "./pages/CompanyToolPermissions";
+import { CompanyMemory } from "./pages/CompanyMemory";
+import { Marketplace } from "./pages/Marketplace";
 import { BootstrapSetupUxLab } from "./pages/BootstrapSetupUxLab";
 import { ResponsibleUserDenialUxLab } from "./pages/ResponsibleUserDenialUxLab";
 import { CrossIssueCollaborationUxLab } from "./pages/CrossIssueCollaborationUxLab";
@@ -157,6 +165,7 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
       <Route path="company/settings/environments" element={<Navigate to="/company/settings/instance/environments" replace />} />
+      <Route path="company/settings/tool-permissions" element={<CompanyToolPermissions />} />
       <Route path="company/settings/cloud-upstream" element={<Navigate to="/company/export" replace />} />
       <Route element={<HiddenSettingsPageGate pageKey="company.members" />}>
         <Route path="company/settings/members" element={<CompanyAccess />} />
@@ -259,6 +268,8 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       <Route path="skills/studio/new" element={<SkillStudio />} />
       <Route path="skills/studio/:skillId" element={<SkillStudio />} />
       <Route path="skills/:skillId/studio" element={<LegacySkillStudioRedirect />} />
+      <Route path="marketplace" element={<Marketplace />} />
+      <Route path="memory" element={<CompanyMemory />} />
       <Route
         path="skills/*"
         element={streamlinedUiEnabled ? <CompanySkills /> : <ProductionSurface><ProductionCompanySkills /></ProductionSurface>}
@@ -293,6 +304,8 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       <Route path="projects/:projectId/workspaces" element={<ProjectDetail />} />
       <Route path="projects/:projectId/configuration" element={<ProjectDetail />} />
       <Route path="projects/:projectId/budget" element={<ProjectDetail />} />
+      <Route path="outcomes" element={<OutcomeCenter />} />
+      <Route path="ops" element={<OpsIncidentCenter />} />
       <Route element={<IsolatedWorkspacesRouteGate />}>
         <Route path="workspaces" element={<Workspaces />} />
       </Route>
@@ -375,6 +388,11 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       </Route>
       <Route path="goals" element={<Goals />} />
       <Route path="goals/:goalId" element={<GoalDetail />} />
+      <Route path="meetings" element={<Meetings />} />
+      <Route path="meetings/:meetingId" element={<Meetings />} />
+      <Route path="direct-chat" element={<DirectChat />} />
+      <Route path="research-labs" element={<ResearchLab />} />
+      <Route path="research-labs/:labId" element={<ResearchLab />} />
       <Route path="artifacts" element={<Artifacts />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
@@ -665,7 +683,7 @@ function AuditCompatibilityRedirect({
   return <Navigate to={`${to}${search ? `?${search}` : ""}${location.hash}`} replace />;
 }
 
-function UnprefixedBoardRedirect() {
+function UnprefixedBoardRedirect({ pathname }: { pathname?: string } = {}) {
   const location = useLocation();
   const { companies, selectedCompany, loading } = useCompany();
 
@@ -688,7 +706,7 @@ function UnprefixedBoardRedirect() {
 
   return (
     <Navigate
-      to={`/${targetCompany.issuePrefix}${location.pathname}${location.search}${location.hash}`}
+      to={`/${targetCompany.issuePrefix}${pathname ?? location.pathname}${location.search}${location.hash}`}
       replace
     />
   );
@@ -766,6 +784,27 @@ export function App() {
           <Route path="instance/settings" element={<LegacySettingsRedirect />} />
           <Route path="instance/settings/*" element={<LegacySettingsRedirect />} />
           <Route path="companies" element={<UnprefixedBoardRedirect />} />
+          <Route path="dashboard/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="search" element={<UnprefixedBoardRedirect />} />
+          <Route path="inbox/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="board-chat" element={<UnprefixedBoardRedirect />} />
+          <Route path="outcomes" element={<UnprefixedBoardRedirect />} />
+          <Route path="ops" element={<UnprefixedBoardRedirect />} />
+          <Route path="goals/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="meetings/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="direct-chat" element={<UnprefixedBoardRedirect />} />
+          <Route path="research-labs/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="memory" element={<UnprefixedBoardRedirect />} />
+          {/* Recover the malformed URL produced by the old router before this fix. */}
+          <Route path="marketplace/dashboard" element={<UnprefixedBoardRedirect pathname="/marketplace" />} />
+          <Route path="marketplace" element={<UnprefixedBoardRedirect />} />
+          <Route path="apps/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="org" element={<UnprefixedBoardRedirect />} />
+          <Route path="timeline" element={<UnprefixedBoardRedirect />} />
+          <Route path="company/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="tools/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="approvals/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="chats/*" element={<UnprefixedBoardRedirect />} />
           <Route path="issues" element={<UnprefixedBoardRedirect />} />
           <Route path="tasks" element={<UnprefixedBoardRedirect />} />
           <Route path="issues/:issueId" element={<UnprefixedBoardRedirect />} />
@@ -787,13 +826,13 @@ export function App() {
           <Route path="pipelines/:pipelineId/cases/:caseId" element={<UnprefixedBoardRedirect />} />
           <Route path="artifacts" element={<UnprefixedBoardRedirect />} />
           <Route path="audit" element={<UnprefixedBoardRedirect />} />
+          <Route path="activity" element={<UnprefixedBoardRedirect />} />
+          <Route path="costs" element={<UnprefixedBoardRedirect />} />
           {streamlinedUiEnabled ? (
             <>
               <Route path="audit/*" element={<UnprefixedBoardRedirect />} />
-              <Route path="activity" element={<UnprefixedBoardRedirect />} />
               <Route path="activity/*" element={<UnprefixedBoardRedirect />} />
               <Route path="runs" element={<UnprefixedBoardRedirect />} />
-              <Route path="costs" element={<UnprefixedBoardRedirect />} />
               <Route path="budgets" element={<UnprefixedBoardRedirect />} />
             </>
           ) : null}

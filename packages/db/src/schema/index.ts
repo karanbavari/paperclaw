@@ -209,3 +209,11 @@ export { aiConnectionDefaults } from "./ai_connection_defaults.js";
 export { aiProviderDefaults } from "./ai_provider_defaults.js";
 export * from "./email.js";
 export { announcementDismissals, announcementPublications } from "./announcement_dismissals.js";
+
+// PaperClaw extension tables live in the reserved 9000+ migration range.
+export { companyProfiles } from "./company_profiles.js";
+export { companyMemoryItems } from "./company_memory_items.js";
+export { meetings, meetingParticipants, meetingMessages } from "./meetings.js";
+export { directChatThreads, directChatMessages } from "./direct_chat.js";
+export { researchLabs } from "./research_labs.js";
+export { toolPermissionDecisions, toolPermissionPolicies } from "./tool_permissions.js";

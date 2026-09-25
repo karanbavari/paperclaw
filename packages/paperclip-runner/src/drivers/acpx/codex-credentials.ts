@@ -19,8 +19,8 @@ const PRIVATE_FILE_MODE = 0o600;
 const MAX_DIRECTORY_SYNC_ATTEMPTS = 8;
 const DIRECTORY_SYNC_OPERATION_TIMEOUT_MS = 1_000;
 const MAX_AUTONOMOUS_CREDENTIAL_CLEANUP_ATTEMPTS = 8;
-const CREDENTIAL_CLEANUP_INTENT = ".paperclip-auth-cleanup-required";
-const CREDENTIAL_STAGING_FILE = ".paperclip-auth-staging-v1";
+const CREDENTIAL_CLEANUP_INTENT = ".paperclaw-auth-cleanup-required";
+const CREDENTIAL_STAGING_FILE = ".paperclaw-auth-staging-v1";
 const CREDENTIAL_LEASE_HOST = "127.0.0.1";
 const CREDENTIAL_LEASE_PORT_MIN = 49_152;
 const CREDENTIAL_LEASE_PORT_COUNT = 16_384;
@@ -253,7 +253,7 @@ async function stageClaimedManagedCodexCredential(
   const hasApiKey = Boolean(
     environment.CODEX_API_KEY || environment.OPENAI_API_KEY,
   );
-  const inlineJson = environment.PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET;
+  const inlineJson = environment.PAPERCLAW_ACPX_CODEX_AUTH_JSON_SECRET;
   const hasInlineJson = typeof inlineJson === "string" && inlineJson.length > 0;
   const hasManagedFile =
     typeof input.sourcePath === "string" && input.sourcePath.length > 0;

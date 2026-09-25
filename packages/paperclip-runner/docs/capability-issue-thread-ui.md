@@ -151,32 +151,32 @@ owns it.
 
 ```sh
 # Deterministic fake-mode app (no provider process)
-pnpm --filter @paperclipai/paperclip-runner console:issue-thread
+pnpm --filter @kesarcloud/paperclip-runner console:issue-thread
 
 # Focused browser suite, including the axe gate on all 12 slugs × 2 viewports
-pnpm --filter @paperclipai/paperclip-runner test:browser:scenarios
+pnpm --filter @kesarcloud/paperclip-runner test:browser:scenarios
 
 # View-model and live-projection unit tests
-pnpm --filter @paperclipai/paperclip-runner exec vitest run src/issue-thread
+pnpm --filter @kesarcloud/paperclip-runner exec vitest run src/issue-thread
 
 # Screenshot matrix (12 slugs × 2 viewports) and its byte-stability check
 # Recorded evidence generation is deferred from this release.
-pnpm --filter @paperclipai/paperclip-runner check:capability:ui
+pnpm --filter @kesarcloud/paperclip-runner check:capability:ui
 
 # Real runnerd + real Codex through the same HTTP routes the browser uses
-pnpm --filter @paperclipai/paperclip-runner smoke:capability:ui
+pnpm --filter @kesarcloud/paperclip-runner smoke:capability:ui
 # Recorded evidence generation is deferred from this release.
 ```
 
 Hosts without the Playwright chromium system libraries can either run
-`pnpm --filter @paperclipai/paperclip-runner verify:rootless` or set
-`PAPERCLIP_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
+`pnpm --filter @kesarcloud/paperclip-runner verify:rootless` or set
+`PAPERCLAW_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
 
 The committed PNGs are pinned to the Chromium build listed in
-`.paperclip-local/evidence/capability/ui/index.md`, so `check:capability:ui` needs that same
-browser. Point `PAPERCLIP_RUNNER_CHROMIUM_PATH` at the recorded browser before
+`.paperclaw-local/evidence/capability/ui/index.md`, so `check:capability:ui` needs that same
+browser. Point `PAPERCLAW_RUNNER_CHROMIUM_PATH` at the recorded browser before
 comparing — and when that path is the agent-browser wrapper, also set
-`PAPERCLIP_CHROMIUM_BIN` to the exact binary, because the wrapper otherwise
+`PAPERCLAW_CHROMIUM_BIN` to the exact binary, because the wrapper otherwise
 picks the newest installed Playwright Chromium. The issue-thread bundle
 self-hosts its Latin Inter and DejaVu Sans Mono WOFF2 faces plus tiny status-glyph
 subsets, so host fontconfig directories do not participate in capture. The recorder probes the
@@ -219,6 +219,6 @@ One deviation is recorded against the Capability contract:
 Fake-mode fixtures render from authored data with a fixed clock, so two captures
 of a slug from a clean checkout are byte-identical. Live sessions are not
 byte-stable — a real model writes their prose — so live evidence lives in
-`.paperclip-local/evidence/capability/ui-live/` and is excluded from the determinism gate.
+`.paperclaw-local/evidence/capability/ui-live/` and is excluded from the determinism gate.
 Durable comments in live mode carry the mock control plane's own deterministic
 clock rather than wall time, because that is the timestamp on the mock record.

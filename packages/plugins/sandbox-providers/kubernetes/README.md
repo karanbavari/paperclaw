@@ -1,4 +1,4 @@
-# @paperclipai/plugin-kubernetes (alpha)
+# @kesarcloud/plugin-kubernetes (alpha)
 
 First-party Paperclip sandbox-provider plugin for Kubernetes.
 
@@ -20,7 +20,7 @@ First-party Paperclip sandbox-provider plugin for Kubernetes.
 ## Installation
 
 ```bash
-paperclipai plugin install @paperclipai/plugin-kubernetes
+paperclipai plugin install @kesarcloud/plugin-kubernetes
 ```
 
 Or, for local development:
@@ -92,7 +92,7 @@ Keep provider-level egress defaults narrow, then grant only the destinations a t
 }
 ```
 
-The provider creates a workload-owned policy selected by the task run label, so the additional destinations do not become reachable from other concurrent agent pods. Cilium mode enforces FQDNs directly. Standard NetworkPolicy mode cannot express FQDNs, so an FQDN grant permits public IPv4 TCP 80/443 for that run while excluding private, loopback, link-local, CGNAT, and multicast ranges. Network failures that look policy-related include the grant path in stderr, and the sandbox exposes the effective policy through `PAPERCLIP_NETWORK_EGRESS_*` environment variables.
+The provider creates a workload-owned policy selected by the task run label, so the additional destinations do not become reachable from other concurrent agent pods. Cilium mode enforces FQDNs directly. Standard NetworkPolicy mode cannot express FQDNs, so an FQDN grant permits public IPv4 TCP 80/443 for that run while excluding private, loopback, link-local, CGNAT, and multicast ranges. Network failures that look policy-related include the grant path in stderr, and the sandbox exposes the effective policy through `PAPERCLAW_NETWORK_EGRESS_*` environment variables.
 
 ## What gets created in your cluster
 

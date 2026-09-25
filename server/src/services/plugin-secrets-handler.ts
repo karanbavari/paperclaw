@@ -4,10 +4,10 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { companySecretBindings } from "@paperclipai/db";
-import type { EnvSecretRefBinding, SecretProjectionClass, SecretVersionSelector } from "@paperclipai/shared";
-import { envBindingSecretRefSchema } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import { companySecretBindings } from "@kesarcloud/db";
+import type { EnvSecretRefBinding, SecretProjectionClass, SecretVersionSelector } from "@kesarcloud/shared";
+import { envBindingSecretRefSchema } from "@kesarcloud/shared";
 import {
   collectSecretRefPaths,
   isUuidSecretRef,
@@ -163,6 +163,14 @@ export interface PluginSecretsResolveParams {
   heartbeatRunId?: string | null;
 }
 
+export interface PluginSecretsUpsertParams {
+  companyId: string;
+  name: string;
+  value: string;
+  description?: string | null;
+  externalRef?: string | null;
+}
+
 export interface PluginSecretsHandlerOptions {
   db: Db;
   pluginId: string;
@@ -170,6 +178,11 @@ export interface PluginSecretsHandlerOptions {
 
 export interface PluginSecretsService {
   resolve(params: PluginSecretsResolveParams): Promise<string>;
+  upsert(params: PluginSecretsUpsertParams): Promise<{
+    secretRef: string;
+    name: string;
+    latestVersion: number;
+  }>;
 }
 
 function createRateLimiter(maxAttempts: number, windowMs: number) {
@@ -193,6 +206,7 @@ export function createPluginSecretsHandler(
 ): PluginSecretsService {
   const { db, pluginId } = options;
   const rateLimiter = createRateLimiter(30, 60_000);
+  const secrets = secretService(db);
 
   async function lookupBinding(input: {
     companyId: string;
@@ -222,7 +236,28 @@ export function createPluginSecretsHandler(
   return {
     async resolve(params: PluginSecretsResolveParams): Promise<string> {
       if (typeof params.secretRef === "string") {
-        throw invalidSecretRef(params.secretRef.trim() || "<empty>");
+        const companyId = requireCompanyId(params.companyId);
+        const secretRef = params.secretRef.trim();
+        if (!isUuidSecretRef(secretRef)) throw invalidSecretRef(secretRef || "<empty>");
+        const secret = await secrets.getById(secretRef);
+        if (
+          !secret ||
+          secret.companyId !== companyId ||
+          !secret.name.startsWith(`plugin:${pluginId}:`)
+        ) {
+          throw invalidSecretRef(secretRef);
+        }
+        return secrets.resolveSecretValue(companyId, secretRef, "latest", {
+          accessContext: {
+            consumerType: "plugin_worker",
+            consumerId: pluginId,
+            actorType: params.actorType ?? "plugin",
+            actorId: params.actorId ?? pluginId,
+            issueId: params.issueId ?? null,
+            heartbeatRunId: params.heartbeatRunId ?? null,
+            pluginId,
+          },
+        });
       }
 
       const bindingRef = parseSecretRefBinding(params.secretRef);
@@ -258,7 +293,7 @@ export function createPluginSecretsHandler(
       }
 
       const binding = bindings[0]!;
-      return secretService(db).resolveSecretValue(companyId, bindingRef.secretId, versionSelector, {
+      return secrets.resolveSecretValue(companyId, bindingRef.secretId, versionSelector, {
         bindingContext: {
           consumerType: "plugin",
           consumerId: pluginId,
@@ -280,6 +315,34 @@ export function createPluginSecretsHandler(
           pluginId,
         },
       });
+    },
+    async upsert(params: PluginSecretsUpsertParams) {
+      const companyId = requireCompanyId(params.companyId);
+      if (!rateLimiter.check(`${companyId}:${pluginId}:write`)) {
+        const err = new Error("Rate limit exceeded for secret writes");
+        err.name = "RateLimitExceededError";
+        throw err;
+      }
+      const requestedName = typeof params.name === "string" ? params.name.trim() : "";
+      const value = typeof params.value === "string" ? params.value : "";
+      if (!requestedName) throw invalidSecretRef("<missing-name>");
+      if (!value) throw invalidSecretRef("<empty-value>");
+      const safeName = requestedName
+        .replace(/[^a-zA-Z0-9._:-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 120) || "secret";
+      const name = `plugin:${pluginId}:${safeName}`;
+      const actor = { userId: `plugin:${pluginId}`, agentId: null };
+      const existing = await secrets.getByName(companyId, name);
+      const secret = existing
+        ? await secrets.rotate(existing.id, { value }, actor)
+        : await secrets.create(companyId, {
+            name,
+            provider: "local_encrypted",
+            value,
+            description: params.description ?? `Secret managed by plugin ${pluginId}.`,
+          }, actor);
+      return { secretRef: secret.id, name: secret.name, latestVersion: secret.latestVersion };
     },
   };
 }

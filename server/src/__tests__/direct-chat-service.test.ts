@@ -197,7 +197,7 @@ describeEmbeddedPostgres("directChatService", () => {
         contextSnapshot: expect.objectContaining({
           directChatThreadId: detail.id,
           directChatMessageId: detail.messages[1]?.id,
-          paperclawDirectChat: expect.objectContaining({
+          paperclipDirectChat: expect.objectContaining({
             targetQuestion: "What should we do today?",
             company: expect.objectContaining({ name: "Direct Chat Co" }),
             companySnapshot: expect.objectContaining({
@@ -386,7 +386,7 @@ describeEmbeddedPostgres("directChatService", () => {
       wakeup,
     });
 
-    const directChatContext = wakeup.mock.calls[0]?.[1].contextSnapshot.paperclawDirectChat as
+    const directChatContext = wakeup.mock.calls[0]?.[1].contextSnapshot.paperclipDirectChat as
       | { transcript?: string }
       | undefined;
     expect(directChatContext?.transcript).not.toContain("tool_use");

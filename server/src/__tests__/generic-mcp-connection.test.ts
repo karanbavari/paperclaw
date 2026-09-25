@@ -31,9 +31,9 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { and, eq, sql } from "drizzle-orm";
-import { MCP_CONFIG_HELP_PROMPT } from "@paperclipai/shared";
+import { MCP_CONFIG_HELP_PROMPT } from "@kesarcloud/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -594,11 +594,11 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("emits deployment guidance without exposing server env-var names", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "");
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", "");
+    vi.stubEnv("PAPERCLAW_AUTH_PUBLIC_BASE_URL", "");
     vi.stubEnv("BETTER_AUTH_URL", "");
     vi.stubEnv("BETTER_AUTH_BASE_URL", "");
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "");
+    vi.stubEnv("PAPERCLAW_MANAGED_RUNTIME_PUBLIC_URL", "");
     const app = createRouteApp(db, {
       deploymentMode: "local_trusted",
       deploymentExposure: "private",
@@ -612,7 +612,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     expect(response.body).toMatchObject({
       details: { code: "oauth_redirect_origin_unsupported" },
     });
-    expect(JSON.stringify(response.body)).not.toContain("PAPERCLIP_PUBLIC_URL");
+    expect(JSON.stringify(response.body)).not.toContain("PAPERCLAW_PUBLIC_URL");
   });
 
   it("stores a bearer key as a secret and never reads it back", async () => {
@@ -927,7 +927,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     const fixture = installMcpOAuthFixture({ auth: "oauth" });
     const company = await createCompany(db);
     const app = createRouteApp(db);
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
     const actor = { actorType: "user" as const, actorId: "board-user" };
 
     const response = await request(app)
@@ -1461,7 +1461,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
 
   it("prefers a deployment-preconfigured client over any registration", async () => {
     const fixture = installMcpOAuthFixture({ auth: "oauth", cimd: true });
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "preconfigured-client");
+    vi.stubEnv("PAPERCLAW_TOOL_OAUTH_CLIENT_ID", "preconfigured-client");
     const company = await createCompany(db);
     const service = toolAccessService(db);
 
@@ -1480,7 +1480,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     installMcpOAuthFixture({ auth: "oauth", dcr: false });
     const company = await createCompany(db);
     const app = createRouteApp(db);
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
 
     const response = await request(app)
       .post(`/api/companies/${company.id}/tools/apps/connect`)
@@ -1775,7 +1775,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("redacts a hostile denial from the callback route and consumes the state", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
     installMcpOAuthFixture({ auth: "oauth" });
     const company = await createCompany(db);
     const service = toolAccessService(db);
@@ -1840,7 +1840,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("returns browser denials to Permissions without reflecting provider-authored details", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
     installMcpOAuthFixture({ auth: "oauth" });
     const company = await createCompany(db);
     const service = toolAccessService(db);
@@ -2419,7 +2419,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
 
   it("serves a client metadata document with no company or secret data", async () => {
     const company = await createCompany(db);
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
     const app = createRouteApp(db);
 
     const response = await request(app).get("/api/tools/oauth/client-metadata").expect(200);
@@ -2434,23 +2434,23 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("uses the configured auth origin for self-hosted OAuth callbacks", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://public.paperclip.example");
-    vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "https://auth.paperclip.example");
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", "https://public.paperclaw.example");
+    vi.stubEnv("PAPERCLAW_AUTH_PUBLIC_BASE_URL", "https://auth.paperclaw.example");
     const app = createRouteApp(db);
 
     const response = await request(app).get("/api/tools/oauth/client-metadata").expect(200);
 
     expect(response.body.redirect_uris).toEqual([
-      "https://auth.paperclip.example/api/tools/oauth/callback",
+      "https://auth.paperclaw.example/api/tools/oauth/callback",
     ]);
   });
 
   it("uses the managed runtime origin when no explicit callback origin is configured", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "");
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", "");
+    vi.stubEnv("PAPERCLAW_AUTH_PUBLIC_BASE_URL", "");
     vi.stubEnv("BETTER_AUTH_URL", "");
     vi.stubEnv("BETTER_AUTH_BASE_URL", "");
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "https://worktree.tail29c1aa.ts.net");
+    vi.stubEnv("PAPERCLAW_MANAGED_RUNTIME_PUBLIC_URL", "https://worktree.tail29c1aa.ts.net");
     const app = createRouteApp(db);
 
     const response = await request(app).get("/api/tools/oauth/client-metadata").expect(200);
@@ -2461,8 +2461,8 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("keeps an explicit callback origin ahead of managed runtime inference", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", PUBLIC_BASE_URL);
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "https://inferred.tail29c1aa.ts.net");
+    vi.stubEnv("PAPERCLAW_PUBLIC_URL", PUBLIC_BASE_URL);
+    vi.stubEnv("PAPERCLAW_MANAGED_RUNTIME_PUBLIC_URL", "https://inferred.tail29c1aa.ts.net");
     const app = createRouteApp(db);
 
     const response = await request(app).get("/api/tools/oauth/client-metadata").expect(200);

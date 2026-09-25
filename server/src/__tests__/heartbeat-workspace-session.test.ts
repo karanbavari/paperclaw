@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
-import type { agents } from "@paperclipai/db";
-import { sessionCodec as codexSessionCodec } from "@paperclipai/adapter-codex-local/server";
+import type { agents } from "@kesarcloud/db";
+import { sessionCodec as codexSessionCodec } from "@kesarcloud/adapter-codex-local/server";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {
   applyPersistedExecutionWorkspaceConfig,
@@ -1427,7 +1427,7 @@ function buildWorkspaceConfigMetadata(
       type: "git_worktree",
       baseRef: "origin/main",
       branchTemplate: "{{issue.identifier}}-{{slug}}",
-      worktreeParentDir: ".paperclip/worktrees",
+      worktreeParentDir: ".paperclaw/worktrees",
     },
     repoUrl: "https://github.com/example/repo.git",
     repoRef: "origin/main",
@@ -1563,7 +1563,7 @@ describe("effective run execution workspace config freshness", () => {
           type: "git_worktree",
           baseRef: "origin/main",
           branchTemplate: "custom-{{issue.identifier}}",
-          worktreeParentDir: ".paperclip/worktrees",
+          worktreeParentDir: ".paperclaw/worktrees",
         },
       }),
     },
@@ -1581,7 +1581,7 @@ describe("effective run execution workspace config freshness", () => {
           type: "git_worktree",
           baseRef: "origin/release",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          worktreeParentDir: ".paperclip/worktrees",
+          worktreeParentDir: ".paperclaw/worktrees",
         },
       }),
     },
@@ -1622,7 +1622,7 @@ describe("effective run execution workspace config freshness", () => {
         type: "git_worktree",
         baseRef: "origin/release",
         branchTemplate: "{{issue.identifier}}-{{slug}}",
-        worktreeParentDir: ".paperclip/worktrees",
+        worktreeParentDir: ".paperclaw/worktrees",
       },
       configSnapshot: {
         provisionCommand: "pnpm install --frozen-lockfile",
@@ -1686,7 +1686,7 @@ describe("effective run execution workspace config freshness", () => {
         type: "git_worktree",
         baseRef: "origin/release",
         branchTemplate: "{{issue.identifier}}-{{slug}}",
-        worktreeParentDir: ".paperclip/worktrees",
+        worktreeParentDir: ".paperclaw/worktrees",
       },
     });
     const decision = resolveExecutionWorkspaceConfigFreshness({

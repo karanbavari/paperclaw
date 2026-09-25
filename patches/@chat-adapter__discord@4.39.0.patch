@@ -1034,7 +1034,7 @@ index a42b61d58..a56ddef52 100644
 +    if (Date.now() >= deadlineAt) return;
 +    const correction =
 +      response?.action === "errors"
-+        ? response.paperclipDiscordCorrection
++        ? response.paperclawDiscordCorrection
 +        : null;
 +    const safeCorrection =
 +      correction &&

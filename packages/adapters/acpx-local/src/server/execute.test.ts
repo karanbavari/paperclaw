@@ -110,8 +110,8 @@ describe("acpx_local runtime skill isolation", () => {
     const { meta } = await runExecutor({
       agent: "claude",
       stateDir,
-      paperclawRuntimeSkills: [skill],
-      paperclawSkillSync: { desiredSkills: [skill.key] },
+      paperclipRuntimeSkills: [skill],
+      paperclipSkillSync: { desiredSkills: [skill.key] },
     });
 
     const mountedRoot = await onlyChildDir(path.join(stateDir, "runtime-skills", "claude"));
@@ -139,18 +139,18 @@ describe("acpx_local runtime skill isolation", () => {
       agent: "codex",
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
-      paperclawRuntimeSkills: [keep, remove],
+      paperclipRuntimeSkills: [keep, remove],
     };
 
     await runExecutor({
       ...baseConfig,
-      paperclawSkillSync: { desiredSkills: [keep.key, remove.key] },
+      paperclipSkillSync: { desiredSkills: [keep.key, remove.key] },
     });
     expect(await pathExists(path.join(codexHome, "skills", remove.runtimeName, "SKILL.md"))).toBe(true);
 
     await runExecutor({
       ...baseConfig,
-      paperclawSkillSync: { desiredSkills: [keep.key] },
+      paperclipSkillSync: { desiredSkills: [keep.key] },
     });
 
     expect(await pathExists(path.join(codexHome, "skills", keep.runtimeName, "SKILL.md"))).toBe(true);
@@ -172,8 +172,8 @@ describe("acpx_local runtime skill isolation", () => {
       agent: "codex",
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
-      paperclawRuntimeSkills: [legacy],
-      paperclawSkillSync: { desiredSkills: [] },
+      paperclipRuntimeSkills: [legacy],
+      paperclipSkillSync: { desiredSkills: [] },
     });
 
     expect(await pathExists(path.join(skillsHome, legacy.runtimeName))).toBe(false);
@@ -182,12 +182,12 @@ describe("acpx_local runtime skill isolation", () => {
   it.skipIf(process.platform === "win32")("replaces stale managed Codex auth files with source symlinks", async () => {
     const root = await makeTempRoot();
     const sourceCodexHome = path.join(root, "source-codex-home");
-    const paperclawHome = path.join(root, "paperclaw-home");
-    const paperclawInstanceId = "test-instance";
+    const paperclipHome = path.join(root, "paperclaw-home");
+    const paperclipInstanceId = "test-instance";
     const managedCodexHome = path.join(
-      paperclawHome,
+      paperclipHome,
       "instances",
-      paperclawInstanceId,
+      paperclipInstanceId,
       "companies",
       "company-1",
       "codex-home",
@@ -204,13 +204,13 @@ describe("acpx_local runtime skill isolation", () => {
     const previousPaperClawInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
     try {
       process.env.CODEX_HOME = sourceCodexHome;
-      process.env.PAPERCLAW_HOME = paperclawHome;
-      process.env.PAPERCLAW_INSTANCE_ID = paperclawInstanceId;
+      process.env.PAPERCLAW_HOME = paperclipHome;
+      process.env.PAPERCLAW_INSTANCE_ID = paperclipInstanceId;
       await runExecutor({
         agent: "codex",
         stateDir: path.join(root, "state"),
-        paperclawRuntimeSkills: [],
-        paperclawSkillSync: { desiredSkills: [] },
+        paperclipRuntimeSkills: [],
+        paperclipSkillSync: { desiredSkills: [] },
       });
     } finally {
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
@@ -277,7 +277,7 @@ describe("acpx_local runtime skill isolation", () => {
       },
       {
         context: {
-          paperclawWorkspace: {
+          paperclipWorkspace: {
             cwd: workspaceDir,
             source: "project_primary",
             strategy: "git_worktree",

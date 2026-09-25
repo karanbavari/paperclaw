@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@kesarcloud/adapter-utils/execution-target";
 
 const {
   ensureAdapterExecutionTargetDirectory,
@@ -62,10 +62,10 @@ const {
       }
       return {
         target: null,
-        workspaceRemoteDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace",
-        runtimeRootDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex",
+        workspaceRemoteDir: "/remote/workspace/.paperclaw-runtime/runs/test/workspace",
+        runtimeRootDir: "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/codex",
         assetDirs: {
-          home: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex/home",
+          home: "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/codex/home",
         },
         restoreWorkspace,
       };
@@ -82,9 +82,9 @@ const {
   };
 });
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
   );
   return {
     ...actual,
@@ -123,8 +123,8 @@ describe("codex remote environment diagnostics", () => {
     // scratch locations so no test ever reads or writes the real ~/.codex or
     // the real instance tree.
     vi.stubEnv("CODEX_HOME", await makeScratchDir("paperclip-test-shared-codex-"));
-    vi.stubEnv("PAPERCLIP_HOME", await makeScratchDir("paperclip-test-instance-"));
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
+    vi.stubEnv("PAPERCLAW_HOME", await makeScratchDir("paperclip-test-instance-"));
+    vi.stubEnv("PAPERCLAW_INSTANCE_ID", "default");
   });
 
   afterEach(async () => {
@@ -205,7 +205,7 @@ describe("codex remote environment diagnostics", () => {
     expect(probeCall?.[4]).toMatchObject({
       cwd: "/remote/workspace",
       env: expect.objectContaining({
-        CODEX_HOME: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/codex/home",
+        CODEX_HOME: "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/codex/home",
       }),
     });
     expect(restoreWorkspace).toHaveBeenCalledTimes(1);
@@ -248,7 +248,7 @@ describe("codex remote environment diagnostics", () => {
     const probeCall = runAdapterExecutionTargetProcess.mock.calls[0] as unknown as
       | [string, AdapterExecutionTarget, string, string[], { cwd: string; env: Record<string, string> }]
       | undefined;
-    expect(probeCall?.[4].env.CODEX_HOME).toContain("/remote/workspace/.paperclip-runtime/codex/probe-home-codex-envtest-");
+    expect(probeCall?.[4].env.CODEX_HOME).toContain("/remote/workspace/.paperclaw-runtime/codex/probe-home-codex-envtest-");
     expect(probeCall?.[4].env.CODEX_HOME?.startsWith("/tmp/")).toBe(false);
     expect(probeCall?.[3]).toContain("--skip-git-repo-check");
   });
@@ -389,7 +389,7 @@ describe("codex remote environment diagnostics", () => {
     // — otherwise the Test and real runs authenticate with different
     // credentials and can disagree in both directions.
     const perAgentHome = path.join(
-      process.env.PAPERCLIP_HOME!,
+      process.env.PAPERCLAW_HOME!,
       "instances",
       "default",
       "companies",

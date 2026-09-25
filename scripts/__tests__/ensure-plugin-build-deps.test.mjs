@@ -68,7 +68,7 @@ test("recovers the old empty lock left by interrupted startup", async (t) => {
   const result = await f.launch().done;
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /Recovered abandoned/);
-  assert.match(result.output, /Building @paperclipai\/shared/);
+  assert.match(result.output, /Building @kesarcloud\/shared/);
   assert.equal(fs.existsSync(f.lock), false);
 });
 
@@ -180,7 +180,7 @@ test("rejects partial output from an interrupted direct compiler", async (t) => 
   assert.equal((await f.launch().done).code, 0);
   const target = path.join(f.root, "packages/shared");
   fs.unlinkSync(path.join(target, "dist/complete"));
-  const completionTime = fs.statSync(path.join(target, "dist/.paperclip-build-complete")).mtimeMs;
+  const completionTime = fs.statSync(path.join(target, "dist/.paperclaw-build-complete")).mtimeMs;
   await sleep(20);
   const compiler = spawn(process.execPath, ["node_modules/typescript/bin/tsc", "-p", path.join(target, "tsconfig.json")], {
     cwd: f.root, env: { ...process.env, BUILD_DELAY: "10000" }, stdio: "ignore",
@@ -232,7 +232,7 @@ test("shared source changes invalidate both shared and dependent SDK output", as
   fs.utimesSync(source, oldTime, oldTime);
   const retry = await f.launch().done;
   assert.equal(retry.code, 0, retry.output);
-  assert.match(retry.output, /Building @paperclipai\/shared/);
-  assert.match(retry.output, /Building @paperclipai\/plugin-sdk/);
+  assert.match(retry.output, /Building @kesarcloud\/shared/);
+  assert.match(retry.output, /Building @kesarcloud\/plugin-sdk/);
   assert.equal(fs.readFileSync(path.join(f.root, "builds"), "utf8").trim().split("\n").length, 4);
 });

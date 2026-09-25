@@ -32,7 +32,7 @@ The dependency direction is one way:
 ```text
 server heartbeat orchestration
   -> PaperclipNativeRuntimeAdapter (core seam)
-      -> @paperclipai/paperclip-runner public contracts
+      -> @kesarcloud/paperclip-runner public contracts
           -> NativeSessionBackend -> package-owned driver/runner logic
           -> ControlPlanePort      -> server-bound Paperclip implementation
 ```
@@ -312,10 +312,10 @@ arbitrary `env` in either schema.
 
 The runner, package driver, and model/harness never receive:
 
-- the local agent JWT, `PAPERCLIP_API_KEY`, a board session, or a board API key;
+- the local agent JWT, `PAPERCLAW_API_KEY`, a board session, or a board API key;
 - managed MCP gateway credentials, runner-lease/bootstrap credentials, or
   credential-broker secret material;
-- `PAPERCLIP_WAKE_PAYLOAD_JSON`, rendered Paperclip wake text, Paperclip skill
+- `PAPERCLAW_WAKE_PAYLOAD_JSON`, rendered Paperclip wake text, Paperclip skill
   instructions, the Paperclip API manual, or run-scoped skill material;
 - raw `process.env`, agent/project/routine env maps, `runtimeConfig.env`, or the
   legacy adapter's generic execution context;
@@ -627,7 +627,7 @@ packages/paperclip-runner/docs/tutorials/standalone-thin-paperclip-adapter.md
 packages/paperclip-runner/docs/tutorials/end-to-end.md
 packages/paperclip-runner/docs/index.md
 packages/paperclip-runner/docs/architecture.md
-packages/paperclip-runner/.paperclip-local/log.md
+packages/paperclip-runner/.paperclaw-local/log.md
 ```
 
 ### Paperclip storage, adapter, finalizer, and read seam
@@ -960,7 +960,7 @@ packages/paperclip-runner/docs/design/standalone-thin-paperclip-adapter.md
 packages/paperclip-runner/docs/index.md
 packages/paperclip-runner/docs/standalone-thin-paperclip-adapter.md
 packages/paperclip-runner/docs/tutorials/standalone-thin-paperclip-adapter.md
-packages/paperclip-runner/.paperclip-local/log.md
+packages/paperclip-runner/.paperclaw-local/log.md
 packages/paperclip-runner/package.json
 packages/paperclip-runner/spec/fixtures/status-authority-sdk.json
 packages/paperclip-runner/src/backends/codex-native-backend.ts
@@ -1037,33 +1037,33 @@ Deterministic package/mock proof:
 ```sh
 pnpm check:runner-sdk-spec
 
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @kesarcloud/paperclip-runner exec vitest run \
   src/conformance/control-plane-port.test.ts \
   src/backends/harness-driver-backend.test.ts
 
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @kesarcloud/paperclip-runner trace:standalone -- \
   --target mock --scenario happy-path
 ```
 
 First real Paperclip tracer and inspection (against an isolated local dev
-instance with the five `PAPERCLIP_*` identifiers/auth variables already set):
+instance with the five `PAPERCLAW_*` identifiers/auth variables already set):
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @kesarcloud/paperclip-runner trace:standalone -- \
   --target paperclip --scenario happy-path
 
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_URL%/}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_BASE%/api}"
 curl -fsS \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  "$PAPERCLIP_API_BASE/api/heartbeat-runs/$PAPERCLIP_RUN_ID/events?after=0&limit=200" \
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" \
+  "$PAPERCLAW_API_BASE/api/heartbeat-runs/$PAPERCLAW_RUN_ID/events?after=0&limit=200" \
   | jq '[.[] | select(.sourceEventId != null)] | {count: length, events: map({sourceSeq, sourceEventId, eventType})}'
 ```
 
 Targeted real integration proof:
 
 ```sh
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @kesarcloud/server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \
   src/__tests__/heartbeat-native-runner-selection.test.ts \
   src/__tests__/heartbeat-native-runner-cancellation.test.ts \
@@ -1075,11 +1075,11 @@ pnpm --filter @paperclipai/server exec vitest run \
   src/__tests__/native-finalization-migration.test.ts \
   src/__tests__/legacy-finalization-regression.test.ts
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @kesarcloud/server exec vitest run \
   src/__tests__/heartbeat-run-event-sequencing.test.ts \
   -t "serializes concurrent lifecycle cancel native and log writers"
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @kesarcloud/server exec vitest run \
   src/__tests__/native-status-arbiter-corpus.test.ts \
   -t "executes all 52 fixtures in their production consumers"
 ```
@@ -1087,10 +1087,10 @@ pnpm --filter @paperclipai/server exec vitest run \
 Legacy fallback proof after disabling the flag:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @kesarcloud/paperclip-runner trace:standalone -- \
   --target paperclip --scenario legacy-fallback
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @kesarcloud/server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \
   -t "uses the unchanged legacy path when the kill switch is off"
 ```

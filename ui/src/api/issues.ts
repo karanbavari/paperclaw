@@ -1,4 +1,4 @@
-import type { ExecutionReconciliation } from "@paperclipai/shared";
+import type { ExecutionReconciliation } from "@kesarcloud/shared";
 import type {
   AcceptedPlanDecompositionSummary,
   AskUserQuestionsAnswer,
@@ -34,7 +34,7 @@ import type {
   ReleaseIssueTreeHoldResponse,
   UpsertIssueWatchdog,
   UpsertIssueDocument,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { api, ApiError, type RequestOptions } from "./client";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";
 
@@ -265,6 +265,15 @@ export const issuesApi = {
           hasCommentReceipt(value?.comment),
         )
       : response;
+  },
+  adminForceRelease: (id: string, options: { clearAssignee?: boolean } = {}) => {
+    const params = new URLSearchParams();
+    if (options.clearAssignee) params.set("clearAssignee", "true");
+    const qs = params.toString();
+    return api.post<{
+      issue: Issue;
+      previous: { checkoutRunId: string | null; executionRunId: string | null };
+    }>(`/issues/${id}/admin-force-release${qs ? `?${qs}` : ""}`, {});
   },
   decideStalledReview: (id: string, data: StalledReviewDecision) =>
     api.post<StalledReviewDecisionResponse>(

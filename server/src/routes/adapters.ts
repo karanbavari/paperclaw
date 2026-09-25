@@ -44,7 +44,7 @@ import type { ServerAdapterModule, AdapterConfigSchema } from "../adapters/types
 import type {
   AdapterLoginPanelMode,
   AdapterLoginTimeoutPolicy,
-} from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils";
 import { loadExternalAdapterPackage, getUiParserSource, getOrExtractUiParserSource, reloadExternalAdapter } from "../adapters/plugin-loader.js";
 import { logger } from "../middleware/logger.js";
 import { forbidden } from "../errors.js";
@@ -73,7 +73,7 @@ function assertAdapterCodeInstallAllowed() {
 
 /**
  * Floor: when the hosting operator hides the Adapters settings surface
- * (`instance.adapters` in PAPERCLIP_HIDDEN_SETTINGS), adapter management
+ * (`instance.adapters` in PAPERCLAW_HIDDEN_SETTINGS), adapter management
  * writes are rejected alongside it. Reads stay open — adapter metadata is
  * consumed by agent-creation UIs outside the hidden page.
  */

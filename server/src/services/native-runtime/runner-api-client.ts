@@ -142,7 +142,7 @@ export async function executeRunnerApi(input: RunnerApiCall, context: RunnerApiC
   const { operation } = validateRunnerApiCall(input, context);
   const url = runnerApiUrl(operation, input, context, io.apiUrl);
   if (!io.token) throw new Error("Paperclip run authentication is unavailable");
-  const headers = new Headers({ Authorization: `Bearer ${io.token}`, "X-Paperclip-Run-Id": context.runId });
+  const headers = new Headers({ Authorization: `Bearer ${io.token}`, "X-PaperClaw-Run-Id": context.runId });
   let body: BodyInit | undefined;
   const contentType = input.contentType ?? (input.files?.length ? "multipart/form-data" : "application/json");
   if (/\r|\n/.test(contentType)) throw badRequest("Invalid content type");

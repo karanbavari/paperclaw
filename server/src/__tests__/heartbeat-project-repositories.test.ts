@@ -6,8 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, createDb, heartbeatRuns, issues, projects, projectWorkspaces } from "@paperclipai/db";
-import { runLocalGit, setExpensiveWorkspaceGitExecutor } from "@paperclipai/adapter-utils/git-workspace-sync";
+import { agents, companies, createDb, heartbeatRuns, issues, projects, projectWorkspaces } from "@kesarcloud/db";
+import { runLocalGit, setExpensiveWorkspaceGitExecutor } from "@kesarcloud/adapter-utils/git-workspace-sync";
 import { WorkspaceGitScanError } from "../services/workspace-git-operation-scheduler.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { heartbeatService } from "../services/heartbeat.ts";
@@ -29,8 +29,8 @@ suite("task project repository provisioning", () => {
   let heartbeat: ReturnType<typeof heartbeatService>;
   beforeAll(async () => {
     root = await mkdtemp(path.join(os.tmpdir(), "paperclip-project-repos-"));
-    vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
-    vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
+    vi.stubEnv("PAPERCLAW_HOME", path.join(root, "home"));
+    vi.stubEnv("PAPERCLAW_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");
     db = createDb(database.connectionString);
     heartbeat = heartbeatService(db);
@@ -137,7 +137,7 @@ suite("task project repository provisioning", () => {
     expect(execute.mock.calls.filter(([input]) => input.runId === retry!.id)).toHaveLength(1);
     const [task] = await db.select().from(issues).where(and(eq(issues.companyId, companyId), eq(issues.id, issueId)));
     expect(task).toMatchObject({ status: "done", assigneeAgentId: agentId });
-    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.paperclipWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".paperclip-repositories"));
+    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.paperclipWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".paperclaw-repositories"));
     expect(copies.length).toBeGreaterThan(0);
     expect(await readFile(path.join(copies[0]!.cwd, "README.md"), "utf8")).toBe("preserved dirty work");
     await expect(readFile(path.join(copies[0]!.cwd, "private.secret"))).rejects.toMatchObject({ code: "ENOENT" });

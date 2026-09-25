@@ -1,4 +1,4 @@
-<!-- GENERATED FILE — DO NOT EDIT. Run `pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts`. -->
+<!-- GENERATED FILE — DO NOT EDIT. Run `pnpm --filter @kesarcloud/paperclip-runner exec tsx scripts/generate-operation-groups.ts`. -->
 
 # Paperclip agent operation groups
 
@@ -205,7 +205,7 @@ Behavior groups describe expected outcomes and trajectories. They do not grant t
 - [`co-before-work-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-before-work-01.yaml) — Checkout happens before any other write on the issue
 - [`co-body-contract-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-body-contract-01.yaml) — Checkout body carries agentId and expectedStatuses
 - [`co-no-status-patch-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-no-status-patch-01.yaml) — Enter in_progress by checkout, never by patching status
-- [`co-runid-header-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-runid-header-01.yaml) — Modifying calls carry the X-Paperclip-Run-Id audit header
+- [`co-runid-header-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-runid-header-01.yaml) — Modifying calls carry the X-PaperClaw-Run-Id audit header
 
 #### Behavior group st: Status
 
@@ -377,7 +377,7 @@ Behavior groups describe expected outcomes and trajectories. They do not grant t
 ### Company and actor authorization
 
 - Every entity read and write is resolved inside the authenticated actor's company; cross-company identifiers fail without disclosing protected facts.
-- Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-Paperclip-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.
+- Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-PaperClaw-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.
 - Optional tools are omitted unless every required claim, role, and task-mode condition is satisfied. A grant never bypasses approval, budget, pause, execution-lock, interaction-owner, or other governed-action checks.
 
 ### Task modes and exposure
@@ -442,9 +442,9 @@ The machine-readable authority for this document's decisions is `spec/operation-
 Regenerate and check reproducibly:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts
-pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts --check
-pnpm --filter @paperclipai/paperclip-runner exec vitest run src/catalog/operation-groups-doc.test.ts src/catalog/reconciliation.test.ts src/catalog/catalog-docs.test.ts
+pnpm --filter @kesarcloud/paperclip-runner exec tsx scripts/generate-operation-groups.ts
+pnpm --filter @kesarcloud/paperclip-runner exec tsx scripts/generate-operation-groups.ts --check
+pnpm --filter @kesarcloud/paperclip-runner exec vitest run src/catalog/operation-groups-doc.test.ts src/catalog/reconciliation.test.ts src/catalog/catalog-docs.test.ts
 ```
 
 The `--check` path fails on catalog membership, optional-group coverage, control-plane coverage, PRP schema families/counts, behavior/scenario membership, legacy alias folds, source-contract targets, generated live contracts, package exports, or byte-level Markdown drift. Generation is offline and uses only checked-in inputs.

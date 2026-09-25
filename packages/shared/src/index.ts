@@ -513,6 +513,11 @@ export {
   JOIN_REQUEST_TYPES,
   JOIN_REQUEST_STATUSES,
   PERMISSION_KEYS,
+  RESEARCH_LAB_TYPES,
+  RESEARCH_LAB_STATUSES,
+  TOOL_PERMISSION_EFFECTS,
+  TOOL_PERMISSION_SUBJECT_TYPES,
+  TOOL_PERMISSION_DECISIONS,
   TOOL_ACTION_REQUEST_STATUSES,
   TOOL_APPLICATION_STATUSES,
   TOOL_APPLICATION_TYPES,
@@ -664,6 +669,8 @@ export {
   type PauseReason,
   type ApprovalType,
   type ApprovalStatus,
+  type ResearchLabType,
+  type ResearchLabStatus,
   type SecretProvider,
   type SecretProviderConfigStatus,
   type SecretProviderConfigHealthStatus,
@@ -698,6 +705,9 @@ export {
   type JoinRequestType,
   type JoinRequestStatus,
   type PermissionKey,
+  type ToolPermissionEffect,
+  type ToolPermissionSubjectType,
+  type ToolPermissionDecision,
   type ConnectionTokenIssuancePath,
   type ConnectionTokenIssuanceOutcome,
   type ToolAccessActivityAction,
@@ -1105,6 +1115,8 @@ export type {
   IssueBlockerAttentionIssueSummary,
   IssueBlockerAttentionReason,
   IssueBlockerAttentionState,
+  IssueProductivityReview,
+  IssueProductivityReviewTrigger,
   IssueReviewAttention,
   IssueReviewAttentionPath,
   IssueReviewAttentionPathKind,
@@ -1753,7 +1765,7 @@ export {
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
-  PAPERCLIP_CLOUD_MANAGED_BY,
+  PAPERCLAW_CLOUD_MANAGED_BY,
 } from "./types/instance.js";
 
 export type {
@@ -2466,6 +2478,8 @@ export {
   installPluginSchema,
   upsertPluginConfigSchema,
   patchPluginConfigSchema,
+  pluginSetupPatchSchema,
+  pluginToolConsoleTestRequestSchema,
   updatePluginStatusSchema,
   uninstallPluginSchema,
   pluginStateScopeKeySchema,
@@ -2486,6 +2500,8 @@ export {
   type InstallPlugin,
   type UpsertPluginConfig,
   type PatchPluginConfig,
+  type PluginSetupPatch,
+  type PluginToolConsoleTestRequestInput,
   type UpdatePluginStatus,
   type UninstallPlugin,
   type PluginStateScopeKey,
@@ -2764,3 +2780,35 @@ export * from "./ai-connections.js";
 export * from "./types/email.js";
 export * from "./validators/email.js";
 export * from "./announcements.js";
+
+// PaperClaw extension contracts retained across the Paperclip upstream rebase.
+export * from "./types/company-memory.js";
+export * from "./types/direct-chat.js";
+export * from "./types/marketplace.js";
+export * from "./types/meeting.js";
+export * from "./types/ops-incident.js";
+export * from "./types/outcome-center.js";
+export * from "./types/research-lab.js";
+export * from "./types/tool-permissions.js";
+export * from "./validators/company-memory.js";
+export * from "./validators/direct-chat.js";
+export * from "./validators/marketplace.js";
+export * from "./validators/meeting.js";
+export * from "./validators/ops-incident.js";
+export * from "./validators/outcome-center.js";
+export * from "./validators/research-lab.js";
+export * from "./validators/tool-permissions.js";
+export type {
+  PluginSetupOverallStatus,
+  PluginSetupPatchRequest,
+  PluginSetupStep,
+  PluginSetupStepKind,
+  PluginSetupStepStatus,
+  PluginSetupSummary,
+  PluginSetupWizardState,
+  PluginSetupWizardStatus,
+  PluginToolConsoleDescriptor,
+  PluginToolConsoleDiscoveryResponse,
+  PluginToolConsoleTestRequest,
+  PluginToolConsoleTestResult,
+} from "./types/plugin.js";

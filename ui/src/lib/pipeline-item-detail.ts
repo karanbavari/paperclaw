@@ -1,4 +1,4 @@
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@kesarcloud/shared";
 import type {
   PipelineCase,
   PipelineCaseActiveWork,

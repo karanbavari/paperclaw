@@ -873,7 +873,7 @@ Or:
     "type": "git_worktree",
     "baseRef": "origin/main",
     "branchTemplate": "{{issue.identifier}}-{{slug}}",
-    "worktreeParentDir": ".paperclip/instances/default/worktrees/projects/{{project.id}}",
+    "worktreeParentDir": ".paperclaw/instances/default/worktrees/projects/{{project.id}}",
     "cleanupPolicy": "on_merged",
     "startDevServer": true,
     "devServerCommand": "pnpm dev",
@@ -1123,7 +1123,7 @@ Acceptance:
 2. Keep current fallback order, but distinguish:
    - base project workspace
    - derived execution workspace
-3. Inject resolved execution workspace details into `context.paperclipWorkspace` for local adapters and into a generic execution-workspace intent payload for adapters that need structured remote realization.
+3. Inject resolved execution workspace details into `context.paperclawWorkspace` for local adapters and into a generic execution-workspace intent payload for adapters that need structured remote realization.
 4. Resolve configured runtime service intent alongside the execution workspace so the adapter or host manager receives a complete workspace runtime contract.
 
 Primary touchpoints:

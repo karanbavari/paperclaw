@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@kesarcloud/adapter-utils/execution-target";
 
 const {
   ensureAdapterExecutionTargetDirectory,
@@ -45,19 +45,19 @@ const {
     }),
     prepareAdapterExecutionTargetRuntime: vi.fn(async () => ({
       target: null,
-      workspaceRemoteDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace",
-      runtimeRootDir: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/opencode",
+      workspaceRemoteDir: "/remote/workspace/.paperclaw-runtime/runs/test/workspace",
+      runtimeRootDir: "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/opencode",
       assetDirs: {
-        xdgConfig: "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/opencode/xdgConfig",
+        xdgConfig: "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/opencode/xdgConfig",
       },
       restoreWorkspace,
     })),
   };
 });
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
   );
   return {
     ...actual,
@@ -144,14 +144,14 @@ describe("opencode remote environment diagnostics", () => {
     const probeCall = runAdapterExecutionTargetProcess.mock.calls[0] as unknown as
       | [string, AdapterExecutionTarget, string, string[], { cwd: string; env: Record<string, string> }]
       | undefined;
-    expect(probeCall?.[4].cwd).toBe("/remote/workspace/.paperclip-runtime/runs/test/workspace");
+    expect(probeCall?.[4].cwd).toBe("/remote/workspace/.paperclaw-runtime/runs/test/workspace");
     if (managed) {
-      expect(probeCall?.[4].env.HOME).toContain("/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/opencode/managed-auth/");
+      expect(probeCall?.[4].env.HOME).toContain("/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/opencode/managed-auth/");
       expect(probeCall?.[4].env.XDG_DATA_HOME).toBe(`${probeCall?.[4].env.HOME}/data`);
       expect(probeCall?.[4].env.XDG_CACHE_HOME).toBe(`${probeCall?.[4].env.HOME}/cache`);
     }
     expect(probeCall?.[4].env.XDG_CONFIG_HOME).toBe(
-      "/remote/workspace/.paperclip-runtime/runs/test/workspace/.paperclip-runtime/opencode/xdgConfig",
+      "/remote/workspace/.paperclaw-runtime/runs/test/workspace/.paperclaw-runtime/opencode/xdgConfig",
     );
   });
 });

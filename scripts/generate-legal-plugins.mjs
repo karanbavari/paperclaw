@@ -364,7 +364,7 @@ async function writePlugin(plugin) {
     type: "module",
     private: true,
     exports: { ".": "./src/index.ts" },
-    paperclawPlugin: {
+    paperclipPlugin: {
       manifest: "./dist/manifest.js",
       worker: "./dist/worker.js",
       ui: "./dist/ui/",

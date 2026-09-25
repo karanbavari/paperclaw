@@ -24,7 +24,7 @@ over stdio. The transport starts a dedicated Unix process group. Normal close,
 stop/reset cleanup, and fatal protocol errors terminate that group with a
 bounded TERM/KILL sequence so a Codex child is not abandoned.
 
-Only the allowlisted Codex host environment is copied. `PAPERCLIP_*` variables,
+Only the allowlisted Codex host environment is copied. `PAPERCLAW_*` variables,
 provider credentials other than Codex's server-side home, and credentialed
 proxy URLs are not passed to runnerd or Codex. Model-issued commands still use
 the separate skillless, network-disabled workspace permission profile.
@@ -38,7 +38,7 @@ attempt's immutable authority tuple:
 import {
   CapabilityLiveSessionService,
   DurableCapabilityLiveSessionStore,
-} from "@paperclipai/paperclip-runner/live";
+} from "@kesarcloud/paperclip-runner/live";
 
 const binding = { sessionId, runId, companyId, actorId, taskId };
 const store = new DurableCapabilityLiveSessionStore({ directory, binding });
@@ -107,13 +107,13 @@ its next response.
 Run the deterministic contract suite:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:scenarios
+pnpm --filter @kesarcloud/paperclip-runner test:scenarios
 ```
 
 Run a real runnerd and Codex app-server smoke:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:live-runner -- --json
+pnpm --filter @kesarcloud/paperclip-runner trace:live-runner -- --json
 ```
 
 The smoke requires an authenticated local Codex installation. It checks a real

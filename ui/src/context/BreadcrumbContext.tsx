@@ -123,3 +123,8 @@ export function useBreadcrumbs() {
   }
   return ctx;
 }
+
+/** Pages that also render standalone in tests may set breadcrumbs when a shell exists. */
+export function useOptionalBreadcrumbs() {
+  return useContext(BreadcrumbContext);
+}

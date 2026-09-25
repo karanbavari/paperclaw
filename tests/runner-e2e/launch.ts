@@ -669,23 +669,23 @@ async function runAttempt(input: {
     const childEnv: NodeJS.ProcessEnv = {
       ...buildRunnerE2EProcessEnvironment(process.env, executions),
       PATH: providerPath,
-      PAPERCLIP_RUNNER_E2E_EXECUTION_IDS: JSON.stringify(
+      PAPERCLAW_RUNNER_E2E_EXECUTION_IDS: JSON.stringify(
         executions.map((candidate) => candidate.id),
       ),
-      PAPERCLIP_RUNNER_E2E_ATTEMPT: String(attempt),
-      PAPERCLIP_RUNNER_E2E_PORT: String(port),
-      PAPERCLIP_RUNNER_E2E_TEMP_ROOT: temporaryRoot,
-      PAPERCLIP_RUNNER_E2E_PRIVATE_DIR: privateDir,
-      PAPERCLIP_RUNNER_E2E_WORKSPACE: workspace,
-      PAPERCLIP_RUNNER_E2E_SERVER_LOG: path.join(privateDir, "server.log"),
-      PAPERCLIP_RUNNER_BINARY: runnerBinary,
-      PAPERCLIP_RUNNER_REMOTE_BINARY_PATH:
+      PAPERCLAW_RUNNER_E2E_ATTEMPT: String(attempt),
+      PAPERCLAW_RUNNER_E2E_PORT: String(port),
+      PAPERCLAW_RUNNER_E2E_TEMP_ROOT: temporaryRoot,
+      PAPERCLAW_RUNNER_E2E_PRIVATE_DIR: privateDir,
+      PAPERCLAW_RUNNER_E2E_WORKSPACE: workspace,
+      PAPERCLAW_RUNNER_E2E_SERVER_LOG: path.join(privateDir, "server.log"),
+      PAPERCLAW_RUNNER_BINARY: runnerBinary,
+      PAPERCLAW_RUNNER_REMOTE_BINARY_PATH:
         resolvePaperclipRemoteRunnerBinaryForHarness(executions, runnerBinary),
       // Vite's optimized dependency cache embeds revision query strings. A
       // private per-attempt cache prevents an earlier cell or local rebuild
       // from producing `504 Outdated Optimize Dep` during browser bootstrap.
-      PAPERCLIP_VITE_CACHE_DIR: path.join(temporaryRoot, "vite-cache"),
-      PAPERCLIP_RUNNER_E2E_TEST_TIMEOUT_MS: String(
+      PAPERCLAW_VITE_CACHE_DIR: path.join(temporaryRoot, "vite-cache"),
+      PAPERCLAW_RUNNER_E2E_TEST_TIMEOUT_MS: String(
         Math.max(
           ...executions.map(
             (candidate) =>
@@ -693,12 +693,12 @@ async function runAttempt(input: {
           ),
         ) + 90_000,
       ),
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_INSTANCE_ID: instanceId,
-      PAPERCLIP_CONFIG: configPath,
-      PAPERCLIP_AGENT_JWT_SECRET: agentJwtSecret,
-      PAPERCLIP_DECISION_SIGNING_SECRET: decisionSigningSecret,
-      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
+      PAPERCLAW_HOME: paperclipHome,
+      PAPERCLAW_INSTANCE_ID: instanceId,
+      PAPERCLAW_CONFIG: configPath,
+      PAPERCLAW_AGENT_JWT_SECRET: agentJwtSecret,
+      PAPERCLAW_DECISION_SIGNING_SECRET: decisionSigningSecret,
+      PAPERCLAW_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
       BETTER_AUTH_SECRET: betterAuthSecret,
     };
     // The database URLs are stripped here and again at the Playwright web-server
@@ -1098,15 +1098,15 @@ async function main() {
   }
   if (
     executions.some((execution) => execution.environment.id === "daytona") &&
-    !isImmutableDaytonaImage(process.env.PAPERCLIP_E2E_DAYTONA_IMAGE)
+    !isImmutableDaytonaImage(process.env.PAPERCLAW_E2E_DAYTONA_IMAGE)
   ) {
     throw new Error(
-      "PAPERCLIP_E2E_DAYTONA_IMAGE must be an immutable image@sha256 digest for Daytona cells",
+      "PAPERCLAW_E2E_DAYTONA_IMAGE must be an immutable image@sha256 digest for Daytona cells",
     );
   }
 
   const campaignId = cleanId(
-    process.env.PAPERCLIP_E2E_CAMPAIGN_ID ??
+    process.env.PAPERCLAW_E2E_CAMPAIGN_ID ??
       `local-${new Date().toISOString().replace(/[:.]/g, "-")}`,
   );
   const requestedParallelism =

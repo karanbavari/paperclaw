@@ -7,7 +7,7 @@ Companion records: [Capability contract](../capability-contract.md),
 `spec/capability/eval-traceability.yaml`, the Capability plan (TASK-16897),
 [Live console interaction map](live-console-interaction-map.md),
 [SDK component decisions](sdk-component-decisions.md).
-(annotated desktop + mobile renders in `.paperclip-local/evidence/capability/`).
+(annotated desktop + mobile renders in `.paperclaw-local/evidence/capability/`).
 
 This map is the interaction contract for the Capability browser scenario
 explorer. The explorer is a **read surface over records the runtime already
@@ -46,7 +46,7 @@ Package-local Vite entry `examples/scenario-explorer/` with script
 `demo:scenarios` (default port 4183; 4182 belongs to the Standalone demo). It runs
 from static assets plus checked-in fixtures with **no Paperclip services and
 no network dependency** in fake-agent mode. Reuse the frozen `0.1.2` SDK
-surface (`@paperclipai/paperclip-runner/react` + `./styles.css`) through its
+surface (`@kesarcloud/paperclip-runner/react` + `./styles.css`) through its
 five approved extension points; do not fork the token layer.
 
 Desktop layout (≥ 64rem), one React tree (SDK finding — never render two
@@ -340,7 +340,7 @@ Determinism contract for screenshot/CI use:
   `RunnerConsoleApp` is *not* the shell (this is not a chat console);
   compose `conversation`, `message`, `tool-item`, `tabs`, `card`, `badge`,
   `banner`, `menu`, `dialog`, `tooltip`, `replay-controls` from
-  `@paperclipai/paperclip-runner/react`. Semantic call detail uses the
+  `@kesarcloud/paperclip-runner/react`. Semantic call detail uses the
   item-body renderer (ext point 1); control-plane detail uses the
   request-detail renderer contract (ext point 2); theming via scoped
   `--pcr-*` overrides (ext point 4). Do not add SDK exports or break the
@@ -385,7 +385,7 @@ Determinism contract for screenshot/CI use:
 
 ## 9. Screenshot acceptance matrix
 
-Evidence lands in `.paperclip-local/evidence/capability/` as
+Evidence lands in `.paperclaw-local/evidence/capability/` as
 `<slug>-<viewport>.png`, at both **1440×900** and **390×844**, captured from
 the §7 routes after `data-run-state="settled"`. These twelve shots are the
 UX acceptance set for 7F (they also cover the plan’s human-checkpoint

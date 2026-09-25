@@ -1,4 +1,4 @@
-# @paperclipai/adapter-utils
+# @kesarcloud/adapter-utils
 
 ## Unreleased
 

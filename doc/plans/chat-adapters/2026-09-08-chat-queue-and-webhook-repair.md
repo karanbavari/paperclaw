@@ -57,7 +57,7 @@ remain on the private control plane, not in external chat.
 - Independent review found the two queue defects above and confirmed the final
   corrections without an authorization/privacy bypass.
 
-Logs are retained under `.paperclip-runtime/chat-adapters-live/` with the
+Logs are retained under `.paperclaw-runtime/chat-adapters-live/` with the
 `chat-queue-gateway-webhook-full-final-0908`, `chat-queue-webhook-unit-final-0908`,
 and `github-reconnect-copy-browser-final-0908` prefixes.
 
@@ -2843,7 +2843,7 @@ The opt-in actual-provider regression is now reproducible:
 node --import ./server/node_modules/tsx/dist/loader.mjs scripts/tests/native-cleanup-paginated-codex.mjs
 ```
 
-It requires exact Codex CLI 0.153.4 (`PAPERCLIP_TEST_CODEX_BINARY` may select it),
+It requires exact Codex CLI 0.153.4 (`PAPERCLAW_TEST_CODEX_BINARY` may select it),
 uses only fresh synthetic homes, and makes no `turn/start` or model request.
 It proves the real stale-path failure, successful same-thread paginated resume
 after staging relocation, and successful resume after canonical activation.
@@ -4161,7 +4161,7 @@ attachment ceiling. The pinned attachment-factory seam is checked at startup.
 The final Telegram cohort passes **21/21** (14 new, six video-note and one
 existing media case) on fresh `chat_telegram_optional_media_20260909_final01`;
 helper/runtime checks pass **85/85**, and plain server TypeScript passes.
-A separate fresh process with `PAPERCLIP_ATTACHMENT_MAX_BYTES=2097152`
+A separate fresh process with `PAPERCLAW_ATTACHMENT_MAX_BYTES=2097152`
 passes its service rejection case with 2 MB guidance. Logs are
 `telegram-optional-media-{red01,final01,units-final,types-final,cap01}-0909.log`.
 Independent review found no remaining code blocker. Provider HTTP is simulated;
@@ -4831,7 +4831,7 @@ streaming/awaited completion receipt and compiled Telegram draft Stop passed
 with synthetic provider transport. An explicit outside-consumer import failed
 as intended. These checks do not make real provider requests or model runs.
 
-The retained stage is `.paperclip-runtime/current-server-consumer.VjpmfK`.
+The retained stage is `.paperclaw-runtime/current-server-consumer.VjpmfK`.
 Its server tarball is **45,576,751 bytes**, **26,297 entries**, SHA256
 `9296a3817ea16882c78dfa4f3fc317556d399bddfc4f3201cb6a4e1b6cab28c2`.
 The compiled server tree has 4,037 files, SHA256
@@ -4871,7 +4871,7 @@ keys. No production code or artifact was changed for those harness repairs.
 During the third attempt, HTTP GETs of `index.html`, `sw.js` and the main
 `assets/index-7u1MFQgd.js` returned 200 with the correct MIME types and exact
 staged byte hashes. The proof is in
-`.paperclip-runtime/current-chat-ui.MnjT3M/static-http-proof.log`;
+`.paperclaw-runtime/current-chat-ui.MnjT3M/static-http-proof.log`;
 the fresh Vite build log is alongside it. Existing large-chunk and mixed
 static/dynamic import warnings remain, not a clean-bundle-size claim.
 The packaged browser suite passes **31/31** in **2.0 minutes**, exit 0, without
@@ -5191,7 +5191,7 @@ browser tests prove byte-identical TXT/PNG receipts, reload persistence, real
 comment binding, accepted-but-response-lost handling, explicit review/discard,
 known-rejection retry and pending/failed attachment removal. This is not a
 cross-tab atomicity or server-idempotency claim. Screenshots and all failed
-attempts remain under `.paperclip-runtime/board-receipts-browser.bzXvpe/`.
+attempts remain under `.paperclaw-runtime/board-receipts-browser.bzXvpe/`.
 
 Runner fixes are frozen in local commit `c76988f93`: 227 serial source tests
 and 27 composed tests against the actual optimized release binary passed.
@@ -5250,7 +5250,7 @@ No installed binary, live server, old runner journal or agent status changed.
 
 Fresh database `chat_snapshot_full_20260909_root06` passed all **860/860** chat
 integration tests (177.16s tests, 185.33s total). The exact log is
-`.paperclip-runtime/chat-adapters-live/chat-snapshot-full-root06-0909.log`.
+`.paperclaw-runtime/chat-adapters-live/chat-snapshot-full-root06-0909.log`.
 All previous RED logs/databases remain. UI/shared TypeScript checks also passed.
 Recovery's separate full file passed 183/183 before its final durable admission
 marker was added. That last change addresses a newly prepared native turn
@@ -6316,7 +6316,7 @@ The older-control confirmation test now uses normal Board task completion,
 a new DM generation, its newer close, then confirmation of the old unknown
 publication; no FIFO bypass or fabricated transport receipt. Final test SHA256
 is `84ed28cc3e506b85360744089a244291ba21159256bcfdce634d5499bc157b03`;
-production SHA above is unchanged. Logs are `.paperclip-runtime/first-seen-control-final02.log`
+production SHA above is unchanged. Logs are `.paperclaw-runtime/first-seen-control-final02.log`
 and `first-seen-control-types-final02.log`. Root12 retains the earlier test
 snapshot; its in-progress result is not the final repeat of these corrections.
 
@@ -6324,11 +6324,11 @@ snapshot; its in-progress result is not the final repeat of these corrections.
 
 Root12 completed **964/968** on the original test snapshot in 452.85s, with
 exactly the four previously classified fixture failures and no additional
-failures. Log: `.paperclip-runtime/chat-adapters-live/chat-snapshot-full-root12-0909.log`.
+failures. Log: `.paperclaw-runtime/chat-adapters-live/chat-snapshot-full-root12-0909.log`.
 The full deterministic chat plus Board attachment/receipt browser run passed
 **43/43**, zero retries, in 5.8 minutes on fresh
 `board_receipts_browser_20260909_final09`, against the frozen production guard.
-Log: `.paperclip-runtime/board-receipts-browser.bzXvpe/channel-and-board-full-browser-final09-0909.log`.
+Log: `.paperclaw-runtime/board-receipts-browser.bzXvpe/channel-and-board-full-browser-final09-0909.log`.
 
 An additional consistency probe is genuinely red, separately from the 64-case
 green cohort. The real-shaped native Discord close command dates to
@@ -6340,7 +6340,7 @@ requires provider source time after publication confirmation, unlike the new
 command-clock admission proof. The test establishes the exact admission/run
 prerequisites; it does not separately instrument every later grant predicate.
 Fresh DB: `chat_control_confirmation_gap_20260909_red01`; log:
-`.paperclip-runtime/control-confirmation-gap-red01.log`; test 666ms, total10.11s.
+`.paperclaw-runtime/control-confirmation-gap-red01.log`; test 666ms, total10.11s.
 
 The planned correction shares the exact read-only command-chronology proof.
 Affirmative presentation additionally requires proof coverage for every
@@ -6362,7 +6362,7 @@ boundary; presentation requires the explicit affirmative proof, complete raw
 published-candidate inventory, and all previous causal/current-authority guards.
 An earlier 68/69 run failed constructing a null NOT NULL issue ID; its corrected
 negative uses another real same-company issue, without changing production.
-Logs: `.paperclip-runtime/control-chronology-shared-green02.log` and
+Logs: `.paperclaw-runtime/control-chronology-shared-green02.log` and
 `control-chronology-shared-types-green02.log`.
 
 A separate Teams native-thread probe failed before presentation: `/close` there
@@ -6378,12 +6378,12 @@ qualification.
 The bounded probe confirmed a real mismatch: actual Telegram `/close\n` was
 accepted and published, but proof used PostgreSQL's space-only `btrim`, allowing
 an older first-seen source to be processed. The one-case RED took 559ms;
-log `.paperclip-runtime/control-whitespace-red01.log`. The narrow correction
+log `.paperclaw-runtime/control-whitespace-red01.log`. The narrow correction
 uses the exact ECMAScript trim-character set in SQL, retaining the same anchored
 command and bot-suffix grammar rather than accepting new command shapes.
 The truthful Teams personal close → regional service URL → new-generation
 presentation positive also passes (644ms tests, 10.92s total), log
-`.paperclip-runtime/teams-post-close-route-green01.log`, without a route-authority
+`.paperclaw-runtime/teams-post-close-route-green01.log`, without a route-authority
 production change. The combined final cohort and full suite are still pending.
 
 Root full integration `chat_snapshot_full_20260909_root13` and deterministic
@@ -6392,12 +6392,12 @@ against frozen helper `ed01066a…`, service `836d899c…`, issues `65d79903…`
 and test `e17162c4…`. They are pending, not passing gates. The exact whitespace
 parity probe found all 25 ECMAScript trim characters and matching SQL results
 for nine valid/invalid command shapes; log
-`.paperclip-runtime/control-whitespace-parity-final01.log`.
+`.paperclaw-runtime/control-whitespace-parity-final01.log`.
 
 Final focused/adjacent repeat passes **71/71** (35.12s tests, 43.01s total) on
 fresh `chat_control_chronology_shared_20260909_final01`, with plain server types,
 diff check and independent final source review clear. Logs:
-`.paperclip-runtime/control-chronology-shared-final01.log` and
+`.paperclaw-runtime/control-chronology-shared-final01.log` and
 `control-chronology-shared-types-final01.log`. The four frozen hashes are
 unchanged. Full root13 and browser final10 remain in progress; no live cutover
 or merge is implied by this focused result.
@@ -6408,7 +6408,7 @@ processed sources in Discord CHA-43 and Telegram CHA-48 return
 `after_all_proven_controls`; Slack CHA-44 and GitHub CHA-45 correctly return
 `no_proven_control`. This checks chronology only, not the complete run-level
 presentation grant, and changes no live state. Log:
-`.paperclip-runtime/chat-adapters-live/control-chronology-preflight-83.log`.
+`.paperclaw-runtime/chat-adapters-live/control-chronology-preflight-83.log`.
 The isolated qualified runner's SHA256 remains `6844f20e…` and its strict code
 signature check passes; tracked runner binary and lockfile remain unchanged.
 
@@ -6416,7 +6416,7 @@ The full deterministic chat/Board receipt browser repeat completed **43/43**,
 zero retries, in 5.3 minutes (exit 0) on fresh
 `board_receipts_browser_20260909_final10`. All four frozen source/test hashes
 remain unchanged. Log:
-`.paperclip-runtime/board-receipts-browser.bzXvpe/channel-and-board-full-browser-final10-0909.log`.
+`.paperclaw-runtime/board-receipts-browser.bzXvpe/channel-and-board-full-browser-final10-0909.log`.
 Full root13 remains pending; server82 is still the live process.
 
 ### Full shared-proof run and bare-control fixture correction (18:18 UTC)
@@ -6433,7 +6433,7 @@ negatives, explicitly checks missing authorization, and denies presentation
 after this unproven published record. It does not manufacture a supported Teams
 native-thread close or relax production authority. The 71 genuine-control cases
 remain separate coverage. Log:
-`.paperclip-runtime/chat-adapters-live/chat-snapshot-full-root13-0909.log`.
+`.paperclaw-runtime/chat-adapters-live/chat-snapshot-full-root13-0909.log`.
 Fresh root14 is being prepared; server83 remains undeployed.
 
 The test-only correction is green on fresh
@@ -6442,7 +6442,7 @@ all 11 timestamp-provenance cases), 48.90s tests/60.99s total, plus plain server
 types. Test SHA256 is
 `ddab366732298fa43e8272d824eef516ad7be42f29a56b6b5450aea5e2c8d3ec`;
 all production hashes remain unchanged. Logs:
-`.paperclip-runtime/timestamp-proof-fixture-final01.log` and
+`.paperclaw-runtime/timestamp-proof-fixture-final01.log` and
 `timestamp-proof-fixture-types-final01.log`. Fresh full root14 started at
 18:20:15 UTC and is still pending. Root13's failed result is retained; no
 production fix, full green claim, or live cutover is implied by this correction.
@@ -6453,13 +6453,13 @@ Fresh `chat_snapshot_full_20260909_root14` passes **975/975**, no skips, exit 0:
 409.45s tests/422.95s total. Production hashes remain `ed01066a…` helper,
 `836d899c…` service and `65d79903…` issues; test `ddab3667…`. This joins final10
 browser **43/43**, zero retries, and the 82-case focused/types gate. Log:
-`.paperclip-runtime/chat-adapters-live/chat-snapshot-full-root14-0909.log`.
+`.paperclaw-runtime/chat-adapters-live/chat-snapshot-full-root14-0909.log`.
 The earlier root13 970/975 result remains recorded rather than overwritten.
 
 At 18:27:38 UTC the exact QA agent was idle with zero queued/running runs and
 queued/claimed wakes. An audited pause rechecked both sets before SIGTERM of
 server82 PID60999. Backup
-`.paperclip-runtime/chat-adapters-live/pre-83-backup.1FdJts/pre-server-83-20260909-132744.sql.gz`
+`.paperclaw-runtime/chat-adapters-live/pre-83-backup.1FdJts/pre-server-83-20260909-132744.sql.gz`
 is 14,920,506 bytes, directory0700/file0600, gzip verified, no pruned backups;
 restore was not tested. Schema258 was already up to date, so no migration ran.
 Server83 loaded root `0c7f29207`, PID2295, loopback3137; proxy3104 and shared
@@ -6509,7 +6509,7 @@ temporarily busy; the server explicitly records no provider delivery attempted.
 Attempt2 published the final at18:34:05.210. This is not an ambiguous replay.
 All scoped publications/actions settled, all receipt removals processed, and
 actual Slack/GitHub browser final text matches the receipts. Sources:
-`.paperclip-runtime/chat-adapters-live/live83-final-receipts.json`,
+`.paperclaw-runtime/chat-adapters-live/live83-final-receipts.json`,
 `live83-queue-overlap-receipts.json` and `server-experimental-landing-83.log`.
 No new live Teams or Telegram native draft-Stop qualification is claimed.
 
@@ -6559,7 +6559,7 @@ no success or live deployment of that repair is claimed. Ignored evidence:
 `terminal-ack-holdspawned-baseline-0909.log`,
 `terminal-ack-fsync-zero-evidence-0909.log` and
 `terminal-ack-fsync-ten-evidence-0909.log` under
-`.paperclip-runtime/chat-adapters-live/`.
+`.paperclaw-runtime/chat-adapters-live/`.
 
 ### September 9, 19:11 UTC — terminal replay, queue drain and final authority qualified
 
@@ -6592,7 +6592,7 @@ not count as production REDs.
 Root independently repeated the original delayed-fsync case on final source:
 1/1 passed,16.67s tests/17.41s total. The same10ms injection recorded525 target
 fsyncs and about9.383s cumulative latency across the fixture. Evidence is
-`.paperclip-runtime/chat-adapters-live/terminal-ack-fsync-ten-fixed-authority-final-0909.log`.
+`.paperclaw-runtime/chat-adapters-live/terminal-ack-fsync-ten-fixed-authority-final-0909.log`.
 Frozen SHA-256 values:
 
 - Transport: `266dfb99e6a5a022e9994a6af7bb919451b6d07ada6a02d383f2495634866392`.
@@ -6627,7 +6627,7 @@ The failing files were artifact metadata, local runner, installed-provider
 integrity and Codex credentials. The10 skips are three opt-in benchmarks and
 seven Linux-only cases; Linux/x64 CI skips only those same three benchmarks.
 No skip was added by the candidate. Evidence is the landing worktree's
-`.paperclip-runtime/landing-20260909/integration-base-verify-YAhDBQ/final-runner-check-all02.log`.
+`.paperclaw-runtime/landing-20260909/integration-base-verify-YAhDBQ/final-runner-check-all02.log`.
 
 The artifact failure compares `/var/folders/...` with its intended production
 `realpath` result `/private/var/folders/...`; SHA, byte size and metadata all
@@ -6745,7 +6745,7 @@ unselected tests, 17.58s test time/18.44s total, exit 1. The log confirms the
 fixture-only intervention. This is causal diagnostic RED, not qualification,
 and the preload is not installed in any server or subsequent qualification.
 Evidence: original worktree
-`.paperclip-runtime/chat-adapters-live/terminal-ack-fast-save-old-fixture-0909.log`.
+`.paperclaw-runtime/chat-adapters-live/terminal-ack-fast-save-old-fixture-0909.log`.
 The physical source and release binary were not edited for this control.
 
 The proposed test-only correction uses the existing public authenticated-wire
@@ -6770,7 +6770,7 @@ in Downloads. The effective download interface exposes no local-path accessor;
 no downloaded-byte hash is claimed and no provider defect is inferred from
 that observation. No fallback account/browser, raw HTTP or repeated downloads
 were used. Detailed ignored evidence:
-`.paperclip-runtime/chat-adapters-live/discord-existing-media-recheck-0909.md`.
+`.paperclaw-runtime/chat-adapters-live/discord-existing-media-recheck-0909.md`.
 
 ### September 9, 20:01 UTC — deterministic terminal-loss fixture qualified
 
@@ -6798,10 +6798,10 @@ Production transport remains SHA-256
 `266dfb99e6a5a022e9994a6af7bb919451b6d07ada6a02d383f2495634866392`.
 The code delta is one existing test file. Final independent source review is
 clear. Evidence under the landing worktree's physical
-`.paperclip-runtime/landing-20260909/integration-base-verify-YAhDBQ/`:
+`.paperclaw-runtime/landing-20260909/integration-base-verify-YAhDBQ/`:
 `terminal-ack-wire-full171-final01.log` and
 `terminal-ack-wire-focused-final.log`; owned formatting evidence is
-`.paperclip-runtime/landing-20260909/terminal-ack-wire-format01.log`.
+`.paperclaw-runtime/landing-20260909/terminal-ack-wire-format01.log`.
 The initial three-case run on the earlier `cd1c…` artifact passed separately,
 but is not substituted for this current-base evidence.
 
@@ -6824,7 +6824,7 @@ one setup-reaction entry; its later formatted diff also contains the exact
 expected `telegram:77118896` / `77118896:930` / `eyes` entry. This is concrete
 evidence that the mutable result changed after the assertion, not proof that
 the requested removal was wrong or lost. Log:
-`.paperclip-runtime/landing-20260909/ci-585-server4-job.log`.
+`.paperclaw-runtime/landing-20260909/ci-585-server4-job.log`.
 
 Source inspection confirms the relevant asynchronous contract. After terminal
 publication and action durability, the service schedules non-critical receipt
@@ -6873,7 +6873,7 @@ source review is clear. Final integration test SHA-256:
 `9bd5f108d0790731a5816df31dddf715df8c85af38f429b9b8e1d182cfdeacc9`.
 Production service remains
 `b9ad5151cb91b72f97a7fe24773021e6eb72350639bfee84c5adef5998b2b008`.
-Logs in the landing `.paperclip-runtime/landing-20260909/`:
+Logs in the landing `.paperclaw-runtime/landing-20260909/`:
 `close-receipt-held-red01.log`, `close-receipt-held-green01.log` and
 `close-receipt-types01.log`. Earlier complete 585 CI remains failed; a new
 exact-head full CI run is still required. Original/live state is untouched.
@@ -6968,7 +6968,7 @@ Mounted test SHA-256:
 The final cohort passes **70/70**, two files, 1.19s tests/2.27s total; plain
 UI types, scoped formatting and diff checks pass. Root independently verifies
 hashes, reviews the source and runs token gates successfully. Independent child
-scope review is clear. Logs under landing `.paperclip-runtime/landing-20260909/`:
+scope review is clear. Logs under landing `.paperclaw-runtime/landing-20260909/`:
 `composer-stop-toast-alias-red01.log`, `composer-stop-toast-child-red01.log`,
 `composer-stop-toast-child-green-final.log`, and
 `composer-stop-toast-child-types-final.log`.

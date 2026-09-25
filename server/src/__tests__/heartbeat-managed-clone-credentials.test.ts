@@ -15,14 +15,14 @@ let tempHome: string;
 let originalHome: string | undefined;
 
 beforeAll(async () => {
-  originalHome = process.env.PAPERCLIP_HOME;
+  originalHome = process.env.PAPERCLAW_HOME;
   tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-clone-"));
-  process.env.PAPERCLIP_HOME = tempHome;
+  process.env.PAPERCLAW_HOME = tempHome;
 });
 
 afterAll(async () => {
-  if (originalHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = originalHome;
+  if (originalHome === undefined) delete process.env.PAPERCLAW_HOME;
+  else process.env.PAPERCLAW_HOME = originalHome;
   await fs.rm(tempHome, { recursive: true, force: true });
 });
 
@@ -56,7 +56,7 @@ describe("ensureManagedProjectWorkspace clone credentials", () => {
       const additional = await prepareProjectRepositoryWorkspaces(input);
       expect(additional).toHaveLength(1);
       expect(additional[0]!.workspaceId).toBe("second");
-      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.paperclip-repositories\//);
+      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.paperclaw-repositories\//);
       expect((await execFile("git", ["branch", "--show-current"], { cwd: additional[0]!.cwd })).stdout.trim()).toBe("project-branch");
       expect(resolveGitAuth).toHaveBeenCalledWith(second);
       await fs.writeFile(path.join(additional[0]!.cwd, "README.md"), "work in progress");
@@ -281,7 +281,7 @@ describe("ensureManagedProjectWorkspace clone credentials", () => {
 
   it("keeps the credential env alive through the sanitizer spread order", () => {
     // The clone env is `{ ...sanitize(process.env), GIT_TERMINAL_PROMPT, ...auth.env }`. The
-    // sanitizer strips every PAPERCLIP_* key, so the token env must be spread after it.
+    // sanitizer strips every PAPERCLAW_* key, so the token env must be spread after it.
     const invocation = buildGitAuthInvocation({
       token: "tok",
       source: "company_secret",

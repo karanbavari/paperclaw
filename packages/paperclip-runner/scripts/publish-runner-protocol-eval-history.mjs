@@ -352,7 +352,7 @@ export function buildProtocolEvalPointers(history) {
           campaignId: campaign.campaignId,
           generatedAt: campaign.generatedAt,
           publicUrl: campaign.publicUrl,
-          paperclipSha: campaign.source?.paperclip?.sha ?? null,
+          paperclipSha: campaign.source?.paperclaw?.sha ?? null,
           evalsSha: campaign.source?.evals?.sha ?? null,
         }
       : null;
@@ -568,9 +568,9 @@ export async function writeProtocolEvalPublicationLinks(result, environment = pr
 
 async function main() {
   const result = await publishProtocolEvalHistory({
-    viewerRoot: process.env.PAPERCLIP_RUNNER_PROTOCOL_EVAL_VIEWER_DIR,
+    viewerRoot: process.env.PAPERCLAW_RUNNER_PROTOCOL_EVAL_VIEWER_DIR,
     reportRoot: resolve(
-      process.env.PAPERCLIP_RUNNER_PROTOCOL_EVAL_PUBLIC_REPORT_DIR ??
+      process.env.PAPERCLAW_RUNNER_PROTOCOL_EVAL_PUBLIC_REPORT_DIR ??
         "runner-protocol-eval-public-report",
     ),
     destination: {

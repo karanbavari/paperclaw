@@ -10,7 +10,7 @@ import {
   environmentLeases,
   environments,
   issues,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

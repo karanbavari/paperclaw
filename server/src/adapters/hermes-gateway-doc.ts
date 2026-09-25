@@ -14,7 +14,7 @@ Don't use when:
 Runtime distinction:
 - hermes_local: Paperclip starts Hermes on the Paperclip host through the built-in local adapter.
 - hermes_gateway: Paperclip calls an already-running Hermes API server using agentDefaultsPayload.apiBaseUrl.
-- Hermes-originated Paperclip API usage: Hermes calls Paperclip with PAPERCLIP_API_URL and the Paperclip API key claimed through the standard join approval flow. Do not use agentDefaultsPayload.apiBaseUrl for Paperclip API calls. For internet-facing Hermes chat/webhook task bridges, use a separate task_bridge key instead of exposing the normal claimed agent key.
+- Hermes-originated Paperclip API usage: Hermes calls Paperclip with PAPERCLAW_API_URL and the Paperclip API key claimed through the standard join approval flow. Do not use agentDefaultsPayload.apiBaseUrl for Paperclip API calls. For internet-facing Hermes chat/webhook task bridges, use a separate task_bridge key instead of exposing the normal claimed agent key.
 
 Hermes gateway process setup:
 - Set API_SERVER_ENABLED=true.
@@ -52,7 +52,7 @@ Network examples:
 - Reverse proxy/TLS: publish Hermes behind HTTPS and set agentDefaultsPayload.apiBaseUrl = "https://hermes-gateway.example"; set agentDefaultsPayload.paperclipApiUrl = "https://paperclip.example". Keep API_SERVER_KEY required at the origin or proxy.
 
 Security notes:
-- Treat API_SERVER_KEY and PAPERCLIP_BRIDGE_API_KEY as secrets.
+- Treat API_SERVER_KEY and PAPERCLAW_BRIDGE_API_KEY as secrets.
 - When claiming the normal Paperclip agent API key, store the parsed token field from the raw claim response before printing or summarizing it. Hermes/tool displays may redact secrets with literal ... or [redacted]; those previews are not valid keys.
 - Never use a normal claimed Paperclip agent API key for internet-facing Hermes-originated task bridge calls; task_bridge keys cannot use company-wide issue list/search/read surfaces and can only mutate bridge-created or assigned issues.
 - Prefer private network or TLS for non-loopback gateway access.

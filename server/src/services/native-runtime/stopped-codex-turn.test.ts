@@ -35,19 +35,19 @@ describe("stopped Codex turn inventory", () => {
     rows: completionRows(source), threadId: "thread", turnId: "turn", cwd: "/workspace", completedTaskControlCalls: calls,
   });
   it("preserves completion bookkeeping with an exact accepted receipt", () => {
-    expect(checkCompletion('const r = await tools.paperclip_finish({summary: "ready"}); text(r);')).toBe(true);
-    expect(checkCompletion('const r = await tools.paperclip_finish({summary: "ready"}); text(r);', [])).toBe(false);
-    expect(checkCompletion('const r = await tools.paperclip_finish({summary: "different"}); text(r);')).toBe(false);
+    expect(checkCompletion('const r = await tools.paperclaw_finish({summary: "ready"}); text(r);')).toBe(true);
+    expect(checkCompletion('const r = await tools.paperclaw_finish({summary: "ready"}); text(r);', [])).toBe(false);
+    expect(checkCompletion('const r = await tools.paperclaw_finish({summary: "different"}); text(r);')).toBe(false);
   });
   it.each([
-    'await tools.send_email({}); const r = await tools.paperclip_finish({summary: "ready"}); text(r);',
-    'const r = await tools.paperclip_finish({summary: tools.write_file()}); text(r);',
-    'const r = await tools.paperclip_finish({get summary() { return "ready"; }}); text(r);',
-    'const r = await tools.paperclip_finish({...external, summary: "ready"}); text(r);',
-    'const r = await tools.paperclip_finish({summary: `ready`}); text(r);',
+    'await tools.send_email({}); const r = await tools.paperclaw_finish({summary: "ready"}); text(r);',
+    'const r = await tools.paperclaw_finish({summary: tools.write_file()}); text(r);',
+    'const r = await tools.paperclaw_finish({get summary() { return "ready"; }}); text(r);',
+    'const r = await tools.paperclaw_finish({...external, summary: "ready"}); text(r);',
+    'const r = await tools.paperclaw_finish({summary: `ready`}); text(r);',
     'const r = await tools["paperclip_finish"]({summary: "ready"}); text(r);',
-    'const r = await tools.paperclip_finish({summary: "ready"}); tools.send_email(r);',
-    'const r = await tools.paperclip_finish({__proto__: {summary: "ready"}}); text(r);',
+    'const r = await tools.paperclaw_finish({summary: "ready"}); tools.send_email(r);',
+    'const r = await tools.paperclaw_finish({__proto__: {summary: "ready"}}); text(r);',
   ])("refuses unverified execution hidden in completion code %s", source => {
     expect(checkCompletion(source)).toBe(false);
   });

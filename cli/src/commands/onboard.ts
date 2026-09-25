@@ -16,7 +16,7 @@ import {
   type DeploymentMode,
   type SecretProvider,
   type StorageProvider,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   backupInvalidConfig,
   configExists,
@@ -73,38 +73,38 @@ type OnboardOptions = {
 type OnboardDefaults = Pick<PaperclipConfig, "database" | "logging" | "server" | "auth" | "storage" | "secrets">;
 
 const TAILNET_BIND_WARNING =
-  "No Tailscale address was detected during setup. The saved config will stay on loopback until Tailscale is available or PAPERCLIP_TAILNET_BIND_HOST is set.";
+  "No Tailscale address was detected during setup. The saved config will stay on loopback until Tailscale is available or PAPERCLAW_TAILNET_BIND_HOST is set.";
 
 const ONBOARD_ENV_KEYS = [
-  "PAPERCLIP_PUBLIC_URL",
+  "PAPERCLAW_PUBLIC_URL",
   "DATABASE_URL",
-  "PAPERCLIP_DB_BACKUP_ENABLED",
-  "PAPERCLIP_DB_BACKUP_INTERVAL_MINUTES",
-  "PAPERCLIP_DB_BACKUP_RETENTION_DAYS",
-  "PAPERCLIP_DB_BACKUP_DIR",
-  "PAPERCLIP_DEPLOYMENT_MODE",
-  "PAPERCLIP_DEPLOYMENT_EXPOSURE",
-  "PAPERCLIP_BIND",
-  "PAPERCLIP_BIND_HOST",
-  "PAPERCLIP_TAILNET_BIND_HOST",
+  "PAPERCLAW_DB_BACKUP_ENABLED",
+  "PAPERCLAW_DB_BACKUP_INTERVAL_MINUTES",
+  "PAPERCLAW_DB_BACKUP_RETENTION_DAYS",
+  "PAPERCLAW_DB_BACKUP_DIR",
+  "PAPERCLAW_DEPLOYMENT_MODE",
+  "PAPERCLAW_DEPLOYMENT_EXPOSURE",
+  "PAPERCLAW_BIND",
+  "PAPERCLAW_BIND_HOST",
+  "PAPERCLAW_TAILNET_BIND_HOST",
   "HOST",
   "PORT",
   "SERVE_UI",
-  "PAPERCLIP_ALLOWED_HOSTNAMES",
-  "PAPERCLIP_AUTH_BASE_URL_MODE",
-  "PAPERCLIP_AUTH_PUBLIC_BASE_URL",
+  "PAPERCLAW_ALLOWED_HOSTNAMES",
+  "PAPERCLAW_AUTH_BASE_URL_MODE",
+  "PAPERCLAW_AUTH_PUBLIC_BASE_URL",
   "BETTER_AUTH_URL",
   "BETTER_AUTH_BASE_URL",
-  "PAPERCLIP_STORAGE_PROVIDER",
-  "PAPERCLIP_STORAGE_LOCAL_DIR",
-  "PAPERCLIP_STORAGE_S3_BUCKET",
-  "PAPERCLIP_STORAGE_S3_REGION",
-  "PAPERCLIP_STORAGE_S3_ENDPOINT",
-  "PAPERCLIP_STORAGE_S3_PREFIX",
-  "PAPERCLIP_STORAGE_S3_FORCE_PATH_STYLE",
-  "PAPERCLIP_SECRETS_PROVIDER",
-  "PAPERCLIP_SECRETS_STRICT_MODE",
-  "PAPERCLIP_SECRETS_MASTER_KEY_FILE",
+  "PAPERCLAW_STORAGE_PROVIDER",
+  "PAPERCLAW_STORAGE_LOCAL_DIR",
+  "PAPERCLAW_STORAGE_S3_BUCKET",
+  "PAPERCLAW_STORAGE_S3_REGION",
+  "PAPERCLAW_STORAGE_S3_ENDPOINT",
+  "PAPERCLAW_STORAGE_S3_PREFIX",
+  "PAPERCLAW_STORAGE_S3_FORCE_PATH_STYLE",
+  "PAPERCLAW_SECRETS_PROVIDER",
+  "PAPERCLAW_SECRETS_STRICT_MODE",
+  "PAPERCLAW_SECRETS_MASTER_KEY_FILE",
 ] as const;
 
 function parseBooleanFromEnv(rawValue: string | undefined): boolean | null {
@@ -116,8 +116,8 @@ function parseBooleanFromEnv(rawValue: string | undefined): boolean | null {
 }
 
 async function runOnboardedForeground(configPath: string): Promise<void> {
-  const previousOpenOnListen = process.env.PAPERCLIP_OPEN_ON_LISTEN;
-  const browserDisabled = parseBooleanFromEnv(process.env.PAPERCLIP_NO_BROWSER) === true;
+  const previousOpenOnListen = process.env.PAPERCLAW_OPEN_ON_LISTEN;
+  const browserDisabled = parseBooleanFromEnv(process.env.PAPERCLAW_NO_BROWSER) === true;
   const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
 
   // The server consumes this flag in its listen callback. Keep it scoped to
@@ -125,9 +125,9 @@ async function runOnboardedForeground(configPath: string): Promise<void> {
   // tab. Explicit configuration wins over the interactive default, while the
   // broad no-browser switch wins over an earlier explicit opt-in.
   if (browserDisabled) {
-    process.env.PAPERCLIP_OPEN_ON_LISTEN = "false";
+    process.env.PAPERCLAW_OPEN_ON_LISTEN = "false";
   } else if (interactive && previousOpenOnListen === undefined) {
-    process.env.PAPERCLIP_OPEN_ON_LISTEN = "true";
+    process.env.PAPERCLAW_OPEN_ON_LISTEN = "true";
   }
 
   try {
@@ -135,9 +135,9 @@ async function runOnboardedForeground(configPath: string): Promise<void> {
     await runCommand({ config: configPath, repair: true, yes: true });
   } finally {
     if (previousOpenOnListen === undefined) {
-      delete process.env.PAPERCLIP_OPEN_ON_LISTEN;
+      delete process.env.PAPERCLAW_OPEN_ON_LISTEN;
     } else {
-      process.env.PAPERCLIP_OPEN_ON_LISTEN = previousOpenOnListen;
+      process.env.PAPERCLAW_OPEN_ON_LISTEN = previousOpenOnListen;
     }
   }
 }
@@ -183,23 +183,23 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
   const publicUrl = preferTrustedLocal
     ? undefined
     : (
-      process.env.PAPERCLIP_PUBLIC_URL?.trim() ||
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim() ||
+      process.env.PAPERCLAW_PUBLIC_URL?.trim() ||
+      process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL?.trim() ||
       process.env.BETTER_AUTH_URL?.trim() ||
       process.env.BETTER_AUTH_BASE_URL?.trim() ||
       undefined
     );
   const deploymentMode = preferTrustedLocal
     ? "local_trusted"
-    : (parseEnumFromEnv<DeploymentMode>(process.env.PAPERCLIP_DEPLOYMENT_MODE, DEPLOYMENT_MODES) ?? "local_trusted");
+    : (parseEnumFromEnv<DeploymentMode>(process.env.PAPERCLAW_DEPLOYMENT_MODE, DEPLOYMENT_MODES) ?? "local_trusted");
   const deploymentExposureFromEnv = parseEnumFromEnv<DeploymentExposure>(
-    process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE,
+    process.env.PAPERCLAW_DEPLOYMENT_EXPOSURE,
     DEPLOYMENT_EXPOSURES,
   );
   const deploymentExposure =
     deploymentMode === "local_trusted" ? "private" : (deploymentExposureFromEnv ?? "private");
-  const bindFromEnv = parseEnumFromEnv<BindMode>(process.env.PAPERCLIP_BIND, BIND_MODES);
-  const customBindHostFromEnv = process.env.PAPERCLIP_BIND_HOST?.trim() || undefined;
+  const bindFromEnv = parseEnumFromEnv<BindMode>(process.env.PAPERCLAW_BIND, BIND_MODES);
+  const customBindHostFromEnv = process.env.PAPERCLAW_BIND_HOST?.trim() || undefined;
   const hostFromEnv = process.env.HOST?.trim() || undefined;
   const configuredBindHost = customBindHostFromEnv ?? hostFromEnv;
   const bind = preferTrustedLocal
@@ -213,16 +213,16 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
     bind,
     host: hostFromEnv ?? (bind === "loopback" ? "127.0.0.1" : "0.0.0.0"),
     customBindHost: customBindHostFromEnv,
-    tailnetBindHost: process.env.PAPERCLIP_TAILNET_BIND_HOST?.trim(),
+    tailnetBindHost: process.env.PAPERCLAW_TAILNET_BIND_HOST?.trim(),
   });
   const authPublicBaseUrl = publicUrl;
   const authBaseUrlModeFromEnv = parseEnumFromEnv<AuthBaseUrlMode>(
-    process.env.PAPERCLIP_AUTH_BASE_URL_MODE,
+    process.env.PAPERCLAW_AUTH_BASE_URL_MODE,
     AUTH_BASE_URL_MODES,
   );
   const authBaseUrlMode = authBaseUrlModeFromEnv ?? (authPublicBaseUrl ? "explicit" : "auto");
-  const allowedHostnamesFromEnv = process.env.PAPERCLIP_ALLOWED_HOSTNAMES
-    ? process.env.PAPERCLIP_ALLOWED_HOSTNAMES
+  const allowedHostnamesFromEnv = process.env.PAPERCLAW_ALLOWED_HOSTNAMES
+    ? process.env.PAPERCLAW_ALLOWED_HOSTNAMES
       .split(",")
       .map((value) => value.trim().toLowerCase())
       .filter((value) => value.length > 0)
@@ -237,19 +237,19 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
     })()
     : null;
   const storageProvider =
-    parseEnumFromEnv<StorageProvider>(process.env.PAPERCLIP_STORAGE_PROVIDER, STORAGE_PROVIDERS) ??
+    parseEnumFromEnv<StorageProvider>(process.env.PAPERCLAW_STORAGE_PROVIDER, STORAGE_PROVIDERS) ??
     defaultStorage.provider;
   const secretsProvider =
-    parseEnumFromEnv<SecretProvider>(process.env.PAPERCLIP_SECRETS_PROVIDER, SECRET_PROVIDERS) ??
+    parseEnumFromEnv<SecretProvider>(process.env.PAPERCLAW_SECRETS_PROVIDER, SECRET_PROVIDERS) ??
     defaultSecrets.provider;
-  const databaseBackupEnabled = parseBooleanFromEnv(process.env.PAPERCLIP_DB_BACKUP_ENABLED) ?? true;
+  const databaseBackupEnabled = parseBooleanFromEnv(process.env.PAPERCLAW_DB_BACKUP_ENABLED) ?? true;
   const databaseBackupIntervalMinutes = Math.max(
     1,
-    parseNumberFromEnv(process.env.PAPERCLIP_DB_BACKUP_INTERVAL_MINUTES) ?? 60,
+    parseNumberFromEnv(process.env.PAPERCLAW_DB_BACKUP_INTERVAL_MINUTES) ?? 60,
   );
   const databaseBackupRetentionDays = Math.max(
     1,
-    parseNumberFromEnv(process.env.PAPERCLIP_DB_BACKUP_RETENTION_DAYS) ?? 30,
+    parseNumberFromEnv(process.env.PAPERCLAW_DB_BACKUP_RETENTION_DAYS) ?? 30,
   );
   const defaults: OnboardDefaults = {
     database: {
@@ -261,7 +261,7 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
         enabled: databaseBackupEnabled,
         intervalMinutes: databaseBackupIntervalMinutes,
         retentionDays: databaseBackupRetentionDays,
-        dir: resolvePathFromEnv(process.env.PAPERCLIP_DB_BACKUP_DIR) ?? resolveDefaultBackupDir(instanceId),
+        dir: resolvePathFromEnv(process.env.PAPERCLAW_DB_BACKUP_DIR) ?? resolveDefaultBackupDir(instanceId),
       },
     },
     logging: {
@@ -287,24 +287,24 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
       provider: storageProvider,
       localDisk: {
         baseDir:
-          resolvePathFromEnv(process.env.PAPERCLIP_STORAGE_LOCAL_DIR) ?? defaultStorage.localDisk.baseDir,
+          resolvePathFromEnv(process.env.PAPERCLAW_STORAGE_LOCAL_DIR) ?? defaultStorage.localDisk.baseDir,
       },
       s3: {
-        bucket: process.env.PAPERCLIP_STORAGE_S3_BUCKET ?? defaultStorage.s3.bucket,
-        region: process.env.PAPERCLIP_STORAGE_S3_REGION ?? defaultStorage.s3.region,
-        endpoint: process.env.PAPERCLIP_STORAGE_S3_ENDPOINT ?? defaultStorage.s3.endpoint,
-        prefix: process.env.PAPERCLIP_STORAGE_S3_PREFIX ?? defaultStorage.s3.prefix,
+        bucket: process.env.PAPERCLAW_STORAGE_S3_BUCKET ?? defaultStorage.s3.bucket,
+        region: process.env.PAPERCLAW_STORAGE_S3_REGION ?? defaultStorage.s3.region,
+        endpoint: process.env.PAPERCLAW_STORAGE_S3_ENDPOINT ?? defaultStorage.s3.endpoint,
+        prefix: process.env.PAPERCLAW_STORAGE_S3_PREFIX ?? defaultStorage.s3.prefix,
         forcePathStyle:
-          parseBooleanFromEnv(process.env.PAPERCLIP_STORAGE_S3_FORCE_PATH_STYLE) ??
+          parseBooleanFromEnv(process.env.PAPERCLAW_STORAGE_S3_FORCE_PATH_STYLE) ??
           defaultStorage.s3.forcePathStyle,
       },
     },
     secrets: {
       provider: secretsProvider,
-      strictMode: parseBooleanFromEnv(process.env.PAPERCLIP_SECRETS_STRICT_MODE) ?? defaultSecrets.strictMode,
+      strictMode: parseBooleanFromEnv(process.env.PAPERCLAW_SECRETS_STRICT_MODE) ?? defaultSecrets.strictMode,
       localEncrypted: {
         keyFilePath:
-          resolvePathFromEnv(process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE) ??
+          resolvePathFromEnv(process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE) ??
           defaultSecrets.localEncrypted.keyFilePath,
       },
     },
@@ -313,14 +313,14 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
   if (preferTrustedLocal) {
     const forcedLocalReason = "Ignored because --yes quickstart forces trusted local loopback defaults";
     for (const key of [
-      "PAPERCLIP_DEPLOYMENT_MODE",
-      "PAPERCLIP_DEPLOYMENT_EXPOSURE",
-      "PAPERCLIP_BIND",
-      "PAPERCLIP_BIND_HOST",
+      "PAPERCLAW_DEPLOYMENT_MODE",
+      "PAPERCLAW_DEPLOYMENT_EXPOSURE",
+      "PAPERCLAW_BIND",
+      "PAPERCLAW_BIND_HOST",
       "HOST",
-      "PAPERCLIP_AUTH_BASE_URL_MODE",
-      "PAPERCLIP_AUTH_PUBLIC_BASE_URL",
-      "PAPERCLIP_PUBLIC_URL",
+      "PAPERCLAW_AUTH_BASE_URL_MODE",
+      "PAPERCLAW_AUTH_PUBLIC_BASE_URL",
+      "PAPERCLAW_PUBLIC_URL",
       "BETTER_AUTH_URL",
       "BETTER_AUTH_BASE_URL",
     ] as const) {
@@ -329,21 +329,21 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
       }
     }
   }
-  if (deploymentMode === "local_trusted" && process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE !== undefined) {
+  if (deploymentMode === "local_trusted" && process.env.PAPERCLAW_DEPLOYMENT_EXPOSURE !== undefined) {
     ignoredEnvKeys.push({
-      key: "PAPERCLIP_DEPLOYMENT_EXPOSURE",
+      key: "PAPERCLAW_DEPLOYMENT_EXPOSURE",
       reason: "Ignored because deployment mode local_trusted always forces private exposure",
     });
   }
-  if (deploymentMode === "local_trusted" && process.env.PAPERCLIP_BIND !== undefined) {
+  if (deploymentMode === "local_trusted" && process.env.PAPERCLAW_BIND !== undefined) {
     ignoredEnvKeys.push({
-      key: "PAPERCLIP_BIND",
+      key: "PAPERCLAW_BIND",
       reason: "Ignored because deployment mode local_trusted always uses loopback reachability",
     });
   }
-  if (deploymentMode === "local_trusted" && process.env.PAPERCLIP_BIND_HOST !== undefined) {
+  if (deploymentMode === "local_trusted" && process.env.PAPERCLAW_BIND_HOST !== undefined) {
     ignoredEnvKeys.push({
-      key: "PAPERCLIP_BIND_HOST",
+      key: "PAPERCLAW_BIND_HOST",
       reason: "Ignored because deployment mode local_trusted always uses loopback reachability",
     });
   }
@@ -447,15 +447,15 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     const jwtSecret = ensureAgentJwtSecret(configPath);
     const envFilePath = resolveAgentJwtEnvFile(configPath);
     if (jwtSecret.created) {
-      p.log.success(`Created ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
-    } else if (process.env.PAPERCLIP_AGENT_JWT_SECRET?.trim()) {
-      p.log.info(`Using existing ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} from environment`);
+      p.log.success(`Created ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+    } else if (process.env.PAPERCLAW_AGENT_JWT_SECRET?.trim()) {
+      p.log.info(`Using existing ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} from environment`);
     } else {
-      p.log.info(`Using existing ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+      p.log.info(`Using existing ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
     }
     const toolActionSigningSecret = ensureToolActionSigningSecret(configPath);
     if (toolActionSigningSecret.created) {
-      p.log.success(`Created ${pc.cyan("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET")} in ${pc.dim(envFilePath)}`);
+      p.log.success(`Created ${pc.cyan("PAPERCLAW_TOOL_ACTION_SIGNING_SECRET")} in ${pc.dim(envFilePath)}`);
     }
 
     const keyResult = ensureLocalSecretsKeyFile(existingConfig, configPath);
@@ -476,7 +476,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
         `Auth URL mode: ${existingConfig.auth.baseUrlMode}${existingConfig.auth.publicBaseUrl ? ` (${existingConfig.auth.publicBaseUrl})` : ""}`,
         `Storage: ${existingConfig.storage.provider}`,
         `Secrets: ${existingConfig.secrets.provider} (strict mode ${existingConfig.secrets.strictMode ? "on" : "off"})`,
-        "Agent auth: PAPERCLIP_AGENT_JWT_SECRET configured",
+        "Agent auth: PAPERCLAW_AGENT_JWT_SECRET configured",
       ].join("\n"),
       "Configuration ready",
     );
@@ -586,7 +586,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       const s = p.spinner();
       s.start("Testing database connection...");
       try {
-        const { createDb } = await import("@paperclipai/db");
+        const { createDb } = await import("@kesarcloud/db");
         const db = createDb(database.connectionString);
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
@@ -687,15 +687,15 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   const jwtSecret = ensureAgentJwtSecret(configPath);
   const envFilePath = resolveAgentJwtEnvFile(configPath);
   if (jwtSecret.created) {
-    p.log.success(`Created ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
-  } else if (process.env.PAPERCLIP_AGENT_JWT_SECRET?.trim()) {
-    p.log.info(`Using existing ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} from environment`);
+    p.log.success(`Created ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+  } else if (process.env.PAPERCLAW_AGENT_JWT_SECRET?.trim()) {
+    p.log.info(`Using existing ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} from environment`);
   } else {
-    p.log.info(`Using existing ${pc.cyan("PAPERCLIP_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+    p.log.info(`Using existing ${pc.cyan("PAPERCLAW_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
   }
   const toolActionSigningSecret = ensureToolActionSigningSecret(configPath);
   if (toolActionSigningSecret.created) {
-    p.log.success(`Created ${pc.cyan("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET")} in ${pc.dim(envFilePath)}`);
+    p.log.success(`Created ${pc.cyan("PAPERCLAW_TOOL_ACTION_SIGNING_SECRET")} in ${pc.dim(envFilePath)}`);
   }
 
   const config: PaperclipConfig = {
@@ -741,7 +741,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       `Auth URL mode: ${auth.baseUrlMode}${auth.publicBaseUrl ? ` (${auth.publicBaseUrl})` : ""}`,
       `Storage: ${storage.provider}`,
       `Secrets: ${secrets.provider} (strict mode ${secrets.strictMode ? "on" : "off"})`,
-      "Agent auth: PAPERCLIP_AGENT_JWT_SECRET configured",
+      "Agent auth: PAPERCLAW_AGENT_JWT_SECRET configured",
     ].join("\n"),
     "Configuration saved",
   );

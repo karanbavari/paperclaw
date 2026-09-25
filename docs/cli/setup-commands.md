@@ -58,8 +58,8 @@ Suppress browser opening explicitly for headless or automated runs with either
 environment variable:
 
 ```sh
-PAPERCLIP_NO_BROWSER=1 pnpm paperclipai onboard --yes
-PAPERCLIP_OPEN_ON_LISTEN=false pnpm paperclipai onboard --yes
+PAPERCLAW_NO_BROWSER=1 pnpm paperclipai onboard --yes
+PAPERCLAW_OPEN_ON_LISTEN=false pnpm paperclipai onboard --yes
 ```
 
 On an existing install, `--yes` now preserves the current config and just starts Paperclip with that setup.
@@ -107,7 +107,7 @@ Show resolved environment configuration:
 pnpm paperclipai env
 ```
 
-This now includes bind-oriented deployment settings such as `PAPERCLIP_BIND` and `PAPERCLIP_BIND_HOST` when configured.
+This now includes bind-oriented deployment settings such as `PAPERCLAW_BIND` and `PAPERCLAW_BIND_HOST` when configured.
 
 ## `paperclipai allowed-hostname`
 
@@ -121,16 +121,16 @@ npx paperclipai allowed-hostname my-tailscale-host
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Logs | `~/.paperclip/instances/default/logs` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
+| Config | `~/.paperclaw/instances/default/config.json` |
+| Database | `~/.paperclaw/instances/default/db` |
+| Logs | `~/.paperclaw/instances/default/logs` |
+| Storage | `~/.paperclaw/instances/default/data/storage` |
+| Secrets key | `~/.paperclaw/instances/default/secrets/master.key` |
 
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLAW_HOME=/custom/home PAPERCLAW_INSTANCE_ID=dev pnpm paperclipai run
 ```
 
 Or pass `--data-dir` directly on any command:

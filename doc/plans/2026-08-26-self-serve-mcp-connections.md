@@ -106,7 +106,7 @@ The audit found and fixed shared interoperability faults rather than adding prov
 
 ## Tailscale HTTPS OAuth compatibility audit — 2026-08-31
 
-This audit used the isolated `apps-https-qa` full-clone instance on port 3102 at commit `5a988df600ebda30e446496862bf83c76d6d53d6`. The default instance remained on port 3100. Tailscale Serve mapped only `https:443` at `https://dottas-macbook-pro.tail29c1aa.ts.net` to `http://127.0.0.1:3102`; Funnel was not enabled. `PAPERCLIP_PUBLIC_URL` used that HTTPS origin, and no generic or provider-specific `PAPERCLIP_TOOL_OAUTH_*CLIENT*` override was present.
+This audit used the isolated `apps-https-qa` full-clone instance on port 3102 at commit `5a988df600ebda30e446496862bf83c76d6d53d6`. The default instance remained on port 3100. Tailscale Serve mapped only `https:443` at `https://dottas-macbook-pro.tail29c1aa.ts.net` to `http://127.0.0.1:3102`; Funnel was not enabled. `PAPERCLAW_PUBLIC_URL` used that HTTPS origin, and no generic or provider-specific `PAPERCLAW_TOOL_OAUTH_*CLIENT*` override was present.
 
 The dedicated `Apps HTTPS QA 2026-08-31` company had zero agents. Loopback and HTTPS health, bootstrap readiness, cloned source data, and browser access passed. The OAuth client-metadata document exposed exactly one redirect URI: `https://dottas-macbook-pro.tail29c1aa.ts.net/api/tools/oauth/callback`. Successful grants and unsuccessful drafts were retained; no provider grant was revoked and neither Paperclip server was stopped.
 
@@ -168,7 +168,7 @@ The evidence supports arbitrary HTTPS callbacks through DCR for the 13 passing a
 ## Paperclip Cloud managed OAuth broker — 2026-08-31
 
 The managed-callback P2 is part of the existing Paperclip Cloud application at
-`my.paperclip.app`. It does not add a service, hostname, repository, login
+`my.paperclaw.app`. It does not add a service, hostname, repository, login
 system, or provider route to Paperclip ID. Paperclip ID authenticates the user
 for the existing Cloud customer session. Cloud owns fixed provider callbacks,
 provider client credentials, enrollment, explicit destination confirmation,
@@ -177,7 +177,7 @@ the only durable provider-token vault and continues to execute provider tools
 directly.
 
 The production Google callback is fixed at
-`https://my.paperclip.app/v1/connector/oauth/google/callback`; the reserved Box
+`https://my.paperclaw.app/v1/connector/oauth/google/callback`; the reserved Box
 path remains dark until Paperclip owns a distributable, provider-approved Box
 application. Provider endpoints, clients, profiles, exact scope sets, resource
 servers, eligibility, approval state, and kill switches come from a closed
@@ -196,7 +196,7 @@ sequenceDiagram
     P->>P: Generate Ed25519 signing and X25519 sealing keys
     P->>C: Create enrollment draft with public keys and exact origin
     C-->>P: Short-lived verification URL
-    P-->>U: Open my.paperclip.app/connections/enroll
+    P-->>U: Open my.paperclaw.app/connections/enroll
     U->>C: Review exact destination
     alt No current Cloud session
         C->>I: Existing Cloud OIDC login
@@ -229,7 +229,7 @@ return trip; Cloud does not need to reach the private hostname.
 sequenceDiagram
     actor U as Connecting user
     participant P as Originating Paperclip instance
-    participant C as my.paperclip.app
+    participant C as my.paperclaw.app
     participant I as Paperclip ID
     participant O as Provider OAuth
     participant V as Instance vault

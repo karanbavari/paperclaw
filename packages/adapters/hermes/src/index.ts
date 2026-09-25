@@ -13,7 +13,7 @@ import type {
   AdapterRuntimeCommandSpec,
   AdapterSessionManagement,
   ServerAdapterModule,
-} from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils";
 
 import { ADAPTER_TYPE, ADAPTER_LABEL } from "./shared/constants.js";
 import {
@@ -121,10 +121,10 @@ to create, comment on, update, or list Paperclip tasks.
 
 Configure credentials through Hermes env/profile secrets, never in prompt text:
 
-- \`PAPERCLIP_API_URL\` - Paperclip base URL, with or without \`/api\`
-- \`PAPERCLIP_BRIDGE_API_KEY\` - Paperclip agent API key created with \`scope.kind = "task_bridge"\`
-- optional fallback \`PAPERCLIP_API_KEY\` - must still be a task_bridge key, never a normal claimed agent key
-- optional \`PAPERCLIP_COMPANY_ID\`, \`PAPERCLIP_AGENT_ID\`, and \`PAPERCLIP_RUN_ID\`
+- \`PAPERCLAW_API_URL\` - Paperclip base URL, with or without \`/api\`
+- \`PAPERCLAW_BRIDGE_API_KEY\` - Paperclip agent API key created with \`scope.kind = "task_bridge"\`
+- optional fallback \`PAPERCLAW_API_KEY\` - must still be a task_bridge key, never a normal claimed agent key
+- optional \`PAPERCLAW_COMPANY_ID\`, \`PAPERCLAW_AGENT_ID\`, and \`PAPERCLAW_RUN_ID\`
 
 The bridge is separate from adapter execution:
 

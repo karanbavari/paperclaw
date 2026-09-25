@@ -12,7 +12,7 @@ const { readCapabilityTurnStream, CAPABILITY_TURN_STREAM_ACCEPT } = await import
   new URL("../dist/live/index.js", import.meta.url).href
 );
 
-const envPath = new URL("../.paperclip-local/aws-agentcore.env", import.meta.url);
+const envPath = new URL("../.paperclaw-local/aws-agentcore.env", import.meta.url);
 
 function assert(condition, message) {
   if (!condition) throw new Error(`assertion failed: ${message}`);
@@ -46,9 +46,9 @@ async function loadProfileEnvironment() {
 async function main() {
   await loadProfileEnvironment();
   for (const key of [
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_BUCKET",
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_PREFIX",
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN",
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_BUCKET",
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_PREFIX",
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN",
   ]) assert(process.env[key], `the qualified profile includes ${key}`);
   let providerFailure = null;
   const middleware = createCapabilityIssueThreadMiddleware({
@@ -85,8 +85,8 @@ async function main() {
   try {
     const configuration = {
       provider: "aws_agentcore",
-      model: process.env.PAPERCLIP_AWS_AGENTCORE_MODEL,
-      agentCoreProfileId: process.env.PAPERCLIP_AWS_AGENTCORE_PROFILE_ID,
+      model: process.env.PAPERCLAW_AWS_AGENTCORE_MODEL,
+      agentCoreProfileId: process.env.PAPERCLAW_AWS_AGENTCORE_PROFILE_ID,
       maxEstimatedSessionCostUsd: 1,
       lifecyclePolicy: { mode: "warm", idleTimeoutMs: 300_000 },
     };

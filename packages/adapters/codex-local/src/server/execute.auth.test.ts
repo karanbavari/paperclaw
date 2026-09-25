@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mockRunTargetShellCommand = vi.hoisted(() => vi.fn());
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async (importOriginal) => ({
+vi.mock("@kesarcloud/adapter-utils/execution-target", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   runAdapterExecutionTargetShellCommand: mockRunTargetShellCommand,
 }));
@@ -46,8 +46,8 @@ describe("codex managed-home auth fail-fast", () => {
     await fs.mkdir(workspaceDir, { recursive: true });
 
     // Source home has no auth.json, so nothing is symlinked into the managed home.
-    vi.stubEnv("PAPERCLIP_HOME", paperclipHome);
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
+    vi.stubEnv("PAPERCLAW_HOME", paperclipHome);
+    vi.stubEnv("PAPERCLAW_INSTANCE_ID", "default");
     vi.stubEnv("CODEX_HOME", emptySharedHome);
 
     await expect(
@@ -114,8 +114,8 @@ describe("codex sandbox-target credential gate", () => {
       "codex-home",
     );
     const env = {
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_INSTANCE_ID: "default",
+      PAPERCLAW_HOME: paperclipHome,
+      PAPERCLAW_INSTANCE_ID: "default",
       CODEX_HOME: emptySharedHome,
     } as NodeJS.ProcessEnv;
     return { env, managedAgentHome };

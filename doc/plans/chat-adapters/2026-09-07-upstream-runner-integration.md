@@ -75,7 +75,7 @@ Two independent PostgreSQL upgrade checks passed:
 
 Generation inputs, the original SQL, hashes, baseline, proof script and results
 are retained locally under
-`.paperclip-runtime/chat-adapters-live/migration-reconcile-20260907/`.
+`.paperclaw-runtime/chat-adapters-live/migration-reconcile-20260907/`.
 Those fixture checks did not mutate the live database. The later backed-up live
 upgrade is recorded below.
 
@@ -115,7 +115,7 @@ and transport races in deterministic tests are simulated, not live-provider proo
   launch rebinding.
 
 Detailed command logs are under
-`.paperclip-runtime/chat-adapters-live/upstream-*.log`.
+`.paperclaw-runtime/chat-adapters-live/upstream-*.log`.
 
 ## Deployed checkpoint
 
@@ -138,12 +138,12 @@ Before migration:
   migration was a no-op.
 
 Backup, baseline and verification artifacts are in
-`.paperclip-runtime/chat-adapters-live/upstream-live-backup-20260907/`.
+`.paperclaw-runtime/chat-adapters-live/upstream-live-backup-20260907/`.
 The guarded local `upstream-live-upgrade.ts` helper and its logs remain alongside
 that directory. The portable-backup precision discrepancy was not patched as
 part of this chat integration.
 
-`pnpm --filter @paperclipai/server build` passed, including the full native runner
+`pnpm --filter @kesarcloud/server build` passed, including the full native runner
 build, protocol/contract checks and binary staging. The package and vendored
 runner binaries share SHA256
 `f7c1273cce29e521e820ad947d657e500da28477f563053148e764cdfb3730cd`.

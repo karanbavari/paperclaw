@@ -3,8 +3,8 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
-import type { DeploymentMode } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import type { DeploymentMode } from "@kesarcloud/shared";
 import { instanceSettingsService, issueService } from "../services/index.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";
 
@@ -252,8 +252,8 @@ export function boardChatRoutes(
       cwd: "/tmp",
       env: {
         ...process.env,
-        PAPERCLIP_API_URL: apiUrl,
-        PAPERCLIP_COMPANY_ID: companyId,
+        PAPERCLAW_API_URL: apiUrl,
+        PAPERCLAW_COMPANY_ID: companyId,
       },
     });
 

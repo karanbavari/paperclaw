@@ -27,7 +27,7 @@ import type {
   AdapterExecutionTargetProcessSessionBridgeHandle,
   AdapterManagedRuntimeAsset,
   PreparedAdapterExecutionTargetRuntime,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@kesarcloud/adapter-utils/execution-target";
 import type {
   AcpRunContext,
   AcquiredRunResources,
@@ -140,7 +140,7 @@ export interface SandboxRunSiteOptions {
     launchEnv: () => Promise<Record<string, string>>;
   }) => Promise<AdapterExecutionTargetProcessSessionBridgeHandle | null>;
   /** Wrap each concurrent bridge start in the run's startup step timer. */
-  readonly measureBridgeStep: <T>(step: "bridge.paperclip" | "bridge.process-session", run: () => Promise<T>) => Promise<T>;
+  readonly measureBridgeStep: <T>(step: "bridge.paperclaw" | "bridge.process-session", run: () => Promise<T>) => Promise<T>;
   /**
    * Finalize the run's branded launch environment from the bridge contribution.
    * The engine owns `finalizeLaunchEnvironment`, so it stays the sole consumer of
@@ -333,7 +333,7 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
       // process-session launch — is sequenced by `launchEnv`, a memoized thunk the
       // process-session bridge awaits right before its launch.
       const stagedRootDir = staged?.stagedRuntime.runtimeRootDir ?? null;
-      const paperclipStart = options.measureBridgeStep("bridge.paperclip", () =>
+      const paperclipStart = options.measureBridgeStep("bridge.paperclaw", () =>
         options.startPaperclipBridge(stagedRootDir),
       );
       // The single sequencing point (paperclip env → process-session launch),

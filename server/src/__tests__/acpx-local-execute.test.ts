@@ -168,7 +168,7 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
     },
     context: {
       issueId: "issue-1",
-      paperclawTaskMarkdown: "Task context",
+      paperclipTaskMarkdown: "Task context",
     },
     onLog: async () => {},
     ...overrides,
@@ -603,8 +603,8 @@ describe("acpx_local execute", () => {
           cwd: root,
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclawRuntimeSkills: [skill],
-          paperclawSkillSync: {
+          paperclipRuntimeSkills: [skill],
+          paperclipSkillSync: {
             desiredSkills: [skill.key],
           },
         },
@@ -649,8 +649,8 @@ describe("acpx_local execute", () => {
           cwd: root,
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclawRuntimeSkills: [skill],
-          paperclawSkillSync: {
+          paperclipRuntimeSkills: [skill],
+          paperclipSkillSync: {
             desiredSkills: [skill.key],
           },
         },
@@ -696,8 +696,8 @@ describe("acpx_local execute", () => {
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
           env: { CODEX_HOME: codexHome },
-          paperclawRuntimeSkills: [skill],
-          paperclawSkillSync: {
+          paperclipRuntimeSkills: [skill],
+          paperclipSkillSync: {
             desiredSkills: [skill.key],
           },
         },
@@ -743,8 +743,8 @@ describe("acpx_local execute", () => {
           cwd: root,
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclawRuntimeSkills: [skill],
-          paperclawSkillSync: {
+          paperclipRuntimeSkills: [skill],
+          paperclipSkillSync: {
             desiredSkills: [skill.key],
           },
         },

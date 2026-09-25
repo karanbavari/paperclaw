@@ -34,7 +34,7 @@ describe("OpenCode runnerd proxy executable", () => {
       const root = mkdtempSync(join(tmpdir(), "paperclip-opencode-nested-"));
       const directory = join(
         root,
-        ".paperclip-verified-executable-0123456789abcdef0123456789abcdef",
+        ".paperclaw-verified-executable-0123456789abcdef0123456789abcdef",
       );
       const command = join(directory, "launch");
       try {
@@ -97,7 +97,7 @@ describe("OpenCode runnerd proxy executable", () => {
 
   it("fails closed instead of accepting an ambient command fallback", () => {
     expect(() => trustedOpenCodeLaunchBinding([]))
-      .toThrow("refusing ambient PATH or PAPERCLIP_OPENCODE_COMMAND fallback");
+      .toThrow("refusing ambient PATH or PAPERCLAW_OPENCODE_COMMAND fallback");
     expect(() => trustedOpenCodeLaunchBinding([
       TRUSTED_OPENCODE_EXECUTABLE_ARG,
       "/tmp/unqualified-opencode",
@@ -112,13 +112,13 @@ describe("OpenCode runnerd proxy executable", () => {
   it("removes the ambient override from the launched provider environment", () => {
     const original = {
       OPENROUTER_API_KEY: "secret",
-      PAPERCLIP_OPENCODE_COMMAND: "/tmp/unqualified-opencode",
+      PAPERCLAW_OPENCODE_COMMAND: "/tmp/unqualified-opencode",
     };
 
     expect(withoutAmbientOpenCodeCommand(original)).toEqual({
       OPENROUTER_API_KEY: "secret",
     });
-    expect(original.PAPERCLIP_OPENCODE_COMMAND).toBe("/tmp/unqualified-opencode");
+    expect(original.PAPERCLAW_OPENCODE_COMMAND).toBe("/tmp/unqualified-opencode");
   });
 });
 

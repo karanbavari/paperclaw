@@ -218,3 +218,19 @@ export {
   type RemoteAgentProfileInput,
   type RemoteAgentService,
 } from "./remote-agent-profiles.js";
+
+// PaperClaw extension services retained across the upstream rebase.
+export { companyMemoryService } from "./company-memory.js";
+export { buildPaperClawLocalization, companyLocalizationService } from "./company-localization.js";
+export { marketplaceService } from "./marketplace.js";
+export { meetingService } from "./meetings.js";
+export { directChatService } from "./direct-chat.js";
+export { researchLabService } from "./research-labs.js";
+export { agentToolsMdService, renderAgentToolsMarkdown } from "./agent-tools-md.js";
+export { toolPermissionService, ToolPermissionBlockedError } from "./tool-permissions.js";
+export { outcomeCenterService } from "./outcome-center.js";
+export { opsIncidentService } from "./ops-incidents.js";
+export {
+  productivityReviewService,
+  PRODUCTIVITY_REVIEW_ORIGIN_KIND,
+} from "./productivity-review.js";

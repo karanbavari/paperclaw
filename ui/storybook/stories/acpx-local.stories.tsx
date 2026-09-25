@@ -11,13 +11,13 @@ import type {
 import { SchemaConfigFields } from "@/adapters/schema-config-fields";
 import type { TranscriptEntry } from "@/adapters";
 import { RunTranscriptView } from "@/components/transcript/RunTranscriptView";
-import { AgentSkillsTab } from "@/pages/AgentDetail";
+import { AgentSkillsTab } from "@/pages/agent-skills/AgentSkillsTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { queryKeys } from "@/lib/queryKeys";
 
 type SchemaWindow = typeof window & {
-  __paperclawStorybookAdapterSchemas?: Record<string, unknown>;
+  __paperclipStorybookAdapterSchemas?: Record<string, unknown>;
 };
 
 // Mirrors packages/adapters/acpx-local/src/server/config-schema.ts. Inlined so the
@@ -94,8 +94,8 @@ const acpxLocalConfigSchema: AdapterConfigSchema = {
 function installAcpxSchemaMock(): void {
   if (typeof window === "undefined") return;
   const win = window as SchemaWindow;
-  win.__paperclawStorybookAdapterSchemas = {
-    ...(win.__paperclawStorybookAdapterSchemas ?? {}),
+  win.__paperclipStorybookAdapterSchemas = {
+    ...(win.__paperclipStorybookAdapterSchemas ?? {}),
     acpx_local: acpxLocalConfigSchema,
   };
 }
@@ -424,7 +424,7 @@ function AcpxLocalTranscriptStory() {
 
 const SKILLS_COMPANY_ID = "company-storybook";
 
-const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
+const acpxSkillsCompanyLibrary = [
   {
     id: "skill-paperclaw",
     companyId: SKILLS_COMPANY_ID,
@@ -445,7 +445,7 @@ const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
     editable: false,
     editableReason: "Required by PaperClaw",
     sourceLabel: "PaperClaw",
-    sourceBadge: "paperclaw",
+    sourceBadge: "paperclip",
     sourcePath: "skills/paperclaw",
   },
   {
@@ -494,7 +494,7 @@ const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
     sourceBadge: "local",
     sourcePath: "skills/mobile-app-qa",
   },
-];
+] as unknown as CompanySkillListItem[];
 
 function buildAcpxAgent({
   agentId,
@@ -521,7 +521,7 @@ function buildAcpxAgent({
       agent: acpAgent,
       mode: "persistent",
       permissionMode: "approve-all",
-      paperclawSkillSync: {
+      paperclipSkillSync: {
         desiredSkills,
       },
     },

@@ -13,7 +13,7 @@ import {
   createDb,
   plugins,
   secretAccessEvents,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import {
   createPluginSecretsHandler,
@@ -62,13 +62,13 @@ describe("createPluginSecretsHandler fail-closed guards", () => {
     expect(db.select).not.toHaveBeenCalled();
   });
 
-  it("rejects legacy string refs before provider resolution", async () => {
+  it("rejects malformed string refs before provider resolution", async () => {
     const db = { select: vi.fn(() => { throw new Error("db should not be touched"); }) };
     const handler = createPluginSecretsHandler({ db: db as never, pluginId });
 
     await expect(
-      handler.resolve({ companyId: randomUUID(), secretRef: randomUUID() }),
-    ).rejects.toThrow(/use \{ type: "secret_ref"/i);
+      handler.resolve({ companyId: randomUUID(), secretRef: "not-a-secret-ref" }),
+    ).rejects.toThrow(/invalid secret reference/i);
     expect(db.select).not.toHaveBeenCalled();
   });
 });
@@ -76,12 +76,12 @@ describe("createPluginSecretsHandler fail-closed guards", () => {
 describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", () => {
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
-  const previousKeyFile = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const previousKeyFile = process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE;
   const secretsTmpDir = path.join(os.tmpdir(), `paperclip-plugin-secrets-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
+    process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
     const started = await startEmbeddedPostgresTestDatabase("plugin-secrets-handler");
     stopDb = started.cleanup;
     db = createDb(started.connectionString);
@@ -100,9 +100,9 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
   afterAll(async () => {
     await stopDb?.();
     if (previousKeyFile === undefined) {
-      delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+      delete process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE;
     } else {
-      process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = previousKeyFile;
+      process.env.PAPERCLAW_SECRETS_MASTER_KEY_FILE = previousKeyFile;
     }
     rmSync(secretsTmpDir, { recursive: true, force: true });
   });
@@ -124,7 +124,7 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.plugin-secrets-test",
-      packageName: "@paperclipai/plugin-secrets-test",
+      packageName: "@kesarcloud/plugin-secrets-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],
@@ -209,5 +209,37 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
       .from(secretAccessEvents)
       .where(eq(secretAccessEvents.secretId, foreignSecret.id));
     expect(events).toHaveLength(0);
+  });
+
+  it("round-trips an opaque ref created by the same plugin", async () => {
+    await seedPlugin();
+    const companyId = await seedCompany("Legacy Plugin Ref Co");
+    const handler = createPluginSecretsHandler({ db, pluginId });
+
+    const created = await handler.upsert({
+      companyId,
+      name: "access-token",
+      value: "plugin-owned-secret",
+    });
+
+    await expect(
+      handler.resolve({ companyId, secretRef: created.secretRef }),
+    ).resolves.toBe("plugin-owned-secret");
+  });
+
+  it("rejects an opaque ref that is not owned by the calling plugin", async () => {
+    await seedPlugin();
+    const companyId = await seedCompany("Foreign Plugin Ref Co");
+    const svc = secretService(db);
+    const secret = await svc.create(companyId, {
+      name: `shared-secret-${randomUUID()}`,
+      provider: "local_encrypted",
+      value: "must-not-resolve",
+    });
+    const handler = createPluginSecretsHandler({ db, pluginId });
+
+    await expect(
+      handler.resolve({ companyId, secretRef: secret.id }),
+    ).rejects.toThrow(/invalid secret reference/i);
   });
 });

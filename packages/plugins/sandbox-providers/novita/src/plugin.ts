@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@kesarcloud/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -14,7 +14,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@kesarcloud/plugin-sdk";
 import { Sandbox } from "novita-sandbox";
 
 export interface NovitaDriverConfig {
@@ -105,7 +105,7 @@ function isValidShellEnvKey(value: string): boolean {
 }
 
 function buildStdinPath(): string {
-  return `/tmp/.paperclip-stdin-${randomUUID()}`;
+  return `/tmp/.paperclaw-stdin-${randomUUID()}`;
 }
 
 export function buildShellCommand(input: {

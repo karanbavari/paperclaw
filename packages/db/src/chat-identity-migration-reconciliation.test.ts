@@ -639,7 +639,7 @@ const support = await getEmbeddedPostgresTestSupport();
           );
           // Run the real migration engine over the prior schema, not a current
           // schema with fabricated applied-history rows or dropped columns.
-          await migrate(drizzle(legacy), { migrationsFolder: directory });
+          await migrate(drizzle(legacy) as Parameters<typeof migrate>[0], { migrationsFolder: directory });
           const companyId = randomUUID(),
             agentId = randomUUID(),
             applicationId = randomUUID(),

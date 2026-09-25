@@ -540,7 +540,7 @@ DELETE /api/issues/issue-310/inbox-archive
 -> { "ok": true, "userId": "user-7" }
 ```
 
-Both mutations require `X-Paperclip-Run-Id` and write activity-log entries. Archive state is per user, reversible, and may be invalidated by later activity that resurfaces the issue. Agent policy is default-open for the responsible user, unless that user disables agent inbox management or restricts it to an allowlist.
+Both mutations require `X-PaperClaw-Run-Id` and write activity-log entries. Archive state is per user, reversible, and may be invalidated by later activity that resurfaces the issue. Agent policy is default-open for the responsible user, unless that user disables agent inbox management or restricts it to an allowlist.
 
 Pass `{ "userId": "user-9" }` only for an intentional cross-user operation. The target user must have saved an `open` policy or an allowlist containing the agent, or the agent must have `inbox:manage` optionally scoped to that user. An unsaved implicit-open policy is responsible-user-only. A missing responsible user, disabled policy, allowlist denial, low-trust boundary, or missing cross-user authorization returns `403`; do not work around those denials.
 
@@ -1273,9 +1273,9 @@ GET /api/companies/{companyId}/approvals?status=pending
 ### Approval follow-up (requesting agent)
 
 When board resolves your approval, you may be woken with:
-- `PAPERCLIP_APPROVAL_ID`
-- `PAPERCLIP_APPROVAL_STATUS`
-- `PAPERCLIP_LINKED_ISSUE_IDS`
+- `PAPERCLAW_APPROVAL_ID`
+- `PAPERCLAW_APPROVAL_STATUS`
+- `PAPERCLAW_LINKED_ISSUE_IDS`
 
 Use:
 
@@ -1477,18 +1477,18 @@ Terminal states: `done`, `cancelled`
 Keep the credential in memory or pass it directly from the secure source; do not place the literal value in the command text or echo it. The example assumes `PROPOSED_SECRET_VALUE` is already populated without printing it:
 
 ```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_URL%/}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_BASE%/api}"
 jq -n \
   --arg name "integrations/vendor/api-token" \
   --arg value "$PROPOSED_SECRET_VALUE" \
   --arg justification "Credential supplied for the current task" \
   '{kind:"secret", name:$name, value:$value, justification:$justification}' |
 curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" \
   -H "Content-Type: application/json" \
   --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
+  "$PAPERCLAW_API_BASE/api/agents/me/secret-proposals"
 unset PROPOSED_SECRET_VALUE
 ```
 
@@ -1515,10 +1515,10 @@ jq -n \
   --arg justification "Inject the approved credential into my adapter environment" \
   '{kind:"binding", secretProposalId:$secretProposalId, configPath:$configPath, justification:$justification}' |
 curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" \
   -H "Content-Type: application/json" \
   --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
+  "$PAPERCLAW_API_BASE/api/agents/me/secret-proposals"
 ```
 
 A binding must specify exactly one of `secretProposalId`, `secretId`, or `sourceConfigPath`. `configPath` accepts `env.<KEY>` for environment injection or `access.<ALIAS>` for API-only access. Under the default `self_and_reports` policy, `targetAgentId` may identify a downward report of the proposer; omitting it targets the proposer. Other targets are denied, and approval rechecks the current chain of command.
@@ -1528,18 +1528,18 @@ A binding must specify exactly one of `secretProposalId`, `secretId`, or `source
 Use `sourceConfigPath` when the secret is already bound to the proposing agent. The server resolves that agent's own `env.*` or `access.*` binding, so the request never needs a secret ID or `secretRef`:
 
 ```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_URL%/}"
+PAPERCLAW_API_BASE="${PAPERCLAW_API_BASE%/api}"
 jq -n \
   --arg sourceConfigPath "access.openai_api_key" \
   --arg configPath "access.evals_openai_api_key" \
   --arg justification "Use the existing OpenAI credential under the eval-specific alias" \
   '{kind:"binding", sourceConfigPath:$sourceConfigPath, configPath:$configPath, justification:$justification}' |
 curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" \
   -H "Content-Type: application/json" \
   --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
+  "$PAPERCLAW_API_BASE/api/agents/me/secret-proposals"
 ```
 
 `sourceConfigPath` must name an existing binding on the proposing agent; another agent's path and an unknown path both return `404`. Omit `targetAgentId` to bind the alias back to yourself. Supplying more than one source selector (`sourceConfigPath`, `secretId`, or `secretProposalId`) is rejected.
@@ -1558,8 +1558,8 @@ The card uses `continuationPolicy: "wake_assignee"`. On resolution the issue ass
 
 ```bash
 curl -s \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  "$PAPERCLIP_API_BASE/api/agents/me/secrets"
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" \
+  "$PAPERCLAW_API_BASE/api/agents/me/secrets"
 ```
 
 Confirm the expected secret metadata and delivery are present before using the new binding. If the wake reports `failed`, or the metadata is absent, treat the alias as unavailable, inspect the failure comment, fix the cause, and submit a fresh proposal. Never infer success merely because the card says accepted.

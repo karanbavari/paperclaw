@@ -5,7 +5,7 @@ import type {
   CompanySkillDetail,
   CompanySkillUsageAgent,
   CompanySkillVersion,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   AgentsUsingSkillBadge,
   AgentsUsingSkillDialog,

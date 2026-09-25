@@ -13,6 +13,8 @@ import { Link, useNavigate, useParams } from "@/lib/router";
 import { meetingsApi } from "../api/meetings";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
+import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { ProductPage, ProductPageHeader, ProductWorkspace } from "../components/ProductPage";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, formatDateTime, relativeTime } from "../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -59,7 +61,7 @@ function MeetingListItem({
     <Link
       to={`/meetings/${meeting.id}`}
       className={cn(
-        "block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-accent/40",
+        "block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
         active && "bg-accent text-foreground",
       )}
     >
@@ -108,7 +110,7 @@ function MessageBubble({ message, agentMap }: { message: MeetingMessage; agentMa
   const targetAgent = targetAgentId ? agentMap.get(targetAgentId) : null;
 
   return (
-    <div className={cn("flex gap-3 px-5 py-4", isBoard && "bg-muted/30")}>
+    <div className={cn("flex gap-3 border-b border-border/70 px-4 py-4 last:border-b-0 sm:px-5", isBoard && "bg-muted/30")}>
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground",
@@ -188,18 +190,19 @@ function NewMeetingPanel({
           <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
           New Meeting
         </div>
-        <Button variant="ghost" size="icon-xs" onClick={onCancel}>
+        <Button variant="ghost" size="icon-xs" onClick={onCancel} aria-label="Cancel new meeting">
           <X className="h-3.5 w-3.5" />
         </Button>
       </div>
       <div className="flex-1 space-y-4 overflow-y-auto p-5">
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Title</label>
-          <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Product decision meeting" />
+          <label htmlFor="new-meeting-title" className="text-sm font-medium">Title</label>
+          <Input id="new-meeting-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Product decision meeting" />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Topic</label>
+          <label htmlFor="new-meeting-topic" className="text-sm font-medium">Topic</label>
           <Textarea
+            id="new-meeting-topic"
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
             placeholder="What should the Board decide?"
@@ -208,7 +211,7 @@ function NewMeetingPanel({
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-muted-foreground">Agents</label>
+            <span className="text-sm font-medium">Agents</span>
             <span className="text-xs text-muted-foreground">{agentIds.length} selected</span>
           </div>
           <div className="rounded-md border border-border">
@@ -246,12 +249,17 @@ function NewMeetingPanel({
 
 export function Meetings() {
   const { selectedCompanyId } = useCompany();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { meetingId } = useParams<{ meetingId?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showNewMeeting, setShowNewMeeting] = useState(false);
   const [composer, setComposer] = useState("");
   const [targetAgentId, setTargetAgentId] = useState("");
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: "Meetings" }]);
+  }, [setBreadcrumbs]);
 
   const meetingsQuery = useQuery({
     queryKey: selectedCompanyId ? queryKeys.meetings.list(selectedCompanyId) : ["meetings", "none"],
@@ -327,12 +335,19 @@ export function Meetings() {
   }
 
   return (
-    <div className="flex h-full min-h-0 bg-background">
-      <aside className="hidden w-80 shrink-0 border-r border-border md:flex md:flex-col">
+    <ProductPage>
+      <ProductPageHeader
+        title="Meetings"
+        description="Bring agents together around a topic and keep every decision in one place."
+        icon={MessagesSquare}
+        actions={<Button size="sm" onClick={() => setShowNewMeeting(true)}><Plus className="size-4" />New meeting</Button>}
+      />
+    <ProductWorkspace>
+      <aside className="hidden w-72 shrink-0 border-r border-border bg-muted/20 md:flex md:flex-col lg:w-80">
         <div className="flex h-12 items-center justify-between border-b border-border px-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <MessagesSquare className="h-4 w-4 text-muted-foreground" />
-            Meetings
+            All meetings
           </div>
           <Button variant="ghost" size="icon-sm" onClick={() => setShowNewMeeting(true)}>
             <Plus className="h-4 w-4" />
@@ -352,6 +367,21 @@ export function Meetings() {
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col">
+        {meetingsQuery.error ? (
+          <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {meetingsQuery.error instanceof Error ? meetingsQuery.error.message : "Could not load meetings."}
+          </div>
+        ) : null}
+        {meetingsQuery.data?.length && !showNewMeeting ? (
+          <div className="border-b border-border p-3 md:hidden">
+            <Select value={activeMeetingId ?? ""} onValueChange={(id) => navigate(`/meetings/${id}`)}>
+              <SelectTrigger className="w-full" aria-label="Choose meeting"><SelectValue placeholder="Choose meeting" /></SelectTrigger>
+              <SelectContent>
+                {meetingsQuery.data.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
         {showNewMeeting ? (
           <NewMeetingPanel
             agents={agents}
@@ -363,7 +393,7 @@ export function Meetings() {
           <>
             <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold">{meeting.title}</h1>
+                <h2 className="truncate text-base font-semibold">{meeting.title}</h2>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   {meeting.participants.map((participant) =>
                     participant.agent ? <AgentPill key={participant.id} agent={participant.agent} /> : null,
@@ -373,7 +403,7 @@ export function Meetings() {
               <Badge variant="outline">{meeting.status}</Badge>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto" role="log" aria-label="Meeting messages">
               <div className="border-b border-border bg-muted/20 px-5 py-4">
                 <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Topic</div>
                 <div className="mt-2 text-sm leading-6">
@@ -386,6 +416,11 @@ export function Meetings() {
             </div>
 
             <div className="shrink-0 border-t border-border bg-background p-4">
+              {messageMutation.error ? (
+                <p role="alert" className="mb-3 text-sm text-destructive">
+                  {messageMutation.error instanceof Error ? messageMutation.error.message : "Could not send your message."}
+                </p>
+              ) : null}
               <div className="mb-3 flex items-center gap-2">
                 <Select value={targetAgentId} onValueChange={setTargetAgentId} disabled={targetAgents.length === 0}>
                   <SelectTrigger className="w-64 max-w-full">
@@ -406,8 +441,9 @@ export function Meetings() {
                   {targetAgents.length === 0 ? "No available meeting agents" : "Ask one agent directly"}
                 </span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Textarea
+                  aria-label="Ask the selected agent"
                   value={composer}
                   onChange={(event) => setComposer(event.target.value)}
                   placeholder="Ask the selected agent"
@@ -430,7 +466,7 @@ export function Meetings() {
               <MessagesSquare className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-semibold">No meeting selected</h1>
+              <h2 className="text-base font-semibold">No meeting selected</h2>
               <p className="mt-1 text-sm text-muted-foreground">Create a meeting to begin.</p>
             </div>
             <Button onClick={() => setShowNewMeeting(true)}>
@@ -440,12 +476,7 @@ export function Meetings() {
           </div>
         )}
       </main>
-
-      <div className="fixed bottom-20 right-4 md:hidden">
-        <Button size="icon" onClick={() => setShowNewMeeting(true)}>
-          <Plus className="h-5 w-5" />
-        </Button>
-      </div>
-    </div>
+    </ProductWorkspace>
+    </ProductPage>
   );
 }

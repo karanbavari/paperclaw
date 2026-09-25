@@ -3,15 +3,15 @@ import { randomUUID } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext, AdapterInvocationMeta } from "@paperclipai/adapter-utils";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterExecutionContext, AdapterInvocationMeta } from "@kesarcloud/adapter-utils";
+import { runChildProcess } from "@kesarcloud/adapter-utils/server-utils";
 
 // Every test in this file needs a real teardown, so the mock below delegates
 // to the actual factory by default. Only the wiring test further down reads
 // the call arguments; it does not change this behavior.
 const mockCreateWorkspaceRestoreTeardown = vi.hoisted(() => vi.fn());
 
-vi.mock("@paperclipai/adapter-utils/workspace-restore-teardown", async (importOriginal) => {
+vi.mock("@kesarcloud/adapter-utils/workspace-restore-teardown", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   mockCreateWorkspaceRestoreTeardown.mockImplementation(
     actual.createWorkspaceRestoreTeardown as (...args: unknown[]) => unknown,
@@ -83,8 +83,8 @@ type FakeRuntimeTurn = {
 
 const tempRoots: string[] = [];
 const originalNodeVersion = process.version;
-const originalPaperclipHome = process.env.PAPERCLIP_HOME;
-const originalPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+const originalPaperclipHome = process.env.PAPERCLAW_HOME;
+const originalPaperclipInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
 const originalCodexHome = process.env.CODEX_HOME;
 const originalOpenAiApiKey = process.env.OPENAI_API_KEY;
 
@@ -131,10 +131,10 @@ function setNodeVersion(version: string): void {
 
 afterEach(async () => {
   setNodeVersion(originalNodeVersion);
-  if (originalPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = originalPaperclipHome;
-  if (originalPaperclipInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-  else process.env.PAPERCLIP_INSTANCE_ID = originalPaperclipInstanceId;
+  if (originalPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+  else process.env.PAPERCLAW_HOME = originalPaperclipHome;
+  if (originalPaperclipInstanceId === undefined) delete process.env.PAPERCLAW_INSTANCE_ID;
+  else process.env.PAPERCLAW_INSTANCE_ID = originalPaperclipInstanceId;
   if (originalCodexHome === undefined) delete process.env.CODEX_HOME;
   else process.env.CODEX_HOME = originalCodexHome;
   if (originalOpenAiApiKey === undefined) delete process.env.OPENAI_API_KEY;
@@ -233,8 +233,8 @@ class FakeRuntime {
 async function makeTempRoot(prefix: string) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
   tempRoots.push(root);
-  process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-  process.env.PAPERCLIP_INSTANCE_ID = "test";
+  process.env.PAPERCLAW_HOME = path.join(root, "paperclip-home");
+  process.env.PAPERCLAW_INSTANCE_ID = "test";
   return root;
 }
 
@@ -467,19 +467,19 @@ describe("codex_local ACP lane", () => {
 
   it("enables workspace networking for ACP without changing other env settings", () => {
     expect(buildCodexAcpConfig({ env: { CUSTOM: "kept" } })).toMatchObject({
-      env: { CUSTOM: "kept", PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "true" },
+      env: { CUSTOM: "kept", PAPERCLAW_CODEX_ACP_NETWORK_ACCESS: "true" },
     });
   });
 
   it.each([
-    { env: { PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "false" } },
+    { env: { PAPERCLAW_CODEX_ACP_NETWORK_ACCESS: "false" } },
     { extraArgs: ["-c", "sandbox_workspace_write.network_access=false"] },
     { extraArgs: ["--config=sandbox_workspace_write.network_access=false"] },
     { args: ["-csandbox_workspace_write.network_access=false"] },
     { extraArgs: ["-c", "sandbox_workspace_write.network_access=true", "-c", "sandbox_workspace_write.network_access=false"] },
   ])("preserves explicit ACP network denial %j", (config) => {
     expect(buildCodexAcpConfig(config)).toMatchObject({
-      env: { PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "false" },
+      env: { PAPERCLAW_CODEX_ACP_NETWORK_ACCESS: "false" },
     });
   });
 
@@ -899,7 +899,7 @@ describe("codex_local ACP lane", () => {
     // the host managed home; it is NOT the host CODEX_HOME.
     expect(remappedCodexHome).not.toBe(sourceHome);
     expect(remappedCodexHome).not.toBe(sharedHostHome);
-    expect(remappedCodexHome).toContain(".paperclip-runtime");
+    expect(remappedCodexHome).toContain(".paperclaw-runtime");
     // Seeded: the credential materialized into the in-sandbox home (the local
     // runner uses the host FS, so the in-sandbox path is a real host path).
     await expect(fs.readFile(path.join(remappedCodexHome, "auth.json"), "utf8")).resolves.toContain(

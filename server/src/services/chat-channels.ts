@@ -6,10 +6,10 @@ import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./ph
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
 import { PhotonAnswerValidationError, nativePhotonInteraction, publishPhotonPrompt, photonResponseCommand, parsePhotonQuestionAnswer, type PhotonPromptReceipt, type PhotonInteractionBinding, type PhotonDraft } from "./photon/interactions.js";
 import { validateNativeQuestionResponseInput } from "./native-runtime/native-question-bridge.js";
-import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@paperclipai/shared";
+import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@kesarcloud/shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@paperclipai/shared";
+import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@kesarcloud/shared";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
   createHash,
@@ -51,7 +51,7 @@ import {
   readChatControlChronology,
   teamsConversationId,
 } from "./chat-control-chronology.js";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   createDurableChatWakeupRequest,
   assertDurableChatWakeupReceipt,
@@ -91,7 +91,7 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   ChatAdapterCapabilities,
   ChatEndpointCallbackSurfaces,
@@ -107,7 +107,7 @@ import type {
   SafeChatPublicationPayload,
   ToolCredentialSecretRef,
   UpdateChatEndpointInput,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   isAgentStatusInvokable,
   CHAT_PROVIDERS,
@@ -115,7 +115,7 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   LOW_TRUST_REVIEW_PRESET_VERSION,
   LOW_TRUST_REVIEW_RAW_OUTPUT_DISPOSITION,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   formatAttachmentSize,
   isAllowedContentType,
@@ -9438,7 +9438,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       !isSupportedTelegramWebhookBaseUrl(webhookPublicBaseUrl)
     ) {
       throw unprocessable(
-        "Telegram webhooks require PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
+        "Telegram webhooks require PAPERCLAW_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
         {
           code: "chat_telegram_webhook_url_unsupported",
           provider: "telegram",
@@ -28726,7 +28726,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     action: "mark_delivered" | "retry_anyway" | "cancel",
     userId: string,
     fileTransfer?: {
-      phase: import("@paperclipai/shared").ChatFileTransferPhase;
+      phase: import("@kesarcloud/shared").ChatFileTransferPhase;
       version: number;
     },
   ) {

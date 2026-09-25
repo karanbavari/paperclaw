@@ -1,4 +1,10 @@
-import { ADAPTER_AGNOSTIC_KEYS, type Agent } from "@paperclipai/shared";
+import { ADAPTER_AGNOSTIC_KEYS, type Agent } from "@kesarcloud/shared";
+
+export interface AgentModelProfileOverlay {
+  enabled?: boolean;
+  adapterConfig?: Record<string, unknown>;
+  cleared?: boolean;
+}
 
 export interface AgentConfigOverlay {
   identity: Record<string, unknown>;
@@ -7,6 +13,7 @@ export interface AgentConfigOverlay {
   heartbeat: Record<string, unknown>;
   debug: Record<string, unknown>;
   runtime: Record<string, unknown>;
+  modelProfiles?: { cheap?: AgentModelProfileOverlay };
 }
 
 export function omitUndefinedEntries(value: Record<string, unknown>) {
@@ -47,9 +54,13 @@ export function buildAgentUpdatePatch(agent: Agent, overlay: AgentConfigOverlay)
     patch.replaceAdapterConfig = true;
   }
 
+  const cheapOverlay = overlay.modelProfiles?.cheap;
+  const hasModelProfileChange = cheapOverlay !== undefined;
+
   if (
     Object.keys(overlay.heartbeat).length > 0
     || Object.keys(overlay.debug).length > 0
+    || hasModelProfileChange
   ) {
     const existingRc = (agent.runtimeConfig ?? {}) as Record<string, unknown>;
     const nextRuntimeConfig: Record<string, unknown> = (patch.runtimeConfig as Record<string, unknown> | undefined)
@@ -67,6 +78,31 @@ export function buildAgentUpdatePatch(agent: Agent, overlay: AgentConfigOverlay)
         delete nextRuntimeConfig.debug;
       } else {
         nextRuntimeConfig.debug = nextDebug;
+      }
+    }
+
+    if (hasModelProfileChange) {
+      const existingProfiles = (existingRc.modelProfiles ?? {}) as Record<string, unknown>;
+      const existingCheap = (existingProfiles.cheap ?? {}) as Record<string, unknown>;
+      const nextProfiles = { ...existingProfiles };
+
+      if (cheapOverlay?.cleared) {
+        delete nextProfiles.cheap;
+      } else if (cheapOverlay) {
+        nextProfiles.cheap = {
+          ...existingCheap,
+          enabled: cheapOverlay.enabled ?? (existingCheap.enabled === true),
+          adapterConfig: {
+            ...((existingCheap.adapterConfig ?? {}) as Record<string, unknown>),
+            ...(cheapOverlay.adapterConfig ?? {}),
+          },
+        };
+      }
+
+      if (Object.keys(nextProfiles).length === 0) {
+        delete nextRuntimeConfig.modelProfiles;
+      } else {
+        nextRuntimeConfig.modelProfiles = nextProfiles;
       }
     }
 

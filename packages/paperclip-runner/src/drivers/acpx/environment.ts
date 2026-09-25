@@ -53,8 +53,8 @@ export function createSanitizedAcpxSpawnInput(
     "no_proxy",
     "all_proxy",
     "RUST_BACKTRACE",
-    "PAPERCLIP_NATIVE_MCP_NAME",
-    "PAPERCLIP_NATIVE_MCP_URL",
+    "PAPERCLAW_NATIVE_MCP_NAME",
+    "PAPERCLAW_NATIVE_MCP_URL",
     ...credentialNames,
   ]);
   let retainedBytes = 0;

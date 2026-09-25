@@ -27,7 +27,7 @@ use sha2::{Digest, Sha256};
 use crate::local_runner::LocalRunnerError;
 
 const PROCESS_OUTPUT_QUEUE_CAPACITY: usize = 256;
-const VERIFIED_RUNTIME_EXECUTABLE_ENV: &str = "PAPERCLIP_VERIFIED_RUNTIME_EXECUTABLE";
+const VERIFIED_RUNTIME_EXECUTABLE_ENV: &str = "PAPERCLAW_VERIFIED_RUNTIME_EXECUTABLE";
 const VERIFIED_COMMONJS_ARTIFACT_LOADER: &str = r#"const fs=require("node:fs");const Module=require("node:module");const filename=process.argv[1];const source=fs.readFileSync(filename,"utf8").replace(/^#![^\r\n]*(?:\r?\n|$)/,"");const artifact=new Module(filename);artifact.filename=filename;artifact.paths=[];artifact._compile(source,filename);"#;
 
 pub(crate) fn is_node_interpreter(path: &Path) -> bool {
@@ -112,7 +112,7 @@ fn unlinked_snapshot(
     expected_sha256: &str,
 ) -> Result<File, LocalRunnerError> {
     let temporary_path = std::env::temp_dir().join(format!(
-        ".paperclip-verified-launch-{}",
+        ".paperclaw-verified-launch-{}",
         Uuid::new_v4().simple()
     ));
     let mut writable = OpenOptions::new()
@@ -401,7 +401,7 @@ fn materialize_executable(
 ) -> Result<TemporaryExecutable, LocalRunnerError> {
     let directory = verified_executable_parent(artifact)?;
     let path = directory.join(format!(
-        ".paperclip-verified-executable-{}",
+        ".paperclaw-verified-executable-{}",
         Uuid::new_v4().simple()
     ));
     materialize_executable_at(artifact, path, None)
@@ -413,7 +413,7 @@ fn materialize_bound_executable(
 ) -> Result<TemporaryExecutable, LocalRunnerError> {
     let parent = verified_executable_parent(artifact)?;
     let directory = parent.join(format!(
-        ".paperclip-verified-executable-{}",
+        ".paperclaw-verified-executable-{}",
         Uuid::new_v4().simple()
     ));
     fs::create_dir(&directory).map_err(|error| snapshot_error(&artifact.display_path, error))?;
@@ -1165,7 +1165,7 @@ mod tests {
             .file_name()
             .unwrap()
             .to_string_lossy()
-            .starts_with(".paperclip-verified-executable-"));
+            .starts_with(".paperclaw-verified-executable-"));
         assert_eq!(
             fs::symlink_metadata(&private_directory)
                 .unwrap()

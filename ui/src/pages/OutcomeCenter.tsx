@@ -15,6 +15,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn, formatDateTime, issueUrl, projectUrl } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { MetricCard } from "../components/MetricCard";
+import { ProductPage, ProductPageHeader, ProductSection } from "../components/ProductPage";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { StatusBadge } from "../components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -222,10 +223,15 @@ export function OutcomeCenter() {
   const items = data?.items ?? [];
 
   return (
-    <div className="space-y-5">
+    <ProductPage>
+      <ProductPageHeader
+        title="Outcomes"
+        description="Review the deliverables, previews, and work products created across this company."
+        icon={PackageCheck}
+      />
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 [&>*]:rounded-lg [&>*]:border [&>*]:border-border [&>*]:bg-card">
         <MetricCard
           icon={PackageCheck}
           value={data?.total ?? 0}
@@ -252,7 +258,8 @@ export function OutcomeCenter() {
         />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 lg:flex-row lg:items-center">
+      <ProductSection title="Find outcomes" description="Filter deliverables by type, state, review, or project.">
+      <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
         <Input
           value={q}
           onChange={(event) => setQ(event.target.value)}
@@ -306,12 +313,16 @@ export function OutcomeCenter() {
           </Select>
         </div>
       </div>
+      </ProductSection>
 
       {items.length === 0 ? (
-        <EmptyState
-          icon={PackageCheck}
-          message="No outcomes yet. Work products created from issues will appear here."
-        />
+        <ProductSection>
+          <EmptyState
+            icon={PackageCheck}
+            title="No outcomes yet"
+            message="Work products created from issues will appear here."
+          />
+        </ProductSection>
       ) : (
         <div className={cn("grid gap-3", error ? "opacity-70" : undefined)}>
           {items.map((item) => (
@@ -319,6 +330,6 @@ export function OutcomeCenter() {
           ))}
         </div>
       )}
-    </div>
+    </ProductPage>
   );
 }

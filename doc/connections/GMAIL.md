@@ -10,7 +10,7 @@ Google sign-in:
   drafts. It requests only `gmail.readonly` and `gmail.compose`.
 
 Do not add Gmail scopes to the Google sign-in client. The existing Paperclip
-Cloud application at `my.paperclip.app` hosts the public Gmail OAuth callback;
+Cloud application at `my.paperclaw.app` hosts the public Gmail OAuth callback;
 Paperclip ID remains identity-only. The originating Paperclip instance remains
 the durable owner of the encrypted access and refresh tokens.
 
@@ -25,8 +25,8 @@ Use a separate Google Cloud project and OAuth web client for each environment:
 | Environment | Suggested project id | OAuth client name | Authorized redirect URI |
 | --- | --- | --- | --- |
 | Development | `paperclip-gmail-dev` | `Paperclip Gmail Connection Dev` | Local Paperclip Cloud origin + `/v1/connector/oauth/google/callback` |
-| Staging | `paperclip-gmail-staging` | `Paperclip Gmail Connection Staging` | `https://my-staging.paperclip.app/v1/connector/oauth/google/callback` |
-| Production | `paperclip-gmail-prod` | `Paperclip Gmail Connection Production` | `https://my.paperclip.app/v1/connector/oauth/google/callback` |
+| Staging | `paperclip-gmail-staging` | `Paperclip Gmail Connection Staging` | `https://my-staging.paperclaw.app/v1/connector/oauth/google/callback` |
+| Production | `paperclip-gmail-prod` | `Paperclip Gmail Connection Production` | `https://my.paperclaw.app/v1/connector/oauth/google/callback` |
 
 Replace the development port if the local Paperclip Cloud application uses another
 port. Do not register Tailscale, customer, or other self-hosted Paperclip
@@ -149,7 +149,7 @@ instance](#configure-each-originating-paperclip-instance).
 | --- | --- | --- | --- |
 | `CLOUD_HARNESS_CONNECTOR_GOOGLE_GMAIL_CLIENT_ID` | Dev client id | Staging client id | Production client id |
 | `CLOUD_HARNESS_CONNECTOR_GOOGLE_GMAIL_CLIENT_SECRET_REF` | Dev secret-manager ref | Staging secret-manager ref | Production secret-manager ref |
-| Fixed callback | Local Cloud origin + `/v1/connector/oauth/google/callback` | `https://my-staging.paperclip.app/v1/connector/oauth/google/callback` | `https://my.paperclip.app/v1/connector/oauth/google/callback` |
+| Fixed callback | Local Cloud origin + `/v1/connector/oauth/google/callback` | `https://my-staging.paperclaw.app/v1/connector/oauth/google/callback` | `https://my.paperclaw.app/v1/connector/oauth/google/callback` |
 | `CLOUD_HARNESS_CONNECTOR_GOOGLE_ENABLED_PROFILES` | `gmail.read` during the first test | Add reviewed staging profiles | Add only approved production profiles |
 | `CLOUD_HARNESS_CONNECTOR_ENVIRONMENT` | `development` | `staging` | `production` |
 
@@ -165,7 +165,7 @@ connector request declares its own environment, and the broker accepts the
 request only when that value matches both this deployment's environment and the
 environment recorded on the enrolled instance. That three-way match is what
 makes a leaked staging instance key inert against production, so it must equal
-the instance's `PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT`.
+the instance's `PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT`.
 
 Paperclip Cloud derives a safe development, staging, or production fallback
 from its own customer origin, but the explicit value makes environment
@@ -273,11 +273,11 @@ deployment:
 
 | Variable | Development | Staging | Production |
 | --- | --- | --- | --- |
-| `PAPERCLIP_CLOUD_CONNECTOR_BASE_URL` | Local Paperclip Cloud URL | `https://my-staging.paperclip.app` | `https://my.paperclip.app` |
-| `PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT` | `development` | `staging` | `production` |
-| `PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID` | Enrolled development instance id | Enrolled staging instance id | Enrolled production instance id |
-| `PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY` | Development Ed25519 private key | Staging Ed25519 private key | Production Ed25519 private key |
-| `PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY` | Development X25519 private key | Staging X25519 private key | Production X25519 private key |
+| `PAPERCLAW_CLOUD_CONNECTOR_BASE_URL` | Local Paperclip Cloud URL | `https://my-staging.paperclaw.app` | `https://my.paperclaw.app` |
+| `PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT` | `development` | `staging` | `production` |
+| `PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID` | Enrolled development instance id | Enrolled staging instance id | Enrolled production instance id |
+| `PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY` | Development Ed25519 private key | Staging Ed25519 private key | Production Ed25519 private key |
+| `PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY` | Development X25519 private key | Staging X25519 private key | Production X25519 private key |
 
 Use separate keypairs and instance enrollments across environments. The
 connector is unavailable unless all four identity/key variables are present.
@@ -290,7 +290,7 @@ the Apps enrollment action instead of running the OpenSSL commands manually;
 it generates the keys and writes them to the ignored instance secret directory
 with owner-only permissions.
 
-`PAPERCLIP_ID_CONNECTOR_*` values are not aliases for this protocol. Paperclip
+`PAPERCLAW_ID_CONNECTOR_*` values are not aliases for this protocol. Paperclip
 ID used different endpoints, signing metadata, envelope purposes, and Google
 client credentials. An instance with only those legacy values fails with
 `CONNECTOR_MIGRATION_REQUIRED`. Enroll it with Paperclip Cloud and reconnect
@@ -321,7 +321,7 @@ Gmail uses the same credential ownership choice as the rest of the Apps setup:
 
 1. Enable the connector only in development.
 2. Confirm the broker's `CLOUD_HARNESS_CONNECTOR_ENVIRONMENT` and the instance's
-   `PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT` both read `development`. A mismatch
+   `PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT` both read `development`. A mismatch
    fails every signed request with an environment error before Google is ever
    contacted, which looks nothing like a Google misconfiguration.
 3. Use an isolated Gmail test mailbox.
@@ -367,7 +367,7 @@ seven-day testing-token expiry.
 | Refresh fails after seven days | The external app is still in Testing. Reauthorize the test user; do not treat this as token-rotation failure. |
 | One required capability is missing | Inspect the returned granted scope set. Keep the grant inactive if either exact required scope is absent. |
 | Local or Tailscale return is rejected | Enroll the exact origin on Paperclip Cloud. Only loopback HTTP is allowed; Tailscale must use HTTPS. |
-| Every signed request fails on environment | `CLOUD_HARNESS_CONNECTOR_ENVIRONMENT`, the enrollment record, and `PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT` must agree. |
+| Every signed request fails on environment | `CLOUD_HARNESS_CONNECTOR_ENVIRONMENT`, the enrollment record, and `PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT` must agree. |
 | The managed method is unavailable | Confirm the exact profile is in `CLOUD_HARNESS_CONNECTOR_GOOGLE_ENABLED_PROFILES` and its client id and secret reference are configured. |
 | Login starts asking for Gmail | Stop the rollout. The login and Gmail clients or route namespaces have been mixed. |
 | Connector is unavailable | Keep the grant in `needs_reauthorization` or an actionable unavailable state. Never use a login token or another environment's client. |

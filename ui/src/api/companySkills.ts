@@ -39,7 +39,7 @@ import type {
   CompanySkillUpdateStatus,
   CompanySkillVersion,
   CompanySkillVersionCreateRequest,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { api } from "./client";
 
 export interface CatalogListQuery {

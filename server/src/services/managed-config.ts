@@ -2,7 +2,7 @@
  * Cloud managed-config bootstrap (harness → app contract).
  *
  * Instances managed by the Paperclip Cloud harness receive one environment
- * variable, `PAPERCLIP_MANAGED_CONFIG`, holding a single JSON document:
+ * variable, `PAPERCLAW_MANAGED_CONFIG`, holding a single JSON document:
  *
  *   {
  *     "v": 1,
@@ -36,11 +36,11 @@ import {
   INSTANCE_FEATURE_CATALOG,
   instanceExperimentalSettingsSchema,
   type ManagedExperimentalFeatureKey,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 
 export type ManagedConfigEnv = Record<string, string | undefined>;
 
-export const MANAGED_CONFIG_ENV_KEY = "PAPERCLIP_MANAGED_CONFIG";
+export const MANAGED_CONFIG_ENV_KEY = "PAPERCLAW_MANAGED_CONFIG";
 export const SUPPORTED_MANAGED_CONFIG_VERSION = 1;
 
 export interface ManagedInstanceConfig {
@@ -133,7 +133,7 @@ function describeJsonValue(value: unknown): string {
 }
 
 /**
- * Parse `PAPERCLIP_MANAGED_CONFIG` from a raw env map. Returns null only when
+ * Parse `PAPERCLAW_MANAGED_CONFIG` from a raw env map. Returns null only when
  * the variable is absent (self-hosted). Throws with a precise error on a
  * present-but-blank value or any malformed document so a cloud instance fails
  * to start (fail closed).

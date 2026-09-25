@@ -22,8 +22,8 @@ const {
   prepareAdapterExecutionTargetRuntime: vi.fn(async () => ({
     target: { kind: "remote", transport: "sandbox", remoteCwd: "/sandbox/workspace" },
     workspaceRemoteDir: "/sandbox/workspace",
-    runtimeRootDir: "/sandbox/.paperclip-runtime",
-    assetDirs: { home: "/sandbox/.paperclip-runtime/codex/home" },
+    runtimeRootDir: "/sandbox/.paperclaw-runtime",
+    assetDirs: { home: "/sandbox/.paperclaw-runtime/codex/home" },
     restoreWorkspace: vi.fn(async () => undefined),
   })),
   resolveAdapterExecutionTargetCommandForLogs: vi.fn(async () => "/usr/bin/codex"),
@@ -48,9 +48,9 @@ const {
   startAdapterExecutionTargetPaperclipBridge: vi.fn(async () => null),
 }));
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@kesarcloud/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>(
+    "@kesarcloud/adapter-utils/execution-target",
   );
   return {
     ...actual,

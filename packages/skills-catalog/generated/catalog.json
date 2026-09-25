@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "packageName": "@paperclipai/skills-catalog",
+  "packageName": "@kesarcloud/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-08-11T15:05:34.526Z",
+  "generatedAt": "2026-09-22T22:57:51.133Z",
   "skills": [
     {
       "id": "paperclipai:bundled:docs:doc-maintenance",
@@ -103,10 +103,10 @@
           "path": "SKILL.md",
           "kind": "skill",
           "sizeBytes": 12028,
-          "sha256": "083d5fa8dc43c3ce7747e89c1afb6f6f42d0603a31808bffc5f8e56735f2d865"
+          "sha256": "45b3837e07c1a3365bafb6427d75da1a851d297a4b80859b6b744e283e2fa004"
         }
       ],
-      "contentHash": "sha256:f2592d81f616628a3eba92636616424f2eed82ec22bb504240a58f6be115e407"
+      "contentHash": "sha256:cf3b1920f620ab2eda9f4825cffc75c1eb0e81e7f1515fc75bbd88c89c5aba95"
     },
     {
       "id": "paperclipai:bundled:paperclip-operations:status-card-query",
@@ -138,10 +138,10 @@
           "path": "SKILL.md",
           "kind": "skill",
           "sizeBytes": 6368,
-          "sha256": "0c6140f51d503cbadc98723ce54c0def48e7e31ea159b0935b8ad6369291498a"
+          "sha256": "f8466f0af357180d0c15970ad0674620d3a5c0d6269fbe4ac4d2b818071a1efe"
         }
       ],
-      "contentHash": "sha256:2b6e53bf8491f027afdbd6961ad84f677cfd385a0a6a73616ea84111ca8886ed"
+      "contentHash": "sha256:acb576830c406bb55a6c507a42d2497a10e69d70ca626ec7d3b05f2e1f0abafa"
     },
     {
       "id": "paperclipai:bundled:paperclip-operations:summarize-status",
@@ -173,10 +173,10 @@
           "path": "SKILL.md",
           "kind": "skill",
           "sizeBytes": 8877,
-          "sha256": "4cb3d177f5d16e3cc2052d2f80e7fb245ab95e79c1e947abdc84cd4ee3d8c61e"
+          "sha256": "e0706e559f248847fdd751fe538809fe9502502ead1bbae16a7cd8af163f5cb1"
         }
       ],
-      "contentHash": "sha256:3e49ee2b8d83d1371fb0f59197bb96c46b64f722540405f46d4a5a756fbe1b89"
+      "contentHash": "sha256:b3e378fc3892f778b81f072a364a7f7787aa87704cdbc23d1718258687153573"
     },
     {
       "id": "paperclipai:bundled:paperclip-operations:task-planning",
@@ -480,10 +480,10 @@
           "path": "SKILL.md",
           "kind": "skill",
           "sizeBytes": 6945,
-          "sha256": "d745cca96350518fabae14f5c407d779e1df2c5d091b5b4a5c55bb888b569e5f"
+          "sha256": "92087e06fc8daa91237ed4b7b18cd0c8d48842200e960a090fa7dcf96e33a9e7"
         }
       ],
-      "contentHash": "sha256:efe8ea89b552df95222609867c9c75f1b40e16f457d34e7e4a124f54daa33efa"
+      "contentHash": "sha256:e459a5e334a4452c1f6a0f4620258e6cfdd89d2a4c1e7edf790bf0c9d4a5de56"
     },
     {
       "id": "paperclipai:optional:content:simplified-english",

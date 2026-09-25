@@ -3,8 +3,8 @@ import { accessSync, constants as fsConstants, existsSync, readFileSync } from "
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@paperclipai/db";
-import { issues, projects, projectWorkspaces } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
+import { issues, projects, projectWorkspaces } from "@kesarcloud/db";
 import {
   findWorkspaceCommandDefinition,
   matchWorkspaceRuntimeServiceToCommand,
@@ -12,13 +12,13 @@ import {
   updateExecutionWorkspaceSchema,
   workspaceOverviewQuerySchema,
   workspaceRuntimeControlTargetSchema,
-} from "@paperclipai/shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@paperclipai/shared";
+} from "@kesarcloud/shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@kesarcloud/shared";
 import {
   baseWorkspaceDeclaresInstanceConfig,
   resolveCanonicalWorktreeSeedSource,
   type CanonicalWorktreeSeedSource,
-} from "@paperclipai/shared/worktree-seed-source";
+} from "@kesarcloud/shared/worktree-seed-source";
 import { resolvePaperclipConfigPath } from "../paths.js";
 import { validate } from "../middleware/validate.js";
 import {
@@ -381,7 +381,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
     let repairPreviousAttemptId: string | null = null;
     let repairCliArgs: string[] | null = null;
     if (action === "repair") {
-      const manifestPath = path.join(workspaceCwd, ".paperclip", "seed-manifest.json");
+      const manifestPath = path.join(workspaceCwd, ".paperclaw", "seed-manifest.json");
       let manifest: {
         attemptId?: unknown;
         source?: { configPath?: unknown; instanceId?: unknown };
@@ -408,7 +408,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
         repairSeedSource = resolveCanonicalWorktreeSeedSource({
           registeredBaseWorkspaceCwd: projectWorkspace.cwd,
           explicitSourceConfigPath: resolveFallbackSeedSourceConfigPath(projectWorkspace.cwd),
-          targetConfigPath: path.join(workspaceCwd, ".paperclip", "config.json"),
+          targetConfigPath: path.join(workspaceCwd, ".paperclaw", "config.json"),
           expectedTargetInstanceId,
           manifestSource: manifest.source,
           manifestTargetInstanceId: manifest.targetInstanceId,
@@ -677,7 +677,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
             if (!repairSeedSource?.baseWorkspaceCwd || !repairCliArgs) {
               throw new Error("Workspace repair source preflight did not complete.");
             }
-            const manifestPath = path.join(workspaceCwd, ".paperclip", "seed-manifest.json");
+            const manifestPath = path.join(workspaceCwd, ".paperclaw", "seed-manifest.json");
             const sourceConfigPath = repairSeedSource.configPath;
             const baseWorkspaceCwd = repairSeedSource.baseWorkspaceCwd;
 
@@ -698,9 +698,9 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
               cwd: baseWorkspaceCwd,
               env: {
                 ...process.env,
-                PAPERCLIP_SEED_EXPECTED_COMPANY_ID: existing.companyId,
-                PAPERCLIP_WORKSPACE_BASE_CWD: baseWorkspaceCwd,
-                PAPERCLIP_PROJECT_WORKSPACE_ID: existing.projectWorkspaceId ?? "",
+                PAPERCLAW_SEED_EXPECTED_COMPANY_ID: existing.companyId,
+                PAPERCLAW_WORKSPACE_BASE_CWD: baseWorkspaceCwd,
+                PAPERCLAW_PROJECT_WORKSPACE_ID: existing.projectWorkspaceId ?? "",
               },
               stdio: ["ignore", "pipe", "pipe"],
             });
@@ -796,7 +796,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
             resolveCanonicalWorktreeSeedSource({
               registeredBaseWorkspaceCwd: baseWorkspaceCwd,
               explicitSourceConfigPath: resolveFallbackSeedSourceConfigPath(baseWorkspaceCwd),
-              targetConfigPath: path.join(workspaceCwd, ".paperclip", "config.json"),
+              targetConfigPath: path.join(workspaceCwd, ".paperclaw", "config.json"),
               expectedTargetInstanceId: repairSeedSource.targetInstanceId,
               manifestSource: manifest.source as { configPath?: unknown; instanceId?: unknown } | undefined,
               manifestTargetInstanceId: manifest.targetInstanceId,

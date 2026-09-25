@@ -1,5 +1,5 @@
-import type { IssueAttachment, IssueDocumentSummary, IssueWorkProduct } from "@paperclipai/shared";
-import { getAttachmentArtifactWorkProductMetadata } from "@paperclipai/shared";
+import type { IssueAttachment, IssueDocumentSummary, IssueWorkProduct } from "@kesarcloud/shared";
+import { getAttachmentArtifactWorkProductMetadata } from "@kesarcloud/shared";
 
 /**
  * Selectors for the properties pane's Artifacts tab (PAP-491): which

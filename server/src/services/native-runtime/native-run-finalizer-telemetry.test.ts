@@ -11,7 +11,7 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
   workAssessments,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

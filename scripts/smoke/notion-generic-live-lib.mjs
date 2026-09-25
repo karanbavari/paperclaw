@@ -1,11 +1,11 @@
 const REQUIRED_ENVIRONMENT = [
-  "PAPERCLIP_E2E_BASE_URL",
-  "PAPERCLIP_E2E_EMAIL",
-  "PAPERCLIP_DEV_LOGIN_PASSWORD",
-  "PAPERCLIP_API_URL",
-  "PAPERCLIP_API_KEY",
-  "PAPERCLIP_RUN_ID",
-  "PAPERCLIP_TASK_ID",
+  "PAPERCLAW_E2E_BASE_URL",
+  "PAPERCLAW_E2E_EMAIL",
+  "PAPERCLAW_DEV_LOGIN_PASSWORD",
+  "PAPERCLAW_API_URL",
+  "PAPERCLAW_API_KEY",
+  "PAPERCLAW_RUN_ID",
+  "PAPERCLAW_TASK_ID",
 ];
 
 // Agent secret APIs expose access.notion_generic_flow_test_account under this
@@ -119,10 +119,10 @@ export function preflightNotionGenericLive(environment = process.env) {
     throw new NotionGenericLivePreflightError("missing_environment", { missing });
   }
 
-  const base = explicitHttpsOrigin(requiredValue(environment, "PAPERCLIP_E2E_BASE_URL"), "unsafe_base_url");
-  const api = explicitHttpsOrigin(requiredValue(environment, "PAPERCLIP_API_URL"), "unsafe_api_url");
+  const base = explicitHttpsOrigin(requiredValue(environment, "PAPERCLAW_E2E_BASE_URL"), "unsafe_base_url");
+  const api = explicitHttpsOrigin(requiredValue(environment, "PAPERCLAW_API_URL"), "unsafe_api_url");
 
-  const email = requiredValue(environment, "PAPERCLIP_E2E_EMAIL");
+  const email = requiredValue(environment, "PAPERCLAW_E2E_EMAIL");
   if (!email.includes("@")) throw new NotionGenericLivePreflightError("invalid_paperclip_email");
 
   return {
@@ -130,10 +130,10 @@ export function preflightNotionGenericLive(environment = process.env) {
     apiBaseUrl: `${api.origin}/api`,
     callbackUrl: `${base.origin}/api/tools/oauth/callback`,
     paperclipEmail: email,
-    paperclipPassword: environment.PAPERCLIP_DEV_LOGIN_PASSWORD,
-    agentApiKey: environment.PAPERCLIP_API_KEY,
-    runId: environment.PAPERCLIP_RUN_ID,
-    taskId: environment.PAPERCLIP_TASK_ID,
+    paperclipPassword: environment.PAPERCLAW_DEV_LOGIN_PASSWORD,
+    agentApiKey: environment.PAPERCLAW_API_KEY,
+    runId: environment.PAPERCLAW_RUN_ID,
+    taskId: environment.PAPERCLAW_TASK_ID,
     secretBindingKey: NOTION_SECRET_BINDING_KEY,
   };
 }

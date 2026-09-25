@@ -5,7 +5,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, asc, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   agents as agentsTable,
   assets,
@@ -25,9 +25,9 @@ import {
   issues,
   issueThreadInteractions,
   issueWorkProducts,
-} from "@paperclipai/db";
-import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
-import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@paperclipai/adapter-utils/server-utils";
+} from "@kesarcloud/db";
+import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@kesarcloud/adapter-utils/server-utils";
+import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@kesarcloud/adapter-utils/server-utils";
 import type {
   AgentDesiredSkillEntry,
   CatalogSkill,
@@ -93,7 +93,7 @@ import type {
   CompanySkillVersionFileInventoryEntry,
   IssueAttachment,
   IssueDocument,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   isUuidLike,
   joinFrontmatterBlock,
@@ -101,7 +101,7 @@ import {
   parseFrontmatterMarkdown,
   splitFrontmatterBlock,
   stringifyFrontmatter,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
@@ -613,7 +613,7 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
     ?? asString(metadata?.paperclipSkillKey),
   );
   if (direct) return direct;
-  const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
+  const paperclip = isPlainRecord(metadata?.paperclaw) ? metadata?.paperclaw as Record<string, unknown> : null;
   return normalizeSkillKey(
     asString(paperclip?.skillKey)
     ?? asString(paperclip?.key),
@@ -629,7 +629,7 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
  * use them. Mirrors the repo-root `skills/` bundle that
  * `ensureSkillInventoryCurrent` imports into every company library.
  */
-export const PAPERCLIP_CORE_SKILL_KEYS = [
+export const PAPERCLAW_CORE_SKILL_KEYS = [
   "paperclipai/paperclip/paperclip",
   "paperclipai/paperclip/paperclip-board",
   "paperclipai/paperclip/paperclip-converting-plans-to-tasks",

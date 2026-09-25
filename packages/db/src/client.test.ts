@@ -1539,7 +1539,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
       try {
         // Build the real pre-native schema. Downgrading the latest schema by
         // dropping its unique index is invalid once later tenant FKs use it.
-        await migrate(drizzle(sql), { migrationsFolder: directory });
+        await migrate(drizzle(sql) as Parameters<typeof migrate>[0], { migrationsFolder: directory });
         expect(await sql`SELECT to_regclass('public.native_run_results') AS native_results`).toEqual([{ native_results: null }]);
         await sql`
           INSERT INTO companies (id, name, issue_prefix)

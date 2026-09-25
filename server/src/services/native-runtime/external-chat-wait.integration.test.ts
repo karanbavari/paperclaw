@@ -36,7 +36,7 @@ import {
   toolApplications,
   toolConnections,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   PrpStructuredRunResult,
   PrpTerminalState,
@@ -65,14 +65,14 @@ import { questionResponseDeliveryValues } from "../question-response-delivery.js
 import { resolveExternalChatQuestionResponse } from "./external-chat-question-response.js";
 import { materializeExternalChatQuestionResponseInput } from "./external-chat-question-response-input.js";
 import * as nativeInteractionBridge from "./native-interaction-bridge.js";
-import type { AskUserQuestionsInteraction } from "@paperclipai/shared";
+import type { AskUserQuestionsInteraction } from "@kesarcloud/shared";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { subscribeAllCompanyLiveEvents } from "../live-events.js";
 
 describe("native external-chat response wait", () => {
-  const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL;
+  const externalTestDatabaseUrl = process.env.PAPERCLAW_TEST_DATABASE_URL;
   let temporary: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>
   > | null = null;
@@ -726,9 +726,9 @@ describe("native external-chat response wait", () => {
       })
       .where(eq(chatDeliveries.id, fixture.deliveryId));
     const interactionSvc = issueThreadInteractionService(db);
-    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
-    process.env.PAPERCLIP_PUBLIC_URL = withLink
-      ? "https://board.paperclip.example"
+    const previousPublicUrl = process.env.PAPERCLAW_PUBLIC_URL;
+    process.env.PAPERCLAW_PUBLIC_URL = withLink
+      ? "https://board.paperclaw.example"
       : "http://127.0.0.1:3103";
     let interaction: Awaited<ReturnType<typeof interactionSvc.create>>;
     try {
@@ -759,8 +759,8 @@ describe("native external-chat response wait", () => {
       );
     } finally {
       if (previousPublicUrl === undefined)
-        delete process.env.PAPERCLIP_PUBLIC_URL;
-      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+        delete process.env.PAPERCLAW_PUBLIC_URL;
+      else process.env.PAPERCLAW_PUBLIC_URL = previousPublicUrl;
     }
     const publicationKey = `interaction:${interaction.id}:${fixture.endpointId}`;
     const [publication] = await db

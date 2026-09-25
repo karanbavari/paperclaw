@@ -82,7 +82,7 @@ describe("runner E2E report aggregation", () => {
                 {
                   matcher: {
                     kind: "message_contains" as const,
-                    expected: "PAPERCLIP_E2E_OK",
+                    expected: "PAPERCLAW_E2E_OK",
                   },
                   passed: true,
                   detail: "matched",
@@ -138,21 +138,21 @@ describe("runner E2E report aggregation", () => {
         cwd: repositoryRoot,
         env: {
           ...process.env,
-          PAPERCLIP_RUNNER_E2E_REPORT_ROOT: root,
-          PAPERCLIP_RUNNER_E2E_REPORT_OUT: output,
-          PAPERCLIP_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
-          PAPERCLIP_RUNNER_E2E_SOURCE_SHA:
+          PAPERCLAW_RUNNER_E2E_REPORT_ROOT: root,
+          PAPERCLAW_RUNNER_E2E_REPORT_OUT: output,
+          PAPERCLAW_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
+          PAPERCLAW_RUNNER_E2E_SOURCE_SHA:
             "0123456789abcdef0123456789abcdef01234567",
-          PAPERCLIP_RUNNER_E2E_SOURCE_REF:
+          PAPERCLAW_RUNNER_E2E_SOURCE_REF:
             "refs/heads/fix/runner-paid-source-attribution",
           GITHUB_SHA: "trusted-default-workflow-sha",
           GITHUB_REF: "refs/heads/master",
           GITHUB_SERVER_URL: "https://github.com",
           GITHUB_REPOSITORY: "paperclipai/paperclip",
           GITHUB_RUN_ID: "123456",
-          PAPERCLIP_RUNNER_E2E_HISTORY_PUBLIC_BASE_URL:
+          PAPERCLAW_RUNNER_E2E_HISTORY_PUBLIC_BASE_URL:
             "https://reports.example.test/",
-          PAPERCLIP_RUNNER_E2E_HISTORY_PREFIX: "/runner-e2e/",
+          PAPERCLAW_RUNNER_E2E_HISTORY_PREFIX: "/runner-e2e/",
         },
       },
     );
@@ -354,9 +354,9 @@ describe("runner E2E report aggregation", () => {
         cwd: repositoryRoot,
         env: {
           ...process.env,
-          PAPERCLIP_RUNNER_E2E_REPORT_ROOT: root,
-          PAPERCLIP_RUNNER_E2E_REPORT_OUT: output,
-          PAPERCLIP_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
+          PAPERCLAW_RUNNER_E2E_REPORT_ROOT: root,
+          PAPERCLAW_RUNNER_E2E_REPORT_OUT: output,
+          PAPERCLAW_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
         },
       },
     );
@@ -417,9 +417,9 @@ describe("runner E2E report aggregation", () => {
           cwd: repositoryRoot,
           env: {
             ...process.env,
-            PAPERCLIP_RUNNER_E2E_REPORT_ROOT: root,
-            PAPERCLIP_RUNNER_E2E_REPORT_OUT: output,
-            PAPERCLIP_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
+            PAPERCLAW_RUNNER_E2E_REPORT_ROOT: root,
+            PAPERCLAW_RUNNER_E2E_REPORT_OUT: output,
+            PAPERCLAW_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([executionId]),
           },
         },
       ),

@@ -1381,7 +1381,7 @@ export class CapabilityLiveSession {
       process: this.#processEvidence === null ? null : structuredClone(this.#processEvidence),
       networkEvidence: {
         realPaperclipRequests: 0,
-        childPaperclipEnvironmentKeys: childKeys.filter((key) => key.startsWith("PAPERCLIP_")),
+        childPaperclipEnvironmentKeys: childKeys.filter((key) => key.startsWith("PAPERCLAW_")),
       },
       attempts: structuredClone(this.#attempts),
       currentAttemptId: this.#currentAttemptId,
@@ -2311,7 +2311,7 @@ export class CapabilityLiveSession {
         : {}),
       lifecyclePolicy: this.#config.lifecyclePolicy ?? { mode: "per_turn", idleTimeoutMs: null },
       resumeActiveTurnId: resume ? this.#activeTurnId : null,
-      stateDirectory: resolve(this.#config.workingDirectory, ".paperclip-runner-prp", identityDigest),
+      stateDirectory: resolve(this.#config.workingDirectory, ".paperclaw-runner-prp", identityDigest),
       prpIdentity: {
         runnerInstanceId: `runner_lab_${identityDigest}`,
         environmentLeaseId: `lease_lab_${identityDigest}`,

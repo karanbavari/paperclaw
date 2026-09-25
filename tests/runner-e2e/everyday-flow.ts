@@ -114,7 +114,7 @@ export async function runEverydayFlow(input: Input) {
     prompt: execution.task.buildPrompt(nonce),
     fixtureConfiguration: {
       apiToolsEnabled:
-        process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED === "true",
+        process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED === "true",
       aiConnection: fixtures.aiConnection,
     },
     checks: [],

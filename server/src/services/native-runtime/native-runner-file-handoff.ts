@@ -14,7 +14,7 @@ import path from "node:path";
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   agents,
   assets,
@@ -23,7 +23,7 @@ import {
   issueComments,
   issues,
   issueWorkProducts,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 
 import {
   isAllowedContentType,
@@ -459,7 +459,7 @@ async function ensurePrivateStagingDirectory(
   processDirectoryName: string,
 ): Promise<string> {
   let cursor = workspaceRoot;
-  for (const segment of [".paperclip-inbound", processDirectoryName]) {
+  for (const segment of [".paperclaw-inbound", processDirectoryName]) {
     cursor = path.join(cursor, segment);
     try {
       await mkdir(cursor, { mode: 0o700 });
@@ -483,7 +483,7 @@ async function scrubNativeRunnerStagingResidue(
   activePaths: ReadonlySet<string>,
   processDirectoryName: string,
 ): Promise<string[]> {
-  const stagingRootPath = path.join(workspaceRoot, ".paperclip-inbound");
+  const stagingRootPath = path.join(workspaceRoot, ".paperclaw-inbound");
   let stagingRootStat: Stats;
   try {
     stagingRootStat = await lstat(stagingRootPath);

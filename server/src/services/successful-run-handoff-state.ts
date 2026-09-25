@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { activityLog, agentWakeupRequests, heartbeatRuns } from "@paperclipai/db";
-import type { SuccessfulRunHandoffState } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import { activityLog, agentWakeupRequests, heartbeatRuns } from "@kesarcloud/db";
+import type { SuccessfulRunHandoffState } from "@kesarcloud/shared";
 import { logActivity } from "./activity-log.js";
 
 export const SUCCESSFUL_RUN_HANDOFF_LIVE_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;

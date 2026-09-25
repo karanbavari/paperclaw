@@ -15,10 +15,15 @@ import type {
   PluginLauncherRenderContextSnapshot,
   PluginUiSlotDeclaration,
   PluginLocalFolderDeclaration,
+  PluginSetupPatchRequest,
+  PluginSetupSummary,
+  PluginToolConsoleDiscoveryResponse,
+  PluginToolConsoleTestRequest,
+  PluginToolConsoleTestResult,
   PluginRecord,
   PluginConfig,
   PluginStatus,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { api } from "./client";
 
 /**
@@ -184,6 +189,14 @@ export interface PluginLocalFoldersResponse {
   folders: PluginLocalFolderStatus[];
 }
 
+export interface AgentToolDescriptor {
+  name: string;
+  displayName: string;
+  description: string;
+  parametersSchema: Record<string, unknown>;
+  pluginId: string;
+}
+
 export interface PluginLocalFolderSaveInput {
   path: string;
   access?: "read" | "readWrite";
@@ -297,6 +310,15 @@ export const pluginsApi = {
   dashboard: (pluginId: string) =>
     api.get<PluginDashboardData>(`/plugins/${pluginId}/dashboard`),
 
+  listTools: (pluginId: string) =>
+    api.get<PluginToolConsoleDiscoveryResponse>(`/plugins/${pluginId}/tools`),
+
+  testTool: (pluginId: string, toolName: string, input: PluginToolConsoleTestRequest) =>
+    api.post<PluginToolConsoleTestResult>(
+      `/plugins/${pluginId}/tools/${encodeURIComponent(toolName)}/test`,
+      input,
+    ),
+
   /**
    * Fetch recent log entries for a plugin.
    *
@@ -346,6 +368,8 @@ export const pluginsApi = {
   listUiContributions: () =>
     api.get<PluginUiContribution[]>("/plugins/ui-contributions"),
 
+  listAllTools: () => api.get<AgentToolDescriptor[]>("/plugins/tools"),
+
   // ===========================================================================
   // Plugin configuration endpoints
   // ===========================================================================
@@ -387,6 +411,12 @@ export const pluginsApi = {
    */
   testConfig: (pluginId: string, companyId: string, configJson: Record<string, unknown>) =>
     api.post<{ valid: boolean; message?: string }>(`/plugins/${pluginId}/config/test`, { companyId, configJson }),
+
+  setup: (pluginId: string, companyId: string) =>
+    api.get<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`),
+
+  updateSetup: (pluginId: string, companyId: string, patch: PluginSetupPatchRequest) =>
+    api.patch<PluginSetupSummary>(`/plugins/${pluginId}/companies/${companyId}/setup`, patch),
 
   /**
    * List manifest-declared and stored company-scoped local folders for a plugin.

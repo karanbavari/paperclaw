@@ -180,9 +180,9 @@ describe("hiring capability opt-in", () => {
   it("enables API tools only when the manual hiring story is selected", () => {
     const hire = runnerMatrix.find((e) => e.suite.id === "everyday-workflows" && e.task.id === "hire-reuse")!;
     const delegate = runnerMatrix.find((e) => e.suite.id === "everyday-workflows" && e.task.id === "delegate-feedback")!;
-    expect(buildRunnerE2EProcessEnvironment({}, [hire]).PAPERCLIP_RUNNER_API_TOOLS_ENABLED).toBe("true");
-    expect(buildRunnerE2EProcessEnvironment({}, [delegate]).PAPERCLIP_RUNNER_API_TOOLS_ENABLED).toBeUndefined();
-    expect(buildRunnerE2EProcessEnvironment({}, []).PAPERCLIP_RUNNER_API_TOOLS_ENABLED).toBeUndefined();
+    expect(buildRunnerE2EProcessEnvironment({}, [hire]).PAPERCLAW_RUNNER_API_TOOLS_ENABLED).toBe("true");
+    expect(buildRunnerE2EProcessEnvironment({}, [delegate]).PAPERCLAW_RUNNER_API_TOOLS_ENABLED).toBeUndefined();
+    expect(buildRunnerE2EProcessEnvironment({}, []).PAPERCLAW_RUNNER_API_TOOLS_ENABLED).toBeUndefined();
   });
 });
 
@@ -218,7 +218,7 @@ describe("runner E2E server port allocation", () => {
 
 describe("runner E2E sensitive API boundary", () => {
   it("keeps secret request bodies out of Playwright API tracing", async () => {
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", "43123");
+    vi.stubEnv("PAPERCLAW_RUNNER_E2E_PORT", "43123");
     const playwrightPost = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ id: "secret-id" }), {
@@ -347,10 +347,10 @@ describe("runner E2E matchers", () => {
   it("normalizes message text and evaluates state invariants", async () => {
     const results = await evaluateMatchers(
       [
-        { kind: "message_contains", expected: "PAPERCLIP_E2E_OK_nonce" },
+        { kind: "message_contains", expected: "PAPERCLAW_E2E_OK_nonce" },
         {
           kind: "message_occurrences",
-          expected: "PAPERCLIP_E2E_OK_nonce",
+          expected: "PAPERCLAW_E2E_OK_nonce",
           count: 1,
         },
         { kind: "issue_status", expected: "done" },
@@ -806,21 +806,21 @@ describe("runner E2E server isolation", () => {
         OPENROUTER_API_KEY: "openrouter",
         DAYTONA_API_KEY: "daytona",
         OPENAI_ORG_ID: "also-provider-sensitive",
-        PAPERCLIP_API_KEY: "ambient-board-key",
-        PAPERCLIP_AGENT_API_KEY: "ambient-agent-key",
-        PAPERCLIP_TASK_BRIDGE_TOKEN: "ambient-task-token",
-        PAPERCLIP_SETUP_TOKEN: "ambient-setup-token",
-        PAPERCLIP_SECRETS_MASTER_KEY: "ambient-master-key",
-        PAPERCLIP_SECRETS_MASTER_KEY_FILE: "/outside/master.key",
-        PAPERCLIP_STORAGE_S3_BUCKET: "production-bucket",
+        PAPERCLAW_API_KEY: "ambient-board-key",
+        PAPERCLAW_AGENT_API_KEY: "ambient-agent-key",
+        PAPERCLAW_TASK_BRIDGE_TOKEN: "ambient-task-token",
+        PAPERCLAW_SETUP_TOKEN: "ambient-setup-token",
+        PAPERCLAW_SECRETS_MASTER_KEY: "ambient-master-key",
+        PAPERCLAW_SECRETS_MASTER_KEY_FILE: "/outside/master.key",
+        PAPERCLAW_STORAGE_S3_BUCKET: "production-bucket",
       },
       {
-        PAPERCLIP_HOME: "/tmp/cell/paperclip-home",
-        PAPERCLIP_CONFIG: "/tmp/cell/paperclip-home/instances/e2e/config.json",
+        PAPERCLAW_HOME: "/tmp/cell/paperclip-home",
+        PAPERCLAW_CONFIG: "/tmp/cell/paperclip-home/instances/e2e/config.json",
         XDG_CACHE_HOME: "/tmp/cell/xdg-cache",
-        PAPERCLIP_AGENT_JWT_SECRET: "generated-agent-jwt",
-        PAPERCLIP_DECISION_SIGNING_SECRET: "generated-decision-key",
-        PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: "generated-tool-key",
+        PAPERCLAW_AGENT_JWT_SECRET: "generated-agent-jwt",
+        PAPERCLAW_DECISION_SIGNING_SECRET: "generated-decision-key",
+        PAPERCLAW_TOOL_ACTION_SIGNING_SECRET: "generated-tool-key",
         BETTER_AUTH_SECRET: "generated-auth-key",
       },
     );
@@ -828,15 +828,15 @@ describe("runner E2E server isolation", () => {
     expect(env.DATABASE_URL).toBeUndefined();
     expect(env.OPENAI_API_KEY).toBeUndefined();
     expect(env.OPENAI_ORG_ID).toBeUndefined();
-    expect(env.PAPERCLIP_API_KEY).toBeUndefined();
-    expect(env.PAPERCLIP_AGENT_API_KEY).toBeUndefined();
+    expect(env.PAPERCLAW_API_KEY).toBeUndefined();
+    expect(env.PAPERCLAW_AGENT_API_KEY).toBeUndefined();
     expect(env.XDG_CACHE_HOME).toBe("/tmp/cell/xdg-cache");
-    expect(env.PAPERCLIP_AGENT_JWT_SECRET).toBe("generated-agent-jwt");
-    expect(env.PAPERCLIP_TASK_BRIDGE_TOKEN).toBeUndefined();
-    expect(env.PAPERCLIP_SETUP_TOKEN).toBeUndefined();
-    expect(env.PAPERCLIP_SECRETS_MASTER_KEY).toBeUndefined();
-    expect(env.PAPERCLIP_SECRETS_MASTER_KEY_FILE).toBeUndefined();
-    expect(env.PAPERCLIP_STORAGE_S3_BUCKET).toBeUndefined();
+    expect(env.PAPERCLAW_AGENT_JWT_SECRET).toBe("generated-agent-jwt");
+    expect(env.PAPERCLAW_TASK_BRIDGE_TOKEN).toBeUndefined();
+    expect(env.PAPERCLAW_SETUP_TOKEN).toBeUndefined();
+    expect(env.PAPERCLAW_SECRETS_MASTER_KEY).toBeUndefined();
+    expect(env.PAPERCLAW_SECRETS_MASTER_KEY_FILE).toBeUndefined();
+    expect(env.PAPERCLAW_STORAGE_S3_BUCKET).toBeUndefined();
     expect(() =>
       assertIsolatedServerEnvironment(env, {
         temporaryRoot: "/tmp/cell",
@@ -1231,7 +1231,7 @@ describe("runner E2E evidence redaction", () => {
     await writeFile(
       path.join(privateDir, "snapshots", "api-state.json"),
       JSON.stringify({
-        log: String.raw`curl -H \"Authorization: Bearer temporary-run-token\" \\\n+  \"$PAPERCLIP_API_URL/api/issues\"`,
+        log: String.raw`curl -H \"Authorization: Bearer temporary-run-token\" \\\n+  \"$PAPERCLAW_API_URL/api/issues\"`,
       }),
     );
     await packageEvidence({

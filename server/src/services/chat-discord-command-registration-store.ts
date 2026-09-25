@@ -4,7 +4,7 @@ import {
   chatActions,
   chatDiscordCommandOwners,
   type Db,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   createDiscordCommandRegistration,
   parseDiscordCommandRegistration,

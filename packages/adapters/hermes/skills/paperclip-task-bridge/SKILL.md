@@ -11,15 +11,15 @@ Use this skill when a Hermes-originated request needs to create or update Paperc
 
 Configure these in Hermes env/profile secrets, not in prompt text:
 
-- `PAPERCLIP_API_URL` - Paperclip base URL, with or without `/api`.
-- `PAPERCLIP_BRIDGE_API_KEY` - a Paperclip agent API key created with `scope.kind = "task_bridge"`.
+- `PAPERCLAW_API_URL` - Paperclip base URL, with or without `/api`.
+- `PAPERCLAW_BRIDGE_API_KEY` - a Paperclip agent API key created with `scope.kind = "task_bridge"`.
 
 Optional:
 
-- `PAPERCLIP_API_KEY` - fallback env var for older profiles; it must still contain a `task_bridge` scoped key, never a full agent key.
-- `PAPERCLIP_COMPANY_ID` - skips one identity lookup when set.
-- `PAPERCLIP_AGENT_ID` - skips one identity lookup when set.
-- `PAPERCLIP_RUN_ID` - sent as `X-Paperclip-Run-Id` on mutating requests when Hermes is running inside a Paperclip heartbeat.
+- `PAPERCLAW_API_KEY` - fallback env var for older profiles; it must still contain a `task_bridge` scoped key, never a full agent key.
+- `PAPERCLAW_COMPANY_ID` - skips one identity lookup when set.
+- `PAPERCLAW_AGENT_ID` - skips one identity lookup when set.
+- `PAPERCLAW_RUN_ID` - sent as `X-PaperClaw-Run-Id` on mutating requests when Hermes is running inside a Paperclip heartbeat.
 
 Never print or paste API keys. The helper reads credentials from environment variables and only prints response summaries. Do not put a normal claimed agent API key in an internet-facing Hermes runtime; normal keys can use broad same-company Paperclip routes.
 
@@ -28,7 +28,7 @@ Never print or paste API keys. The helper reads credentials from environment var
 Create the key from a board-authenticated Paperclip API session and store the returned token once:
 
 ```sh
-curl -X POST "$PAPERCLIP_API_URL/api/agents/$HERMES_AGENT_ID/keys" \
+curl -X POST "$PAPERCLAW_API_URL/api/agents/$HERMES_AGENT_ID/keys" \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

@@ -5,7 +5,7 @@ import { createServer } from "node:net";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { Option, type Command } from "commander";
-import type { Agent, Company, InstanceExperimentalSettings } from "@paperclipai/shared";
+import type { Agent, Company, InstanceExperimentalSettings } from "@kesarcloud/shared";
 import { PaperclipApiClient } from "../client/http.js";
 import { openUrl } from "../client/board-auth.js";
 import {
@@ -78,7 +78,7 @@ const HARNESS_DEFINITIONS: Record<TestDriveHarness, HarnessDefinition> = {
   },
 };
 
-const NON_PAPERCLIP_ISOLATED_ENV_KEYS = [
+const NON_PAPERCLAW_ISOLATED_ENV_KEYS = [
   "DATABASE_URL",
   "DATABASE_MIGRATION_URL",
   "HOST",
@@ -160,7 +160,7 @@ export async function resolveTestDriveServerPort(preferredPort = 3100): Promise<
 /**
  * Establish isolation before the CLI's normal config and .env loading hook.
  * The selected credential source is preserved in case its name happens to use
- * a PAPERCLIP_ prefix; all other Paperclip routing/configuration is discarded.
+ * a PAPERCLAW_ prefix; all other Paperclip routing/configuration is discarded.
  */
 export async function prepareTestDriveEnvironment(
   options: Pick<TestDriveOptions, "dataDir" | "apiKeyEnv">,
@@ -170,11 +170,11 @@ export async function prepareTestDriveEnvironment(
   const preservedCredential = sourceEnvName ? process.env[sourceEnvName] : undefined;
 
   for (const key of Object.keys(process.env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("PAPERCLAW_")) {
       delete process.env[key];
     }
   }
-  for (const key of NON_PAPERCLIP_ISOLATED_ENV_KEYS) {
+  for (const key of NON_PAPERCLAW_ISOLATED_ENV_KEYS) {
     delete process.env[key];
   }
   if (sourceEnvName && preservedCredential !== undefined) {
@@ -183,16 +183,16 @@ export async function prepareTestDriveEnvironment(
 
   const dataDir = resolveTestDriveDataDir(options.dataDir);
   const linkedWorktree = isLinkedGitWorktree(cwd);
-  process.env.PAPERCLIP_HOME = dataDir;
-  process.env.PAPERCLIP_INSTANCE_ID = "default";
-  process.env.PAPERCLIP_CONFIG = resolveDefaultConfigPath("default");
-  process.env.PAPERCLIP_CONTEXT = resolveDefaultContextPath();
-  process.env.PAPERCLIP_IN_WORKTREE = linkedWorktree ? "true" : "false";
-  process.env.PAPERCLIP_OPEN_ON_LISTEN = "false";
-  process.env.PAPERCLIP_DISABLE_CWD_ENV_FILE = "true";
-  process.env.PAPERCLIP_DEPLOYMENT_MODE = "local_trusted";
-  process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE = "private";
-  process.env.PAPERCLIP_BIND = "loopback";
+  process.env.PAPERCLAW_HOME = dataDir;
+  process.env.PAPERCLAW_INSTANCE_ID = "default";
+  process.env.PAPERCLAW_CONFIG = resolveDefaultConfigPath("default");
+  process.env.PAPERCLAW_CONTEXT = resolveDefaultContextPath();
+  process.env.PAPERCLAW_IN_WORKTREE = linkedWorktree ? "true" : "false";
+  process.env.PAPERCLAW_OPEN_ON_LISTEN = "false";
+  process.env.PAPERCLAW_DISABLE_CWD_ENV_FILE = "true";
+  process.env.PAPERCLAW_DEPLOYMENT_MODE = "local_trusted";
+  process.env.PAPERCLAW_DEPLOYMENT_EXPOSURE = "private";
+  process.env.PAPERCLAW_BIND = "loopback";
   process.env.HOST = "127.0.0.1";
   process.env.PORT = String(await resolveTestDriveServerPort());
 
@@ -311,7 +311,7 @@ export async function reconcileTestDriveWorktreeExecution(
   if (!worktreeExecutionArmed(verified, instanceId)) {
     throw new Error(
       `Could not arm “Run tasks in this worktree” for Paperclip instance ${instanceId}. ` +
-        "Check that PAPERCLIP_IN_WORKTREE=true and retry the command.",
+        "Check that PAPERCLAW_IN_WORKTREE=true and retry the command.",
     );
   }
 }
@@ -410,9 +410,9 @@ export async function testDriveCommand(
   // Commander has already copied the value into options. Remove it from the
   // JavaScript argv view before logging, telemetry, diagnostics, or startup.
   redactTestDriveArgv(options.apiKey);
-  const dataDir = path.resolve(process.env.PAPERCLIP_HOME ?? resolveTestDriveDataDir(options.dataDir));
-  const linkedWorktree = process.env.PAPERCLIP_IN_WORKTREE === "true";
-  const instanceId = process.env.PAPERCLIP_INSTANCE_ID ?? "default";
+  const dataDir = path.resolve(process.env.PAPERCLAW_HOME ?? resolveTestDriveDataDir(options.dataDir));
+  const linkedWorktree = process.env.PAPERCLAW_IN_WORKTREE === "true";
+  const instanceId = process.env.PAPERCLAW_INSTANCE_ID ?? "default";
   // Resolve environment-backed credentials against the CLI environment as it
   // exists before server startup. In-process server initialization must not
   // change which credential the post-listen bootstrap observes.

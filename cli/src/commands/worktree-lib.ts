@@ -3,7 +3,7 @@ import path from "node:path";
 import type { PaperclipConfig } from "../config/schema.js";
 import { expandHomePrefix } from "../config/home.js";
 
-export const DEFAULT_WORKTREE_HOME = "~/.paperclip-worktrees";
+export const DEFAULT_WORKTREE_HOME = "~/.paperclaw-worktrees";
 export const WORKTREE_SEED_MODES = ["minimal", "full"] as const;
 export const WORKTREE_SEED_MANIFEST = "seed-manifest.json";
 export const WORKTREE_SEED_PENDING_MARKER = "seed-pending";
@@ -201,7 +201,7 @@ export function resolveWorktreeLocalPaths(opts: {
   const cwd = path.resolve(opts.cwd);
   const homeDir = path.resolve(expandHomePrefix(opts.homeDir ?? DEFAULT_WORKTREE_HOME));
   const instanceRoot = path.resolve(homeDir, "instances", opts.instanceId);
-  const repoConfigDir = path.resolve(cwd, ".paperclip");
+  const repoConfigDir = path.resolve(cwd, ".paperclaw");
   return {
     cwd,
     repoConfigDir,
@@ -313,14 +313,14 @@ export function buildWorktreeEnvEntries(
   branding?: WorktreeUiBranding,
 ): Record<string, string> {
   return {
-    PAPERCLIP_HOME: paths.homeDir,
-    PAPERCLIP_INSTANCE_ID: paths.instanceId,
-    PAPERCLIP_CONFIG: paths.configPath,
-    PAPERCLIP_CONTEXT: paths.contextPath,
-    PAPERCLIP_IN_WORKTREE: "true",
-    PAPERCLIP_DB_BACKUP_ENABLED: "false",
-    ...(branding?.name ? { PAPERCLIP_WORKTREE_NAME: branding.name } : {}),
-    ...(branding?.color ? { PAPERCLIP_WORKTREE_COLOR: branding.color } : {}),
+    PAPERCLAW_HOME: paths.homeDir,
+    PAPERCLAW_INSTANCE_ID: paths.instanceId,
+    PAPERCLAW_CONFIG: paths.configPath,
+    PAPERCLAW_CONTEXT: paths.contextPath,
+    PAPERCLAW_IN_WORKTREE: "true",
+    PAPERCLAW_DB_BACKUP_ENABLED: "false",
+    ...(branding?.name ? { PAPERCLAW_WORKTREE_NAME: branding.name } : {}),
+    ...(branding?.color ? { PAPERCLAW_WORKTREE_COLOR: branding.color } : {}),
   };
 }
 

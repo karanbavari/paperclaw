@@ -20,6 +20,12 @@ import {
   MessagesSquare,
   GanttChartSquare,
   LayoutGrid,
+  Brain,
+  Store,
+  MessageCircle,
+  Microscope,
+  PackageCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -181,6 +187,11 @@ export function Sidebar() {
 
         <SidebarSection label="Work" collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
           <SidebarNavItem to="/issues" label="Tasks" icon={CircleDot} />
+          <SidebarNavItem to="/outcomes" label="Outcomes" icon={PackageCheck} />
+          <SidebarNavItem to="/ops" label="Ops" icon={ShieldAlert} />
+          <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />
+          <SidebarNavItem to="/meetings" label="Meetings" icon={MessagesSquare} />
+          <SidebarNavItem to="/research-labs" label="Research Lab" icon={Microscope} />
           {showCases ? (
             <SidebarNavItem to="/cases" label="Cases" icon={Layers} textBadge="beta" />
           ) : null}
@@ -230,6 +241,8 @@ export function Sidebar() {
 
         <SidebarSection label="Company" collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
           <SidebarNavItem to="/org" label="Org" icon={Network} />
+          <SidebarNavItem to="/memory" label="Memory" icon={Brain} />
+          <SidebarNavItem to="/marketplace" label="Marketplace" icon={Store} />
           {showApps ? <SidebarNavItem to="/apps" label="Connectors" icon={Unplug} /> : null}
           <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />

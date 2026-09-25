@@ -129,8 +129,8 @@ describe("buildPaperclipTaskMarkdown", () => {
     expect(markdown).toContain(
       '"contentPath":"/api/attachments/attachment-text/content"',
     );
-    expect(markdown).toContain("PAPERCLIP_API_URL");
-    expect(markdown).toContain("PAPERCLIP_API_KEY");
+    expect(markdown).toContain("PAPERCLAW_API_URL");
+    expect(markdown).toContain("PAPERCLAW_API_KEY");
     expect(markdown).toContain("never invoke `npx`");
     expect(markdown).toContain(
       "Do not infer file contents from filenames or metadata",
@@ -224,7 +224,7 @@ describe("buildPaperclipTaskMarkdown", () => {
       expect(markdown).toContain("do not suppress transport-managed progress");
       expect(markdown).toContain('"id":"native-attachment"');
       expect(markdown).not.toContain("paperclip-upload-artifact.sh");
-      expect(markdown).not.toContain("PAPERCLIP_API_KEY");
+      expect(markdown).not.toContain("PAPERCLAW_API_KEY");
       expect(markdown).not.toContain("/api/attachments/");
     },
   );

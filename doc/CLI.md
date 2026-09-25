@@ -84,7 +84,7 @@ For a command that must run the local checked-out source with a value, use the
 direct-exec form: `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts
 <command> <args>`.
 
-The `pnpm --filter @paperclipai/*` build and test commands are not CLI
+The `pnpm --filter @kesarcloud/*` build and test commands are not CLI
 invocation. They do not change.
 
 ### Offline and air-gapped use
@@ -227,7 +227,7 @@ local harness installation, credential validity, and model availability are
 intentionally checked only when the agent first runs.
 
 When invoked inside a linked Git worktree, the command ignores inherited
-`PAPERCLIP_IN_WORKTREE` state, launches in worktree mode, and verifies **Run
+`PAPERCLAW_IN_WORKTREE` state, launches in worktree mode, and verifies **Run
 tasks in this worktree** is armed for the current instance before opening the
 browser. In a primary checkout or non-Git directory it launches without
 worktree mode and does not alter the setting. On reuse, if any company already
@@ -240,7 +240,7 @@ opening it.
 
 ## Install, Update, And Uninstall
 
-Managed installs keep CLI payloads under `~/.paperclip/cli`, expose a stable
+Managed installs keep CLI payloads under `~/.paperclaw/cli`, expose a stable
 `~/.local/bin/paperclipai` shim, switch versions atomically, and retain two
 previous payloads for rollback.
 
@@ -257,7 +257,7 @@ paperclipai uninstall
 ```
 
 `upgrade` aliases `update`. `uninstall` removes managed code and the shim but
-preserves instance data under `~/.paperclip/instances/`. See
+preserves instance data under `~/.paperclaw/instances/`. See
 `doc/INSTALLING.md` for installation methods, security notes, PATH setup, and
 the complete update and rollback behavior.
 
@@ -301,7 +301,7 @@ Current CLI behavior:
 - `paperclipai onboard` and `paperclipai configure --section server` set deployment mode in config
 - server onboarding/configure ask for reachability intent and write `server.bind`
 - `paperclipai run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
-- runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
+- runtime can override mode with `PAPERCLAW_DEPLOYMENT_MODE`
 - `paperclipai run` and `paperclipai doctor` still do not expose a direct low-level `--mode` flag
 
 Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
@@ -335,7 +335,7 @@ Company-scoped commands also support `--company-id <id>`.
 API base resolution order:
 
 1. `--api-base <url>`
-2. `PAPERCLIP_API_URL`
+2. `PAPERCLAW_API_URL`
 3. selected context profile `apiBase`
 4. local Paperclip config server port
 5. `http://localhost:3100`
@@ -355,7 +355,7 @@ pnpm paperclipai connect
 
 Profiles store token env-var names, not plaintext tokens. The wizard prints shell exports for the newly created token.
 
-Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclip`:
+Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclaw`:
 
 ```sh
 npx paperclipai run --data-dir ./tmp/paperclip-dev
@@ -364,11 +364,11 @@ npx paperclipai issue list --data-dir ./tmp/paperclip-dev
 
 ## Context Profiles
 
-Store local defaults in `~/.paperclip/context.json`:
+Store local defaults in `~/.paperclaw/context.json`:
 
 ```sh
 npx paperclipai context set --api-base http://localhost:3100 --company-id <company-id>
-npx paperclipai context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
+npx paperclipai context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLAW_API_KEY
 pnpm paperclipai context show
 pnpm paperclipai context list
 npx paperclipai context use default
@@ -377,8 +377,8 @@ npx paperclipai context use default
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-npx paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+npx paperclipai context set --api-key-env-var-name PAPERCLAW_API_KEY
+export PAPERCLAW_API_KEY=...
 ```
 
 ## Organization Commands
@@ -412,12 +412,12 @@ Notes:
 
 - With agent authentication, `company list` and `company current` are
   agent-safe company selectors. `company list` first tries the board-wide list;
-  if that is forbidden, it uses `--company-id`, `PAPERCLIP_COMPANY_ID`, context,
+  if that is forbidden, it uses `--company-id`, `PAPERCLAW_COMPANY_ID`, context,
   or `/api/agents/me` and then reads only that scoped company.
 - `company create` requires board/instance-admin authentication because it is
   an instance-wide setup command.
-- Deletion is server-gated by `PAPERCLIP_ENABLE_COMPANY_DELETION`.
-- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `PAPERCLIP_COMPANY_ID`), not another company.
+- Deletion is server-gated by `PAPERCLAW_ENABLE_COMPANY_DELETION`.
+- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `PAPERCLAW_COMPANY_ID`), not another company.
 
 ## Issue Commands
 
@@ -573,7 +573,7 @@ Agent config, instructions, skills, project env, environment, secret, and worksp
 
 - creates a new long-lived agent API key
 - installs missing Paperclip skills into `~/.codex/skills` and `~/.claude/skills`
-- prints `export ...` lines for `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`
+- prints `export ...` lines for `PAPERCLAW_API_URL`, `PAPERCLAW_COMPANY_ID`, `PAPERCLAW_AGENT_ID`, and `PAPERCLAW_API_KEY`
 
 Example for shortname-based local setup:
 
@@ -644,7 +644,7 @@ Prompt handoff creates Paperclip work. It does not create a chat session.
 
 ```sh
 npx paperclipai agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
-npx paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
+npx paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLAW_API_KEY "Prompt here"
 npx paperclipai agent prompt --profile my-agent "Prompt here"
 npx paperclipai board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
 ```
@@ -678,7 +678,7 @@ also creates agents.
 
 ### Catalog (app-shipped skills)
 
-The Paperclip app ships a curated catalog under `@paperclipai/skills-catalog`.
+The Paperclip app ships a curated catalog under `@kesarcloud/skills-catalog`.
 Browse and inspect commands never mutate company state; `install` adds a catalog
 skill to the company library.
 
@@ -782,7 +782,7 @@ still enforced by the server in both cases.
 ## Teams Commands
 
 `paperclipai teams` works with the app-shipped team catalog in
-`@paperclipai/teams-catalog`. Browse, search, inspect, and file reads do not
+`@kesarcloud/teams-catalog`. Browse, search, inspect, and file reads do not
 change company state. `preview` runs the company import planner, and `install`
 imports the catalog team into an existing company.
 
@@ -797,7 +797,7 @@ npx paperclipai teams install <catalog-id-or-key-or-slug> --company-id <company-
 Preview/install options:
 
 - Under agent authentication, use `paperclipai company list --json`,
-  `paperclipai company current --json`, or `PAPERCLIP_COMPANY_ID` to select the
+  `paperclipai company current --json`, or `PAPERCLAW_COMPANY_ID` to select the
   target company. `company list` falls back to the scoped current company when
   board-wide listing is forbidden. `teams install` creates agents and therefore
   requires board authentication, an `agents:create` grant, or an agent with the
@@ -807,7 +807,7 @@ Preview/install options:
 - `--request-approval-on-forbidden` turns a 403 install denial into a linked
   board approval request instead of a raw failed command; use
   `--approval-issue-id <id>` to attach it to a specific issue. During Paperclip
-  task runs with `PAPERCLIP_TASK_ID` set, this fallback is automatic so
+  task runs with `PAPERCLAW_TASK_ID` set, this fallback is automatic so
   agent-run walkthroughs leave a pending approval path instead of a raw 403.
 - `--target-manager-agent-id <id>` or `--target-manager-slug <slug>` reparents
   catalog root agents under an existing manager.
@@ -924,9 +924,9 @@ CLI auth challenge endpoints are also exposed for tooling that needs the raw cha
 
 ```sh
 npx paperclipai auth challenge create --payload-json '{...}'
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge get <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge approve <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge cancel <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
+PAPERCLAW_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge get <challenge-id> --token-env PAPERCLAW_CHALLENGE_SECRET
+PAPERCLAW_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge approve <challenge-id> --token-env PAPERCLAW_CHALLENGE_SECRET
+PAPERCLAW_CHALLENGE_SECRET=<challenge-secret> npx paperclipai auth challenge cancel <challenge-id> --token-env PAPERCLAW_CHALLENGE_SECRET
 npx paperclipai auth revoke-current
 ```
 
@@ -1117,12 +1117,12 @@ npx paperclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost
 
 ## Local Storage Defaults
 
-Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` chooses the home directory and `PAPERCLIP_INSTANCE_ID` chooses the instance.
+Local Paperclip data lives under the selected instance root. `PAPERCLAW_HOME` chooses the home directory and `PAPERCLAW_INSTANCE_ID` chooses the instance.
 
 ```text
-~/.paperclip/                                     # PAPERCLIP_HOME
+~/.paperclaw/                                     # PAPERCLAW_HOME
 └── instances/
-    └── default/                                  # instance root (PAPERCLIP_INSTANCE_ID)
+    └── default/                                  # instance root (PAPERCLAW_INSTANCE_ID)
         ├── config.json                           # runtime config
         ├── .env                                  # instance env file
         ├── db/                                   # embedded PostgreSQL data
@@ -1140,16 +1140,16 @@ Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` ch
 
 Default paths for the canonical install:
 
-- config: `~/.paperclip/instances/default/config.json`
-- embedded db: `~/.paperclip/instances/default/db`
-- logs: `~/.paperclip/instances/default/logs`
-- storage: `~/.paperclip/instances/default/data/storage`
-- secrets key: `~/.paperclip/instances/default/secrets/master.key`
+- config: `~/.paperclaw/instances/default/config.json`
+- embedded db: `~/.paperclaw/instances/default/db`
+- logs: `~/.paperclaw/instances/default/logs`
+- storage: `~/.paperclaw/instances/default/data/storage`
+- secrets key: `~/.paperclaw/instances/default/secrets/master.key`
 
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLAW_HOME=/custom/home PAPERCLAW_INSTANCE_ID=dev pnpm paperclipai run
 ```
 
 ## Storage Configuration

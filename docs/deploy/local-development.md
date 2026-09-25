@@ -111,7 +111,7 @@ npx paperclipai worktree:cleanup local-lab --force
 To wipe local data and start fresh:
 
 ```sh
-rm -rf ~/.paperclip/instances/default/db
+rm -rf ~/.paperclaw/instances/default/db
 pnpm dev
 ```
 
@@ -119,14 +119,14 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
-| Logs | `~/.paperclip/instances/default/logs` |
+| Config | `~/.paperclaw/instances/default/config.json` |
+| Database | `~/.paperclaw/instances/default/db` |
+| Storage | `~/.paperclaw/instances/default/data/storage` |
+| Secrets key | `~/.paperclaw/instances/default/secrets/master.key` |
+| Logs | `~/.paperclaw/instances/default/logs` |
 
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLAW_HOME=/custom/path PAPERCLAW_INSTANCE_ID=dev pnpm paperclipai run
 ```

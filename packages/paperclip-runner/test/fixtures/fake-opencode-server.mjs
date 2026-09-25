@@ -20,7 +20,7 @@ const runtimeConfig = JSON.parse(
     "utf8",
   ),
 );
-const mcp = runtimeConfig.mcp?.paperclip;
+const mcp = runtimeConfig.mcp?.paperclaw;
 let mcpRequestId = 1;
 const mcpEvidence = { tools: [], calls: [] };
 
@@ -626,7 +626,7 @@ const server = createServer(async (request, response) => {
                 messageID: "message-final",
                 type: "tool",
                 tool: "unknown",
-                callID: "functions.paperclip_paperclip_finish:24",
+                callID: "functions.paperclaw_paperclip_finish:24",
                 state: {
                   status: "error",
                   error: "Tool execution aborted",

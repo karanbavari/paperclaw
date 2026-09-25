@@ -1,5 +1,5 @@
 import type {
-  PaperClawPluginManifestV1,
+  PaperclipPluginManifestV1,
   PluginConfig,
   PluginRecord,
   PluginSetupOverallStatus,
@@ -18,7 +18,7 @@ import {
 } from "./plugin-local-folders.js";
 
 interface PluginSetupRegistry {
-  getConfig(pluginId: string): Promise<PluginConfig | null>;
+  getConfig(pluginId: string, companyId: string): Promise<PluginConfig | null>;
   getCompanySettings(pluginId: string, companyId: string): Promise<PluginCompanySettings | null>;
   upsertCompanySettings(
     pluginId: string,
@@ -110,12 +110,12 @@ export function writePluginSetupWizardState(
   };
 }
 
-function hasConfigSchema(manifest: PaperClawPluginManifestV1) {
+function hasConfigSchema(manifest: PaperclipPluginManifestV1) {
   const schema = manifest.instanceConfigSchema;
   return Boolean(schema && typeof schema === "object" && Object.keys(schema).length > 0);
 }
 
-function hasCustomSettingsPage(manifest: PaperClawPluginManifestV1) {
+function hasCustomSettingsPage(manifest: PaperclipPluginManifestV1) {
   return Boolean(manifest.ui?.slots?.some((slot) => slot.type === "settingsPage"));
 }
 
@@ -180,7 +180,7 @@ export async function buildPluginSetupSummary(input: {
   });
 
   if (hasConfigSchema(manifest)) {
-    const config = await registry.getConfig(plugin.id);
+    const config = await registry.getConfig(plugin.id, companyId);
     let status: PluginSetupStepStatus = "needs_action";
     const schema = manifest.instanceConfigSchema;
     if (config?.configJson && schema) {

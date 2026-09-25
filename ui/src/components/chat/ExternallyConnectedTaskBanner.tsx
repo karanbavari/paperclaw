@@ -5,7 +5,7 @@ import type {
   ChatPublicationState,
   ChatFileTransferPhase,
   IssueAttachment,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   chatEndpointsApi,
   type ChatProvider,

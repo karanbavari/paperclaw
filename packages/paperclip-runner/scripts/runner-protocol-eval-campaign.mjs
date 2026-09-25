@@ -500,7 +500,7 @@ export async function aggregateProtocolEvalCampaign({
     selection: catalog.selection,
     costs: sumAttemptCosts(attemptUsages),
     source: {
-      paperclip: source.paperclip,
+      paperclip: source.paperclaw,
       evals: source.evals,
       workflowRunUrl: source.workflowRunUrl,
     },
@@ -694,13 +694,13 @@ async function main() {
       argument(args, "--output", "runner-protocol-eval-catalog.json"),
     );
     const catalog = await buildProtocolEvalCatalog({
-      evalsRoot: resolve(argument(args, "--evals-root", ".paperclip-evals")),
+      evalsRoot: resolve(argument(args, "--evals-root", ".paperclaw-evals")),
       rosterSelection: argument(args, "--rosters", "all"),
       campaignId: argument(args, "--campaign-id", `local-${Date.now()}`),
       maxParallel: Number(argument(args, "--max-parallel", "100")),
       source: {
-        paperclipSha: process.env.PAPERCLIP_PROTOCOL_EVAL_SOURCE_SHA ?? null,
-        evalsSha: process.env.PAPERCLIP_PROTOCOL_EVALS_SHA ?? null,
+        paperclipSha: process.env.PAPERCLAW_PROTOCOL_EVAL_SOURCE_SHA ?? null,
+        evalsSha: process.env.PAPERCLAW_PROTOCOL_EVALS_SHA ?? null,
       },
     });
     await mkdir(dirname(output), { recursive: true });
@@ -730,14 +730,14 @@ async function main() {
       campaignOut: resolve(argument(args, "--campaign-out")),
       source: {
         paperclip: {
-          sha: process.env.PAPERCLIP_PROTOCOL_EVAL_SOURCE_SHA,
-          ref: process.env.PAPERCLIP_PROTOCOL_EVAL_SOURCE_REF,
+          sha: process.env.PAPERCLAW_PROTOCOL_EVAL_SOURCE_SHA,
+          ref: process.env.PAPERCLAW_PROTOCOL_EVAL_SOURCE_REF,
         },
         evals: {
           repository: "paperclipai/paperclip-evals",
-          sha: process.env.PAPERCLIP_PROTOCOL_EVALS_SHA,
+          sha: process.env.PAPERCLAW_PROTOCOL_EVALS_SHA,
         },
-        workflowRunUrl: process.env.PAPERCLIP_PROTOCOL_EVAL_WORKFLOW_URL,
+        workflowRunUrl: process.env.PAPERCLAW_PROTOCOL_EVAL_WORKFLOW_URL,
       },
     });
     console.log(json(campaign.totals).trim());

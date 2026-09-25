@@ -1,7 +1,7 @@
 import { nativePhotonInteraction } from "./photon/interactions.js";
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   chatActions,
   chatConversations,
@@ -9,14 +9,14 @@ import {
   chatPublications,
   heartbeatRuns,
   issues,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import type {
   AskUserQuestionsInteraction,
   AskUserQuestionsQuestion,
   IssueThreadInteraction,
   RequestConfirmationInteraction,
   SafeExternalChatCardAction,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { readConfigFile } from "../config-file.js";
 import { projectSafeChatPublication } from "./chat-publication-projection.js";
 import { safeChatTaskUrl } from "./chat-task-url.js";
@@ -112,12 +112,12 @@ function terminalNativeInteractionCopy(
 
 export function publicChatInteractionTaskUrl(issueId: string): string | null {
   const configured =
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim() ||
+    process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL?.trim() ||
     process.env.BETTER_AUTH_URL?.trim() ||
     process.env.BETTER_AUTH_BASE_URL?.trim() ||
-    process.env.PAPERCLIP_PUBLIC_URL?.trim() ||
+    process.env.PAPERCLAW_PUBLIC_URL?.trim() ||
     readConfigFile()?.auth?.publicBaseUrl?.trim() ||
-    process.env.PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL?.trim();
+    process.env.PAPERCLAW_MANAGED_RUNTIME_PUBLIC_URL?.trim();
   return safeChatTaskUrl(configured, issueId);
 }
 

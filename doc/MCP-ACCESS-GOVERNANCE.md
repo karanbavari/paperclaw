@@ -78,14 +78,14 @@ The fastest path is the bundled example. From the Tools & Access UI (`/<prefix>/
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/install" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/install" \
   -d '{}' | jq .
 
 # Run the bundled smoke check (validates an allowed read, a denied write, audit visibility).
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/smoke" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/smoke" \
   -d '{}' | jq '{ok, checks: [.checks[] | {name, ok, decision, reasonCode}]}'
 ```
 
@@ -143,7 +143,7 @@ Operators do not paste arbitrary `command` / `args` for stdio. Allowed stdio ent
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/connections" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/connections" \
   -d '{
     "applicationId": "'"$APPLICATION_ID"'",
     "name": "Linear (remote)",
@@ -166,22 +166,22 @@ Connections are created `enabled: false`. Run a health check and a catalog refre
 ```sh
 # Health check (no secrets in output)
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID/health-check" -d '{}' \
+  "$PAPERCLAW_URL/api/tool-connections/$CONNECTION_ID/health-check" -d '{}' \
   | jq '{connection: {healthStatus: .connection.healthStatus, healthMessage: .connection.healthMessage}}'
 
 # Catalog refresh (pulls schema, sets risk levels, quarantines unexpected writes)
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID/catalog/refresh" -d '{}' \
+  "$PAPERCLAW_URL/api/tool-connections/$CONNECTION_ID/catalog/refresh" -d '{}' \
   | jq '{discoveredCount, quarantinedCount}'
 
 # Enable
 curl -fsS -X PATCH -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID" \
+  "$PAPERCLAW_URL/api/tool-connections/$CONNECTION_ID" \
   -d '{"enabled": true, "status": "active"}' | jq '{id, enabled, status, healthStatus}'
 
 # Disable (does not delete; preserves audit history)
 curl -fsS -X PATCH -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID" \
+  "$PAPERCLAW_URL/api/tool-connections/$CONNECTION_ID" \
   -d '{"enabled": false, "status": "disabled"}' | jq '{id, enabled, status}'
 ```
 
@@ -210,7 +210,7 @@ Example: create a profile that allows only read-only tools and bind it to a proj
 ```sh
 # Profile with default-deny and one include entry for read-only catalog entries.
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/profiles" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/profiles" \
   -d '{
     "profileKey": "engineering.read-only",
     "name": "Engineering read-only",
@@ -222,7 +222,7 @@ curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: ap
 
 # Bind it to a project so every agent run in that project gets this profile.
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/profiles/$PROFILE_ID/bind" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/profiles/$PROFILE_ID/bind" \
   -d '{ "targetType": "project", "targetId": "'"$PROJECT_ID"'", "priority": 10 }' | jq .
 ```
 
@@ -239,7 +239,7 @@ Binding scopes, narrowest first: `issue` > `routine` > `agent` > `project` > `co
 
 ```sh
 curl -fsS -H "Authorization: Bearer $BOARD_API_KEY" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/profiles/effective/agents/$AGENT_ID" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/profiles/effective/agents/$AGENT_ID" \
   | jq '{profileIds, allowedToolNames}'
 ```
 
@@ -265,7 +265,7 @@ To dry-run a policy decision without making a real call. The dry-run endpoint ta
 
 ```sh
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/policy/test" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/policy/test" \
   -d '{
     "companyId": "'"$COMPANY_ID"'",
     "actor": {
@@ -298,12 +298,12 @@ After approval, the operator can promote that approval into a **trust rule**: a 
 ```sh
 # Approve via API (UI does the same). Approval requires companyId — body or query.
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-gateway/action-requests/$ACTION_REQUEST_ID/approve" \
+  "$PAPERCLAW_URL/api/tool-gateway/action-requests/$ACTION_REQUEST_ID/approve" \
   -d '{ "companyId": "'"$COMPANY_ID"'" }' | jq '{id, status, resolvedAt, resolvedByUserId}'
 
 # Retry the original tool call with approvedActionRequestId (the agent does this).
-curl -fsS -X POST -H "X-Paperclip-Tool-Gateway-Token: $GATEWAY_TOKEN" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-gateway/tools/call" \
+curl -fsS -X POST -H "X-PaperClaw-Tool-Gateway-Token: $GATEWAY_TOKEN" -H "Content-Type: application/json" \
+  "$PAPERCLAW_URL/api/tool-gateway/tools/call" \
   -d '{
     "tool": "create_item",
     "parameters": { "title": "Approved item" },
@@ -312,7 +312,7 @@ curl -fsS -X POST -H "X-Paperclip-Tool-Gateway-Token: $GATEWAY_TOKEN" -H "Conten
 
 # Promote the approval to a trust rule
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/action-requests/$ACTION_REQUEST_ID/trust-rule" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/action-requests/$ACTION_REQUEST_ID/trust-rule" \
   -d '{
     "approvalThreshold": 2,
     "expiresAt": "2026-09-01T00:00:00.000Z"
@@ -320,7 +320,7 @@ curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: ap
 
 # Revoke a trust rule (audit-safe; does not delete)
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/trust-rules/$POLICY_ID/revoke" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/trust-rules/$POLICY_ID/revoke" \
   -d '{ "reason": "Catalog schema changed." }' | jq '{id, enabled, config: {revokedAt: .config.trustRule.revokedAt}}'
 ```
 
@@ -340,7 +340,7 @@ You don't normally touch slots. They're spun up on first call and evicted after 
 
 Day-to-day runtime response — health summary, stuck-slot diagnosis, stop/restart, restart-storm playbook — lives in [MCP-RUNTIME-OPERATIONS.md](./MCP-RUNTIME-OPERATIONS.md). Read that doc when paged.
 
-Cloud reminder: in `authenticated/public`, local stdio slots fail closed unless `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` is set on a worker explicitly designated to supervise local processes. Set it on one worker, not on the API edge.
+Cloud reminder: in `authenticated/public`, local stdio slots fail closed unless `PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST` is set on a worker explicitly designated to supervise local processes. Set it on one worker, not on the API edge.
 
 ## Audit and the call event log
 
@@ -357,7 +357,7 @@ To pull recent audit:
 
 ```sh
 curl -fsS -H "Authorization: Bearer $BOARD_API_KEY" \
-  "$PAPERCLIP_URL/api/tool-gateway/audit?companyId=$COMPANY_ID&limit=100" \
+  "$PAPERCLAW_URL/api/tool-gateway/audit?companyId=$COMPANY_ID&limit=100" \
   | jq '[.[] | {createdAt, action: .action, decision: .details.decision, tool: .details.tool, outcome: .details.outcome, reasonCode: .details.reasonCode}]'
 ```
 
@@ -381,12 +381,12 @@ The decision matrix:
 | --- | --- | --- |
 | `local_trusted` | Available, used for fixtures and developer flows | Always; this mode exists for it. |
 | `authenticated/private` (Tailnet/VPN/LAN) | Available with explicit opt-in | When the operator has root on the host and trusts the template list. |
-| `authenticated/public` (internet-facing) | Fail closed | Only when one worker is designated trusted by setting `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` and is isolated from the public-facing edge. |
+| `authenticated/public` (internet-facing) | Fail closed | Only when one worker is designated trusted by setting `PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST` and is isolated from the public-facing edge. |
 
 In all modes:
 
 - `remote_http` is the preferred path. If you can replace a local stdio fixture with a remote_http endpoint, do.
-- Never set `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` on the same worker that serves public HTTP traffic.
+- Never set `PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST` on the same worker that serves public HTTP traffic.
 - Treat the approved-template list as a code-review surface: a PR that adds a new template ships a new code-execution path.
 
 For deployment mode and bind semantics generally, see [DEPLOYMENT-MODES.md](./DEPLOYMENT-MODES.md).
@@ -418,7 +418,7 @@ These are intentional gaps as of the MCP Access Governance v1 launch. Track or w
 | Policies | `GET\|POST /api/companies/:companyId/tools/policies`, `PATCH\|DELETE /api/companies/:companyId/tools/policies/:id` | Types: `allow`, `block`, `require_approval`, `rate_limit`, `trust_rule`. |
 | Policy dry-run | `POST /api/companies/:companyId/tools/policy/test` | Structured `{ companyId, actor, request, runContext? }` body; decision returned under `.decision`. |
 | Gateway sessions | `POST /api/tool-gateway/sessions`, `POST /api/tool-gateway/sessions/:sessionId/revoke` | Board callers must supply `companyId`, `agentId`, `runId` to create and `companyId` to revoke; agent JWTs auto-fill from the token. Revocation invalidates the session immediately and emits `tool_gateway.session_revoked` without logging the raw session token. |
-| Gateway calls | `POST /api/tool-gateway/tools/call` | `X-Paperclip-Tool-Gateway-Token` header; body uses `tool` + `parameters`. Approval-required calls respond `409` with `reasonCode: approval_required` and an `actionRequestId`; the agent retries with `approvedActionRequestId`. |
+| Gateway calls | `POST /api/tool-gateway/tools/call` | `X-PaperClaw-Tool-Gateway-Token` header; body uses `tool` + `parameters`. Approval-required calls respond `409` with `reasonCode: approval_required` and an `actionRequestId`; the agent retries with `approvedActionRequestId`. |
 | Action requests | `POST /api/tool-gateway/action-requests/:id/approve` | Requires `companyId` (body or query). Listing is via the audit log: filter for `tool_gateway.approval_requested`. |
 | Trust rules | `POST /api/companies/:companyId/tools/action-requests/:id/trust-rule`, `POST /api/companies/:companyId/tools/trust-rules/:id/revoke` | Approval-derived allow policies. |
 | Runtime health | `GET /api/companies/:companyId/tools/runtime-health` | Alerts and metrics. Pair with [MCP-RUNTIME-OPERATIONS.md](./MCP-RUNTIME-OPERATIONS.md). |

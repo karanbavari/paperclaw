@@ -13,7 +13,7 @@ import type {
   PluginSpan,
   PluginSyncFileMapping,
   PluginSyncOperation,
-} from "@paperclipai/plugin-sdk";
+} from "@kesarcloud/plugin-sdk";
 import { getPluginTracer } from "./plugin.js";
 
 const execFileAsync = promisify(execFile);
@@ -89,10 +89,10 @@ function toTimeoutSeconds(timeoutMs: number): number {
 }
 
 // Reserved scratch-name stem for staged uploads/downloads and remote tarballs.
-// The runtime's base64 fallback stages to `<path>.paperclip-upload`; the native
+// The runtime's base64 fallback stages to `<path>.paperclaw-upload`; the native
 // transport reuses the same reserved prefix so a provider temp never collides
 // with a real target or with the fallback's scratch name.
-const SCRATCH_PREFIX = ".paperclip-upload";
+const SCRATCH_PREFIX = ".paperclaw-upload";
 
 function scratchName(suffix = ""): string {
   return `${SCRATCH_PREFIX}-${randomUUID()}${suffix}`;
@@ -364,7 +364,7 @@ const ZSTD_COMPRESSION_LEVEL = 3;
 /** Marker the mkdir+probe command echoes to sandbox stdout when the sandbox
  * has a `zstd` binary on `PATH`. An absent or unexpected answer fails closed
  * (no compression), per the design's fallback rules. */
-const ZSTD_PROBE_MARKER = "PAPERCLIP_ZSTD_AVAILABLE";
+const ZSTD_PROBE_MARKER = "PAPERCLAW_ZSTD_AVAILABLE";
 
 /**
  * Feature-detect zstd support on the running Node runtime. `node:zlib` shipped
@@ -530,7 +530,7 @@ async function snapshotOutboundFileSources(input: {
 /**
  * Best-effort removal of reserved sandbox-side scratch files (upload/download
  * snapshots or partially promoted temps) on both the happy path and error paths,
- * so a failed transfer never accumulates `.paperclip-upload-*` scratch in the
+ * so a failed transfer never accumulates `.paperclaw-upload-*` scratch in the
  * sandbox. Swallows its own failure — cleanup must never mask the original error.
  */
 async function removeSandboxScratch(
@@ -737,7 +737,7 @@ async function syncInFileMappings(input: {
 
   // A failed upload or a mid-batch `mv -f`/decompress failure leaves reserved
   // scratch (some targets promoted, others not) — sweep every reserved name on
-  // any error so a retry never accumulates stale `.paperclip-upload-*` scratch.
+  // any error so a retry never accumulates stale `.paperclaw-upload-*` scratch.
   // The private host temp directory is removed in `finally` regardless of
   // outcome — no temp remains after success or failure.
   try {
@@ -881,9 +881,9 @@ async function syncInDirectoryMapping(input: {
     });
     guardRoundTrips += 1;
     // The uploaded scratch tar lands at the workspace root as a reserved
-    // `.paperclip-upload-*` entry. The extract script below removes it only on
+    // `.paperclaw-upload-*` entry. The extract script below removes it only on
     // success. On an upload or extract failure the scratch tar can remain, and the
-    // runtime workspace wipe preserves every `.paperclip-upload-*` entry, so a
+    // runtime workspace wipe preserves every `.paperclaw-upload-*` entry, so a
     // stale tar would surface in the agent workspace. Sweep the scratch on any
     // failure — symmetric with the file-mapping path — so a failed sync (for
     // example a referenced-project extraction) leaves no residue.

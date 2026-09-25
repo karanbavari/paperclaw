@@ -22,15 +22,15 @@ function createPayload(payloadPath: string, version: string): string {
 beforeEach(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-update-"));
   previousHome = process.env.HOME;
-  previousPaperclipHome = process.env.PAPERCLIP_HOME;
+  previousPaperclipHome = process.env.PAPERCLAW_HOME;
   process.env.HOME = path.join(root, "home");
-  process.env.PAPERCLIP_HOME = path.join(root, "paperclip");
+  process.env.PAPERCLAW_HOME = path.join(root, "paperclip");
 });
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
   if (previousHome === undefined) delete process.env.HOME; else process.env.HOME = previousHome;
-  if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousPaperclipHome;
+  if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME; else process.env.PAPERCLAW_HOME = previousPaperclipHome;
   fs.rmSync(root, { recursive: true, force: true });
   process.exitCode = undefined;
 });
@@ -173,7 +173,7 @@ describe("update command", () => {
     const runCommand = vi.fn<CommandRunner>(async (_file, args, commandOptions) => {
       if (args[0] === "view") return { stdout: '"2.0.0"\n', stderr: "" };
       expect(args).toContain("--registry=https://registry.npmjs.org");
-      expect(args).toContain("--@paperclipai:registry=https://registry.npmjs.org");
+      expect(args).toContain("--@kesarcloud:registry=https://registry.npmjs.org");
       expect(commandOptions?.env?.NPM_CONFIG_REGISTRY).toBe("https://registry.npmjs.org");
       expect(commandOptions?.env?.npm_config_registry).toBe("https://registry.npmjs.org");
       expect(commandOptions?.env?.NPM_CONFIG_USERCONFIG).toBe(commandOptions?.env?.npm_config_userconfig);

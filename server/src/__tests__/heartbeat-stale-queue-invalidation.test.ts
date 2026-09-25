@@ -14,8 +14,8 @@ import {
   issueDocuments,
   issueThreadInteractions,
   issues,
-} from "@paperclipai/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
+} from "@kesarcloud/db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@kesarcloud/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -154,7 +154,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-stale-queue-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_IN_WORKTREE: "false" },
+      runtimeEnv: { ...process.env, PAPERCLAW_IN_WORKTREE: "false" },
       beforeResolvedInteractionContinuationDispatchCheck: async (input) => {
         await beforeContinuationDispatchCheck?.(input);
       },

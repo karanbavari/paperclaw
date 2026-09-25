@@ -261,13 +261,13 @@ async function existingPath(paths) {
 }
 
 export async function resolveCanonicalEvalProgram(packageRoot, environment) {
-  const fromRoot = environment.PAPERCLIP_EVALS_ROOT
-    ? resolve(environment.PAPERCLIP_EVALS_ROOT, EVAL_PROGRAM_RELATIVE_PATH)
+  const fromRoot = environment.PAPERCLAW_EVALS_ROOT
+    ? resolve(environment.PAPERCLAW_EVALS_ROOT, EVAL_PROGRAM_RELATIVE_PATH)
     : null;
   const program = await existingPath([
-    environment.PAPERCLIP_EVALBOOK_PROGRAM,
+    environment.PAPERCLAW_EVALBOOK_PROGRAM,
     fromRoot,
-    resolve(packageRoot, "../../.paperclip-evals", EVAL_PROGRAM_RELATIVE_PATH),
+    resolve(packageRoot, "../../.paperclaw-evals", EVAL_PROGRAM_RELATIVE_PATH),
     resolve(
       packageRoot,
       "../../../paperclip-evals",
@@ -281,7 +281,7 @@ export async function resolveCanonicalEvalProgram(packageRoot, environment) {
   ]);
   if (program !== null) return program;
   throw new Error(
-    `Canonical Evalbook generator not found. Set PAPERCLIP_EVALBOOK_PROGRAM to ${EVAL_PROGRAM_RELATIVE_PATH} in a paperclip-evals checkout.`,
+    `Canonical Evalbook generator not found. Set PAPERCLAW_EVALBOOK_PROGRAM to ${EVAL_PROGRAM_RELATIVE_PATH} in a paperclip-evals checkout.`,
   );
 }
 
@@ -310,12 +310,12 @@ export async function renderRunnerWorkflowWithCanonicalEvalbook({
 }) {
   const program = await resolveCanonicalEvalProgram(packageRoot, environment);
   const viewerRoot = resolve(
-    environment.PAPERCLIP_EVAL_VIEWER_ROOT ??
+    environment.PAPERCLAW_EVAL_VIEWER_ROOT ??
       resolve(packageRoot, "dist-issue-thread"),
   );
   await access(resolve(viewerRoot, "index.html")).catch(() => {
     throw new Error(
-      "Evalbook requires the chat viewer. Run pnpm --filter @paperclipai/paperclip-runner build:issue-thread first.",
+      "Evalbook requires the chat viewer. Run pnpm --filter @kesarcloud/paperclip-runner build:issue-thread first.",
     );
   });
   const runsRoot = resolve(outputDirectory, "evalbook-runs");

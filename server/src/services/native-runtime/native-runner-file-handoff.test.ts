@@ -29,7 +29,7 @@ import {
   issueComments,
   issues,
   issueWorkProducts,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
@@ -528,7 +528,7 @@ describe("native runner file handoff", () => {
         contentType: "text/plain",
         byteSize: body.length,
         workspaceRelativePath: expect.stringMatching(
-          /^\.paperclip-inbound\/.+\/[0-9a-f-]{36}$/u,
+          /^\.paperclaw-inbound\/.+\/[0-9a-f-]{36}$/u,
         ),
         unavailableReason: null,
       },
@@ -568,7 +568,7 @@ describe("native runner file handoff", () => {
     try {
       const liveForeignDirectory = path.join(
         workspaceRoot,
-        ".paperclip-inbound",
+        ".paperclaw-inbound",
         `process-${liveOwner.pid}-unknown-00000000-0000-4000-8000-000000009298`,
       );
       const liveForeignFile = path.join(liveForeignDirectory, "active-slot");
@@ -593,7 +593,7 @@ describe("native runner file handoff", () => {
 
       const recycledOwnerDirectory = path.join(
         workspaceRoot,
-        ".paperclip-inbound",
+        ".paperclaw-inbound",
         `process-${liveOwner.pid}-0-00000000-0000-4000-8000-000000009297`,
       );
       const recycledOwnerFile = path.join(recycledOwnerDirectory, "stale-slot");
@@ -626,7 +626,7 @@ describe("native runner file handoff", () => {
     );
     expect(prompt).toContain(relativePath!);
     expect(prompt).not.toContain("/api/attachments/");
-    expect(prompt).not.toContain("PAPERCLIP_API_KEY");
+    expect(prompt).not.toContain("PAPERCLAW_API_KEY");
     await stage.cleanup();
     await expect(
       readFile(path.join(workspaceRoot, relativePath!)),
@@ -634,7 +634,7 @@ describe("native runner file handoff", () => {
 
     const crashDirectory = path.join(
       workspaceRoot,
-      ".paperclip-inbound",
+      ".paperclaw-inbound",
       "process-2147483647-0-00000000-0000-4000-8000-000000009299",
     );
     await mkdir(crashDirectory, { recursive: true });

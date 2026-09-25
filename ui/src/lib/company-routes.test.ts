@@ -7,6 +7,25 @@ import {
 } from "./company-routes";
 
 describe("company routes", () => {
+  it.each([
+    "/outcomes",
+    "/ops",
+    "/direct-chat",
+    "/meetings",
+    "/meetings/meeting-1",
+    "/research-labs",
+    "/research-labs/lab-1",
+    "/memory",
+    "/marketplace",
+    "/cases",
+    "/status",
+    "/pipelines",
+  ])("treats the PaperClaw surface %s as company-scoped", (path) => {
+    expect(isBoardPathWithoutPrefix(path)).toBe(true);
+    expect(extractCompanyPrefixFromPath(path)).toBeNull();
+    expect(applyCompanyPrefix(path, "PAP")).toBe(`/PAP${path}`);
+  });
+
   it("treats the task-list alias as an unprefixed board route", () => {
     expect(isBoardPathWithoutPrefix("/tasks")).toBe(true);
     expect(extractCompanyPrefixFromPath("/tasks")).toBeNull();

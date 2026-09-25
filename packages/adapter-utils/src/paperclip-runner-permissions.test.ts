@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  PAPERCLIP_RUNNER_DEFAULT_MODELS,
+  PAPERCLAW_RUNNER_DEFAULT_MODELS,
   isPaperclipRunnerProvider,
   resolvePaperclipRunnerModel,
   resolvePaperclipRunnerPermissionMode,
@@ -44,10 +44,10 @@ describe("Paperclip Runner permission defaults", () => {
 
   it("uses the Codex default for missing or blank models", () => {
     expect(resolvePaperclipRunnerModel("codex", undefined)).toBe(
-      PAPERCLIP_RUNNER_DEFAULT_MODELS.codex,
+      PAPERCLAW_RUNNER_DEFAULT_MODELS.codex,
     );
     expect(resolvePaperclipRunnerModel("codex", "   ")).toBe(
-      PAPERCLIP_RUNNER_DEFAULT_MODELS.codex,
+      PAPERCLAW_RUNNER_DEFAULT_MODELS.codex,
     );
   });
 

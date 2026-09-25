@@ -22,8 +22,8 @@ import {
   toolConnectionInstalls,
   toolConnections,
   userSecretDefinitions,
-} from "@paperclipai/db";
-import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
+} from "@kesarcloud/db";
+import { LOW_TRUST_REVIEW_PRESET } from "@kesarcloud/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -56,7 +56,7 @@ const support = await getEmbeddedPostgresTestSupport();
       db: ReturnType<typeof createDb>;
     beforeAll(async () => {
       vi.stubEnv(
-        "PAPERCLIP_AGENT_JWT_SECRET",
+        "PAPERCLAW_AGENT_JWT_SECRET",
         "test-github-broker-signing-secret",
       );
       database = await startEmbeddedPostgresTestDatabase(

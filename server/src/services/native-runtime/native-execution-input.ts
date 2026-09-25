@@ -17,7 +17,7 @@ import {
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,
   renderPaperclipWakePrompt,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@kesarcloud/adapter-utils/server-utils";
 
 const NATIVE_QUESTION_GUIDANCE = [
   "## Questions that need a user response",

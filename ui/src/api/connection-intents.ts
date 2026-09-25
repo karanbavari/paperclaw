@@ -1,7 +1,7 @@
 import type {
   ConnectionIntentInteraction,
   ConnectionIntentSetupOptions,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { api } from "./client";
 
 export const connectionIntentsApi = {

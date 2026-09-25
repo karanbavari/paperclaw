@@ -31,9 +31,9 @@ describe("readBuildCommit", () => {
     expect(
       readBuildCommit({
         environmentCommit: null,
-        buildCommitPath: "/app/.paperclip-build-commit",
+        buildCommitPath: "/app/.paperclaw-build-commit",
         readTextFile: (path) => {
-          expect(path).toBe("/app/.paperclip-build-commit");
+          expect(path).toBe("/app/.paperclaw-build-commit");
           return "0123456789abcdef0123456789abcdef01234567\n";
         },
       }),

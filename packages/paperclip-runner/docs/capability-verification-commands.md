@@ -2,7 +2,7 @@
 
 Every command here runs from the repository root, is offline and deterministic,
 starts no Paperclip service, and holds no credential. All are prefixed
-`pnpm --filter @paperclipai/paperclip-runner`.
+`pnpm --filter @kesarcloud/paperclip-runner`.
 
 | Surface | Command | Expected result |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ commands that start a provider.
 - **Determinism.** Fake-mode runs render fixture time only, so repeat runs and
   repeat screenshots are byte-identical.
 - **The parity report is generated on demand.** `report:capability-evals` writes
-  `.paperclip-local/evidence/capability/eval-parity-report.{json,md}`, which are not
+  `.paperclaw-local/evidence/capability/eval-parity-report.{json,md}`, which are not
   committed or scanned by `docs:validate`.
 - **Browser libraries.** On minimal or rootless hosts, extract Playwright's
   browser libraries first; the package's `verify:rootless` target shows the

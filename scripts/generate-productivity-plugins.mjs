@@ -342,7 +342,7 @@ function packageJson(plugin) {
   "exports": {
     ".": "./src/index.ts"
   },
-  "paperclawPlugin": {
+  "paperclipPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"

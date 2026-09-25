@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const ADMIN_EMAIL =
-  process.env.PAPERCLIP_RELEASE_SMOKE_EMAIL ??
+  process.env.PAPERCLAW_RELEASE_SMOKE_EMAIL ??
   process.env.SMOKE_ADMIN_EMAIL ??
   "smoke-admin@paperclip.local";
 const ADMIN_PASSWORD =
-  process.env.PAPERCLIP_RELEASE_SMOKE_PASSWORD ??
+  process.env.PAPERCLAW_RELEASE_SMOKE_PASSWORD ??
   process.env.SMOKE_ADMIN_PASSWORD ??
   "paperclip-smoke-password";
 
@@ -19,17 +19,17 @@ const ADMIN_PASSWORD =
 // The placeholder is offered only to a loopback target — where the mocked
 // harness lives. Any other target reaches the real provider, which would
 // reject the placeholder late inside the wizard, so those runs must set
-// PAPERCLIP_RELEASE_SMOKE_ANTHROPIC_API_KEY and fail up front without it.
+// PAPERCLAW_RELEASE_SMOKE_ANTHROPIC_API_KEY and fail up front without it.
 // A real key entered here also lands in Playwright's failure traces and DOM
 // snapshots (the field is masked on screen, not in the DOM) — those artifacts
 // stay on the machine running the suite, and CI never uses a real key.
 const BASE_URL =
-  process.env.PAPERCLIP_RELEASE_SMOKE_BASE_URL ?? "http://127.0.0.1:3232";
+  process.env.PAPERCLAW_RELEASE_SMOKE_BASE_URL ?? "http://127.0.0.1:3232";
 const TARGET_IS_LOOPBACK = /^https?:\/\/(localhost|127\.0\.0\.1)([:/]|$)/i.test(
   BASE_URL
 );
 const ANTHROPIC_API_KEY =
-  process.env.PAPERCLIP_RELEASE_SMOKE_ANTHROPIC_API_KEY ??
+  process.env.PAPERCLAW_RELEASE_SMOKE_ANTHROPIC_API_KEY ??
   (TARGET_IS_LOOPBACK ? "sk-ant-release-smoke-placeholder" : "");
 
 const COMPANY_NAME = `Release-Smoke-${Date.now()}`;
@@ -103,7 +103,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
     // placeholder to the real provider and timing out deep in the wizard.
     expect(
       ANTHROPIC_API_KEY,
-      "This target reaches the real provider — set PAPERCLIP_RELEASE_SMOKE_ANTHROPIC_API_KEY to a key it accepts"
+      "This target reaches the real provider — set PAPERCLAW_RELEASE_SMOKE_ANTHROPIC_API_KEY to a key it accepts"
     ).toBeTruthy();
 
     await signIn(page);

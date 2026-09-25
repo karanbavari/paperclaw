@@ -93,7 +93,7 @@ describe("DocumentAnnotationLayer", () => {
       await new Promise((resolve) => window.requestAnimationFrame(resolve));
     });
 
-    const highlights = Array.from(container.querySelectorAll(".paperclip-doc-annotation-highlight"));
+    const highlights = Array.from(container.querySelectorAll(".paperclaw-doc-annotation-highlight"));
     expect(highlights).toHaveLength(4);
 
     for (const highlight of highlights) {
@@ -141,8 +141,8 @@ describe("DocumentAnnotationLayer", () => {
       await new Promise((resolve) => window.requestAnimationFrame(resolve));
     });
 
-    expect(container.querySelector(".paperclip-doc-annotation-highlight")).toBeNull();
-    expect(container.querySelector(".paperclip-doc-annotation-hit-target")).toBeNull();
+    expect(container.querySelector(".paperclaw-doc-annotation-highlight")).toBeNull();
+    expect(container.querySelector(".paperclaw-doc-annotation-hit-target")).toBeNull();
   });
 
   it("does not capture annotation comments from editable selections", async () => {
@@ -286,8 +286,8 @@ describe("DocumentAnnotationLayer", () => {
       await new Promise((resolve) => window.requestAnimationFrame(resolve));
     });
 
-    expect(container.querySelector(".paperclip-doc-annotation-highlight")).not.toBeNull();
-    expect(container.querySelector(".paperclip-doc-annotation-hit-target")).not.toBeNull();
+    expect(container.querySelector(".paperclaw-doc-annotation-highlight")).not.toBeNull();
+    expect(container.querySelector(".paperclaw-doc-annotation-hit-target")).not.toBeNull();
     const openHighlightCall = setHighlight.mock.calls.find(([name]) => name === "paperclip-doc-annotation-open");
     expect(openHighlightCall).toBeTruthy();
     expect((openHighlightCall?.[1] as MockHighlight).ranges).toHaveLength(1);

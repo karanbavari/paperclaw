@@ -11,29 +11,29 @@ function required(name: string) {
   return value;
 }
 
-const port = Number(required("PAPERCLIP_RUNNER_E2E_PORT"));
-const temporaryRoot = required("PAPERCLIP_RUNNER_E2E_TEMP_ROOT");
-const privateDir = required("PAPERCLIP_RUNNER_E2E_PRIVATE_DIR");
-const paperclipHome = required("PAPERCLIP_HOME");
-const configPath = required("PAPERCLIP_CONFIG");
+const port = Number(required("PAPERCLAW_RUNNER_E2E_PORT"));
+const temporaryRoot = required("PAPERCLAW_RUNNER_E2E_TEMP_ROOT");
+const privateDir = required("PAPERCLAW_RUNNER_E2E_PRIVATE_DIR");
+const paperclipHome = required("PAPERCLAW_HOME");
+const configPath = required("PAPERCLAW_CONFIG");
 const baseURL = `http://127.0.0.1:${port}`;
-const playwrightChannel = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL?.trim();
+const playwrightChannel = process.env.PAPERCLAW_PLAYWRIGHT_CHANNEL?.trim();
 const chromiumExecutable =
-  process.env.PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE?.trim();
+  process.env.PAPERCLAW_RUNNER_E2E_CHROMIUM_EXECUTABLE?.trim();
 if (playwrightChannel && chromiumExecutable) {
   throw new Error(
-    "PAPERCLIP_PLAYWRIGHT_CHANNEL and PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE are mutually exclusive",
+    "PAPERCLAW_PLAYWRIGHT_CHANNEL and PAPERCLAW_RUNNER_E2E_CHROMIUM_EXECUTABLE are mutually exclusive",
   );
 }
 if (chromiumExecutable && !path.isAbsolute(chromiumExecutable)) {
   throw new Error(
-    "PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE must be an absolute path",
+    "PAPERCLAW_RUNNER_E2E_CHROMIUM_EXECUTABLE must be an absolute path",
   );
 }
-required("PAPERCLIP_INSTANCE_ID");
-required("PAPERCLIP_AGENT_JWT_SECRET");
-required("PAPERCLIP_DECISION_SIGNING_SECRET");
-required("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET");
+required("PAPERCLAW_INSTANCE_ID");
+required("PAPERCLAW_AGENT_JWT_SECRET");
+required("PAPERCLAW_DECISION_SIGNING_SECRET");
+required("PAPERCLAW_TOOL_ACTION_SIGNING_SECRET");
 required("BETTER_AUTH_SECRET");
 if (
   !paperclipHome.startsWith(`${temporaryRoot}${path.sep}`) ||
@@ -46,7 +46,7 @@ const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 export default defineConfig({
   testDir: ".",
   testMatch: "runner.spec.ts",
-  timeout: Number(process.env.PAPERCLIP_RUNNER_E2E_TEST_TIMEOUT_MS ?? 600_000),
+  timeout: Number(process.env.PAPERCLAW_RUNNER_E2E_TEST_TIMEOUT_MS ?? 600_000),
   expect: { timeout: 30_000 },
   fullyParallel: false,
   workers: 1,

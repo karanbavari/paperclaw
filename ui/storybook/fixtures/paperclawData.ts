@@ -36,6 +36,8 @@ export const storybookCompanies: Company[] = [
     issueCounter: 1641,
     budgetMonthlyCents: 250_000,
     spentMonthlyCents: 67_500,
+    defaultResponsibleUserId: "user-board",
+    interactionResolverGovernance: {},
     maxConcurrentAgentRuns: 10,
     attachmentMaxBytes: 10 * 1024 * 1024,
     requireBoardApprovalForNewAgents: true,
@@ -61,6 +63,8 @@ export const storybookCompanies: Company[] = [
     issueCounter: 88,
     budgetMonthlyCents: 180_000,
     spentMonthlyCents: 39_500,
+    defaultResponsibleUserId: "user-board",
+    interactionResolverGovernance: {},
     maxConcurrentAgentRuns: 10,
     attachmentMaxBytes: 10 * 1024 * 1024,
     requireBoardApprovalForNewAgents: false,
@@ -86,6 +90,8 @@ export const storybookCompanies: Company[] = [
     issueCounter: 204,
     budgetMonthlyCents: 90_000,
     spentMonthlyCents: 91_200,
+    defaultResponsibleUserId: "user-board",
+    interactionResolverGovernance: {},
     maxConcurrentAgentRuns: 10,
     attachmentMaxBytes: 10 * 1024 * 1024,
     requireBoardApprovalForNewAgents: true,
@@ -103,6 +109,7 @@ export const storybookCompanies: Company[] = [
 ];
 
 export const storybookAuthSession: AuthSession = {
+  sentryDsn: null,
   session: {
     id: "session-storybook",
     userId: "user-board",
@@ -502,6 +509,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     strategyType: "git_worktree",
     name: "PAP-1641 storybook worktree",
     status: "active",
+    deliveryState: "unknown",
     cwd: `${storybookWorktreeRoot}/PAP-1641-create-super-detailed-storybooks-for-our-project`,
     repoUrl: "https://github.com/karanbavari/paperclaw",
     baseRef: "master",
@@ -530,6 +538,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     strategyType: "git_worktree",
     name: "PAP-1608 release smoke cleanup",
     status: "cleanup_failed",
+    deliveryState: "unknown",
     cwd: `${storybookWorktreeRoot}/PAP-1608-release-smoke-cleanup`,
     repoUrl: "https://github.com/karanbavari/paperclaw",
     baseRef: "master",
@@ -629,6 +638,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
     createdAt: recent(18_000),
     updatedAt: recent(12),
     ...overrides,
+    icon: overrides.icon ?? null,
   };
 }
 
@@ -748,7 +758,9 @@ export function createIssue(overrides: Partial<Issue> = {}): Issue {
     createdAt: recent(90),
     updatedAt: recent(3),
     ...overrides,
-  };
+    workMode: overrides.workMode ?? "standard",
+    reviewPolicy: overrides.reviewPolicy ?? null,
+  } as Issue;
 }
 
 export const storybookIssues: Issue[] = [
@@ -923,6 +935,9 @@ export const storybookIssueDocuments: IssueDocument[] = [
     createdByUserId: null,
     updatedByAgentId: "agent-codex",
     updatedByUserId: null,
+    lockedAt: null,
+    lockedByAgentId: null,
+    lockedByUserId: null,
     createdAt: recent(80),
     updatedAt: recent(8),
   },
@@ -946,6 +961,9 @@ export const storybookIssueDocuments: IssueDocument[] = [
     createdByUserId: "user-board",
     updatedByAgentId: null,
     updatedByUserId: "user-board",
+    lockedAt: null,
+    lockedByAgentId: null,
+    lockedByUserId: null,
     createdAt: recent(55),
     updatedAt: recent(12),
   },
@@ -963,7 +981,7 @@ export const storybookContinuationHandoff: IssueDocument = {
     "",
     "Next action: run the Storybook build, inspect the issue management story, then request QA visual review if the build passes.",
     "",
-    "Important files: `ui/storybook/stories/issue-management.stories.tsx` and `ui/storybook/fixtures/paperclawData.ts`.",
+    "Important files: `ui/storybook/stories/issue-management.stories.tsx` and `ui/storybook/fixtures/paperclipData.ts`.",
   ].join("\n"),
   latestRevisionId: "revision-continuation-1",
   latestRevisionNumber: 1,
@@ -971,6 +989,9 @@ export const storybookContinuationHandoff: IssueDocument = {
   createdByUserId: null,
   updatedByAgentId: "agent-codex",
   updatedByUserId: null,
+  lockedAt: null,
+  lockedByAgentId: null,
+  lockedByUserId: null,
   createdAt: recent(18),
   updatedAt: recent(5),
 };
@@ -1271,20 +1292,20 @@ export const storybookDashboardSummary: DashboardSummary = {
     pausedProjects: 1,
   },
   runActivity: [
-    { date: "2026-04-07", succeeded: 4, failed: 0, other: 1, total: 5 },
-    { date: "2026-04-08", succeeded: 5, failed: 1, other: 0, total: 6 },
-    { date: "2026-04-09", succeeded: 3, failed: 0, other: 1, total: 4 },
-    { date: "2026-04-10", succeeded: 6, failed: 0, other: 0, total: 6 },
-    { date: "2026-04-11", succeeded: 4, failed: 1, other: 0, total: 5 },
-    { date: "2026-04-12", succeeded: 2, failed: 0, other: 1, total: 3 },
-    { date: "2026-04-13", succeeded: 5, failed: 0, other: 1, total: 6 },
-    { date: "2026-04-14", succeeded: 6, failed: 1, other: 0, total: 7 },
-    { date: "2026-04-15", succeeded: 4, failed: 0, other: 1, total: 5 },
-    { date: "2026-04-16", succeeded: 7, failed: 0, other: 0, total: 7 },
-    { date: "2026-04-17", succeeded: 6, failed: 1, other: 0, total: 7 },
-    { date: "2026-04-18", succeeded: 3, failed: 0, other: 1, total: 4 },
-    { date: "2026-04-19", succeeded: 5, failed: 0, other: 1, total: 6 },
-    { date: "2026-04-20", succeeded: 4, failed: 0, other: 2, total: 6 },
+    { date: "2026-04-07", succeeded: 4, failed: 0, recovered: 0, other: 1, total: 5, failedByErrorCode: {} },
+    { date: "2026-04-08", succeeded: 5, failed: 1, recovered: 0, other: 0, total: 6, failedByErrorCode: { provider_quota: 1 } },
+    { date: "2026-04-09", succeeded: 3, failed: 0, recovered: 0, other: 1, total: 4, failedByErrorCode: {} },
+    { date: "2026-04-10", succeeded: 6, failed: 0, recovered: 0, other: 0, total: 6, failedByErrorCode: {} },
+    { date: "2026-04-11", succeeded: 4, failed: 1, recovered: 0, other: 0, total: 5, failedByErrorCode: { workspace_validation_failed: 1 } },
+    { date: "2026-04-12", succeeded: 2, failed: 0, recovered: 0, other: 1, total: 3, failedByErrorCode: {} },
+    { date: "2026-04-13", succeeded: 5, failed: 0, recovered: 0, other: 1, total: 6, failedByErrorCode: {} },
+    { date: "2026-04-14", succeeded: 6, failed: 1, recovered: 0, other: 0, total: 7, failedByErrorCode: { provider_quota: 1 } },
+    { date: "2026-04-15", succeeded: 4, failed: 0, recovered: 0, other: 1, total: 5, failedByErrorCode: {} },
+    { date: "2026-04-16", succeeded: 7, failed: 0, recovered: 0, other: 0, total: 7, failedByErrorCode: {} },
+    { date: "2026-04-17", succeeded: 6, failed: 1, recovered: 0, other: 0, total: 7, failedByErrorCode: { provider_quota: 1 } },
+    { date: "2026-04-18", succeeded: 3, failed: 0, recovered: 0, other: 1, total: 4, failedByErrorCode: {} },
+    { date: "2026-04-19", succeeded: 5, failed: 0, recovered: 0, other: 1, total: 6, failedByErrorCode: {} },
+    { date: "2026-04-20", succeeded: 4, failed: 0, recovered: 0, other: 2, total: 6, failedByErrorCode: {} },
   ],
 };
 

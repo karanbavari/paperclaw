@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   directorySnapshotSha256,
   serializeDirectorySnapshot,
-} from "@paperclipai/adapter-utils/workspace-restore-merge";
+} from "@kesarcloud/adapter-utils/workspace-restore-merge";
 
 import {
   classifyNativeWorkspaceInbound,
@@ -17,16 +17,16 @@ import {
 const digest = "a".repeat(64);
 
 describe("native workspace sync durable metadata", () => {
-  const originalPaperclipHome = process.env.PAPERCLIP_HOME;
-  const originalPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+  const originalPaperclipHome = process.env.PAPERCLAW_HOME;
+  const originalPaperclipInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
   const cleanupDirs: string[] = [];
 
   afterEach(async () => {
-    if (originalPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = originalPaperclipHome;
+    if (originalPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+    else process.env.PAPERCLAW_HOME = originalPaperclipHome;
     if (originalPaperclipInstanceId === undefined)
-      delete process.env.PAPERCLIP_INSTANCE_ID;
-    else process.env.PAPERCLIP_INSTANCE_ID = originalPaperclipInstanceId;
+      delete process.env.PAPERCLAW_INSTANCE_ID;
+    else process.env.PAPERCLAW_INSTANCE_ID = originalPaperclipInstanceId;
     await Promise.all(
       cleanupDirs
         .splice(0)
@@ -139,10 +139,10 @@ describe("native workspace sync durable metadata", () => {
       path.join(os.tmpdir(), "paperclip-native-workspace-sync-"),
     );
     cleanupDirs.push(paperclipHome);
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    process.env.PAPERCLIP_INSTANCE_ID = "descriptor-test";
+    process.env.PAPERCLAW_HOME = paperclipHome;
+    process.env.PAPERCLAW_INSTANCE_ID = "descriptor-test";
     const baseline = {
-      exclude: [".paperclip-runtime"],
+      exclude: [".paperclaw-runtime"],
       entries: new Map([
         [
           "continuity.txt",
@@ -166,7 +166,7 @@ describe("native workspace sync durable metadata", () => {
       baseline: serializeDirectorySnapshot(baseline),
       gitSnapshot: multipleRepositories ? {
         headCommit: "a".repeat(40), branchName: "main", overlayPaths: [], deletedPaths: [], ignoredPaths: [],
-        repositories: [{ path: ".paperclip-repositories/backend", snapshot: {
+        repositories: [{ path: ".paperclaw-repositories/backend", snapshot: {
           headCommit: "b".repeat(40), branchName: "backend-work", overlayPaths: ["dirty.txt"], deletedPaths: [], ignoredPaths: ["secret.txt"],
         } }],
       } : null,
@@ -207,10 +207,10 @@ describe("native workspace sync durable metadata", () => {
       path.join(os.tmpdir(), "paperclip-native-workspace-sync-repair-"),
     );
     cleanupDirs.push(paperclipHome);
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    process.env.PAPERCLIP_INSTANCE_ID = "descriptor-repair-test";
+    process.env.PAPERCLAW_HOME = paperclipHome;
+    process.env.PAPERCLAW_INSTANCE_ID = "descriptor-repair-test";
     const baseline = {
-      exclude: [".paperclip-runtime"],
+      exclude: [".paperclaw-runtime"],
       entries: new Map([
         [
           "continuity.txt",

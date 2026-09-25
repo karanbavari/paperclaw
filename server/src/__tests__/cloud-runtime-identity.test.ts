@@ -2,7 +2,7 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { createDb, instanceSettings } from "@paperclipai/db";
+import { createDb, instanceSettings } from "@kesarcloud/db";
 import {
   applyCloudRuntimeIdentityAssertion,
   CLOUD_RUNTIME_IDENTITY_AUDIENCE,
@@ -26,8 +26,8 @@ const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 const STACK_ID = "stack-pool-123";
-const POOL_ORIGIN = "https://pool-123.staging.paperclip.app";
-const CANONICAL_ORIGIN = "https://gonzo.staging.paperclip.app";
+const POOL_ORIGIN = "https://pool-123.staging.paperclaw.app";
+const CANONICAL_ORIGIN = "https://gonzo.staging.paperclaw.app";
 const NOW = new Date("2099-01-01T00:00:00.000Z");
 
 const pair = generateKeyPairSync("ed25519");
@@ -88,40 +88,40 @@ describeEmbeddedPostgres("Cloud runtime identity", () => {
   beforeEach(async () => {
     await db.delete(instanceSettings);
     resetCloudRuntimeIdentityForTests();
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "test-tenant-server-token";
-    process.env.PAPERCLIP_CLOUD_STACK_ID = STACK_ID;
-    process.env.PAPERCLIP_CLOUD_API_ORIGIN = "https://my-staging.paperclip.app";
-    process.env.PAPERCLIP_PUBLIC_URL = POOL_ORIGIN;
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = POOL_ORIGIN;
-    process.env.PAPERCLIP_API_URL = POOL_ORIGIN;
-    process.env.PAPERCLIP_PRIMARY_HOST = "pool-123.staging.paperclip.app";
-    process.env.PAPERCLIP_STACK_SLUG = "pool-123";
-    process.env.PAPERCLIP_CLOUD_RUNTIME_IDENTITY_JWKS = JSON.stringify({ keys: [publicJwk] });
-    process.env.PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID = "managed-instance";
-    process.env.PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY = "managed-signing-key";
-    process.env.PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY = "managed-sealing-key";
-    process.env.PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT = "staging";
-    process.env.PAPERCLIP_CLOUD_CONNECTOR_BASE_URL = "https://my-staging.paperclip.app";
+    process.env.PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN = "test-tenant-server-token";
+    process.env.PAPERCLAW_CLOUD_STACK_ID = STACK_ID;
+    process.env.PAPERCLAW_CLOUD_API_ORIGIN = "https://my-staging.paperclaw.app";
+    process.env.PAPERCLAW_PUBLIC_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_API_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_PRIMARY_HOST = "pool-123.staging.paperclaw.app";
+    process.env.PAPERCLAW_STACK_SLUG = "pool-123";
+    process.env.PAPERCLAW_CLOUD_RUNTIME_IDENTITY_JWKS = JSON.stringify({ keys: [publicJwk] });
+    process.env.PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID = "managed-instance";
+    process.env.PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY = "managed-signing-key";
+    process.env.PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY = "managed-sealing-key";
+    process.env.PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT = "staging";
+    process.env.PAPERCLAW_CLOUD_CONNECTOR_BASE_URL = "https://my-staging.paperclaw.app";
     await initializeCloudRuntimeIdentity(db);
   });
 
   afterEach(() => {
     for (const key of [
-      "PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN",
-      "PAPERCLIP_CLOUD_STACK_ID",
-      "PAPERCLIP_CLOUD_API_ORIGIN",
-      "PAPERCLIP_PUBLIC_URL",
-      "PAPERCLIP_AUTH_PUBLIC_BASE_URL",
-      "PAPERCLIP_API_URL",
-      "PAPERCLIP_PRIMARY_HOST",
-      "PAPERCLIP_STACK_SLUG",
-      "PAPERCLIP_CLOUD_RUNTIME_IDENTITY_JWKS",
-      "PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID",
-      "PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY",
-      "PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY",
-      "PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT",
-      "PAPERCLIP_CLOUD_CONNECTOR_BASE_URL",
-      "PAPERCLIP_RUNTIME_API_CANDIDATES_JSON",
+      "PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN",
+      "PAPERCLAW_CLOUD_STACK_ID",
+      "PAPERCLAW_CLOUD_API_ORIGIN",
+      "PAPERCLAW_PUBLIC_URL",
+      "PAPERCLAW_AUTH_PUBLIC_BASE_URL",
+      "PAPERCLAW_API_URL",
+      "PAPERCLAW_PRIMARY_HOST",
+      "PAPERCLAW_STACK_SLUG",
+      "PAPERCLAW_CLOUD_RUNTIME_IDENTITY_JWKS",
+      "PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID",
+      "PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY",
+      "PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY",
+      "PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT",
+      "PAPERCLAW_CLOUD_CONNECTOR_BASE_URL",
+      "PAPERCLAW_RUNTIME_API_CANDIDATES_JSON",
     ]) {
       const original = originalEnv[key];
       if (original === undefined) delete process.env[key];
@@ -144,13 +144,13 @@ describeEmbeddedPostgres("Cloud runtime identity", () => {
     expect(applied.canonicalOrigin).toBe(CANONICAL_ORIGIN);
     expect(getCloudRuntimeIdentity()?.stackSlug).toBe("gonzo");
     expect(runtimePublicOrigin()).toBe(CANONICAL_ORIGIN);
-    expect(process.env.PAPERCLIP_PUBLIC_URL).toBe(CANONICAL_ORIGIN);
-    expect(process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL).toBe(CANONICAL_ORIGIN);
-    expect(process.env.PAPERCLIP_API_URL).toBe(CANONICAL_ORIGIN);
-    expect(process.env.PAPERCLIP_PRIMARY_HOST).toBe("gonzo.staging.paperclip.app");
-    expect(process.env.PAPERCLIP_STACK_SLUG).toBe("gonzo");
+    expect(process.env.PAPERCLAW_PUBLIC_URL).toBe(CANONICAL_ORIGIN);
+    expect(process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL).toBe(CANONICAL_ORIGIN);
+    expect(process.env.PAPERCLAW_API_URL).toBe(CANONICAL_ORIGIN);
+    expect(process.env.PAPERCLAW_PRIMARY_HOST).toBe("gonzo.staging.paperclaw.app");
+    expect(process.env.PAPERCLAW_STACK_SLUG).toBe("gonzo");
     expect(routineWebhookUrl("hook-1")).toBe(
-      "https://gonzo.staging.paperclip.app/api/routine-triggers/public/hook-1/fire",
+      "https://gonzo.staging.paperclaw.app/api/routine-triggers/public/hook-1/fire",
     );
     expect(paperclipCloudConnectorEnrollmentStatus()).toMatchObject({
       configured: true,
@@ -186,22 +186,22 @@ describeEmbeddedPostgres("Cloud runtime identity", () => {
   it("restores the canonical identity before consumers read stale startup variables", async () => {
     await applyCloudRuntimeIdentityAssertion({ db, compactJws: assertion(), now: NOW });
     resetCloudRuntimeIdentityForTests();
-    process.env.PAPERCLIP_PUBLIC_URL = POOL_ORIGIN;
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = POOL_ORIGIN;
-    process.env.PAPERCLIP_API_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_PUBLIC_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL = POOL_ORIGIN;
+    process.env.PAPERCLAW_API_URL = POOL_ORIGIN;
 
     await initializeCloudRuntimeIdentity(db);
 
     expect(runtimePublicOrigin()).toBe(CANONICAL_ORIGIN);
-    expect(process.env.PAPERCLIP_API_URL).toBe(CANONICAL_ORIGIN);
+    expect(process.env.PAPERCLAW_API_URL).toBe(CANONICAL_ORIGIN);
   });
 
   it("accepts the identical claim after a restart with already-aligned provider variables", async () => {
     await applyCloudRuntimeIdentityAssertion({ db, compactJws: assertion(), now: NOW });
     resetCloudRuntimeIdentityForTests();
-    process.env.PAPERCLIP_PUBLIC_URL = CANONICAL_ORIGIN;
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = CANONICAL_ORIGIN;
-    process.env.PAPERCLIP_API_URL = CANONICAL_ORIGIN;
+    process.env.PAPERCLAW_PUBLIC_URL = CANONICAL_ORIGIN;
+    process.env.PAPERCLAW_AUTH_PUBLIC_BASE_URL = CANONICAL_ORIGIN;
+    process.env.PAPERCLAW_API_URL = CANONICAL_ORIGIN;
     await initializeCloudRuntimeIdentity(db);
 
     await expect(applyCloudRuntimeIdentityAssertion({
@@ -228,7 +228,7 @@ describeEmbeddedPostgres("Cloud runtime identity", () => {
   it.each([
     ["expired", { exp: Math.floor(NOW.getTime() / 1000) - 1 }],
     ["cross-stack", { sub: "stack-someone-else" }],
-    ["wrong previous origin", { previousOrigin: "https://another.staging.paperclip.app" }],
+    ["wrong previous origin", { previousOrigin: "https://another.staging.paperclaw.app" }],
     ["path-bearing destination", { canonicalOrigin: `${CANONICAL_ORIGIN}/GON` }],
     ["slug mismatch", { stackSlug: "kermit" }],
   ])("rejects %s assertions", async (_label, claims) => {

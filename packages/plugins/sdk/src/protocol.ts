@@ -48,8 +48,8 @@ import type {
   ExternalObjectMentionConfidence,
   ExternalObjectMentionSourceKind,
   EnvSecretRefBinding,
-} from "@paperclipai/shared";
-export type { PluginLauncherRenderContextSnapshot } from "@paperclipai/shared";
+} from "@kesarcloud/shared";
+export type { PluginLauncherRenderContextSnapshot } from "@kesarcloud/shared";
 
 import type {
   PluginEvent,
@@ -1650,6 +1650,16 @@ export interface WorkerToHostMethods {
   "secrets.resolve": [
     params: { secretRef: string | EnvSecretRefBinding; companyId?: string; configPath?: string },
     result: string,
+  ];
+  "secrets.upsert": [
+    params: {
+      companyId: string;
+      name: string;
+      value: string;
+      description?: string | null;
+      externalRef?: string | null;
+    },
+    result: { secretRef: string; name: string; latestVersion: number },
   ];
 
   // Activity

@@ -341,8 +341,8 @@ function DeclarationList({ title, items }: { title: string; items: string[] }) {
 function ConfigStep({ pluginId, companyId, schema }: { pluginId: string; companyId: string; schema?: JsonSchemaNode }) {
   const queryClient = useQueryClient();
   const { data: config, isLoading } = useQuery({
-    queryKey: queryKeys.plugins.config(pluginId),
-    queryFn: () => pluginsApi.getConfig(pluginId),
+    queryKey: queryKeys.plugins.config(pluginId, companyId),
+    queryFn: () => pluginsApi.getConfig(pluginId, companyId),
     enabled: !!schema,
   });
   const [values, setValues] = useState<Record<string, unknown>>({});
@@ -358,11 +358,11 @@ function ConfigStep({ pluginId, companyId, schema }: { pluginId: string; company
   }, [config?.configJson, schema]);
 
   const saveMutation = useMutation({
-    mutationFn: (configJson: Record<string, unknown>) => pluginsApi.saveConfig(pluginId, configJson),
+    mutationFn: (configJson: Record<string, unknown>) => pluginsApi.saveConfig(pluginId, companyId, configJson),
     onSuccess: async () => {
       setMessage({ tone: "success", text: "Configuration saved." });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.plugins.config(pluginId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.plugins.config(pluginId, companyId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.plugins.setup(pluginId, companyId) }),
       ]);
     },

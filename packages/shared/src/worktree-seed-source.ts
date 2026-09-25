@@ -36,12 +36,12 @@ function readInstanceId(configPath: string, label: "source" | "target"): string 
   const contents = readFileSync(envPath, "utf8");
   for (const rawLine of contents.split(/\r?\n/)) {
     const match = rawLine.match(
-      /^\s*(?:export\s+)?PAPERCLIP_INSTANCE_ID\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/,
+      /^\s*(?:export\s+)?PAPERCLAW_INSTANCE_ID\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/,
     );
     const value = (match?.[1] ?? match?.[2] ?? match?.[3] ?? "").trim();
     if (value) return value;
   }
-  throw new Error(`Registered ${label} Paperclip config has no PAPERCLIP_INSTANCE_ID binding.`);
+  throw new Error(`Registered ${label} Paperclip config has no PAPERCLAW_INSTANCE_ID binding.`);
 }
 
 function errorCode(error: unknown): string {
@@ -69,25 +69,25 @@ function inspectDeclaredEntry(entryPath: string, configPath: string, detail?: st
  * Whether a base project workspace declares an instance config of its own.
  *
  * This tests directory entries and does not follow them. A dangling or aliased symlink,
- * at the config itself or at the `.paperclip` directory holding it, still counts as a
+ * at the config itself or at the `.paperclaw` directory holding it, still counts as a
  * declared config, so the resolver rejects the malformed source instead of falling back
  * to another one.
  */
 export function baseWorkspaceDeclaresInstanceConfig(baseWorkspaceCwd: string): boolean {
-  const configDir = path.join(baseWorkspaceCwd, ".paperclip");
+  const configDir = path.join(baseWorkspaceCwd, ".paperclaw");
   const configPath = path.join(configDir, "config.json");
   if (inspectDeclaredEntry(configPath, configPath)) return true;
 
-  // The probe above resolves `.paperclip` before it reaches the config, so a broken link
-  // there also reports ENOENT. Only an absent or traversable `.paperclip` lets the caller
+  // The probe above resolves `.paperclaw` before it reaches the config, so a broken link
+  // there also reports ENOENT. Only an absent or traversable `.paperclaw` lets the caller
   // name another source; a link that hides whatever it points at is malformed, not empty.
-  const configDirEntry = inspectDeclaredEntry(configDir, configPath, " on its .paperclip entry");
+  const configDirEntry = inspectDeclaredEntry(configDir, configPath, " on its .paperclaw entry");
   if (configDirEntry?.isSymbolicLink()) {
     try {
       statSync(configDir);
     } catch (error) {
       throw new Error(
-        `Registered base project workspace Paperclip config at ${configPath} cannot be inspected (${errorCode(error)} on its .paperclip symlink target).`,
+        `Registered base project workspace Paperclip config at ${configPath} cannot be inspected (${errorCode(error)} on its .paperclaw symlink target).`,
       );
     }
   }
@@ -141,7 +141,7 @@ export function resolveRegisteredWorktreeSeedSource(
     // A base workspace that is a plain checkout carries no instance config of its own.
     // The caller's explicit source supplies it, and stays subject to every check below.
     registeredConfigPath = baseWorkspaceDeclaresInstanceConfig(canonicalBaseCwd)
-      ? path.join(canonicalBaseCwd, ".paperclip", "config.json")
+      ? path.join(canonicalBaseCwd, ".paperclaw", "config.json")
       : null;
   }
 
@@ -194,7 +194,7 @@ export function resolveRegisteredWorktreeSeedSource(
  *
  * A managed caller supplies the project-workspace cwd from its server-owned row.
  * An operator may instead supply an explicit source config. A base workspace that
- * carries its own `.paperclip/config.json` stays authoritative, so an explicit path
+ * carries its own `.paperclaw/config.json` stays authoritative, so an explicit path
  * must equal it; a base workspace that is a plain checkout has none, and the explicit
  * path supplies the source. Manifest source fields are diagnostic assertions only and
  * never select the returned source.

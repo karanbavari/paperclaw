@@ -35,11 +35,11 @@ import {
   issueWorkProducts,
   principalPermissionGrants,
   projects,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
   LOW_TRUST_REVIEW_PRESET,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -1808,9 +1808,9 @@ describeEmbeddedPostgres(
       const heartbeat = heartbeatService(db, {
         runtimeEnv: {
           ...process.env,
-          PAPERCLIP_IN_WORKTREE: "false",
-          PAPERCLIP_DATABASE_RESTORE_IN_PROGRESS: "false",
-          PAPERCLIP_RESTORE_IN_PROGRESS: "false",
+          PAPERCLAW_IN_WORKTREE: "false",
+          PAPERCLAW_DATABASE_RESTORE_IN_PROGRESS: "false",
+          PAPERCLAW_RESTORE_IN_PROGRESS: "false",
         },
       });
 
@@ -1977,7 +1977,7 @@ describeEmbeddedPostgres(
         const payload = gateway.getAgentPayloads()[0] ?? {};
         // The gateway rejects unknown root params, so the wake context rides in the
         // generated message rather than a top-level `paperclip` field.
-        expect(payload.paperclip).toBeUndefined();
+        expect(payload.paperclaw).toBeUndefined();
         const wake = parseWakePayloadFromMessage(payload.message);
         // Security-critical: low-trust quarantined output is redacted to the sanitized
         // stub before it reaches the higher-trust wake/continuation context. The raw

@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@paperclipai/shared";
+import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@kesarcloud/shared";
 import {
   readPaperclipRuntimeSkillEntries,
   applyPaperclipWorkspaceEnv,
@@ -14,13 +14,13 @@ import {
   buildInvocationEnvForLogs,
   buildPaperclipEnv,
   buildRuntimeToolsEnv,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
+  DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE,
+  DEFAULT_PAPERCLAW_CONVERSATION_PROMPT_TEMPLATE,
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,
   isPaperclipExternalChatTurn,
   materializePaperclipSkillCopy,
-  PAPERCLIP_OPERATIONAL_SKILL_KEY,
+  PAPERCLAW_OPERATIONAL_SKILL_KEY,
   refreshPaperclipWorkspaceEnvForExecution,
   renderPaperclipWakePrompt,
   resolveLegacyPaperclipDesiredSkillNames,
@@ -56,25 +56,25 @@ describe("runtime connection tool delivery", () => {
 
   it("delivers the complete environment contract and canonical guidance", () => {
     expect(buildRuntimeToolsEnv(access)).toEqual({
-      PAPERCLIP_RUNTIME_TOOLS_MCP_URL: access.mcpEndpoint,
-      PAPERCLIP_RUNTIME_TOOLS_TOKEN: access.bearerToken,
-      PAPERCLIP_RUNTIME_TOOLS_EXPIRES_AT: access.expiresAt,
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL:
+      PAPERCLAW_RUNTIME_TOOLS_MCP_URL: access.mcpEndpoint,
+      PAPERCLAW_RUNTIME_TOOLS_TOKEN: access.bearerToken,
+      PAPERCLAW_RUNTIME_TOOLS_EXPIRES_AT: access.expiresAt,
+      PAPERCLAW_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL:
         access.rest.connectionsSearch,
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL:
+      PAPERCLAW_RUNTIME_TOOLS_CONNECTION_REQUEST_URL:
         access.rest.connectionRequest,
-      PAPERCLIP_RUNTIME_TOOLS_AVAILABLE:
+      PAPERCLAW_RUNTIME_TOOLS_AVAILABLE:
         "connections_search,connection_request",
-      PAPERCLIP_RUNTIME_TOOLS_GUIDANCE: CONNECTION_INTENT_AGENT_GUIDANCE,
+      PAPERCLAW_RUNTIME_TOOLS_GUIDANCE: CONNECTION_INTENT_AGENT_GUIDANCE,
     });
   });
 
   it("does not leak descriptor identity through guidance", () => {
     const env = buildRuntimeToolsEnv(access);
-    expect(env.PAPERCLIP_RUNTIME_TOOLS_GUIDANCE).not.toContain(
+    expect(env.PAPERCLAW_RUNTIME_TOOLS_GUIDANCE).not.toContain(
       access.bearerToken,
     );
-    expect(env.PAPERCLIP_RUNTIME_TOOLS_GUIDANCE).not.toContain(
+    expect(env.PAPERCLAW_RUNTIME_TOOLS_GUIDANCE).not.toContain(
       access.mcpEndpoint,
     );
   });
@@ -84,18 +84,18 @@ describe("runtime connection tool delivery", () => {
   });
 
   it("uses the exact same guidance in the default heartbeat prompt", () => {
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       CONNECTION_INTENT_AGENT_GUIDANCE,
     );
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).toContain(CONNECTION_INTENT_AGENT_GUIDANCE);
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).not.toContain("Execution contract:");
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).not.toContain("child issues");
+    expect(DEFAULT_PAPERCLAW_CONVERSATION_PROMPT_TEMPLATE).toContain(CONNECTION_INTENT_AGENT_GUIDANCE);
+    expect(DEFAULT_PAPERCLAW_CONVERSATION_PROMPT_TEMPLATE).not.toContain("Execution contract:");
+    expect(DEFAULT_PAPERCLAW_CONVERSATION_PROMPT_TEMPLATE).not.toContain("child issues");
   });
 });
 
 describe("legacy adapter skill selection", () => {
   const operationalEntry = {
-    key: PAPERCLIP_OPERATIONAL_SKILL_KEY,
+    key: PAPERCLAW_OPERATIONAL_SKILL_KEY,
     runtimeName: "paperclip",
   };
   const optionalEntry = {
@@ -109,7 +109,7 @@ describe("legacy adapter skill selection", () => {
         operationalEntry,
         optionalEntry,
       ]),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY]);
+    ).toEqual([PAPERCLAW_OPERATIONAL_SKILL_KEY]);
   });
 
   it("keeps the operational skill selected after an explicit empty replacement", () => {
@@ -118,7 +118,7 @@ describe("legacy adapter skill selection", () => {
         { paperclipSkillSync: { desiredSkills: [] } },
         [operationalEntry, optionalEntry],
       ),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY]);
+    ).toEqual([PAPERCLAW_OPERATIONAL_SKILL_KEY]);
   });
 
   it("does not force optional skills or synthesize a missing operational entry", () => {
@@ -130,7 +130,7 @@ describe("legacy adapter skill selection", () => {
         operationalEntry,
         optionalEntry,
       ]),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY, optionalEntry.key]);
+    ).toEqual([PAPERCLAW_OPERATIONAL_SKILL_KEY, optionalEntry.key]);
     expect(
       resolveLegacyPaperclipDesiredSkillNames(config, [optionalEntry]),
     ).toEqual([optionalEntry.key]);
@@ -182,13 +182,13 @@ describe("buildInvocationEnvForLogs", () => {
       { SAFE_VALUE: "visible" },
       {
         resolvedCommand:
-          "env OPENAI_API_KEY=sk-live-example PAPERCLIP_API_KEY='paperclip-quoted-secret' custom-acp --paperclip-api-key=paperclip-flag-secret --token ghp_example_secret",
+          "env OPENAI_API_KEY=sk-live-example PAPERCLAW_API_KEY='paperclip-quoted-secret' custom-acp --paperclip-api-key=paperclip-flag-secret --token ghp_example_secret",
       },
     );
 
     expect(loggedEnv.SAFE_VALUE).toBe("visible");
-    expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(
-      "env OPENAI_API_KEY=***REDACTED*** PAPERCLIP_API_KEY='***REDACTED***' custom-acp --paperclip-api-key=***REDACTED*** --token ***REDACTED***",
+    expect(loggedEnv.PAPERCLAW_RESOLVED_COMMAND).toBe(
+      "env OPENAI_API_KEY=***REDACTED*** PAPERCLAW_API_KEY='***REDACTED***' custom-acp --paperclip-api-key=***REDACTED*** --token ***REDACTED***",
     );
   });
 });
@@ -1140,7 +1140,7 @@ describe("renderPaperclipWakePrompt", () => {
       expect(prompt).not.toContain("acknowledge the latest comment");
       expect(prompt).not.toContain("checkout: already claimed");
       expect(prompt).not.toContain(
-        "POST /api/issues/$PAPERCLIP_TASK_ID/checkout",
+        "POST /api/issues/$PAPERCLAW_TASK_ID/checkout",
       );
     }
 
@@ -1409,70 +1409,70 @@ describe("renderPaperclipWakePrompt", () => {
   });
 
   it("keeps the default local-agent prompt action-oriented", () => {
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Start actionable work in this heartbeat",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "do not stop at a plan",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "clear final disposition",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "evidence, not valid liveness paths by themselves",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "keep `in_progress` only when a live continuation path exists",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Prefer the smallest verification that proves the change",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "After 2 consecutive failures of the same control-plane write",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "adapter/runtime status channel as the sanctioned fallback",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Use child issues",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "instead of polling agents, sessions, or processes",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Create child issues directly when you know what needs to be done",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
-      "POST /api/issues/$PAPERCLIP_TASK_ID/interactions",
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
+      "POST /api/issues/$PAPERCLAW_TASK_ID/interactions",
     );
     // URL paths in prompt text carry real ids or env vars, never brace
     // placeholders: agents paste these lines verbatim, and a literal {issueId}
     // reaches the server as /api/issues/%7BissueId%7D and 404s.
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).not.toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).not.toContain(
       "/api/issues/{issueId}",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).not.toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).not.toContain(
       "/api/issues/{id}",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "kind suggest_tasks, ask_user_questions, or request_confirmation",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).not.toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).not.toContain(
       "for request_confirmation this resumes only after acceptance",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Never create probe or throwaway issue-thread interactions to discover the interactions API shape or your permissions",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "confirmation:{issueId}:plan:{revisionId}",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Wait for acceptance before creating implementation subtasks",
     );
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Respect budget, pause/cancel, approval gates, and company boundaries",
     );
   });
@@ -1497,7 +1497,7 @@ describe("renderPaperclipWakePrompt", () => {
 
     expect(prompt).toContain("## Paperclip Wake Payload");
     expect(prompt).not.toContain("Execution contract:");
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE).toContain(
       "Execution contract:",
     );
   });
@@ -1962,7 +1962,7 @@ describe("renderPaperclipWakePrompt", () => {
       comments: [],
       fallbackFetchNeeded: false,
     });
-    const composed = [wakePrompt, DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE].join(
+    const composed = [wakePrompt, DEFAULT_PAPERCLAW_AGENT_PROMPT_TEMPLATE].join(
       "\n\n",
     );
     expect(composed.match(/Execution contract/g)).toHaveLength(1);
@@ -3378,15 +3378,15 @@ describe("applyPaperclipWorkspaceEnv", () => {
     );
 
     expect(env).toEqual({
-      PAPERCLIP_WORKSPACE_CWD: "/tmp/workspace",
-      PAPERCLIP_WORKSPACE_SOURCE: "project_primary",
-      PAPERCLIP_WORKSPACE_STRATEGY: "git_worktree",
-      PAPERCLIP_WORKSPACE_ID: "workspace-1",
-      PAPERCLIP_WORKSPACE_REPO_URL:
+      PAPERCLAW_WORKSPACE_CWD: "/tmp/workspace",
+      PAPERCLAW_WORKSPACE_SOURCE: "project_primary",
+      PAPERCLAW_WORKSPACE_STRATEGY: "git_worktree",
+      PAPERCLAW_WORKSPACE_ID: "workspace-1",
+      PAPERCLAW_WORKSPACE_REPO_URL:
         "https://github.com/paperclipai/paperclip.git",
-      PAPERCLIP_WORKSPACE_REPO_REF: "main",
-      PAPERCLIP_WORKSPACE_BRANCH: "feature/test",
-      PAPERCLIP_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
+      PAPERCLAW_WORKSPACE_REPO_REF: "main",
+      PAPERCLAW_WORKSPACE_BRANCH: "feature/test",
+      PAPERCLAW_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
       AGENT_HOME: "/tmp/agent-home",
     });
   });
@@ -3409,9 +3409,9 @@ describe("shapePaperclipWorkspaceEnvForExecution", () => {
   it("maps editable project repositories inside the remote workspace", () => {
     const result = shapePaperclipWorkspaceEnvForExecution({
       workspaceCwd: "/host/task", executionCwd: "/sandbox/task", executionTargetIsRemote: true,
-      workspaceHints: [{ workspaceId: "backend", cwd: "/host/task/.paperclip-repositories/backend" }],
+      workspaceHints: [{ workspaceId: "backend", cwd: "/host/task/.paperclaw-repositories/backend" }],
     });
-    expect(result.workspaceHints).toEqual([{ workspaceId: "backend", cwd: "/sandbox/task/.paperclip-repositories/backend" }]);
+    expect(result.workspaceHints).toEqual([{ workspaceId: "backend", cwd: "/sandbox/task/.paperclaw-repositories/backend" }]);
   });
   it("rewrites workspace env paths for remote execution", () => {
     const shaped = shapePaperclipWorkspaceEnvForExecution({
@@ -3600,9 +3600,9 @@ describe("rewriteWorkspaceCwdEnvVarsForExecution", () => {
 describe("refreshPaperclipWorkspaceEnvForExecution", () => {
   it("rewrites Paperclip workspace env to the prepared remote runtime cwd", () => {
     const env: Record<string, string> = {
-      PAPERCLIP_WORKSPACE_CWD: "/remote/workspace",
-      PAPERCLIP_WORKSPACE_WORKTREE_PATH: "/host/worktree",
-      PAPERCLIP_WORKSPACES_JSON: JSON.stringify([
+      PAPERCLAW_WORKSPACE_CWD: "/remote/workspace",
+      PAPERCLAW_WORKSPACE_WORKTREE_PATH: "/host/worktree",
+      PAPERCLAW_WORKSPACES_JSON: JSON.stringify([
         { workspaceId: "workspace-1", cwd: "/remote/workspace" },
         { workspaceId: "workspace-2", cwd: "/tmp/other" },
       ]),
@@ -3621,33 +3621,33 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
         { workspaceId: "workspace-2", cwd: "/tmp/other" },
       ],
       executionTargetIsRemote: true,
-      executionCwd: "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+      executionCwd: "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
     });
 
     expect(shaped).toEqual({
-      workspaceCwd: "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+      workspaceCwd: "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
       workspaceWorktreePath: null,
       workspaceHints: [
         {
           workspaceId: "workspace-1",
-          cwd: "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+          cwd: "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
         },
         {
           workspaceId: "workspace-2",
         },
       ],
     });
-    expect(env.PAPERCLIP_WORKSPACE_CWD).toBe(
-      "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+    expect(env.PAPERCLAW_WORKSPACE_CWD).toBe(
+      "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
     );
-    expect(env.PAPERCLIP_WORKSPACE_WORKTREE_PATH).toBeUndefined();
+    expect(env.PAPERCLAW_WORKSPACE_WORKTREE_PATH).toBeUndefined();
     expect(env.QA_PROJECT_WORKSPACE_CWD).toBe(
-      "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+      "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
     );
-    expect(JSON.parse(env.PAPERCLIP_WORKSPACES_JSON ?? "[]")).toEqual([
+    expect(JSON.parse(env.PAPERCLAW_WORKSPACES_JSON ?? "[]")).toEqual([
       {
         workspaceId: "workspace-1",
-        cwd: "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
+        cwd: "/remote/workspace/.paperclaw-runtime/runs/run-1/workspace",
       },
       {
         workspaceId: "workspace-2",
@@ -3657,9 +3657,9 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
 
   it("forwards resolved adapter env but never overrides Paperclip runtime env", () => {
     const env: Record<string, string> = {
-      PAPERCLIP_RUN_ID: "run-1",
-      PAPERCLIP_TASK_ID: "issue-1",
-      PAPERCLIP_API_URL: "http://runtime:3100",
+      PAPERCLAW_RUN_ID: "run-1",
+      PAPERCLAW_TASK_ID: "issue-1",
+      PAPERCLAW_API_URL: "http://runtime:3100",
     };
 
     refreshPaperclipWorkspaceEnvForExecution({
@@ -3670,48 +3670,48 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
         // Server-resolved secret_ref value arrives as a plain string here.
         OPENROUTER_API_KEY: "resolved-secret-value",
         // Reserved-namespace keys must not clobber runtime identity/wake vars.
-        PAPERCLIP_TASK_ID: "attacker-issue",
-        PAPERCLIP_API_URL: "http://evil:9999",
+        PAPERCLAW_TASK_ID: "attacker-issue",
+        PAPERCLAW_API_URL: "http://evil:9999",
       },
       workspaceCwd: null,
     });
 
     expect(env.OOGA_BOOGA_123).toBe("plain-value");
     expect(env.OPENROUTER_API_KEY).toBe("resolved-secret-value");
-    expect(env.PAPERCLIP_TASK_ID).toBe("issue-1");
-    expect(env.PAPERCLIP_API_URL).toBe("http://runtime:3100");
+    expect(env.PAPERCLAW_TASK_ID).toBe("issue-1");
+    expect(env.PAPERCLAW_API_URL).toBe("http://runtime:3100");
   });
 
-  it("applies a configured PAPERCLIP_* key only when Paperclip has not set it", () => {
+  it("applies a configured PAPERCLAW_* key only when Paperclip has not set it", () => {
     const env: Record<string, string> = {};
 
     refreshPaperclipWorkspaceEnvForExecution({
       env,
       envConfig: {
-        PAPERCLIP_CLOUD_PROVIDER_TOKEN: "cloud-token",
+        PAPERCLAW_CLOUD_PROVIDER_TOKEN: "cloud-token",
       },
       workspaceCwd: null,
     });
 
-    // Paperclip did not assign this PAPERCLIP_*-named key for the run, so the
+    // Paperclip did not assign this PAPERCLAW_*-named key for the run, so the
     // configured value flows through to the spawned process.
-    expect(env.PAPERCLIP_CLOUD_PROVIDER_TOKEN).toBe("cloud-token");
+    expect(env.PAPERCLAW_CLOUD_PROVIDER_TOKEN).toBe("cloud-token");
   });
 
-  it("never accepts PAPERCLIP_API_KEY from config env", () => {
+  it("never accepts PAPERCLAW_API_KEY from config env", () => {
     const env: Record<string, string> = {};
 
     refreshPaperclipWorkspaceEnvForExecution({
       env,
       envConfig: {
-        PAPERCLIP_API_KEY: "explicit-key",
+        PAPERCLAW_API_KEY: "explicit-key",
       },
       workspaceCwd: null,
     });
 
-    // The harness-minted run token is the only PAPERCLIP_API_KEY source;
+    // The harness-minted run token is the only PAPERCLAW_API_KEY source;
     // a configured value is dropped even when Paperclip has not set one.
-    expect(env.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(env.PAPERCLAW_API_KEY).toBeUndefined();
   });
 });
 
@@ -3727,10 +3727,10 @@ describe("appendWithByteCap", () => {
 
 describe("buildPaperclipEnv", () => {
   const ENV_KEYS = [
-    "PAPERCLIP_API_URL",
-    "PAPERCLIP_RUNTIME_API_URL",
-    "PAPERCLIP_LISTEN_HOST",
-    "PAPERCLIP_LISTEN_PORT",
+    "PAPERCLAW_API_URL",
+    "PAPERCLAW_RUNTIME_API_URL",
+    "PAPERCLAW_LISTEN_HOST",
+    "PAPERCLAW_LISTEN_PORT",
     "HOST",
     "PORT",
   ] as const;
@@ -3751,40 +3751,40 @@ describe("buildPaperclipEnv", () => {
     }
   }
 
-  it("prefers an explicit PAPERCLIP_API_URL override over the derived runtime URL", () => {
+  it("prefers an explicit PAPERCLAW_API_URL override over the derived runtime URL", () => {
     withEnv(
       {
-        PAPERCLIP_API_URL: "http://localhost:3100",
-        PAPERCLIP_RUNTIME_API_URL: "http://203.0.113.7:3100",
+        PAPERCLAW_API_URL: "http://localhost:3100",
+        PAPERCLAW_RUNTIME_API_URL: "http://203.0.113.7:3100",
       },
       () => {
         const env = buildPaperclipEnv({
           id: "agent-1",
           companyId: "company-1",
         });
-        expect(env.PAPERCLIP_API_URL).toBe("http://localhost:3100");
-        expect(env.PAPERCLIP_AGENT_ID).toBe("agent-1");
-        expect(env.PAPERCLIP_COMPANY_ID).toBe("company-1");
+        expect(env.PAPERCLAW_API_URL).toBe("http://localhost:3100");
+        expect(env.PAPERCLAW_AGENT_ID).toBe("agent-1");
+        expect(env.PAPERCLAW_COMPANY_ID).toBe("company-1");
       },
     );
   });
 
   it("falls back to the derived runtime URL when no explicit override is set", () => {
-    withEnv({ PAPERCLIP_RUNTIME_API_URL: "http://203.0.113.7:3100" }, () => {
+    withEnv({ PAPERCLAW_RUNTIME_API_URL: "http://203.0.113.7:3100" }, () => {
       const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
-      expect(env.PAPERCLIP_API_URL).toBe("http://203.0.113.7:3100");
+      expect(env.PAPERCLAW_API_URL).toBe("http://203.0.113.7:3100");
     });
   });
 
   it("derives a listen-host URL when neither override is set", () => {
     withEnv(
-      { PAPERCLIP_LISTEN_HOST: "0.0.0.0", PAPERCLIP_LISTEN_PORT: "3200" },
+      { PAPERCLAW_LISTEN_HOST: "0.0.0.0", PAPERCLAW_LISTEN_PORT: "3200" },
       () => {
         const env = buildPaperclipEnv({
           id: "agent-1",
           companyId: "company-1",
         });
-        expect(env.PAPERCLIP_API_URL).toBe("http://localhost:3200");
+        expect(env.PAPERCLAW_API_URL).toBe("http://localhost:3200");
       },
     );
   });

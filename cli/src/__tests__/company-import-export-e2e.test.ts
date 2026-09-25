@@ -114,16 +114,16 @@ interface TestPaperclipEnv {
 function createBasePaperclipEnv(options: TestPaperclipEnv) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("PAPERCLAW_")) {
       delete env[key];
     }
   }
 
-  env.PAPERCLIP_CONFIG = options.configPath;
-  env.PAPERCLIP_HOME = options.paperclipHome;
-  env.PAPERCLIP_INSTANCE_ID = options.instanceId;
-  env.PAPERCLIP_CONTEXT = path.join(options.paperclipHome, "context.json");
-  env.PAPERCLIP_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
+  env.PAPERCLAW_CONFIG = options.configPath;
+  env.PAPERCLAW_HOME = options.paperclipHome;
+  env.PAPERCLAW_INSTANCE_ID = options.instanceId;
+  env.PAPERCLAW_CONTEXT = path.join(options.paperclipHome, "context.json");
+  env.PAPERCLAW_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
   if (options.shellHome) {
     env.HOME = options.shellHome;
   }
@@ -152,11 +152,11 @@ function createServerEnv(
   env.HOST = "127.0.0.1";
   env.PORT = String(port);
   env.SERVE_UI = "false";
-  env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
-  env.PAPERCLIP_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
+  env.PAPERCLAW_DB_BACKUP_ENABLED = "false";
+  env.PAPERCLAW_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
   env.HEARTBEAT_SCHEDULER_ENABLED = "false";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY = "true";
-  env.PAPERCLIP_UI_DEV_MIDDLEWARE = "false";
+  env.PAPERCLAW_MIGRATION_AUTO_APPLY = "true";
+  env.PAPERCLAW_UI_DEV_MIDDLEWARE = "false";
 
   return env;
 }
@@ -167,10 +167,10 @@ function createCliEnv(options: TestPaperclipEnv) {
   delete env.PORT;
   delete env.HOST;
   delete env.SERVE_UI;
-  delete env.PAPERCLIP_DB_BACKUP_ENABLED;
+  delete env.PAPERCLAW_DB_BACKUP_ENABLED;
   delete env.HEARTBEAT_SCHEDULER_ENABLED;
-  delete env.PAPERCLIP_MIGRATION_AUTO_APPLY;
-  delete env.PAPERCLIP_UI_DEV_MIDDLEWARE;
+  delete env.PAPERCLAW_MIGRATION_AUTO_APPLY;
+  delete env.PAPERCLAW_UI_DEV_MIDDLEWARE;
   return env;
 }
 
@@ -352,7 +352,7 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
     );
 
     const expectedContextPath = path.join(paperclipHome, "context.json");
-    const leakedContextPath = path.join(cliShellHome, ".paperclip", "context.json");
+    const leakedContextPath = path.join(cliShellHome, ".paperclaw", "context.json");
     expect(cliContext.contextPath).toBe(expectedContextPath);
     expect(cliContext.profileName).toBe("isolation-check");
     expect(cliContext.profile.apiBase).toBe("https://example.test");
@@ -449,7 +449,7 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
     expect(exportResult.ok).toBe(true);
     expect(exportResult.filesWritten).toBeGreaterThan(0);
     expect(readFileSync(path.join(exportDir, "COMPANY.md"), "utf8")).toContain(sourceCompany.name);
-    expect(readFileSync(path.join(exportDir, ".paperclip.yaml"), "utf8")).toContain('schema: "paperclip/v1"');
+    expect(readFileSync(path.join(exportDir, ".paperclaw.yaml"), "utf8")).toContain('schema: "paperclaw/v1"');
 
     const importedNew = await runCliJson<{
       company: { id: string; name: string; action: string };

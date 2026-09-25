@@ -212,7 +212,7 @@ Not every inline `style` is a hardcoded value — many pass through dynamic prop
 
 ## 5. Font-weight
 
-No raw numeric `font-weight:` or `fontWeight:` declarations were found in component/page source outside `index.css` itself (which has 6 legitimate `font-weight: 500/600/700` declarations inside `.paperclip-markdown`/`.paperclip-markdown-codeblock-action` rules — these are the token layer, not drift). All font-weight in components goes through Tailwind's built-in `font-medium`/`font-semibold`/`font-bold` classes, which is compliant with DESIGN.md (weight isn't a token gap here). **No action needed for font-weight.**
+No raw numeric `font-weight:` or `fontWeight:` declarations were found in component/page source outside `index.css` itself (which has 6 legitimate `font-weight: 500/600/700` declarations inside `.paperclaw-markdown`/`.paperclaw-markdown-codeblock-action` rules — these are the token layer, not drift). All font-weight in components goes through Tailwind's built-in `font-medium`/`font-semibold`/`font-bold` classes, which is compliant with DESIGN.md (weight isn't a token gap here). **No action needed for font-weight.**
 
 ---
 
@@ -223,7 +223,7 @@ No raw numeric `font-weight:` or `fontWeight:` declarations were found in compon
 3. **No `--shadow-*` tokens exist at all** in `index.css`, despite 38 arbitrary shadow values in components (3.6). DESIGN.md principle 2 lists "shadow" explicitly as a category that must route through tokens — today there is no token family for it to route through. Not a contradiction of DESIGN.md so much as a gap DESIGN.md anticipates Phase 2 will need to fill from scratch (mint, don't normalize).
 4. **Tailwind palette utility classes** (`bg-red-500`, `text-amber-600`, etc., 3,115 sites) are a form of hardcoded value DESIGN.md's principle 2 language ("no hex, no raw px") doesn't unambiguously cover — these aren't hex literals or raw px, they're named utility classes backed by Tailwind's *own* built-in oklch palette, entirely separate from `index.css`'s token values. Whether this counts as "in scope" for the zero-hardcoded-value gate is genuinely ambiguous from the text of DESIGN.md and is the single biggest scope question for Phase 2. **See "Needs human decision" below.**
 
-No other conflicts found — the rest of the codebase's approach (semantic tier for chrome, brand tier for agent/status colors, domain tier for chips/annotations) is followed consistently by the parts of the app that DO use tokens (e.g., `.status-chip`/`.status-fill` color-mix helpers, `.paperclip-mdxeditor` CSS-var bridge).
+No other conflicts found — the rest of the codebase's approach (semantic tier for chrome, brand tier for agent/status colors, domain tier for chips/annotations) is followed consistently by the parts of the app that DO use tokens (e.g., `.status-chip`/`.status-fill` color-mix helpers, `.paperclaw-mdxeditor` CSS-var bridge).
 
 ---
 

@@ -37,7 +37,7 @@ export function readPortableCatalogProvenance(
   metadata: Record<string, unknown> | null,
   canonicalKey: string | null = null,
 ) {
-  const paperclip = isCatalogRecord(metadata?.paperclip) ? metadata.paperclip : null;
+  const paperclip = isCatalogRecord(metadata?.paperclaw) ? metadata.paperclaw : null;
   const catalog = isCatalogRecord(paperclip?.catalog) ? paperclip.catalog : null;
   if (!catalog) return null;
 

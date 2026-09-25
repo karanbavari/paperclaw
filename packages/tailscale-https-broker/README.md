@@ -104,7 +104,7 @@ Tailscale-operator service account distinct from the Paperclip app account.
    needed).
 
    ```sh
-   pnpm --filter @paperclipai/tailscale-https-broker build
+   pnpm --filter @kesarcloud/tailscale-https-broker build
    sudo install -d -m 0755 /opt/paperclip/packages/tailscale-https-broker
    sudo cp -r packages/tailscale-https-broker/dist \
      /opt/paperclip/packages/tailscale-https-broker/
@@ -141,7 +141,7 @@ Tailscale-operator service account distinct from the Paperclip app account.
    ```
 
    Put the `BROKER_*` values from the table below in the environment file. Set
-   `PAPERCLIP_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
+   `PAPERCLAW_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
    on the Paperclip service only if overriding its default.
 
    Environment variables (defaults in `src/config.ts`):
@@ -243,7 +243,7 @@ redacted.
 ## Tests
 
 ```sh
-pnpm --filter @paperclipai/tailscale-https-broker test        # 72 tests
-pnpm --filter @paperclipai/tailscale-https-broker typecheck
-pnpm --filter @paperclipai/tailscale-https-broker build
+pnpm --filter @kesarcloud/tailscale-https-broker test        # 72 tests
+pnpm --filter @kesarcloud/tailscale-https-broker typecheck
+pnpm --filter @kesarcloud/tailscale-https-broker build
 ```

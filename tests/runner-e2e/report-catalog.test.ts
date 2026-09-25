@@ -207,9 +207,9 @@ describe("trusted report catalog discovery", () => {
         cwd: repo,
         env: {
           ...process.env,
-          PAPERCLIP_RUNNER_E2E_REPORT_ROOT: root,
-          PAPERCLIP_RUNNER_E2E_REPORT_OUT: out,
-          PAPERCLIP_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([missingId]),
+          PAPERCLAW_RUNNER_E2E_REPORT_ROOT: root,
+          PAPERCLAW_RUNNER_E2E_REPORT_OUT: out,
+          PAPERCLAW_RUNNER_E2E_EXPECTED_IDS: JSON.stringify([missingId]),
         },
       },
     ).catch((error: { code?: number }) => {

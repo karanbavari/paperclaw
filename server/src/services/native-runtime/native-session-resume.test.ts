@@ -22,14 +22,14 @@ import {
   heartbeatRuns,
   issues,
   nativeRunResults,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   CodexAppServerDriver,
   HarnessDriverBackend,
   createCodexTaskEnvelope,
   createRunnerdCodexTransport as createCapabilityRunnerdCodexTransport,
-} from "@paperclipai/paperclip-runner";
+} from "@kesarcloud/paperclip-runner";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -682,7 +682,7 @@ const recoveryFakeCodex = resolve(
     const bin = join(scratch, "bin");
     const workspace = join(scratch, "workspace");
     const sourceHome = join(scratch, "source-home");
-    const previousStateBase = process.env.PAPERCLIP_RUNNER_STATE_DIR;
+    const previousStateBase = process.env.PAPERCLAW_RUNNER_STATE_DIR;
     const server = createServer();
     let firstSession: NativeSession | undefined;
     const runnerDiagnostics: string[] = [];
@@ -690,7 +690,7 @@ const recoveryFakeCodex = resolve(
       runnerDiagnostics.push(chunk.slice(-4_096));
       if (runnerDiagnostics.length > 32) runnerDiagnostics.shift();
     };
-    process.env.PAPERCLIP_RUNNER_STATE_DIR = stateBase;
+    process.env.PAPERCLAW_RUNNER_STATE_DIR = stateBase;
     try {
       await Promise.all(
         [bin, workspace, sourceHome].map((path) =>
@@ -1159,8 +1159,8 @@ const recoveryFakeCodex = resolve(
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
       if (previousStateBase === undefined)
-        delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
-      else process.env.PAPERCLIP_RUNNER_STATE_DIR = previousStateBase;
+        delete process.env.PAPERCLAW_RUNNER_STATE_DIR;
+      else process.env.PAPERCLAW_RUNNER_STATE_DIR = previousStateBase;
       await database.cleanup();
       await rm(scratch, { recursive: true, force: true });
     }
@@ -2531,7 +2531,7 @@ describe("buildNativeExecutionInput wake projection", () => {
     expect(
       JSON.stringify([codex, opencode, claudeManaged, agentCore, acpx]),
     ).not.toMatch(
-      /OPENAI_API_KEY|ANTHROPIC_API_KEY|AWS_SECRET_ACCESS_KEY|PAPERCLIP_API_KEY/,
+      /OPENAI_API_KEY|ANTHROPIC_API_KEY|AWS_SECRET_ACCESS_KEY|PAPERCLAW_API_KEY/,
     );
   });
 

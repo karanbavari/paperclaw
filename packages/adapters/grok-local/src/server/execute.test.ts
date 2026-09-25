@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionContext } from "@kesarcloud/adapter-utils";
 
 // Bundles the remote-lane mock state and every mocked execution-target
 // function behind one hoisted object, so the `vi.mock` factory below (which
@@ -27,7 +27,7 @@ const mocks = vi.hoisted(() => {
         const assetDirs =
           override?.assetDirs ??
           Object.fromEntries(
-            (input.assets ?? []).map((asset) => [asset.key, `/remote/workspace/.paperclip-runtime/grok/${asset.key}`]),
+            (input.assets ?? []).map((asset) => [asset.key, `/remote/workspace/.paperclaw-runtime/grok/${asset.key}`]),
           );
         const workspaceRemoteDir = override && "workspaceRemoteDir" in override
           ? override.workspaceRemoteDir
@@ -47,7 +47,7 @@ const {
   prepareRuntimeMock,
 } = mocks;
 
-vi.mock("@paperclipai/adapter-utils/execution-target", () => ({
+vi.mock("@kesarcloud/adapter-utils/execution-target", () => ({
   adapterExecutionTargetIsRemote: () => mocks.state.isRemote,
   adapterExecutionTargetRemoteCwd: (_target: unknown, cwd: string) =>
     mocks.state.isRemote ? "/remote/workspace" : cwd,
@@ -112,7 +112,7 @@ function makeRestoreWorkspace(
     for (const asset of assets) {
       if (!asset.restore) continue;
       await asset.restore({
-        assetDir: "/remote/workspace/.paperclip-runtime/grok/home",
+        assetDir: "/remote/workspace/.paperclaw-runtime/grok/home",
         readFile: async () => {
           if (sandboxAuthFixture.error) throw sandboxAuthFixture.error;
           if (sandboxAuthFixture.bytes === null) {
@@ -414,11 +414,11 @@ describe("grok_local execute", () => {
 
     beforeEach(async () => {
       previousApiKey = process.env.XAI_API_KEY;
-      previousPaperclipHome = process.env.PAPERCLIP_HOME;
+      previousPaperclipHome = process.env.PAPERCLAW_HOME;
       // Point the managed Grok home at a private tmp root, so staging never
-      // touches a real developer or CI-host `~/.paperclip` tree.
+      // touches a real developer or CI-host `~/.paperclaw` tree.
       paperclipHomeRoot = await makeTempRoot();
-      process.env.PAPERCLIP_HOME = paperclipHomeRoot;
+      process.env.PAPERCLAW_HOME = paperclipHomeRoot;
       sandboxAuthFixture.bytes = null;
       sandboxAuthFixture.error = null;
     });
@@ -426,8 +426,8 @@ describe("grok_local execute", () => {
     afterEach(() => {
       if (previousApiKey === undefined) delete process.env.XAI_API_KEY;
       else process.env.XAI_API_KEY = previousApiKey;
-      if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousPaperclipHome;
+      if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+      else process.env.PAPERCLAW_HOME = previousPaperclipHome;
     });
 
     async function seedHostGrokAuth(contents: string): Promise<string> {
@@ -462,7 +462,7 @@ describe("grok_local execute", () => {
           }
           return {
             workspaceRemoteDir: "/remote/workspace",
-            assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+            assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
             restoreWorkspace: async () => {},
           };
         },
@@ -489,7 +489,7 @@ describe("grok_local execute", () => {
 
       await execute(await makeCtx("run-remote-subscription-home", await makeTempRoot()));
 
-      expect(seenEnv.GROK_HOME).toBe("/remote/workspace/.paperclip-runtime/grok/home");
+      expect(seenEnv.GROK_HOME).toBe("/remote/workspace/.paperclaw-runtime/grok/home");
     });
 
     it("uses the fallback remote path when assetDirs.home is absent", async () => {
@@ -506,7 +506,7 @@ describe("grok_local execute", () => {
       await execute(await makeCtx("run-remote-subscription-fallback", await makeTempRoot()));
 
       expect(seenEnv.GROK_HOME).toBe(
-        "/remote/fallback-workspace/.paperclip-runtime/grok/home",
+        "/remote/fallback-workspace/.paperclaw-runtime/grok/home",
       );
     });
 
@@ -547,7 +547,7 @@ describe("grok_local execute", () => {
         stagedDir = input.assets?.[0]?.localDir ?? "";
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: async () => {},
         };
       });
@@ -567,7 +567,7 @@ describe("grok_local execute", () => {
         stagedDir = input.assets?.[0]?.localDir ?? "";
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: async () => {},
         };
       });
@@ -591,7 +591,7 @@ describe("grok_local execute", () => {
         stagedDir = input.assets?.[0]?.localDir ?? "";
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: async () => {
             throw new Error("restore failed");
           },
@@ -621,7 +621,7 @@ describe("grok_local execute", () => {
         }>;
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: makeRestoreWorkspace(assets),
         };
       });
@@ -647,7 +647,7 @@ describe("grok_local execute", () => {
         }>;
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: makeRestoreWorkspace(assets),
         };
       });
@@ -674,7 +674,7 @@ describe("grok_local execute", () => {
         }>;
         return {
           workspaceRemoteDir: "/remote/workspace",
-          assetDirs: { home: "/remote/workspace/.paperclip-runtime/grok/home" },
+          assetDirs: { home: "/remote/workspace/.paperclaw-runtime/grok/home" },
           restoreWorkspace: makeRestoreWorkspace(assets),
         };
       });

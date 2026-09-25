@@ -34,7 +34,7 @@ on the issue-thread surface and the live loop.
 Install the package workspace from the repository root:
 
 ```sh
-NODE_ENV=development pnpm install --filter @paperclipai/paperclip-runner --frozen-lockfile --offline --ignore-scripts
+NODE_ENV=development pnpm install --filter @kesarcloud/paperclip-runner --frozen-lockfile --offline --ignore-scripts
 ```
 
 This keeps the checked-in lockfile authoritative while using only packages
@@ -46,7 +46,7 @@ inherits `NODE_ENV=production`.
 ## 1. Prove the 106-case conformance suite (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:capability-evals
+pnpm --filter @kesarcloud/paperclip-runner test:capability-evals
 ```
 
 This drives all 106 eval-derived cases across the 16 groups entirely in-process
@@ -61,7 +61,7 @@ For the per-group counts, assertion classes, the 18-operation fake-agent matrix,
 and the 16-case bounded Codex binding sample, generate the parity report:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner report:capability-evals
+pnpm --filter @kesarcloud/paperclip-runner report:capability-evals
 ```
 
 Expected final line:
@@ -70,14 +70,14 @@ Expected final line:
 Capability eval conformance passed: 106 cases across 16 groups.
 ```
 
-The report is written to `.paperclip-local/evidence/capability/eval-parity-report.{json,md}`.
+The report is written to `.paperclaw-local/evidence/capability/eval-parity-report.{json,md}`.
 It is generated on demand and is not committed; delete it before running
 `docs:validate`, or run validation first.
 
 ## 2. Run the issue-thread contract and UI tests (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:scenarios
+pnpm --filter @kesarcloud/paperclip-runner test:scenarios
 ```
 
 Expected final lines:
@@ -96,7 +96,7 @@ the projected view.
 ## 3. Open the issue thread in fake mode (about 2 minutes)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:issue-thread
+pnpm --filter @kesarcloud/paperclip-runner console:issue-thread
 ```
 
 Open <http://127.0.0.1:4184/#/issue/hb-baseline?shot=thread-baseline>.
@@ -143,11 +143,11 @@ never scrolls horizontally.
 
 ```sh
 # Recorded evidence generation is deferred from this release.
-pnpm --filter @paperclipai/paperclip-runner check:capability:ui
+pnpm --filter @kesarcloud/paperclip-runner check:capability:ui
 ```
 
 The first writes 24 images — the twelve slugs at 1440×900 and 390×844 — to
-`.paperclip-local/evidence/capability/ui/`. Every mobile capture asserts no horizontal
+`.paperclaw-local/evidence/capability/ui/`. Every mobile capture asserts no horizontal
 scroll before the shot. The second re-records and confirms all 24 reproduce
 byte-for-byte, which is the property that makes the fake-mode matrix a stable
 acceptance artifact. Both modes render fixture time only, so a fresh checkout
@@ -164,7 +164,7 @@ installed** — nothing above depends on it.
 Headless smoke over the package server:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner smoke:capability:ui
+pnpm --filter @kesarcloud/paperclip-runner smoke:capability:ui
 ```
 
 This creates a session, runs live turns, and asserts the identity reads
@@ -178,7 +178,7 @@ Capture the live browser frames (a real browser driving a real Codex turn):
 # Recorded evidence generation is deferred from this release.
 ```
 
-The frames land in `.paperclip-local/evidence/capability/ui-live/`. They are intentionally
+The frames land in `.paperclaw-local/evidence/capability/ui-live/`. They are intentionally
 **not** byte-stable — a real provider turn varies — so they are excluded from the
 determinism gate and are the mode that satisfies the final live acceptance
 criteria. A scripted (`mode=fake`) frame cannot.
@@ -186,7 +186,7 @@ criteria. A scripted (`mode=fake`) frame cannot.
 Prove the process and network boundary directly:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:live-runner -- --json
+pnpm --filter @kesarcloud/paperclip-runner trace:live-runner -- --json
 ```
 
 This checks a real semantic-tool mutation, a typed result, a same-thread second

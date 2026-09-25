@@ -74,11 +74,11 @@ function escapeRegExp(value: string): string {
 }
 
 export function resolveServiceShimPath(homeDir = os.homedir()): string {
-  return process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclipai");
+  return process.env.PAPERCLAW_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclipai");
 }
 
 // The installed definition, not the current environment, is the truth
-// about what the service executes: PAPERCLIP_SHIM_PATH may have changed
+// about what the service executes: PAPERCLAW_SHIM_PATH may have changed
 // or been unset since the definition was written.
 function unescapeSystemd(value: string): string {
   return value.replace(/\\\\|\\"|\$\$|%%/g, (m) =>
@@ -121,7 +121,7 @@ export function systemdServiceName(instanceId: string): string {
 }
 
 export function launchdServiceName(instanceId: string): string {
-  return instanceId === "default" ? "ing.paperclip.paperclipai" : `ing.paperclip.paperclipai.${instanceId}`;
+  return instanceId === "default" ? "ing.paperclaw.paperclawai" : `ing.paperclaw.paperclawai.${instanceId}`;
 }
 
 export function renderSystemdUnit(input: { instanceId: string; shimPath: string; homeDir: string }): string {
@@ -135,9 +135,9 @@ StartLimitBurst=5
 Type=notify
 NotifyAccess=all
 ExecStart="${escapeSystemd(input.shimPath)}" run --instance "${escapeSystemd(input.instanceId)}"
-Environment="PAPERCLIP_SERVICE_MANAGED=1"
-Environment="PAPERCLIP_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
-Environment="PAPERCLIP_HOME=${escapeSystemd(input.homeDir)}"
+Environment="PAPERCLAW_SERVICE_MANAGED=1"
+Environment="PAPERCLAW_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
+Environment="PAPERCLAW_HOME=${escapeSystemd(input.homeDir)}"
 WorkingDirectory=%h
 Restart=always
 RestartSec=5
@@ -161,9 +161,9 @@ export function renderLaunchdPlist(input: { instanceId: string; shimPath: string
   </array>
   <key>EnvironmentVariables</key>
   <dict>
-    <key>PAPERCLIP_SERVICE_MANAGED</key><string>1</string>
-    <key>PAPERCLIP_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
-    <key>PAPERCLIP_HOME</key><string>${escapeXml(input.homeDir)}</string>
+    <key>PAPERCLAW_SERVICE_MANAGED</key><string>1</string>
+    <key>PAPERCLAW_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
+    <key>PAPERCLAW_HOME</key><string>${escapeXml(input.homeDir)}</string>
   </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -360,7 +360,7 @@ export async function detectServiceManager(input: { instanceId?: string; platfor
 }
 
 export async function assertForegroundRunAllowed(instanceId: string, force = false, detector: typeof detectServiceManager = detectServiceManager): Promise<void> {
-  if (force || process.env.PAPERCLIP_SERVICE_MANAGED === "1") return;
+  if (force || process.env.PAPERCLAW_SERVICE_MANAGED === "1") return;
   const detection = await detector({ instanceId });
   if (!detection.supported) return;
   const status = await detection.manager.status();

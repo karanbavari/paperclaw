@@ -1,4 +1,4 @@
-import type { AdapterConfigSchema } from "@paperclipai/adapter-utils";
+import type { AdapterConfigSchema } from "@kesarcloud/adapter-utils";
 
 import {
   DEFAULT_GRACE_SEC,
@@ -95,7 +95,7 @@ export function getConfigSchema(): AdapterConfigSchema {
         key: "paperclipApiUrl",
         label: "Paperclip API URL",
         type: "text",
-        hint: "Optional API base override. Defaults to PAPERCLIP_API_URL.",
+        hint: "Optional API base override. Defaults to PAPERCLAW_API_URL.",
       },
       {
         key: "promptTemplate",

@@ -104,12 +104,12 @@ test("accepts only credential-free HTTPS destinations and the dedicated prefix",
     validateProtocolEvalHistoryDestination({
       bucket: "paperclip-public-reports",
       prefix: "/runner-protocol-evals/",
-      publicBaseUrl: "https://reports.paperclip.ing/",
+      publicBaseUrl: "https://reports.paperclaw.ing/",
     }),
     {
       bucket: "paperclip-public-reports",
       prefix: "runner-protocol-evals",
-      publicBaseUrl: "https://reports.paperclip.ing",
+      publicBaseUrl: "https://reports.paperclaw.ing",
     },
   );
   assert.throws(

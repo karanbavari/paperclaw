@@ -8,7 +8,7 @@ import {
   budgetPolicies,
   companies,
   createDb,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

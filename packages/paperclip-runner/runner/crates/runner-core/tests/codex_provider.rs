@@ -97,7 +97,7 @@ fn provider_receives_the_isolated_codex_auth_home() {
         .arg("--exact")
         .arg("--ignored")
         .arg("--nocapture")
-        .env("PAPERCLIP_CODEX_AUTH_TEST_HOME", &directory)
+        .env("PAPERCLAW_CODEX_AUTH_TEST_HOME", &directory)
         .env("HOME", &directory)
         .env("CODEX_HOME", &directory)
         .status()
@@ -109,7 +109,7 @@ fn provider_receives_the_isolated_codex_auth_home() {
 #[test]
 #[ignore = "subprocess helper for provider_receives_the_isolated_codex_auth_home"]
 fn provider_receives_isolated_codex_auth_home_subprocess() {
-    let Some(directory) = std::env::var_os("PAPERCLIP_CODEX_AUTH_TEST_HOME").map(PathBuf::from)
+    let Some(directory) = std::env::var_os("PAPERCLAW_CODEX_AUTH_TEST_HOME").map(PathBuf::from)
     else {
         return;
     };
@@ -240,7 +240,7 @@ fn failed_provider_startup_is_persistently_fenced_before_another_process_can_res
             "--exact",
             "--ignored",
         ])
-        .env("PAPERCLIP_STARTUP_FENCE_TEST_DIR", &directory)
+        .env("PAPERCLAW_STARTUP_FENCE_TEST_DIR", &directory)
         .status()
         .unwrap();
     assert!(status.success());
@@ -381,7 +381,7 @@ fn failed_autonomous_restore_and_rollover_keep_their_exact_startup_origin() {
 #[test]
 #[ignore = "isolated process checks persisted failed-startup admission"]
 fn failed_provider_startup_new_process_subprocess() {
-    let directory = std::env::var_os("PAPERCLIP_STARTUP_FENCE_TEST_DIR")
+    let directory = std::env::var_os("PAPERCLAW_STARTUP_FENCE_TEST_DIR")
         .map(PathBuf::from)
         .expect("this helper requires its parent fixture");
     let mut executor =

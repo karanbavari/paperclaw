@@ -267,7 +267,7 @@ export const providers = [
       { title: "Agent and Teams identity", intro: "One Teams bot application represents exactly one Paperclip agent.", rows: [
         ["Paperclip agent", "Maya · Support engineer", "Change agent"],
         ["Teams bot", "Maya · app and avatar preview", "Preview"],
-        ["Messaging endpoint", "https://chat.paperclip.app/in/••••/teams", "Copy"]
+        ["Messaging endpoint", "https://chat.paperclaw.app/in/••••/teams", "Copy"]
       ]},
       { title: "Choose Microsoft environment", intro: "Tenant and identity model must be known before app registration.", rows: [
         ["Cloud", "Microsoft commercial cloud", "Change"],

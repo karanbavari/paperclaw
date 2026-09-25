@@ -199,7 +199,7 @@ export const REFERENCED_SOURCE_IGNORE_FAILURE_REASONS = {
  * subdirectory (`project-<projectId>` under the runtime root) the tree lands in.
  *
  * Additional sources are plain trees only. They never carry the anchor
- * workspace's git-history, overlay, or `.paperclip-runtime` preservation
+ * workspace's git-history, overlay, or `.paperclaw-runtime` preservation
  * semantics — those stay anchor-only.
  *
  * `ignoreResolution` is required so every construction site must supply it
@@ -632,7 +632,7 @@ function buildWorkspaceTarExtractCommand(input: {
 }): string {
   // The wipe must also preserve any in-flight sync scratch tarball at the
   // workspace root. A concurrent referenced-project upload stages a scratch
-  // tarball named `.paperclip-upload-<uuid>.tar` there. Without this preserve
+  // tarball named `.paperclaw-upload-<uuid>.tar` there. Without this preserve
   // term the wipe unlinks the in-flight tarball and the later extract fails.
   // The static pattern must agree with the daytona scratch prefix
   // `SCRATCH_PREFIX` in
@@ -641,7 +641,7 @@ function buildWorkspaceTarExtractCommand(input: {
   // shell passes it to `find -name` as a pattern (Security Conditions C1/C3).
   const wipe = input.wipeExceptNames
     ? ` && find ${shellQuote(input.workspaceRemoteDir)} -mindepth 1 -maxdepth 1 ` +
-      `${preserveFindArgs([...input.wipeExceptNames, ".paperclip-upload-*"])} -exec rm -rf -- {} +`
+      `${preserveFindArgs([...input.wipeExceptNames, ".paperclaw-upload-*"])} -exec rm -rf -- {} +`
     : "";
   return (
     `mkdir -p ${shellQuote(input.workspaceRemoteDir)}${wipe} && ` +
@@ -892,7 +892,7 @@ async function copyWorkspaceEntry(sourceRoot: string, targetRoot: string, relati
     return;
   }
 
-  const stagedTargetPath = buildUniqueStagingPath({ targetPath, suffix: ".paperclip-copy" });
+  const stagedTargetPath = buildUniqueStagingPath({ targetPath, suffix: ".paperclaw-copy" });
   await fs.rm(stagedTargetPath, { recursive: true, force: true }).catch(() => undefined);
   try {
     await fs.copyFile(sourcePath, stagedTargetPath, fsConstants.COPYFILE_FICLONE).catch(async () => {
@@ -1083,7 +1083,7 @@ export async function prepareSandboxManagedRuntime(input: {
   runtimeSpan?: RuntimeSpanRunner;
 }): Promise<PreparedSandboxManagedRuntime> {
   const workspaceRemoteDir = input.workspaceRemoteDir ?? input.spec.remoteCwd;
-  const runtimeRootDir = path.posix.join(workspaceRemoteDir, ".paperclip-runtime", input.adapterKey);
+  const runtimeRootDir = path.posix.join(workspaceRemoteDir, ".paperclaw-runtime", input.adapterKey);
   // A workspace directory that does not exist on this host has nothing to
   // stage, no files for ignore rules to govern, and nothing to restore into —
   // callers that only stage credential assets (the adapter env tests) hand
@@ -1161,7 +1161,7 @@ export async function prepareSandboxManagedRuntime(input: {
   const restoreExclude = mergeExcludes(
     SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES,
     [...GIT_ARCHIVE_EXCLUDES],
-    [".paperclip-runtime"],
+    [".paperclaw-runtime"],
     input.preserveAbsentOnRestore,
     input.workspaceExclude,
     gitIgnoredExcludes,
@@ -1235,7 +1235,7 @@ export async function prepareSandboxManagedRuntime(input: {
 
   await withTempDir("paperclip-sandbox-sync-", async (tempDir) => {
     const preservedNames = new Set([
-      ".paperclip-runtime",
+      ".paperclaw-runtime",
       ...(gitSnapshot ? [".git"] : []),
       ...(input.preserveAbsentOnRestore ?? []),
     ]);
@@ -1326,9 +1326,9 @@ export async function prepareSandboxManagedRuntime(input: {
           // current behavior and control flow.
           await runStepSpan("pack", async () => {
             // 1. git-history tar (git-backed workspace only). Both tar targets live under
-            //    `runtimeRootDir` (`.paperclip-runtime/<adapterKey>`). The git extract
-            //    wipes the target tree EXCEPT `.paperclip-runtime`, so the overlay tar,
-            //    which sits under `.paperclip-runtime`, survives to run its own extract.
+            //    `runtimeRootDir` (`.paperclaw-runtime/<adapterKey>`). The git extract
+            //    wipes the target tree EXCEPT `.paperclaw-runtime`, so the overlay tar,
+            //    which sits under `.paperclaw-runtime`, survives to run its own extract.
             if (gitSnapshot) {
               await emitRuntimeStatus(input.onRuntimeProgress, "git_sync", "Syncing git history to environment");
               const gitTarPath = path.join(tempDir, "git-workspace.tar");
@@ -1357,7 +1357,7 @@ export async function prepareSandboxManagedRuntime(input: {
                     await createTarballFromDirectory({
                       localDir: cloneDir,
                       archivePath: gitTarPath,
-                      exclude: [".paperclip-runtime"],
+                      exclude: [".paperclaw-runtime"],
                     });
                   },
                 );
@@ -1379,7 +1379,7 @@ export async function prepareSandboxManagedRuntime(input: {
                 command: buildWorkspaceTarExtractCommand({
                   workspaceRemoteDir,
                   remoteTar: remoteGitTar,
-                  wipeExceptNames: [".paperclip-runtime"],
+                  wipeExceptNames: [".paperclaw-runtime"],
                 }),
               });
               workspaceUploadBytes += (await fs.stat(gitTarPath)).size;
@@ -1537,7 +1537,7 @@ export async function prepareSandboxManagedRuntime(input: {
     // its OWN isolated remote directory (`project-<projectId>`). An additional
     // project rides one confined `syncIn` directory mapping — a native directory
     // transfer, or the base64-tar fallback — with source and target confined to
-    // their own roots. No workspace, git-history, or `.paperclip-runtime`
+    // their own roots. No workspace, git-history, or `.paperclaw-runtime`
     // semantics apply; those stay anchor-only. Per-project failure isolation: one
     // project's confinement or sync failure logs a warning and is skipped, and
     // the run plus the other projects continue. Only a project that stages
@@ -1701,7 +1701,7 @@ export async function prepareSandboxManagedRuntime(input: {
                   exclude: mergeExcludes(
                     SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES,
                     [...GIT_ARCHIVE_EXCLUDES],
-                    [".paperclip-runtime"],
+                    [".paperclaw-runtime"],
                     nestedExclude,
                   ),
                   entries: new Map([...baselineSnapshot!.entries]

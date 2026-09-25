@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionContext } from "@kesarcloud/adapter-utils";
 import { execute } from "./execute.js";
 
 type MockRunOptions = {
@@ -200,14 +200,14 @@ describe("cursor_cloud execute", () => {
     });
     expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).toMatchObject({
       EXTRA_FLAG: "1",
-      PAPERCLIP_RUN_ID: "run-heartbeat-1",
-      PAPERCLIP_TASK_ID: "issue-1",
-      PAPERCLIP_WAKE_REASON: "issue_commented",
-      PAPERCLIP_API_KEY: "paperclip-run-jwt",
+      PAPERCLAW_RUN_ID: "run-heartbeat-1",
+      PAPERCLAW_TASK_ID: "issue-1",
+      PAPERCLAW_WAKE_REASON: "issue_commented",
+      PAPERCLAW_API_KEY: "paperclip-run-jwt",
     });
     // When a run JWT is present the callback URL is retained so the worker can
     // authenticate its Paperclip API calls.
-    expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).toHaveProperty("PAPERCLIP_API_URL");
+    expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).toHaveProperty("PAPERCLAW_API_URL");
     expect(createMock.mock.calls[0]?.[0]?.cloud?.envVars).not.toHaveProperty("CURSOR_API_KEY");
 
     expect(result).toMatchObject({
@@ -284,14 +284,14 @@ describe("cursor_cloud execute", () => {
     await execute(ctx);
 
     const envVars = (createMock.mock.calls[0]?.[0]?.cloud?.envVars ?? {}) as Record<string, string>;
-    expect(envVars).not.toHaveProperty("PAPERCLIP_API_KEY");
-    expect(envVars).not.toHaveProperty("PAPERCLIP_API_URL");
-    expect(envVars).not.toHaveProperty("PAPERCLIP_API_BRIDGE_MODE");
+    expect(envVars).not.toHaveProperty("PAPERCLAW_API_KEY");
+    expect(envVars).not.toHaveProperty("PAPERCLAW_API_URL");
+    expect(envVars).not.toHaveProperty("PAPERCLAW_API_BRIDGE_MODE");
     // Informational Paperclip env (non-credential) still flows through.
     expect(envVars).toMatchObject({
-      PAPERCLIP_RUN_ID: "run-heartbeat-1",
-      PAPERCLIP_AGENT_ID: "agent-1",
-      PAPERCLIP_COMPANY_ID: "company-1",
+      PAPERCLAW_RUN_ID: "run-heartbeat-1",
+      PAPERCLAW_AGENT_ID: "agent-1",
+      PAPERCLAW_COMPANY_ID: "company-1",
     });
   });
 

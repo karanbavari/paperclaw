@@ -17,7 +17,7 @@ import {
   instanceSettings,
   issues,
   projects,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -986,7 +986,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
       })
       .returning();
 
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "test-server-token";
+    process.env.PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN = "test-server-token";
     try {
       const adopted = await svc.ensureLocalEnvironment(companyId);
 
@@ -1009,7 +1009,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
         .then((rows) => rows[0]);
       expect(reusedRow?.updatedAt.toISOString()).toBe(adoptedRow?.updatedAt.toISOString());
     } finally {
-      delete process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
+      delete process.env.PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN;
     }
   });
 

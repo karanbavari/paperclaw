@@ -2,13 +2,13 @@
  * Shared attachment content-type configuration.
  *
  * By default a curated set of image/document/text/media types are allowed. Set the
- * `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` environment variable to a
+ * `PAPERCLAW_ALLOWED_ATTACHMENT_TYPES` environment variable to a
  * comma-separated list of MIME types or wildcard patterns to expand the
  * allowed set for routes that use this allowlist.
  *
  * Examples:
- *   PAPERCLIP_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf
- *   PAPERCLIP_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf,text/*
+ *   PAPERCLAW_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf
+ *   PAPERCLAW_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf,text/*
  *
  * Supported pattern syntax:
  *   - Exact types:   "application/pdf"
@@ -148,7 +148,7 @@ export function isInlineAttachmentContentType(contentType: string): boolean {
 // ---------- Module-level singletons read once at startup ----------
 
 const allowedPatterns: string[] = parseAllowedTypes(
-  process.env.PAPERCLIP_ALLOWED_ATTACHMENT_TYPES,
+  process.env.PAPERCLAW_ALLOWED_ATTACHMENT_TYPES,
 );
 
 /** Convenience wrapper using the process-level allowed list. */
@@ -162,7 +162,7 @@ export function isAllowedContentType(contentType: string): boolean {
  * value, so an operator raises or lowers the limit in exactly one place.
  */
 export const MAX_ATTACHMENT_BYTES =
-  Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES) || 10 * 1024 * 1024;
+  Number(process.env.PAPERCLAW_ATTACHMENT_MAX_BYTES) || 10 * 1024 * 1024;
 
 const ATTACHMENT_SIZE_UNITS: readonly string[] = ["KB", "MB", "GB"];
 

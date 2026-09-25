@@ -6,7 +6,7 @@ import type {
   AdapterExecutionContext,
   AdapterEnvironmentCheck,
   AdapterRuntimeMcpServer,
-} from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils";
 import {
   adapterExecutionTargetUsesManagedHome,
   maybeRunSandboxInstallCommand,
@@ -14,9 +14,9 @@ import {
   runAdapterExecutionTargetShellCommand,
   type AdapterExecutionTarget,
   type AdapterExecutionTargetShellOptions,
-} from "@paperclipai/adapter-utils/execution-target";
-import { resolvePaperclipInstanceRootForAdapter } from "@paperclipai/adapter-utils/server-utils";
-import { shellQuote } from "@paperclipai/adapter-utils/ssh";
+} from "@kesarcloud/adapter-utils/execution-target";
+import { resolvePaperclipInstanceRootForAdapter } from "@kesarcloud/adapter-utils/server-utils";
+import { shellQuote } from "@kesarcloud/adapter-utils/ssh";
 import { classifyThrownErrorClass, logSandboxProbeDiagnostic } from "./probe-diagnostics.js";
 
 const SEEDED_SHARED_FILES = ["settings.json", "CLAUDE.md"] as const;
@@ -132,8 +132,8 @@ export function resolveManagedClaudeConfigSeedDir(
   companyId?: string,
 ): string {
   const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
-    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    homeDir: nonEmpty(env.PAPERCLAW_HOME) ?? undefined,
+    instanceId: nonEmpty(env.PAPERCLAW_INSTANCE_ID) ?? undefined,
     env,
   });
   return companyId
@@ -147,8 +147,8 @@ export function resolveManagedClaudeRuntimeStateDir(
   agentId: string,
 ): string {
   const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
-    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    homeDir: nonEmpty(env.PAPERCLAW_HOME) ?? undefined,
+    instanceId: nonEmpty(env.PAPERCLAW_INSTANCE_ID) ?? undefined,
     env,
   });
   return path.join(instanceRoot, "companies", companyId, "agents", agentId, "claude-runtime");
@@ -324,7 +324,7 @@ export async function prepareSandboxClaudeProbeRuntime(input: {
       });
       const runtimeRootDir =
         preparedRuntime.runtimeRootDir ??
-        path.posix.join(managedRemoteCwd, ".paperclip-runtime", "claude");
+        path.posix.join(managedRemoteCwd, ".paperclaw-runtime", "claude");
       const remoteClaudeConfigSeedDir =
         preparedRuntime.assetDirs["config-seed"] ??
         path.posix.join(runtimeRootDir, "config-seed");

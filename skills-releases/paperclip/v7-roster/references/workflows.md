@@ -111,17 +111,17 @@ Use this when validating Paperclip itself (assignment flow, checkouts, run visib
 
 ```bash
 npx paperclipai issue create \
-  --company-id "$PAPERCLIP_COMPANY_ID" \
+  --company-id "$PAPERCLAW_COMPANY_ID" \
   --title "Self-test: assignment/watch flow" \
   --description "Temporary validation issue" \
   --status todo \
-  --assignee-agent-id "$PAPERCLIP_AGENT_ID"
+  --assignee-agent-id "$PAPERCLAW_AGENT_ID"
 ```
 
 2. Trigger and watch a heartbeat for that assignee:
 
 ```bash
-npx paperclipai heartbeat run --agent-id "$PAPERCLIP_AGENT_ID"
+npx paperclipai heartbeat run --agent-id "$PAPERCLAW_AGENT_ID"
 ```
 
 3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted:
@@ -138,4 +138,4 @@ npx paperclipai issue update <issue-id> --assignee-agent-id <other-agent-id> --s
 
 5. Cleanup: mark temporary issues done/cancelled with a clear note.
 
-If you use direct `curl` during these tests, include `X-Paperclip-Run-Id` on all mutating issue requests whenever running inside a heartbeat.
+If you use direct `curl` during these tests, include `X-PaperClaw-Run-Id` on all mutating issue requests whenever running inside a heartbeat.

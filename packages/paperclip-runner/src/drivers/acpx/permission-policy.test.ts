@@ -94,7 +94,7 @@ describe("ACPX permission policy", () => {
         {
           toolCall: {
             _meta: {
-              claudeCode: { toolName: "mcp.paperclip.get_task_context" },
+              claudeCode: { toolName: "mcp.paperclaw.get_task_context" },
             },
           },
         },

@@ -4,6 +4,8 @@ import type { DirectChatDetail, DirectChatMessage } from "@kesarcloud/shared";
 import { AlertCircle, Loader2, MessageCircle, Send } from "lucide-react";
 import { directChatApi } from "../api/directChat";
 import { useCompany } from "../context/CompanyContext";
+import { useOptionalBreadcrumbs } from "../context/BreadcrumbContext";
+import { ProductPage, ProductPageHeader, ProductWorkspace } from "../components/ProductPage";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, formatDateTime, relativeTime } from "../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,7 +30,7 @@ function MessageBubble({ message, chat }: { message: DirectChatMessage; chat: Di
   const failed = message.status === "failed";
 
   return (
-    <div className={cn("flex gap-3 px-5 py-4", isBoard && "bg-muted/30")}>
+    <div className={cn("flex gap-3 border-b border-border/70 px-4 py-4 last:border-b-0 sm:px-5", isBoard && "bg-muted/30")}>
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground",
@@ -82,7 +84,7 @@ function EmptyDirectChat() {
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted">
           <MessageCircle className="h-5 w-5 text-muted-foreground" />
         </div>
-        <h1 className="mt-4 text-base font-semibold">Direct Chat</h1>
+        <h2 className="mt-4 text-base font-semibold">No messages yet</h2>
         <p className="mt-1 text-sm text-muted-foreground">Start the first Board and CEO exchange.</p>
       </div>
     </div>
@@ -90,6 +92,12 @@ function EmptyDirectChat() {
 }
 
 export function DirectChat() {
+  const breadcrumbs = useOptionalBreadcrumbs();
+  const setBreadcrumbs = breadcrumbs?.setBreadcrumbs;
+
+  useEffect(() => {
+    setBreadcrumbs?.([{ label: "Direct Chat" }]);
+  }, [setBreadcrumbs]);
   const { selectedCompanyId } = useCompany();
   const queryClient = useQueryClient();
   const [composer, setComposer] = useState("");
@@ -167,16 +175,21 @@ export function DirectChat() {
   const ceo = chat.ceoAgent;
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <ProductPage>
+      <ProductPageHeader
+        title="Direct Chat"
+        description="A focused conversation between the Board and the company CEO."
+        icon={MessageCircle}
+      />
+    <ProductWorkspace className="flex-col">
       <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
             <AgentIcon icon={ceo?.icon} className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-base font-semibold">Direct Chat</h1>
+            <h2 className="truncate text-sm font-semibold">{ceo?.name ?? "CEO"}</h2>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="truncate">{ceo?.name ?? "CEO"}</span>
               {ceo?.title || ceo?.role ? <span>{ceo.title ?? ceo.role}</span> : null}
               {chat.latestMessageAt ? <span>{relativeTime(chat.latestMessageAt)}</span> : null}
             </div>
@@ -187,7 +200,7 @@ export function DirectChat() {
         </Badge>
       </div>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto" role="log" aria-label="Direct Chat messages">
         {chat.messages.length === 0 ? (
           <EmptyDirectChat />
         ) : (
@@ -203,8 +216,9 @@ export function DirectChat() {
             {messageMutation.error instanceof Error ? messageMutation.error.message : "Message failed."}
           </div>
         ) : null}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Textarea
+            aria-label="Message the CEO"
             value={composer}
             onChange={(event) => setComposer(event.target.value)}
             onKeyDown={handleComposerKeyDown}
@@ -221,6 +235,7 @@ export function DirectChat() {
           </Button>
         </div>
       </div>
-    </div>
+    </ProductWorkspace>
+    </ProductPage>
   );
 }

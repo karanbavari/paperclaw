@@ -3,26 +3,26 @@ import { createReadStream } from "node:fs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { environmentLeases, heartbeatRuns } from "@paperclipai/db";
-import type { EnvironmentLease } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import { environmentLeases, heartbeatRuns } from "@kesarcloud/db";
+import type { EnvironmentLease } from "@kesarcloud/shared";
 import {
   prepareAdapterExecutionTargetRuntime,
   type AdapterExecutionTarget,
   type PreparedAdapterExecutionTargetRuntime,
-} from "@paperclipai/adapter-utils/execution-target";
-import type { GitWorkspaceSnapshot } from "@paperclipai/adapter-utils/git-workspace-sync";
+} from "@kesarcloud/adapter-utils/execution-target";
+import type { GitWorkspaceSnapshot } from "@kesarcloud/adapter-utils/git-workspace-sync";
 import {
   directorySnapshotSha256,
   parseDirectorySnapshot,
   serializeDirectorySnapshot,
   type DirectorySnapshot,
   type SerializedDirectorySnapshot,
-} from "@paperclipai/adapter-utils/workspace-restore-merge";
+} from "@kesarcloud/adapter-utils/workspace-restore-merge";
 import type {
   WorkspaceDurableSeedPaths,
   WorkspaceInboundMode,
-} from "@paperclipai/adapter-utils/sandbox-managed-runtime";
+} from "@kesarcloud/adapter-utils/sandbox-managed-runtime";
 import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
 import { parseObject } from "../../adapters/utils.js";
 import type { NativeRestartRecoveryClaim } from "./native-restart-recovery.js";
@@ -355,7 +355,7 @@ function parseGitSnapshot(
     const seen = new Set<string>();
     for (const raw of candidate.repositories) {
       const repo = parseObject(raw);
-      if (typeof repo.path !== "string" || !/^\.paperclip-repositories\/[a-zA-Z0-9_-]+$/.test(repo.path) || seen.has(repo.path)) return undefined;
+      if (typeof repo.path !== "string" || !/^\.paperclaw-repositories\/[a-zA-Z0-9_-]+$/.test(repo.path) || seen.has(repo.path)) return undefined;
       const snapshot = parseGitSnapshot(repo.snapshot, true);
       if (!snapshot) return undefined;
       seen.add(repo.path);
@@ -591,7 +591,7 @@ async function writeRemoteStamp(input: {
   }
   const runtimeDir = path.posix.join(
     input.target.remoteCwd,
-    ".paperclip-runtime",
+    ".paperclaw-runtime",
     "paperclip-runner",
   );
   const stampPath = path.posix.join(runtimeDir, REMOTE_STAMP_NAME);
@@ -622,7 +622,7 @@ async function remoteStampMatches(input: {
   if (!input.target.runner) return false;
   const stampPath = path.posix.join(
     input.target.remoteCwd,
-    ".paperclip-runtime",
+    ".paperclaw-runtime",
     "paperclip-runner",
     REMOTE_STAMP_NAME,
   );
@@ -713,7 +713,7 @@ async function finalizePreparedRuntime(input: {
 }): Promise<NativeWorkspaceSyncReference> {
   await input.runtime.restoreWorkspace();
   const finalSnapshot =
-    await import("@paperclipai/adapter-utils/workspace-restore-merge").then(
+    await import("@kesarcloud/adapter-utils/workspace-restore-merge").then(
       ({ captureDirectorySnapshot }) =>
         captureDirectorySnapshot(input.descriptor.binding.localCwd, {
           exclude: input.runtime.workspaceSyncSnapshot?.baseline.exclude ?? [],

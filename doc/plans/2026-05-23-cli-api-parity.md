@@ -39,7 +39,7 @@ Current top-level command families:
 Current auth behavior:
 
 - `auth login` creates a CLI auth challenge, opens the board approval URL, and stores the approved board token locally.
-- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`.
+- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `PAPERCLAW_API_URL`, `PAPERCLAW_COMPANY_ID`, `PAPERCLAW_AGENT_ID`, and `PAPERCLAW_API_KEY`.
 - Every client command can accept `--api-base`, `--api-key`, `--context`, `--profile`, `--company-id`, and `--json`.
 
 Main limitation:
@@ -69,7 +69,7 @@ The CLI must always know which Paperclip API it is operating against. This is es
 Resolution order:
 
 1. Explicit `--api-base <url>`.
-2. `PAPERCLIP_API_URL`.
+2. `PAPERCLAW_API_URL`.
 3. Selected context profile `apiBase`.
 4. Repo-local or instance config port, when available.
 5. Default `http://localhost:3100`.
@@ -121,7 +121,7 @@ Expected profile shape should evolve from today's context:
       "companyId": "company-id",
       "persona": "agent",
       "agentId": "agent-id",
-      "apiKeyEnvVarName": "PAPERCLIP_API_KEY"
+      "apiKeyEnvVarName": "PAPERCLAW_API_KEY"
     }
   }
 }
@@ -196,7 +196,7 @@ paperclipai agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
 Recommended safer variants:
 
 ```sh
-paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
+paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLAW_API_KEY "Prompt here"
 paperclipai agent prompt --profile my-agent "Prompt here"
 paperclipai board prompt --agent <agent-name-or-id> "Prompt here"
 ```

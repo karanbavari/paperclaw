@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { readZipArchive } from "@paperclipai/shared/portability-zip";
+import { readZipArchive } from "@kesarcloud/shared/portability-zip";
 import {
   CHUNKED_IMPORT_THRESHOLD_BYTES,
   IMPORT_TRANSFER_PART_SIZE_BYTES,
@@ -346,9 +346,9 @@ describe("company import command over the chunked transfer path", () => {
 
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_COMPANY_ID;
+    delete process.env.PAPERCLAW_API_URL;
+    delete process.env.PAPERCLAW_API_KEY;
+    delete process.env.PAPERCLAW_COMPANY_ID;
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);

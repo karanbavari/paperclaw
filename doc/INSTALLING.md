@@ -58,13 +58,13 @@ instead of `master` and download it first. That immutable GitHub URL provides a
 separate delivery path from `paperclip.ing`; do not treat a checksum served by
 the same origin as the artifact as an independent trust anchor.
 
-Each installer flag also has a `PAPERCLIP_INSTALL_*` environment-variable
+Each installer flag also has a `PAPERCLAW_INSTALL_*` environment-variable
 equivalent. This helps where passing arguments through a pipe is awkward.
 
 Codex ACP workspace sessions enable networking so agents can report task outcomes.
 To disable it explicitly, set `extraArgs` to
 `["-c", "sandbox_workspace_write.network_access=false"]`, or set
-`env.PAPERCLIP_CODEX_ACP_NETWORK_ACCESS="false"`. Execution-target network denial
+`env.PAPERCLAW_CODEX_ACP_NETWORK_ACCESS="false"`. Execution-target network denial
 also remains enforced. Read-only ACP mode remains read-only.
 
 ## Node runtime used by background services
@@ -105,7 +105,7 @@ the adapter configuration documentation.
 Managed code is separate from instance data:
 
 ```text
-~/.paperclip/cli/
+~/.paperclaw/cli/
 ├── install.json
 ├── current -> installs/npm/2026.720.0
 └── installs/
@@ -118,7 +118,7 @@ Managed code is separate from instance data:
 The `paperclipai` shim remains stable while `current` switches atomically
 between complete payloads. Paperclip keeps the two previous managed payloads
 for rollback. Configuration, databases, uploads, logs, secrets, and workspaces
-remain under `~/.paperclip/instances/` and are not stored inside CLI payloads.
+remain under `~/.paperclaw/instances/` and are not stored inside CLI payloads.
 
 If `~/.local/bin` is not on `PATH`, the installer offers to update the relevant
 shell startup file when running interactively. Non-interactive installs print
@@ -301,6 +301,6 @@ paperclipai uninstall
 ```
 
 `paperclipai uninstall` removes the managed shim, manifest, and CLI payloads.
-It deliberately preserves `~/.paperclip/instances/`, including configuration,
+It deliberately preserves `~/.paperclaw/instances/`, including configuration,
 databases, uploads, logs, secrets, backups, and workspaces. Back up and remove
 that data separately only when you intend to delete the Paperclip instance.

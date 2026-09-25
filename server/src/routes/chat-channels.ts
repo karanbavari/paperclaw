@@ -3,7 +3,7 @@ import {
   type Request as ExpressRequest,
   type Response as ExpressResponse,
 } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   CHAT_PROVIDERS,
   configureChatEndpointSchema,
@@ -18,7 +18,7 @@ import {
   resolveChatPublicationSchema,
   updateChatEndpointSchema,
   type ChatProvider,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { validate } from "../middleware/validate.js";
 import {
   chatChannelService,

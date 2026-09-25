@@ -1,6 +1,6 @@
-import type { ActivityEvent } from "@paperclipai/shared";
+import type { ActivityEvent } from "@kesarcloud/shared";
 import { useProjectCreatedItems } from "@/hooks/useProjectCreatedItems";
-import { requiresExecutionReconciliation } from "@paperclipai/shared";
+import { requiresExecutionReconciliation } from "@kesarcloud/shared";
 import { TaskChatExpansionState } from "@/components/task-chat/expansion-state";
 import { TaskChatScrollReady } from "@/components/task-chat/scroll-navigation";
 import {
@@ -78,7 +78,7 @@ import type {
   FeedbackVoteValue,
   IssueDocument,
   IssueThreadInteraction,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   TaskChatThreadView,
   taskChatContentKey,

@@ -13,7 +13,7 @@ import {
   issueComments,
   issueThreadInteractions,
   issues,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { initializeRunIdentity, reserveSteeredIdentity, reconcileSteeredIdentity } from "../run-identity.js";
 import { documentService } from "../documents.js";
@@ -151,9 +151,9 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("preserves direct-chat file tools across the guarded API rollout", () => {
-    const previousEnabled = process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
+    const previousEnabled = process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED;
     const previousCompanies =
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+      process.env.PAPERCLAW_RUNNER_API_TOOLS_COMPANY_IDS;
     const createAuthority = () =>
       new PaperclipRunnerToolAuthority(db, {
         companyId,
@@ -172,8 +172,8 @@ describe("PaperclipRunnerToolAuthority", () => {
     ];
 
     try {
-      delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
-      delete process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+      delete process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED;
+      delete process.env.PAPERCLAW_RUNNER_API_TOOLS_COMPANY_IDS;
       const disabledNames = createAuthority()
         .definitions()
         .map((tool) => tool.name);
@@ -183,8 +183,8 @@ describe("PaperclipRunnerToolAuthority", () => {
       expect(disabledNames).not.toContain("search_api");
       expect(disabledNames).not.toContain("call_api");
 
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "true";
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
+      process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED = "true";
+      process.env.PAPERCLAW_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
       const enabledNames = createAuthority()
         .definitions()
         .map((tool) => tool.name);
@@ -197,14 +197,14 @@ describe("PaperclipRunnerToolAuthority", () => {
       );
     } finally {
       if (previousEnabled === undefined) {
-        delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
+        delete process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED;
       } else {
-        process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = previousEnabled;
+        process.env.PAPERCLAW_RUNNER_API_TOOLS_ENABLED = previousEnabled;
       }
       if (previousCompanies === undefined) {
-        delete process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+        delete process.env.PAPERCLAW_RUNNER_API_TOOLS_COMPANY_IDS;
       } else {
-        process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
+        process.env.PAPERCLAW_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
       }
     }
   });

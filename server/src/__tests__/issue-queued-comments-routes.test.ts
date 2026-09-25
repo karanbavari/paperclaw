@@ -17,7 +17,7 @@ import {
   issueRecoveryActions,
   issues,
   runIdentityContexts,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";

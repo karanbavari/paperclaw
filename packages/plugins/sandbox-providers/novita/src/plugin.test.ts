@@ -74,19 +74,19 @@ describe("Novita sandbox provider plugin", () => {
     expect(command).toContain("cd '/workspace/project'");
     expect(command).toContain("export MESSAGE='hello world';");
     expect(command).toContain("'node' '-e' 'console.log(process.env.MESSAGE)'");
-    expect(command).toContain("printf '%s' 'input body' > '/tmp/.paperclip-stdin-");
-    expect(command).toMatch(/< '\/tmp\/\.paperclip-stdin-[^']+'/);
-    expect(command).toMatch(/rm -f '\/tmp\/\.paperclip-stdin-[^']+'/);
+    expect(command).toContain("printf '%s' 'input body' > '/tmp/.paperclaw-stdin-");
+    expect(command).toMatch(/< '\/tmp\/\.paperclaw-stdin-[^']+'/);
+    expect(command).toMatch(/rm -f '\/tmp\/\.paperclaw-stdin-[^']+'/);
     expect(command).toContain("exit $status");
   });
 
   it("does not use a heredoc delimiter for stdin", () => {
     const command = buildShellCommand({
       command: "cat",
-      stdin: "before\nPAPERCLIP_STDIN\nafter",
+      stdin: "before\nPAPERCLAW_STDIN\nafter",
     });
 
-    expect(command).toContain("before\nPAPERCLIP_STDIN\nafter");
+    expect(command).toContain("before\nPAPERCLAW_STDIN\nafter");
     expect(command).not.toContain("<<");
   });
 
@@ -99,14 +99,14 @@ describe("Novita sandbox provider plugin", () => {
       command: "cat",
       stdin: "second",
     });
-    const firstPath = first.match(/\/tmp\/\.paperclip-stdin-[^']+/)?.[0];
-    const secondPath = second.match(/\/tmp\/\.paperclip-stdin-[^']+/)?.[0];
+    const firstPath = first.match(/\/tmp\/\.paperclaw-stdin-[^']+/)?.[0];
+    const secondPath = second.match(/\/tmp\/\.paperclaw-stdin-[^']+/)?.[0];
 
     expect(firstPath).toBeTruthy();
     expect(secondPath).toBeTruthy();
     expect(firstPath).not.toBe(secondPath);
-    expect(first).not.toContain("/tmp/.paperclip-stdin <<");
-    expect(second).not.toContain("/tmp/.paperclip-stdin <<");
+    expect(first).not.toContain("/tmp/.paperclaw-stdin <<");
+    expect(second).not.toContain("/tmp/.paperclaw-stdin <<");
   });
 
   it("rejects unsafe environment variable keys", () => {

@@ -2,15 +2,15 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext, AdapterInvocationMeta } from "@paperclipai/adapter-utils";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterExecutionContext, AdapterInvocationMeta } from "@kesarcloud/adapter-utils";
+import { runChildProcess } from "@kesarcloud/adapter-utils/server-utils";
 
 // Every test in this file needs a real teardown, so the mock below delegates
 // to the actual factory by default. Only the wiring test further down reads
 // the call arguments; it does not change this behavior.
 const mockCreateWorkspaceRestoreTeardown = vi.hoisted(() => vi.fn());
 
-vi.mock("@paperclipai/adapter-utils/workspace-restore-teardown", async (importOriginal) => {
+vi.mock("@kesarcloud/adapter-utils/workspace-restore-teardown", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   mockCreateWorkspaceRestoreTeardown.mockImplementation(
     actual.createWorkspaceRestoreTeardown as (...args: unknown[]) => unknown,
@@ -549,7 +549,7 @@ describe("gemini_local ACP lane", () => {
     // C2 — HOME repointed onto the in-sandbox managed runtime root, distinct from
     // the host home.
     expect(remappedHome).not.toBe(hostHome);
-    expect(remappedHome).toContain(".paperclip-runtime");
+    expect(remappedHome).toContain(".paperclaw-runtime");
     // Seeded: skills copied into $HOME/.gemini/skills (local runner = host FS).
     await expect(
       fs.readFile(path.join(remappedHome, ".gemini", "skills", "review", "SKILL.md"), "utf8"),
@@ -735,7 +735,7 @@ describe("gemini_local ACP lane", () => {
 
     expect(result.exitCode).toBe(0);
     const remappedHome = String(meta[0]?.env?.HOME ?? "");
-    expect(remappedHome).toContain(".paperclip-runtime");
+    expect(remappedHome).toContain(".paperclaw-runtime");
     // No settings.json auth selector is written, because a host-only key is not a
     // reliable in-sandbox credential signal.
     await expect(

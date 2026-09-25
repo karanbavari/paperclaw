@@ -12,7 +12,7 @@ import {
   measureStartupStep,
   runWithoutActiveStep,
   SANDBOX_STARTUP_SPAN_ATTRS,
-} from "@paperclipai/adapter-utils/acpx-engine/startup-timing";
+} from "@kesarcloud/adapter-utils/acpx-engine/startup-timing";
 import {
   DEFAULT_SANDBOX_REMOTE_CWD,
   resolveEnvironmentExecutionTarget,
@@ -98,8 +98,8 @@ function recordParentContext() {
 describe("resolveEnvironmentExecutionTarget", () => {
   beforeEach(() => {
     mockResolveEnvironmentDriverConfigForRuntime.mockReset();
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_RUNTIME_API_URL;
+    delete process.env.PAPERCLAW_API_URL;
+    delete process.env.PAPERCLAW_RUNTIME_API_URL;
   });
 
   it("uses a bounded default cwd for sandbox targets when lease metadata omits remoteCwd", async () => {
@@ -1297,7 +1297,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
   });
 
   // Fire one run-time exec from a bridge continuation that runs after the step
-  // span ended. Each bridge step (`bridge.paperclip`, `bridge.process-session`)
+  // span ended. Each bridge step (`bridge.paperclaw`, `bridge.process-session`)
   // starts long-lived work with `criticalPath: false`. The bridge boundary wraps
   // that long-lived work in `runWithoutActiveStep`, exactly as modeled here, so
   // the continuation reads an empty active step. Return the recorded exec span.
@@ -1352,7 +1352,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
   });
 
   it("opens an unparented exec span for a paperclip bridge continuation", async () => {
-    const execSpan = await runContinuationExec("bridge.paperclip", { wrap: true });
+    const execSpan = await runContinuationExec("bridge.paperclaw", { wrap: true });
     expect(execSpan).toBeTruthy();
     expect(execSpan!.parent).toBeNull();
   });

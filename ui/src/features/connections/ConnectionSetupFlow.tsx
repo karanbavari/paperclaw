@@ -32,7 +32,7 @@ import type {
   ToolConnectionCredentialSource,
   ToolConnectionCreateCapabilities,
   ToolOAuthStartResult,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   aiConnectionMetadataSchema,
   connectionMethodAcceptsCustomerOAuthClient,
@@ -44,7 +44,7 @@ import {
   getAvailableConnectionMethods,
   getRecommendedConnectionMethod,
   isGoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -500,7 +500,7 @@ export function readConnectionIntentOAuthOutcome(
 }
 
 export interface ConnectionSetupFlowProps {
-  aiConnection?: import("@paperclipai/shared").AiConnectionBinding;
+  aiConnection?: import("@kesarcloud/shared").AiConnectionBinding;
   /** Provider-specific authentication inside the existing access/setup shell. Undefined retains the standard credential form. */
   renderCredentialStep?: (context: { app: AppDefinition; name: string; grantKind: ConnectionGrantKind; agentIds: string[]; allAgents: boolean; onBack: () => void }) => ReactNode;
   byoOnly?: boolean;

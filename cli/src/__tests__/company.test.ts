@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CompanyPortabilityPreviewResult } from "@paperclipai/shared";
+import type { CompanyPortabilityPreviewResult } from "@kesarcloud/shared";
 import {
   buildCompanyDashboardUrl,
   buildDefaultImportAdapterOverrides,
@@ -69,9 +69,9 @@ describe("company CLI commands", () => {
 
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_COMPANY_ID;
+    delete process.env.PAPERCLAW_API_URL;
+    delete process.env.PAPERCLAW_API_KEY;
+    delete process.env.PAPERCLAW_COMPANY_ID;
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -675,7 +675,7 @@ describe("import selection catalog", () => {
       files: {
         "COMPANY.md": "# Source Co",
         "README.md": "# Readme",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".paperclaw.yaml": "schema: paperclaw/v1\n",
         "images/company-logo.png": {
           encoding: "base64",
           data: "",
@@ -711,7 +711,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".paperclaw.yaml");
     expect(selectedFiles).toContain("projects/alpha/PROJECT.md");
     expect(selectedFiles).toContain("projects/alpha/notes.md");
     expect(selectedFiles).not.toContain("projects/alpha/issues/kickoff/TASK.md");
@@ -773,7 +773,7 @@ describe("import selection catalog", () => {
         envInputs: [],
       },
       files: {
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".paperclaw.yaml": "schema: paperclaw/v1\n",
       },
       envInputs: [],
       warnings: [],
@@ -791,7 +791,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".paperclaw.yaml");
     expect(selectedFiles).toHaveLength(1);
   });
 });

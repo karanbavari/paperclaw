@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInputV1 } from "./native-execution.js";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  PAPERCLAW_EXECUTION_PROMPT,
+  PAPERCLAW_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   composeNativeSystemInstructions,
   nativeRuntimePromptDigest,
@@ -58,7 +58,7 @@ describe("NativeExecutionInputV1", () => {
   it("parses v3 immutable runtime context without changing the model task envelope", () => {
     const digest = "0".repeat(64);
     const context = {
-      prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+      prompt: { revision: PAPERCLAW_EXECUTION_PROMPT_REVISION, text: PAPERCLAW_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
       instructions: {
         entryPath: "AGENTS.md",
         bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: "/runtime/instructions", fileCount: 2, totalBytes: 42 },
@@ -83,9 +83,9 @@ describe("NativeExecutionInputV1", () => {
     expect(envelope.task).toEqual(buildNativeModelEnvelope(input).task);
     expect(envelope.completionContract).toEqual(buildNativeModelEnvelope(input).completionContract);
     expect(JSON.stringify(envelope)).not.toContain("runtimeContext");
-    expect(JSON.stringify(envelope)).not.toContain(PAPERCLIP_EXECUTION_PROMPT);
+    expect(JSON.stringify(envelope)).not.toContain(PAPERCLAW_EXECUTION_PROMPT);
     expect(composeNativeSystemInstructions(parsed.runtimeContext, "Follow sibling.md")).toBe(
-      `${PAPERCLIP_EXECUTION_PROMPT}\n\nFollow sibling.md\n\nRead-only instruction sibling root: /runtime/instructions`,
+      `${PAPERCLAW_EXECUTION_PROMPT}\n\nFollow sibling.md\n\nRead-only instruction sibling root: /runtime/instructions`,
     );
     expect(canonicalNativeRuntimeContextDigest({
       ...context,
@@ -110,7 +110,7 @@ describe("NativeExecutionInputV1", () => {
   it("rejects runtime-context traversal and aggregate digest drift", () => {
     const digest = "0".repeat(64);
     const context = {
-      prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+      prompt: { revision: PAPERCLAW_EXECUTION_PROMPT_REVISION, text: PAPERCLAW_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
       instructions: {
         entryPath: "../AGENTS.md",
         bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: "/runtime/instructions", fileCount: 1, totalBytes: 1 },
@@ -146,7 +146,7 @@ describe("NativeExecutionInputV1", () => {
     );
     expect(() => parseNativeExecutionInput({
       ...input,
-      workspace: { ...input.workspace, env: { PAPERCLIP_API_KEY: "canary" } },
+      workspace: { ...input.workspace, env: { PAPERCLAW_API_KEY: "canary" } },
     })).toThrow("unknown field env");
   });
 

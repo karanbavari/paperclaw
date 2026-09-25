@@ -49,6 +49,7 @@ import { marketplaceApi } from "../api/marketplace";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { PluginSetupWizard } from "@/components/PluginSetupWizard";
+import { ProductPage, ProductPageHeader, ProductSection } from "../components/ProductPage";
 
 type MarketplaceTab = "packs" | "skills" | "plugins";
 
@@ -363,7 +364,7 @@ export function Marketplace() {
   const hasMarketplaceFilter = Boolean(search.trim() || category);
   const emptyMarketplaceDescription = hasMarketplaceFilter
     ? "Try a different search or category."
-    : "Start the private marketplace service on port 8086, or set PAPERCLAW_MARKETPLACE_URL to your catalog API.";
+    : "The catalog is empty right now. Check the marketplace connection and try again.";
   const selectedCategoryName = category
     ? categories.find((item) => item.slug === category)?.name ?? "Selected category"
     : "All categories";
@@ -379,16 +380,13 @@ export function Marketplace() {
   const isFetchingPage = activeListQuery.isFetching && !activeListQuery.isLoading;
 
   return (
-    <div className="min-h-[calc(100vh-6rem)]">
-      <div className="border-b border-border px-6 py-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-lg font-semibold">Marketplace</h1>
-            <p className="text-sm text-muted-foreground">
-              Install capability packs, reusable skills, and first-party plugins for this PaperClaw instance.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+    <ProductPage>
+      <ProductPageHeader
+        title="Marketplace"
+        description="Discover capability packs, reusable skills, and plugins for your company."
+        icon={Store}
+        actions={
+          <>
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as MarketplaceTab)}>
               <TabsList>
                 <TabsTrigger value="packs">Packs</TabsTrigger>
@@ -397,20 +395,23 @@ export function Marketplace() {
               </TabsList>
             </Tabs>
             <Badge variant="outline">{visibleCount} visible</Badge>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      <div className="grid min-h-[calc(100vh-11rem)] grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-b border-border p-4 lg:border-b-0 lg:border-r">
-          <div className="border-b border-border pb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <ProductSection>
+      <div className="grid min-w-0 grid-cols-1 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="min-w-0 border-b border-border bg-muted/20 p-4 lg:border-b-0 lg:border-r">
+          <div className="text-sm font-semibold text-foreground">
             Categories
           </div>
-          <div className="mt-4 space-y-1">
+          <div className="mt-3 flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
             <button
+              type="button"
+              aria-pressed={category === null}
               className={cn(
-                "flex w-full items-center justify-between px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/50",
-                category === null && "bg-accent text-foreground",
+                "flex min-w-max items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-full",
+                category === null && "bg-accent font-medium text-foreground",
               )}
               onClick={() => setCategory(null)}
             >
@@ -420,9 +421,11 @@ export function Marketplace() {
             {categories.map((item) => (
               <button
                 key={item.slug}
+                type="button"
+                aria-pressed={category === item.slug}
                 className={cn(
-                  "flex w-full items-center justify-between px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/50",
-                  category === item.slug && "bg-accent text-foreground",
+                  "flex min-w-max items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-full lg:min-w-0",
+                  category === item.slug && "bg-accent font-medium text-foreground",
                 )}
                 onClick={() => setCategory(item.slug)}
               >
@@ -433,16 +436,17 @@ export function Marketplace() {
           </div>
         </aside>
 
-        <main className="min-w-0">
-          <div className="border-b border-border px-6 py-4">
+        <section className="min-w-0">
+          <div className="border-b border-border p-4 sm:p-5">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex min-w-0 flex-1 items-center gap-2 border border-input bg-background px-3">
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="relative min-w-0 flex-1 xl:max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  aria-label="Search marketplace"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={activeTab === "skills" ? "Search marketplace skills" : activeTab === "plugins" ? "Search marketplace plugins" : "Search capability packs"}
-                  className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+                  className="w-full pl-9"
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -451,7 +455,7 @@ export function Marketplace() {
                   value={String(pageSize)}
                   onValueChange={(value) => setPageSize(Number(value) as (typeof PAGE_SIZE_OPTIONS)[number])}
                 >
-                  <SelectTrigger size="sm" className="w-[132px]">
+                  <SelectTrigger size="sm" className="w-[132px]" aria-label="Items per page">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -465,9 +469,8 @@ export function Marketplace() {
                 <div className="flex items-center gap-1">
                   <Button
                     type="button"
-                    size="icon"
+                    size="icon-sm"
                     variant="outline"
-                    className="h-8 w-8"
                     onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
                     disabled={pageIndex === 0 || activeListQuery.isLoading}
                     aria-label="Previous page"
@@ -477,9 +480,8 @@ export function Marketplace() {
                   <span className="min-w-16 text-center text-xs text-muted-foreground">Page {pageIndex + 1}</span>
                   <Button
                     type="button"
-                    size="icon"
+                    size="icon-sm"
                     variant="outline"
-                    className="h-8 w-8"
                     onClick={goToNextPage}
                     disabled={!hasNextPage || activeListQuery.isLoading}
                     aria-label="Next page"
@@ -504,7 +506,7 @@ export function Marketplace() {
           ) : activeTab === "packs" && packs.length === 0 ? (
             <EmptyState label="No capability packs found" description={emptyMarketplaceDescription} />
           ) : activeTab === "skills" ? (
-            <div className={cn("grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", isFetchingPage && "opacity-70")}>
+            <div className={cn("grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3", isFetchingPage && "opacity-70")}>
               {skills.map((skill) => (
                 <SkillCard
                   key={skill.id}
@@ -515,7 +517,7 @@ export function Marketplace() {
               ))}
             </div>
           ) : activeTab === "plugins" ? (
-            <div className={cn("grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", isFetchingPage && "opacity-70")}>
+            <div className={cn("grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3", isFetchingPage && "opacity-70")}>
               {plugins.map((plugin) => (
                 <PluginCard
                   key={plugin.id}
@@ -526,7 +528,7 @@ export function Marketplace() {
               ))}
             </div>
           ) : (
-            <div className={cn("grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", isFetchingPage && "opacity-70")}>
+            <div className={cn("grid gap-4 p-4 sm:grid-cols-2 sm:p-5 2xl:grid-cols-3", isFetchingPage && "opacity-70")}>
               {packs.map((pack) => (
                 <PackCard
                   key={pack.id}
@@ -537,8 +539,9 @@ export function Marketplace() {
               ))}
             </div>
           )}
-        </main>
+        </section>
       </div>
+      </ProductSection>
 
       <Dialog open={Boolean(previewSkillTarget)} onOpenChange={(open) => !open && setPreviewSkillTarget(null)}>
         <DialogContent className="sm:max-w-2xl">
@@ -647,7 +650,7 @@ export function Marketplace() {
           </DialogHeader>
           {installPluginTarget ? (
             <div className="space-y-3">
-              <div className="border border-border p-3 text-sm">
+              <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
                 <div className="font-medium">{installPluginTarget.packageName}</div>
                 <div className="mt-1 text-muted-foreground">{capabilitySummary(installPluginTarget)}</div>
               </div>
@@ -711,16 +714,18 @@ export function Marketplace() {
           if (!open) setSetupPluginId(null);
         }}
       />
-    </div>
+    </ProductPage>
   );
 }
 
 function EmptyState({ label, description }: { label: string; description: string }) {
   return (
-    <div className="flex min-h-80 flex-col items-center justify-center gap-2 p-6 text-center">
-      <Store className="h-8 w-8 text-muted-foreground" />
-      <div className="text-sm font-medium">{label}</div>
-      <div className="max-w-sm text-sm text-muted-foreground">{description}</div>
+    <div className="flex min-h-72 flex-col items-center justify-center gap-2 p-6 text-center">
+      <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-muted">
+        <Store className="size-6 text-muted-foreground" />
+      </div>
+      <div className="text-base font-semibold">{label}</div>
+      <div className="max-w-sm text-sm leading-6 text-muted-foreground">{description}</div>
     </div>
   );
 }
@@ -731,7 +736,7 @@ function SkillCard({ skill, onPreview, onInstall }: {
   onInstall: () => void;
 }) {
   return (
-    <article className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
+    <article className="flex min-h-56 flex-col rounded-lg border border-border bg-background p-4 transition-colors hover:border-foreground/20 hover:bg-accent/20">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{skill.categoryName}</Badge>
@@ -766,7 +771,7 @@ function PluginCard({ plugin, onPreview, onInstall }: {
   onInstall: () => void;
 }) {
   return (
-    <article className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
+    <article className="flex min-h-56 flex-col rounded-lg border border-border bg-background p-4 transition-colors hover:border-foreground/20 hover:bg-accent/20">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{plugin.categoryName}</Badge>
@@ -800,7 +805,7 @@ function PackCard({ pack, onPreview, onInstall }: {
   onInstall: () => void;
 }) {
   return (
-    <article className="flex min-h-64 flex-col border border-border bg-card p-4 shadow-sm">
+    <article className="flex min-h-56 flex-col rounded-lg border border-border bg-background p-4 transition-colors hover:border-foreground/20 hover:bg-accent/20">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{pack.categoryName}</Badge>
@@ -994,11 +999,11 @@ function PreviewGrid({ leftLabel, leftValue, rightLabel, rightValue }: {
 }) {
   return (
     <div className="grid gap-3 text-sm sm:grid-cols-2">
-      <div className="border border-border p-3">
+      <div className="rounded-md border border-border bg-muted/20 p-3">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">{leftLabel}</div>
         <div className="mt-1 break-words text-foreground">{leftValue}</div>
       </div>
-      <div className="border border-border p-3">
+      <div className="rounded-md border border-border bg-muted/20 p-3">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">{rightLabel}</div>
         <div className="mt-1 break-words text-foreground">{rightValue}</div>
       </div>
@@ -1008,7 +1013,7 @@ function PreviewGrid({ leftLabel, leftValue, rightLabel, rightValue }: {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-border p-3">
+    <div className="rounded-md border border-border bg-muted/20 p-3">
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold">{value}</div>
     </div>

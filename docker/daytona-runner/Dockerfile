@@ -28,15 +28,15 @@ COPY cli/package.json ./cli/package.json
 # The complete resolved lock (including transitive integrity hashes) is reviewed.
 # Reject registry-time drift BEFORE installing packages or running lifecycle code.
 # Refresh this digest together with source/provider dependency changes.
-ARG PAPERCLIP_RUNNER_LOCK_SHA256=47a7c09302d47843054d0301f8f52f3da935b9c6ac771bace0409da752b6af7f
+ARG PAPERCLAW_RUNNER_LOCK_SHA256=47a7c09302d47843054d0301f8f52f3da935b9c6ac771bace0409da752b6af7f
 RUN pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile \
-    && printf '%s  pnpm-lock.yaml\n' "${PAPERCLIP_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
+    && printf '%s  pnpm-lock.yaml\n' "${PAPERCLAW_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
     && sha256sum -c /tmp/provider-lock.sha256 \
-    && pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'
-ARG PAPERCLIP_RUNNER_SOURCE_REVISION
-RUN test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
-RUN pnpm --filter @paperclipai/paperclip-runner build:typescript \
-    && PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_RUNNER_SOURCE_REVISION}" \
+    && pnpm install --frozen-lockfile --filter '@kesarcloud/paperclip-runner...'
+ARG PAPERCLAW_RUNNER_SOURCE_REVISION
+RUN test -n "${PAPERCLAW_RUNNER_SOURCE_REVISION}"
+RUN pnpm --filter @kesarcloud/paperclip-runner build:typescript \
+    && PAPERCLAW_RUNNER_SOURCE_REVISION="${PAPERCLAW_RUNNER_SOURCE_REVISION}" \
       node packages/paperclip-runner/scripts/build-provider-pack.mjs /provider-pack \
     && chmod -R a+rX /provider-pack
 
@@ -47,8 +47,8 @@ FROM daytonaio/sandbox:0.8.0@sha256:eadf88e4391072b7ad4bed27d9cadfc9fe9d8ed375d9
 
 USER root
 
-ENV PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT=/opt/paperclip-runner/provider-pack
-ENV PATH=${PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin:/usr/local/share/nvm/current/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:${PATH}
+ENV PAPERCLAW_RUNNER_PROVIDER_PACK_ROOT=/opt/paperclip-runner/provider-pack
+ENV PATH=${PAPERCLAW_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin:/usr/local/share/nvm/current/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:${PATH}
 
 # Share the pack's latest stable Codex, Claude and OpenCode with every adapter.
 # Never add a second CLI version to work around a runner compatibility pin.
@@ -104,10 +104,10 @@ RUN set -eu; for cli in codex claude opencode; do \
 # Keep revision-dependent metadata below the stable agent CLI installation
 # layers. A source-only image miss can then reuse those expensive layers from
 # the trusted registry cache.
-ARG PAPERCLIP_RUNNER_CONTENT_ID
-ARG PAPERCLIP_RUNNER_SOURCE_REVISION
-RUN test -n "${PAPERCLIP_RUNNER_CONTENT_ID}" \
-    && test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
+ARG PAPERCLAW_RUNNER_CONTENT_ID
+ARG PAPERCLAW_RUNNER_SOURCE_REVISION
+RUN test -n "${PAPERCLAW_RUNNER_CONTENT_ID}" \
+    && test -n "${PAPERCLAW_RUNNER_SOURCE_REVISION}"
 
 RUN set -eu; \
     printf '%s\n' 'export PATH=/opt/paperclip-runner/provider-pack/node_modules/.bin:$PATH' \
@@ -137,5 +137,5 @@ RUN /bin/sh -lc 'set -eu; \
     test "$(claude-agent-acp --version)" = "0.73.0"; \
     test "$(codex-acp --version)" = "@agentclientprotocol/codex-acp 1.6.2"'
 
-LABEL io.paperclip.runner.content-id="${PAPERCLIP_RUNNER_CONTENT_ID}" \
-      org.opencontainers.image.revision="${PAPERCLIP_RUNNER_SOURCE_REVISION}"
+LABEL io.paperclaw.runner.content-id="${PAPERCLAW_RUNNER_CONTENT_ID}" \
+      org.opencontainers.image.revision="${PAPERCLAW_RUNNER_SOURCE_REVISION}"

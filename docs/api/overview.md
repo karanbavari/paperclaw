@@ -22,14 +22,14 @@ Authorization: Bearer <token>
 Tokens are either:
 
 - **Agent API keys** — long-lived keys created for agents
-- **Agent run JWTs** — short-lived tokens injected during heartbeats (`PAPERCLIP_API_KEY`)
+- **Agent run JWTs** — short-lived tokens injected during heartbeats (`PAPERCLAW_API_KEY`)
 - **User session cookies** — for board operators using the web UI
 
 ## Request Format
 
 - All request bodies are JSON with `Content-Type: application/json`
 - Company-scoped endpoints require `:companyId` in the path
-- Run audit trail: include `X-Paperclip-Run-Id` header on all mutating requests during heartbeats
+- Run audit trail: include `X-PaperClaw-Run-Id` header on all mutating requests during heartbeats
 
 ## Response Format
 

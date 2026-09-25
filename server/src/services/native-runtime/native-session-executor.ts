@@ -1,5 +1,5 @@
 import { readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
-import { copyBackCodexAuth } from "@paperclipai/adapter-codex-local/server";
+import { copyBackCodexAuth } from "@kesarcloud/adapter-codex-local/server";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { hasAcknowledgedNativeStopIntent } from "../acknowledged-native-stop.js";
 import { stoppedCodexTurnIsTextOnly } from "./stopped-codex-turn.js";
@@ -40,7 +40,7 @@ import type {
   AdapterExecutionResult,
   AdapterRuntimeEvent,
 } from "../../adapters/index.js";
-import type { NativeFinalizationResult } from "@paperclipai/shared";
+import type { NativeFinalizationResult } from "@kesarcloud/shared";
 import type {
   HarnessRuntimeRequestResolution,
   NativeExecutionInput,
@@ -77,14 +77,14 @@ import {
   type RunnerProcessLaunchSpec,
   type NativeSessionGoalControl,
 } from "../../vendor/paperclip-runner/index.js";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@kesarcloud/adapter-utils/execution-target";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
-import type { CommandManagedRuntimeRunner } from "@paperclipai/adapter-utils/command-managed-runtime";
+import type { CommandManagedRuntimeRunner } from "@kesarcloud/adapter-utils/command-managed-runtime";
 import {
   resolvePaperclipRunnerTransport,
   type PaperclipRunnerTransport,
-} from "@paperclipai/adapter-utils/runner-connectivity";
-import type { Db } from "@paperclipai/db";
+} from "@kesarcloud/adapter-utils/runner-connectivity";
+import type { Db } from "@kesarcloud/db";
 import {
   and,
   desc,
@@ -108,7 +108,7 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { nativeSha256 } from "./canonical.js";
@@ -506,7 +506,7 @@ export function buildNativeProviderEnvironment(
   );
   const environment = { ...inherited, ...configured };
   if (assignedWorkspaceCwd?.trim()) {
-    environment.PAPERCLIP_WORKSPACE_CWD = assignedWorkspaceCwd;
+    environment.PAPERCLAW_WORKSPACE_CWD = assignedWorkspaceCwd;
   }
   return environment;
 }
@@ -1443,7 +1443,7 @@ function legacyCompanyNativeSessionScopeKey(
 
 function runnerdStateBase(): string {
   return (
-    process.env.PAPERCLIP_RUNNER_STATE_DIR ??
+    process.env.PAPERCLAW_RUNNER_STATE_DIR ??
     resolve(
       resolvePaperclipInstanceRoot(),
       "runtime",
@@ -7683,7 +7683,7 @@ async function executePaperclipNativeSessionWithinScope(
       // Run-scoped broker capabilities must rotate with the process, while the
       // settled provider checkpoint retains the conversation across runs.
       const hasBrokerCapability = Boolean(
-        input.runnerEnvironment?.PAPERCLIP_GITHUB_BROKER_TOKEN,
+        input.runnerEnvironment?.PAPERCLAW_GITHUB_BROKER_TOKEN,
       );
       const credentialRunChanged =
         Boolean(entry.credentialRunId) !== hasBrokerCapability ||
@@ -7693,9 +7693,9 @@ async function executePaperclipNativeSessionWithinScope(
         entry.configDigest !== warmConfigDigest ||
         credentialRunChanged ||
         entry.githubAuthenticationMode !==
-          input.runnerEnvironment?.PAPERCLIP_GITHUB_AUTH_MODE ||
+          input.runnerEnvironment?.PAPERCLAW_GITHUB_AUTH_MODE ||
         entry.networkAccess !==
-          (input.runnerEnvironment?.PAPERCLIP_RUNNER_NETWORK_ACCESS ===
+          (input.runnerEnvironment?.PAPERCLAW_RUNNER_NETWORK_ACCESS ===
             "enabled")
       ) {
         if (entry.busy) throw new Error("native_session_supervisor_busy");
@@ -8019,12 +8019,12 @@ async function executePaperclipNativeSessionWithinScope(
                 } else
                   warmNativeSessions.set(warmSessionId, {
                     githubAuthenticationMode:
-                      input.runnerEnvironment?.PAPERCLIP_GITHUB_AUTH_MODE,
+                      input.runnerEnvironment?.PAPERCLAW_GITHUB_AUTH_MODE,
                     networkAccess:
                       input.runnerEnvironment
-                        ?.PAPERCLIP_RUNNER_NETWORK_ACCESS === "enabled",
+                        ?.PAPERCLAW_RUNNER_NETWORK_ACCESS === "enabled",
                     credentialRunId: input.runnerEnvironment
-                      ?.PAPERCLIP_GITHUB_BROKER_TOKEN
+                      ?.PAPERCLAW_GITHUB_BROKER_TOKEN
                       ? input.execution.binding.runId
                       : undefined,
                     session,
@@ -9020,7 +9020,7 @@ export function assertRemoteRunnerBuildMetadata(
   if (
     metadata.schema !== RUNNERD_BUILD_METADATA_SCHEMA ||
     metadata.binaryName !== "paperclip-runnerd" ||
-    metadata.packageName !== "@paperclipai/paperclip-runner" ||
+    metadata.packageName !== "@kesarcloud/paperclip-runner" ||
     metadata.binaryContractVersion !== RUNNERD_BINARY_CONTRACT_VERSION
   ) {
     throw new Error("runner_remote_artifact_contract_incompatible");
@@ -9305,7 +9305,7 @@ export async function syncRemoteRunnerDirectoryOut(input: {
       const checkpointId = randomUUID();
       snapshotPath = posix.join(
         posix.dirname(input.sourcePath),
-        `.paperclip-checkpoint-${checkpointId}`,
+        `.paperclaw-checkpoint-${checkpointId}`,
       );
       const archivePath = `${snapshotPath}.tar`;
       const escapedSource = input.sourcePath.replaceAll("'", "'\\''");
@@ -9370,11 +9370,11 @@ export async function syncRemoteRunnerDirectoryOut(input: {
   const archive = Buffer.from(result.stdout.replace(/\s+/g, ""), "base64");
   assertSafeRemoteCheckpointArchive(archive);
   const parent = resolve(input.targetPath, "..");
-  const stagingRoot = mkdtempSync(join(parent, ".paperclip-checkpoint-"));
+  const stagingRoot = mkdtempSync(join(parent, ".paperclaw-checkpoint-"));
   const stagedTarget = join(stagingRoot, "payload");
   const previousTarget = join(
     parent,
-    `.paperclip-checkpoint-previous-${randomUUID()}`,
+    `.paperclaw-checkpoint-previous-${randomUUID()}`,
   );
   let previousMoved = false;
   let replacementInstalled = false;
@@ -10023,7 +10023,7 @@ async function createRunnerdBackendWithinSessionClaim(
   const remoteRuntimeRoot = remoteTarget
     ? posix.join(
         remoteTarget.remoteCwd,
-        ".paperclip-runtime",
+        ".paperclaw-runtime",
         "paperclip-runner",
       )
     : null;
@@ -10041,7 +10041,7 @@ async function createRunnerdBackendWithinSessionClaim(
       !lstatSync(configuredProviderPackRoot).isDirectory()
     ) {
       throw new Error(
-        "runner_remote_provider_artifact_incompatible: configure PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH with the build-owned provider pack",
+        "runner_remote_provider_artifact_incompatible: configure PAPERCLAW_RUNNER_REMOTE_PROVIDER_PACK_PATH with the build-owned provider pack",
       );
     }
     expectedProviderPackManifest = readRemoteProviderPackManifest(
@@ -10410,7 +10410,7 @@ async function createRunnerdBackendWithinSessionClaim(
           !archMatches
         ) {
           throw new Error(
-            "runner_remote_artifact_platform_mismatch: configure PAPERCLIP_RUNNER_REMOTE_BINARY_PATH for the remote OS and architecture",
+            "runner_remote_artifact_platform_mismatch: configure PAPERCLAW_RUNNER_REMOTE_BINARY_PATH for the remote OS and architecture",
           );
         }
       }
@@ -10505,7 +10505,7 @@ async function createRunnerdBackendWithinSessionClaim(
       );
       if (!preinstalledCodex) {
         throw new Error(
-          "runner_remote_codex_artifact_unavailable: install codex in the sandbox image or configure PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC",
+          "runner_remote_codex_artifact_unavailable: install codex in the sandbox image or configure PAPERCLAW_RUNNER_REMOTE_CODEX_NPM_SPEC",
         );
       }
       await measureNativeRunnerSpan(
@@ -11465,7 +11465,7 @@ async function createRunnerdBackendWithinSessionClaim(
   // This authority bit is derived only from the selected execution target.
   // Never let an agent, environment binding, or host variable disable the
   // Codex sandbox for a local runner by supplying the same key.
-  delete effectiveRunnerEnvironmentBase.PAPERCLIP_RUNNER_EXTERNAL_SANDBOX;
+  delete effectiveRunnerEnvironmentBase.PAPERCLAW_RUNNER_EXTERNAL_SANDBOX;
   const effectiveRunnerEnvironment: NodeJS.ProcessEnv = remoteRuntimeRoot
     ? {
         ...effectiveRunnerEnvironmentBase,
@@ -11475,14 +11475,14 @@ async function createRunnerdBackendWithinSessionClaim(
         // grant and the provider cannot initialize its shell sandbox or edit.
         HOME: posix.join(remoteRunnerFilesystemRoot!, "codex-home"),
         CODEX_HOME: posix.join(remoteRunnerFilesystemRoot!, "codex-home"),
-        PAPERCLIP_WORKSPACE_CWD: remoteTarget!.remoteCwd,
+        PAPERCLAW_WORKSPACE_CWD: remoteTarget!.remoteCwd,
         ...(remoteTarget!.transport === "sandbox"
-          ? { PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1" }
+          ? { PAPERCLAW_RUNNER_EXTERNAL_SANDBOX: "1" }
           : {}),
       }
     : {
         ...effectiveRunnerEnvironmentBase,
-        PAPERCLIP_WORKSPACE_CWD: input.execution.workspace.cwd,
+        PAPERCLAW_WORKSPACE_CWD: input.execution.workspace.cwd,
       };
   const archiveContinuityState = async () => {
     if (hasRetainedWarmTransitionEvidence(root)) {

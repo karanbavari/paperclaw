@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { callProjectTool, projectToolDefinitions } from "../services/project-tools.js";
 import { assertCompanyAccess } from "./authz.js";
@@ -20,7 +20,7 @@ export function projectToolRoutes(db: Db) {
     if (method !== "tools/call") return res.json({ jsonrpc: "2.0", id, error: { code: -32601, message: "Method not found" } });
     try {
       if (!definitions.some(tool => tool.name === params?.name)) throw forbidden("Tool is unavailable in this mode");
-      const apiUrl = process.env.PAPERCLIP_API_URL;
+      const apiUrl = process.env.PAPERCLAW_API_URL;
       if (!apiUrl) throw new Error("Paperclip API origin is unavailable");
       const result = await callProjectTool({
         name: params.name, arguments: params.arguments ?? {}, apiUrl,

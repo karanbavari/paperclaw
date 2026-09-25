@@ -22,16 +22,16 @@ let previousPaperclipHome: string | undefined;
 let previousServiceManaged: string | undefined;
 
 beforeEach(() => {
-  previousPaperclipHome = process.env.PAPERCLIP_HOME;
-  previousServiceManaged = process.env.PAPERCLIP_SERVICE_MANAGED;
-  process.env.PAPERCLIP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
+  previousPaperclipHome = process.env.PAPERCLAW_HOME;
+  previousServiceManaged = process.env.PAPERCLAW_SERVICE_MANAGED;
+  process.env.PAPERCLAW_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
 });
 
 afterEach(() => {
-  if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-  if (previousServiceManaged === undefined) delete process.env.PAPERCLIP_SERVICE_MANAGED;
-  else process.env.PAPERCLIP_SERVICE_MANAGED = previousServiceManaged;
+  if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+  else process.env.PAPERCLAW_HOME = previousPaperclipHome;
+  if (previousServiceManaged === undefined) delete process.env.PAPERCLAW_SERVICE_MANAGED;
+  else process.env.PAPERCLAW_SERVICE_MANAGED = previousServiceManaged;
 });
 
 function managerFixture(active = true) {
@@ -65,7 +65,7 @@ function managerFixture(active = true) {
 
 describe("service health doctor checks", () => {
   it("skips live service checks during the managed unit's own activation", async () => {
-    process.env.PAPERCLIP_SERVICE_MANAGED = "1";
+    process.env.PAPERCLAW_SERVICE_MANAGED = "1";
     const detect = vi.fn();
     const probe = vi.fn();
     await expect(serviceHealthChecks(config, { detect, probe })).resolves.toEqual([]);
@@ -102,7 +102,7 @@ describe("service health doctor checks", () => {
   });
 
   it("reclaims restart locks left by terminated processes", async () => {
-    const lockPath = path.join(process.env.PAPERCLIP_HOME!, "instances", "default", "hot-restart.lock");
+    const lockPath = path.join(process.env.PAPERCLAW_HOME!, "instances", "default", "hot-restart.lock");
     fs.mkdirSync(path.dirname(lockPath), { recursive: true });
     fs.writeFileSync(lockPath, "424242:stale-token\n");
     const callback = vi.fn(async () => "restarted");
@@ -170,7 +170,7 @@ describe("service runtime shim awareness", () => {
     return {
       platform: "launchd" as const,
       instanceId: "default",
-      serviceName: "ing.paperclip.paperclipai",
+      serviceName: "ing.paperclaw.paperclawai",
       definitionPath: "/tmp/nonexistent-definition.plist",
       renderDefinition: () => "plist",
       install: vi.fn(async () => ({ changed: false })),
@@ -180,7 +180,7 @@ describe("service runtime shim awareness", () => {
       restart: vi.fn(async () => undefined),
       status: vi.fn(async () => ({
         platform: "launchd" as const,
-        serviceName: "ing.paperclip.paperclipai",
+        serviceName: "ing.paperclaw.paperclawai",
         installed: true,
         active: false,
         enabled: true,
@@ -217,7 +217,7 @@ describe("service runtime shim awareness", () => {
     expect(shimPresent).toHaveBeenCalledWith("/custom/bin/paperclipai");
     expect(runtime?.message).toContain("/custom/bin/paperclipai");
     expect(runtime?.repairHint).toContain("/custom/bin/paperclipai");
-    expect(runtime?.repairHint).toContain("unset PAPERCLIP_SHIM_PATH");
+    expect(runtime?.repairHint).toContain("unset PAPERCLAW_SHIM_PATH");
     expect(runtime?.repairHint).toContain("`paperclipai install` followed by `paperclipai service install`");
   });
 
@@ -229,7 +229,7 @@ describe("service runtime shim awareness", () => {
     });
     const healthResult = results.find((r) => r.name === "Service health");
     expect(healthResult?.status).toBe("warn");
-    expect(healthResult?.message).toContain("but not from ing.paperclip.paperclipai");
+    expect(healthResult?.message).toContain("but not from ing.paperclaw.paperclawai");
     const runtime = results.find((r) => r.name === "Service runtime");
     expect(runtime?.message).toContain("serving another Paperclip process");
   });
@@ -237,9 +237,9 @@ describe("service runtime shim awareness", () => {
 
 describe("definition executable extraction", () => {
   it("round-trips through both renderers", () => {
-    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/paperclipai", homeDir: "/home/x/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/paperclipai", homeDir: "/home/x/.paperclaw" });
     expect(extractExecutableFromSystemdUnit(unit)).toBe("/custom/bin/paperclipai");
-    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/paperclipai", homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
+    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/paperclipai", homeDir: "/home/x/.paperclaw", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
     expect(extractExecutableFromLaunchdPlist(plist)).toBe("/custom/bin/paperclipai");
     expect(extractExecutableFromSystemdUnit("garbage")).toBe(null);
     expect(extractExecutableFromLaunchdPlist("garbage")).toBe(null);
@@ -247,9 +247,9 @@ describe("definition executable extraction", () => {
 
   it("round-trips paths the renderers escape", () => {
     const hostile = '/tmp/we"ird $pa%th & <x>/paperclipai';
-    const unit = renderSystemdUnit({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclaw" });
     expect(extractExecutableFromSystemdUnit(unit)).toBe(hostile);
-    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
+    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclaw", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
     expect(extractExecutableFromLaunchdPlist(plist)).toBe(hostile);
   });
 });

@@ -21,8 +21,8 @@ checksums cover amd64.
 content_id="$(pnpm --silent test:e2e:runner:image-id)"
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg PAPERCLIP_RUNNER_CONTENT_ID="${content_id}" \
-  --build-arg PAPERCLIP_RUNNER_SOURCE_REVISION="$(git rev-parse HEAD)" \
+  --build-arg PAPERCLAW_RUNNER_CONTENT_ID="${content_id}" \
+  --build-arg PAPERCLAW_RUNNER_SOURCE_REVISION="$(git rev-parse HEAD)" \
   --tag "paperclip-daytona-runner:e2e-content-${content_id}" \
   --load \
   --file docker/daytona-runner/Dockerfile \
@@ -46,7 +46,7 @@ syntax version, resolve and review its registry digest and update both values in
 the first Dockerfile line. Git commits that do not change those inputs reuse the
 same content tag.
 
-`PAPERCLIP_RUNNER_SOURCE_REVISION` remains the full Git SHA that built the first
+`PAPERCLAW_RUNNER_SOURCE_REVISION` remains the full Git SHA that built the first
 published copy and is retained as provenance rather than cache identity.
 
 ## Use in Paperclip
@@ -58,12 +58,12 @@ sandbox user's `PATH` for `paperclip-runnerd` and `codex` and checks
 `/opt/paperclip-runner/provider-pack` for OpenCode and ACPX. It uses the pack
 only when its complete manifest matches the controller's build-owned pack;
 otherwise it stages the pack configured by
-`PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote OpenCode and ACPX never
+`PAPERCLAW_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote OpenCode and ACPX never
 fall back to host-local processes.
 
 Do not promote `paperclip-runner-e2e-20260826-v2` for OpenCode or ACPX. Build a
 new immutable image or snapshot from a clean committed revision and pass that
-full Git SHA as `PAPERCLIP_RUNNER_SOURCE_REVISION`.
+full Git SHA as `PAPERCLAW_RUNNER_SOURCE_REVISION`.
 
 Do not bake provider credentials, Paperclip bootstrap tickets, or Daytona
 preview tokens into this image. They remain per-run secret material.
@@ -71,7 +71,7 @@ preview tokens into this image. They remain per-run secret material.
 Provider CLI updates are manifest-only changes: repository CI owns the root
 lockfile. The image build resolves the complete workspace manifest graph before
 its frozen install, matching CI when a source commit precedes the lockfile bot.
-The complete resolved lockfile must match `PAPERCLIP_RUNNER_LOCK_SHA256` before
+The complete resolved lockfile must match `PAPERCLAW_RUNNER_LOCK_SHA256` before
 package installation or lifecycle execution. Review and refresh that digest
 with source dependency changes; registry-time resolution drift fails closed.
 Keep one latest stable CLI installation per provider; refresh exact runtime

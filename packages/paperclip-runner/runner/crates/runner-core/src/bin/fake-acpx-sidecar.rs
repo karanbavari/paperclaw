@@ -91,9 +91,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         "protocolVersion": GENERATED_ACPX_SIDECAR_PROTOCOL_VERSION,
                         "id": id, "ok": true,
                         "result": {
-                            "name": std::env::var("PAPERCLIP_NATIVE_MCP_NAME").ok(),
-                            "url": std::env::var("PAPERCLIP_NATIVE_MCP_URL").ok(),
-                            "hasToken": std::env::var("PAPERCLIP_NATIVE_MCP_TOKEN").is_ok(),
+                            "name": std::env::var("PAPERCLAW_NATIVE_MCP_NAME").ok(),
+                            "url": std::env::var("PAPERCLAW_NATIVE_MCP_URL").ok(),
+                            "hasToken": std::env::var("PAPERCLAW_NATIVE_MCP_TOKEN").is_ok(),
                             "hasUnrelatedSecret": std::env::var("UNRELATED_EVAL_SECRET").is_ok(),
                         }
                     }),

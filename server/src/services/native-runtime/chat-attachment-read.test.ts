@@ -26,7 +26,7 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
@@ -344,7 +344,7 @@ describe("native same-conversation historical attachment reading", () => {
       sha256: createHash("sha256").update(sourceBody).digest("hex"),
     });
     expect(result).not.toHaveProperty("objectKey");
-    expect(result.workspaceRelativePath).toMatch(/^\.paperclip-inbound\//);
+    expect(result.workspaceRelativePath).toMatch(/^\.paperclaw-inbound\//);
     const stagedPath = path.join(workspaceRoot, result.workspaceRelativePath);
     expect(await readFile(stagedPath)).toEqual(sourceBody);
     expect(await db.select().from(issueAttachments)).toEqual(before);
@@ -502,7 +502,7 @@ describe("native same-conversation historical attachment reading", () => {
     const outside = await mkdtemp(
       path.join(tmpdir(), "paperclip-chat-read-outside-"),
     );
-    await symlink(outside, path.join(unsafeRoot, ".paperclip-inbound"));
+    await symlink(outside, path.join(unsafeRoot, ".paperclaw-inbound"));
     const reader = scope({ workspaceRoot: unsafeRoot });
     try {
       await expect(reader.read(selection())).rejects.toThrow("path_denied");

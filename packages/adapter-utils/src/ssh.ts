@@ -785,8 +785,8 @@ async function importGitWorkspaceToSsh(input: {
 
     const remoteSetupScript = [
       "set -e",
-      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime"))}`,
-      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime", "import-XXXXXX.bundle"))})`,
+      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclaw-runtime"))}`,
+      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclaw-runtime", "import-XXXXXX.bundle"))})`,
       'trap \'rm -f "$tmp_bundle"\' EXIT',
       'cat > "$tmp_bundle"',
       `if [ ! -d ${shellQuote(path.posix.join(input.remoteDir, ".git"))} ]; then git init ${shellQuote(input.remoteDir)} >/dev/null; fi`,
@@ -804,7 +804,7 @@ async function importGitWorkspaceToSsh(input: {
         ? `git -C ${shellQuote(input.remoteDir)} checkout --force -B ${shellQuote(input.snapshot.branchName)} ${shellQuote(input.snapshot.headCommit)} >/dev/null`
         : `git -C ${shellQuote(input.remoteDir)} -c advice.detachedHead=false checkout --force --detach ${shellQuote(input.snapshot.headCommit)} >/dev/null`,
       `git -C ${shellQuote(input.remoteDir)} reset --hard ${shellQuote(input.snapshot.headCommit)} >/dev/null`,
-      `git -C ${shellQuote(input.remoteDir)} clean -fdx -e .paperclip-runtime >/dev/null`,
+      `git -C ${shellQuote(input.remoteDir)} clean -fdx -e .paperclaw-runtime >/dev/null`,
       // Drop the per-import ref on the remote side too so it can't accumulate.
       `git -C ${shellQuote(input.remoteDir)} update-ref -d ${shellQuote(tempRef)} >/dev/null 2>&1 || true`,
     ].join("\n");
@@ -859,8 +859,8 @@ async function exportGitWorkspaceFromSsh(input: {
     const exportScript = [
       "set -e",
       `git -C ${shellQuote(input.remoteDir)} update-ref refs/paperclip/ssh-sync/export HEAD`,
-      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime"))}`,
-      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime", "export-XXXXXX.bundle"))})`,
+      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclaw-runtime"))}`,
+      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclaw-runtime", "export-XXXXXX.bundle"))})`,
       'cleanup() { rm -f "$tmp_bundle"; git -C ' + shellQuote(input.remoteDir) + ' update-ref -d refs/paperclip/ssh-sync/export >/dev/null 2>&1 || true; }',
       'trap cleanup EXIT',
       `git -C ${shellQuote(input.remoteDir)} bundle create "$tmp_bundle" refs/paperclip/ssh-sync/export >/dev/null`,
@@ -1159,10 +1159,10 @@ async function isSshEnvLabFixtureProcess(state: Pick<SshEnvLabFixtureState, "pid
 }
 
 export async function getSshEnvLabSupport(): Promise<SshEnvLabSupport> {
-  if (process.platform === "darwin" && process.env.PAPERCLIP_ENABLE_DARWIN_SSH_ENV_LAB !== "1") {
+  if (process.platform === "darwin" && process.env.PAPERCLAW_ENABLE_DARWIN_SSH_ENV_LAB !== "1") {
     return {
       supported: false,
-      reason: "SSH env-lab fixture is disabled on macOS; set PAPERCLIP_ENABLE_DARWIN_SSH_ENV_LAB=1 to opt in.",
+      reason: "SSH env-lab fixture is disabled on macOS; set PAPERCLAW_ENABLE_DARWIN_SSH_ENV_LAB=1 to opt in.",
     };
   }
 
@@ -1574,7 +1574,7 @@ export async function prepareWorkspaceForSshExecution(input: {
       spec: input.spec,
       localDir: input.localDir,
       remoteDir,
-      exclude: [".git", ".paperclip-runtime"],
+      exclude: [".git", ".paperclaw-runtime"],
       onProgress: input.onProgress,
       progressLabel: "workspace",
     });
@@ -1589,13 +1589,13 @@ export async function prepareWorkspaceForSshExecution(input: {
   await clearRemoteDirectory({
     spec: input.spec,
     remoteDir,
-    preserveEntries: [".paperclip-runtime"],
+    preserveEntries: [".paperclaw-runtime"],
   });
   await syncDirectoryToSsh({
     spec: input.spec,
     localDir: input.localDir,
     remoteDir,
-    exclude: [".paperclip-runtime"],
+    exclude: [".paperclaw-runtime"],
     onProgress: input.onProgress,
     progressLabel: "workspace",
   });
@@ -1674,7 +1674,7 @@ export async function restoreWorkspaceFromSshExecution(input: {
       spec: input.spec,
       remoteDir,
       localDir: input.localDir,
-      exclude: [".git", ".paperclip-runtime"],
+      exclude: [".git", ".paperclaw-runtime"],
       preserveLocalEntries: [".git"],
       onProgress: input.onProgress,
       progressLabel: "workspace",
@@ -1686,7 +1686,7 @@ export async function restoreWorkspaceFromSshExecution(input: {
     spec: input.spec,
     remoteDir,
     localDir: input.localDir,
-    exclude: [".paperclip-runtime"],
+    exclude: [".paperclaw-runtime"],
     onProgress: input.onProgress,
     progressLabel: "workspace",
   });

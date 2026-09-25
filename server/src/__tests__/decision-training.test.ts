@@ -16,7 +16,7 @@ import {
   issueThreadInteractions,
   projectWorkspaces,
   projects,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

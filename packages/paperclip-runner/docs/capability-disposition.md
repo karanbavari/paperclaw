@@ -56,21 +56,21 @@ The contract has three parts:
 
 Generation reads the live in-repo skill/reference sources, the legacy MCP tool
 source, and the Paperclip Evals corpus, so it **requires** the external eval
-repository (via `PAPERCLIP_EVALS_ROOT` or a known local path) and is not part of
+repository (via `PAPERCLAW_EVALS_ROOT` or a known local path) and is not part of
 the offline path. Checking and testing read only the checked-in derivatives
 under `spec/capability/` and need no external repository.
 
 ```sh
 # Rewrite every generated file. Requires the external Paperclip Evals corpus.
-pnpm --filter @paperclipai/paperclip-runner generate:capability-inventory
+pnpm --filter @kesarcloud/paperclip-runner generate:capability-inventory
 
 # Validate counts, uniqueness, normative dispositions, one-to-one MCP folds,
 # required fields, and generated-file drift. Offline; no external eval repo.
-pnpm --filter @paperclipai/paperclip-runner check:capability-inventory
+pnpm --filter @kesarcloud/paperclip-runner check:capability-inventory
 
 # Prove the validator rejects an independent MCP classification and rejects
 # missing, duplicate, or unknown MCP folds. Offline.
-pnpm --filter @paperclipai/paperclip-runner test:capability-inventory
+pnpm --filter @kesarcloud/paperclip-runner test:capability-inventory
 ```
 
 `check:capability-inventory` diffs the checked-in generated files against what the

@@ -6,7 +6,7 @@ import {
   prepareAdapterExecutionTargetRuntime,
   startAdapterExecutionTargetPaperclipBridge,
   startAdapterExecutionTargetProcessSessionBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@kesarcloud/adapter-utils/execution-target";
 import { runChildProcess } from "../server-utils.js";
 import { classifyWorkspaceRestoreFailure } from "../workspace-restore-merge.js";
 
@@ -27,8 +27,8 @@ import { classifyWorkspaceRestoreFailure } from "../workspace-restore-merge.js";
 
 // Wrap the staging seam and both sandbox bridges so a test can stub them without
 // changing behavior for the other tests.
-vi.mock("@paperclipai/adapter-utils/execution-target", async (importActual) => {
-  const actual = await importActual<typeof import("@paperclipai/adapter-utils/execution-target")>();
+vi.mock("@kesarcloud/adapter-utils/execution-target", async (importActual) => {
+  const actual = await importActual<typeof import("@kesarcloud/adapter-utils/execution-target")>();
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
@@ -764,7 +764,7 @@ describe("composed ACPX run fault matrix", () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     stubBridges();
     const eaccesError: NodeJS.ErrnoException = new Error(
-      `EACCES: permission denied, mkdir '/srv/telemetry-backend.paperclip-restore.lock' (pid ${process.pid})`,
+      `EACCES: permission denied, mkdir '/srv/telemetry-backend.paperclaw-restore.lock' (pid ${process.pid})`,
     );
     eaccesError.code = "EACCES";
     const execute = createAcpxEngineExecutor({

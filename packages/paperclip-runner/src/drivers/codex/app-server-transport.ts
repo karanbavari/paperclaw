@@ -203,7 +203,7 @@ const SAFE_ENVIRONMENT_KEYS = [
   "LC_ALL",
   "NO_PROXY",
   "NODE_EXTRA_CA_CERTS",
-  "PAPERCLIP_RUNNER_EXTERNAL_SANDBOX",
+  "PAPERCLAW_RUNNER_EXTERNAL_SANDBOX",
   "PATH",
   "PATHEXT",
   "SSL_CERT_FILE",
@@ -268,7 +268,7 @@ export function redactCodexDiagnostic(message: string): string {
       "$1=[REDACTED]",
     )
     .replace(
-      /(PAPERCLIP_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY)=[^\s]+/g,
+      /(PAPERCLAW_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY)=[^\s]+/g,
       "$1=[REDACTED]",
     );
 }

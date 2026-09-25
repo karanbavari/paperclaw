@@ -37,7 +37,7 @@ Agents that can call arbitrary MCP tools can also leak data, modify accounts, or
 - **Catalog drift** (new write or destructive tool seen on a refresh): quarantine.
 - **Write tool, no policy match, no trust rule**: requires approval if the profile's default-action allows writes; otherwise denied.
 - **Destructive tool**: denied until an operator explicitly un-quarantines it.
-- **Local stdio in `authenticated/public`**: fails closed unless `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` is set on a designated trusted worker.
+- **Local stdio in `authenticated/public`**: fails closed unless `PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST` is set on a designated trusted worker.
 - **Agent-supplied stdio commands**: rejected. Always.
 
 ## Upgrade and migration
@@ -50,7 +50,7 @@ Upgrade steps for existing deployments:
 2. Confirm the Tools & Access tab appears in the UI for board users.
 3. From **Examples**, install `safe-read-only-todo-kv` and run the bundled smoke. Expect `ok: true` across all three checks (`allow_read_tool`, `deny_write_tool`, `audit_written`).
 4. For each existing agent runtime that previously called MCP servers directly: replace direct MCP wiring with a managed connection. Until you do, those agents have no governed tool access on this release.
-5. If you run `authenticated/public`, decide whether you want a trusted runtime worker for local stdio. If yes, set `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` on that worker and only that worker. If no, leave it unset — `remote_http` connections continue to work.
+5. If you run `authenticated/public`, decide whether you want a trusted runtime worker for local stdio. If yes, set `PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST` on that worker and only that worker. If no, leave it unset — `remote_http` connections continue to work.
 
 There is no downgrade path that preserves audit history. If you must roll back, archive any installed connections first so future audits do not surface orphan IDs.
 
@@ -74,15 +74,15 @@ After upgrading, run these to confirm the stack is healthy:
 ```sh
 # Sanity-check runtime health
 curl -fsS -H "Authorization: Bearer $BOARD_API_KEY" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, alerts}'
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, alerts}'
 
 # Install the bundled example + run the smoke
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/install" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/install" \
   -d '{}' | jq .
 
 curl -fsS -X POST -H "Authorization: Bearer $BOARD_API_KEY" -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/smoke" \
+  "$PAPERCLAW_URL/api/companies/$COMPANY_ID/tools/examples/safe-read-only-todo-kv/smoke" \
   -d '{}' | jq '{ok, checks: [.checks[] | {name, ok, decision, reasonCode}]}'
 ```
 

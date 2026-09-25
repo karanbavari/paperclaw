@@ -14,7 +14,7 @@ import { instanceExperimentalSettingsSchema } from "./validators/instance.js";
  * - `preference`: tenant-controllable taste setting; the cloud harness does
  *   not manage it.
  * - `managed`: the cloud harness may set this per fleet/stack via
- *   `PAPERCLIP_MANAGED_CONFIG`.
+ *   `PAPERCLAW_MANAGED_CONFIG`.
  * - `floor`: pinned by code on managed instances; no flag value may widen it.
  */
 export const FEATURE_TIERS = ["preference", "managed", "floor"] as const;
@@ -57,7 +57,7 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
     tier: "managed",
     cloudDefault: false,
     // On by default for self-hosted instances. Requires a Rust toolchain (or
-    // PAPERCLIP_RUNNER_BINARY) for `pnpm dev`, which builds runnerd whenever
+    // PAPERCLAW_RUNNER_BINARY) for `pnpm dev`, which builds runnerd whenever
     // this is on.
     selfHostedDefault: true,
   },

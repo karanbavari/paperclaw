@@ -48,8 +48,8 @@ and the non-loopback HTTP guard.
   Hermes config so non-interactive gateway/API runs do not wait for a manual
   execute-code approval prompt. Do not copy a host `~/.hermes` directory into
   the container to solve approval or provider setup.
-- Board/operator auth is required through `PAPERCLIP_AUTH_HEADER`,
-  `PAPERCLIP_COOKIE`, or a board-capable `PAPERCLIP_API_KEY`.
+- Board/operator auth is required through `PAPERCLAW_AUTH_HEADER`,
+  `PAPERCLAW_COOKIE`, or a board-capable `PAPERCLAW_API_KEY`.
 - Diagnostic files are redacted before they are written, except the join output
   file intentionally contains the claimed Paperclip agent key and is written
   `chmod 600`.
@@ -62,8 +62,8 @@ and the non-loopback HTTP guard.
 
 The smoke has three URLs because different processes need different routes:
 
-- `PAPERCLIP_API_URL`: Paperclip URL used by the operator shell.
-- `PAPERCLIP_API_URL_FOR_HERMES`: Paperclip URL used from inside the Hermes
+- `PAPERCLAW_API_URL`: Paperclip URL used by the operator shell.
+- `PAPERCLAW_API_URL_FOR_HERMES`: Paperclip URL used from inside the Hermes
   container or remote Hermes host.
 - `HERMES_GATEWAY_API_BASE_URL`: Hermes gateway URL stored on the Paperclip
   adapter, reachable by the Paperclip server.
@@ -80,8 +80,8 @@ Use this when Paperclip runs on the host at `127.0.0.1:3100` and Docker can
 reach the host through `host.docker.internal`.
 
 ```sh
-PAPERCLIP_API_URL=http://127.0.0.1:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL=http://127.0.0.1:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
 pnpm smoke:hermes-gateway-e2e
 ```
 
@@ -96,14 +96,14 @@ container should be reachable by container DNS. The operator shell still probes
 the host-published loopback port.
 
 ```sh
-PAPERCLIP_API_URL=http://127.0.0.1:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL=http://127.0.0.1:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
 HERMES_CONTAINER_NAME=paperclip-hermes-gateway-smoke \
 HERMES_SMOKE_NETWORK=paperclip_default \
 HERMES_DOCKER_ADD_HOST=0 \
 HERMES_GATEWAY_API_BASE_URL=http://paperclip-hermes-gateway-smoke:8642 \
 HERMES_GATEWAY_PROBE_URL=http://127.0.0.1:8642 \
-PAPERCLIP_API_URL_FOR_HERMES=http://paperclip:3100 \
+PAPERCLAW_API_URL_FOR_HERMES=http://paperclip:3100 \
 HERMES_GATEWAY_ALLOW_INSECURE_HTTP=1 \
 pnpm smoke:hermes-gateway-e2e
 ```
@@ -118,9 +118,9 @@ Use this when Paperclip is exposed on a private IP or tailnet address and the
 Hermes container can reach that address.
 
 ```sh
-PAPERCLIP_API_URL=http://192.168.1.20:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
-PAPERCLIP_API_URL_FOR_HERMES=http://192.168.1.20:3100 \
+PAPERCLAW_API_URL=http://192.168.1.20:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL_FOR_HERMES=http://192.168.1.20:3100 \
 HERMES_GATEWAY_API_BASE_URL=http://192.168.1.20:8642 \
 HERMES_GATEWAY_PROBE_URL=http://127.0.0.1:8642 \
 HERMES_GATEWAY_ALLOW_INSECURE_HTTP=1 \
@@ -137,9 +137,9 @@ container still publishes a local port, and your reverse proxy forwards the TLS
 hostname to that port.
 
 ```sh
-PAPERCLIP_API_URL=https://paperclip.example.com \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
-PAPERCLIP_API_URL_FOR_HERMES=https://paperclip.example.com \
+PAPERCLAW_API_URL=https://paperclip.example.com \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL_FOR_HERMES=https://paperclip.example.com \
 HERMES_GATEWAY_API_BASE_URL=https://hermes-gateway.example.com \
 HERMES_GATEWAY_PROBE_URL=http://127.0.0.1:8642 \
 pnpm smoke:hermes-gateway-e2e
@@ -155,8 +155,8 @@ starting a Docker container:
 ```sh
 API_SERVER_ENABLED=true API_SERVER_KEY='<gateway-key>' hermes gateway run --replace --accept-hooks
 
-PAPERCLIP_API_URL=http://127.0.0.1:3100 \
-PAPERCLIP_AUTH_HEADER='Bearer <board-token>' \
+PAPERCLAW_API_URL=http://127.0.0.1:3100 \
+PAPERCLAW_AUTH_HEADER='Bearer <board-token>' \
 HERMES_GATEWAY_API_BASE_URL=http://127.0.0.1:8642 \
 HERMES_GATEWAY_API_KEY='<gateway-key>' \
 pnpm smoke:hermes-gateway-join

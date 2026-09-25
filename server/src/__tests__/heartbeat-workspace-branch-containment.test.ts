@@ -30,7 +30,7 @@ import {
   projects,
   projectWorkspaces,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -320,7 +320,7 @@ async function seedBranchContainmentRun(
   const otherSiblingIdentifier = `${issuePrefix}-3`;
   const expectedBranch = `${sourceIdentifier}-recorded`;
   const actualBranch = `${sourceIdentifier}-actual`;
-  const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+  const worktreePath = path.join(repoRoot, ".paperclaw", "worktrees", expectedBranch);
   const now = new Date("2026-07-07T00:00:00.000Z");
 
   await instanceSettingsService(db).updateExperimental({
@@ -428,12 +428,12 @@ async function seedBranchContainmentRun(
       strategyType: "git_worktree",
       name: "other-workspace",
       status: "active",
-      cwd: path.join(repoRoot, ".paperclip", "worktrees", "other-workspace"),
+      cwd: path.join(repoRoot, ".paperclaw", "worktrees", "other-workspace"),
       repoUrl: null,
       baseRef: "HEAD",
       branchName: "other-workspace",
       providerType: "git_worktree",
-      providerRef: path.join(repoRoot, ".paperclip", "worktrees", "other-workspace"),
+      providerRef: path.join(repoRoot, ".paperclaw", "worktrees", "other-workspace"),
       lastUsedAt: now,
       openedAt: now,
       createdAt: now,

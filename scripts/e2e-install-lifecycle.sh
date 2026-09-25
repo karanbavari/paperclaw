@@ -23,13 +23,13 @@ E2E_REF="${E2E_REF:-master}"
 E2E_SERVICE_TIMEOUT_SECS="${E2E_SERVICE_TIMEOUT_SECS:-300}"
 
 # A clean environment: no inherited Paperclip or build-mode state.
-for var in $(env | grep -o '^PAPERCLIP_[A-Z_]*' || true); do unset "$var"; done
+for var in $(env | grep -o '^PAPERCLAW_[A-Z_]*' || true); do unset "$var"; done
 unset NODE_ENV npm_config_prefix 2>/dev/null || true
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
 
 SHIM="$HOME/.local/bin/paperclipai"
-STORE="$HOME/.paperclip/cli"
+STORE="$HOME/.paperclaw/cli"
 RESULTS=()
 FAILED=0
 
@@ -68,7 +68,7 @@ if corepack pnpm install --frozen-lockfile > "$HOME/e2e-bootstrap-install.log" 2
 else
   tail -40 "$HOME/e2e-bootstrap-install.log"; fail_ "1b bootstrap pnpm install"; exit 1
 fi
-if PAPERCLIP_README_ASSET_REF="$E2E_REF" \
+if PAPERCLAW_README_ASSET_REF="$E2E_REF" \
     bash scripts/build-npm.sh --skip-checks --skip-typecheck > "$HOME/e2e-bootstrap-build.log" 2>&1; then
   pass "1c bootstrap build-npm.sh"
 else
@@ -215,7 +215,7 @@ else
 fi
 
 note "10. uninstall preserves user data"
-mkdir -p "$HOME/.paperclip" && touch "$HOME/.paperclip/e2e-user-data-marker"
+mkdir -p "$HOME/.paperclaw" && touch "$HOME/.paperclaw/e2e-user-data-marker"
 if shim uninstall; then
   pass "10a uninstall exits 0"
 else
@@ -223,7 +223,7 @@ else
 fi
 [ ! -e "$SHIM" ] && pass "10b shim removed" || fail_ "10b shim removed"
 [ ! -d "$STORE" ] && pass "10c managed store removed" || fail_ "10c managed store removed"
-[ -f "$HOME/.paperclip/e2e-user-data-marker" ] && pass "10d user data under ~/.paperclip preserved" || fail_ "10d user data preserved"
+[ -f "$HOME/.paperclaw/e2e-user-data-marker" ] && pass "10d user data under ~/.paperclaw preserved" || fail_ "10d user data preserved"
 
 note "RESULTS ($E2E_REPO@$E2E_REF on $(uname -sm))"
 printf '%s\n' "${RESULTS[@]}"

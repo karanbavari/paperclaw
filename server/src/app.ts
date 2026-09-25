@@ -11,12 +11,12 @@ import {
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   derivePaperclipViteHmrPort,
   type DeploymentExposure,
   type DeploymentMode,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import type { InspectDatabaseBackupHealthOptions } from "./services/database-backup-health.js";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
@@ -41,6 +41,8 @@ import { cloudRuntimeIdentityMiddleware } from "./middleware/cloud-runtime-ident
 import { cloudControlMiddleware } from "./middleware/cloud-control.js";
 import { cloudRoutes } from "./routes/cloud.js";
 import { companyRoutes } from "./routes/companies.js";
+import { companyMemoryRoutes } from "./routes/company-memory.js";
+import { marketplaceRoutes } from "./routes/marketplace.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { companySkillPolicyRoutes } from "./routes/company-skill-policy.js";
 import { inboxAgentPolicyRoutes } from "./routes/inbox-agent-policy.js";
@@ -70,6 +72,9 @@ import { pipelineRoutes } from "./routes/pipelines.js";
 import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
 import { goalRoutes } from "./routes/goals.js";
+import { meetingRoutes } from "./routes/meetings.js";
+import { directChatRoutes } from "./routes/direct-chat.js";
+import { researchLabRoutes } from "./routes/research-labs.js";
 import { onboardingSeedRoutes } from "./routes/onboarding-seed.js";
 import { boardChatRoutes } from "./routes/board-chat.js";
 import { approvalRoutes } from "./routes/approvals.js";
@@ -82,7 +87,10 @@ import {
 import { smokeLabRoutes } from "./routes/smoke-lab.js";
 import { costRoutes } from "./routes/costs.js";
 import { activityRoutes } from "./routes/activity.js";
+import { toolPermissionRoutes } from "./routes/tool-permissions.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
+import { outcomeCenterRoutes } from "./routes/outcome-center.js";
+import { opsIncidentRoutes } from "./routes/ops-incidents.js";
 import { attentionRoutes } from "./routes/attention.js";
 import { decisionTrainingRoutes } from "./routes/decision-training.js";
 import { decisionRoutes } from "./routes/decisions.js";
@@ -164,7 +172,7 @@ import { setPluginEventBus } from "./services/activity-log.js";
 import { createPluginDevWatcher } from "./services/plugin-dev-watcher.js";
 import { createPluginHostServiceCleanup } from "./services/plugin-host-service-cleanup.js";
 import { pluginRegistryService } from "./services/plugin-registry.js";
-import { createHostClientHandlers } from "@paperclipai/plugin-sdk";
+import { createHostClientHandlers } from "@kesarcloud/plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
 import { createCachedViteHtmlRenderer } from "./vite-html-renderer.js";
 import {
@@ -228,7 +236,7 @@ export function resolveViteHmrProtocol(
 ): "ws" | "wss" | undefined {
   if (!value) return undefined;
   if (value === "ws" || value === "wss") return value;
-  throw new Error("PAPERCLIP_VITE_HMR_PROTOCOL must be ws or wss");
+  throw new Error("PAPERCLAW_VITE_HMR_PROTOCOL must be ws or wss");
 }
 
 export function listenViteHmrServer(
@@ -488,7 +496,7 @@ export async function createApp(
       req: ExpressRequest,
     ) => Promise<BetterAuthSessionResult | null>;
     /**
-     * `plugins.autoInstall` from the managed config (PAPERCLIP_MANAGED_CONFIG).
+     * `plugins.autoInstall` from the managed config (PAPERCLAW_MANAGED_CONFIG).
      * `null`/absent ⇒ self-hosted: only the built-in kubernetes bundle is
      * ensured, exactly as before. A managed list is resolved against the
      * bundled catalog fail-to-start (see services/bundled-plugins.ts).
@@ -730,6 +738,7 @@ export async function createApp(
     }),
   );
   api.use(assetRoutes(db, opts.storageService));
+  api.use(companyMemoryRoutes(db));
   api.use(projectToolRoutes(db));
   api.use(projectRoutes(db));
   api.use(caseRoutes(db, opts.storageService));
@@ -751,6 +760,9 @@ export async function createApp(
   api.use(executionWorkspaceRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(emailRoutes(db, emailChannels));
   api.use(goalRoutes(db));
+  api.use(meetingRoutes(db, { pluginWorkerManager: workerManager }));
+  api.use(directChatRoutes(db, { pluginWorkerManager: workerManager }));
+  api.use(researchLabRoutes(db));
   api.use(onboardingSeedRoutes(db));
   api.use(boardChatRoutes(db, { deploymentMode: opts.deploymentMode }));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
@@ -766,12 +778,15 @@ export async function createApp(
     }),
   );
   const trustedLocalStdioRuntimeHost =
-    process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST ??
-    process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST ??
+    process.env.PAPERCLAW_TRUSTED_MCP_RUNTIME_HOST ??
+    process.env.PAPERCLAW_TOOL_RUNTIME_TRUSTED_HOST ??
     null;
   api.use(costRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(activityRoutes(db));
+  api.use(toolPermissionRoutes(db));
   api.use(dashboardRoutes(db));
+  api.use(outcomeCenterRoutes(db));
+  api.use(opsIncidentRoutes(db));
   api.use(attentionRoutes(db));
   api.use(decisionTrainingRoutes(db));
   api.use(decisionRoutes(db, opts.decisionServiceOptions));
@@ -906,6 +921,10 @@ export async function createApp(
     },
   );
   runtimePluginLoader = loader;
+  api.use(marketplaceRoutes(db, {
+    pluginLoader: loader,
+    pluginLifecycle: lifecycle,
+  }));
   api.use(toolGatewayRoutes(db, toolGateway));
   api.use(
     pluginRoutes(
@@ -1003,7 +1022,7 @@ export async function createApp(
     } else {
       console.warn("[paperclip] UI dist not found; running in API-only mode");
     }
-    if (process.env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE === "tailscale_https") {
+    if (process.env.PAPERCLAW_MANAGED_RUNTIME_EXPOSURE === "tailscale_https") {
       // The managed-runtime supervisor waits for the app port AND its derived
       // Vite HMR companion port to bind before publishing the service. Static
       // mode has no Vite, so bind the same placeholder listener dev mode uses
@@ -1028,14 +1047,14 @@ export async function createApp(
     const hmrPort = resolveViteHmrPort(opts.serverPort);
     const hmrHost = resolveViteHmrHost(opts.bindHost);
     const hmrProtocol = resolveViteHmrProtocol(
-      process.env.PAPERCLIP_VITE_HMR_PROTOCOL,
+      process.env.PAPERCLAW_VITE_HMR_PROTOCOL,
     );
     const hmrServer = createHttpServer((_req, res) => {
       res.writeHead(426, { "Content-Type": "text/plain" });
       res.end("Upgrade Required");
     });
     const { createServer: createViteServer } = await import("vite");
-    const configuredViteCacheDir = process.env.PAPERCLIP_VITE_CACHE_DIR?.trim();
+    const configuredViteCacheDir = process.env.PAPERCLAW_VITE_CACHE_DIR?.trim();
     const vite = await createViteServer({
       root: uiRoot,
       ...(configuredViteCacheDir
@@ -1240,7 +1259,7 @@ export async function createApp(
   // installed bundle only records the `ready` status and does not spawn a
   // worker (see activateReadyPlugin in services/plugin-lifecycle.ts).
   //
-  // Managed instances (`plugins.autoInstall` from PAPERCLIP_MANAGED_CONFIG)
+  // Managed instances (`plugins.autoInstall` from PAPERCLAW_MANAGED_CONFIG)
   // drive the key list from the control plane; self-hosted instances keep
   // the pre-existing behavior of ensuring only the kubernetes bundle.
   //

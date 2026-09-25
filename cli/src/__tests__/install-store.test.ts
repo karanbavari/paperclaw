@@ -41,7 +41,7 @@ describe("managed install store", () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-store-"));
     paths = resolveInstallStorePaths({
       homeDir: path.join(root, "home"),
-      paperclipHome: path.join(root, "home", ".paperclip"),
+      paperclipHome: path.join(root, "home", ".paperclaw"),
     });
   });
 
@@ -110,7 +110,7 @@ describe("managed install store", () => {
     const shim = fs.readFileSync(paths.shimPath, "utf8");
     expect(shim).toContain(process.execPath);
     expect(shim).toContain(paths.currentPath);
-    expect(shim).not.toContain("PAPERCLIP_HOME");
+    expect(shim).not.toContain("PAPERCLAW_HOME");
     expect(fs.statSync(paths.shimPath).mode & 0o777).toBe(0o755);
 
     const rcPath = path.join(root, "home", ".bashrc");

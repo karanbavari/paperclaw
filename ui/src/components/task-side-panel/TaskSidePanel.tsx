@@ -12,7 +12,7 @@ import {
   isArtifactReviewDocumentKey,
   type Issue,
   type IssueDocument,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   Box,
   FileCode2,

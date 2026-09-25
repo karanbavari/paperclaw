@@ -2383,10 +2383,10 @@ impl CodexCommandExecutor {
                 let key = args[index + 1].split('=').next().unwrap_or("");
                 if matches!(
                     key,
-                    "permissions.paperclip-runner-workspace-only.filesystem"
-                        | "permissions.paperclip-runner-workspace-read-only.filesystem"
-                        | "permissions.paperclip-runner-workspace-only.network.enabled"
-                        | "permissions.paperclip-runner-workspace-read-only.network.enabled"
+                    "permissions.paperclaw-runner-workspace-only.filesystem"
+                        | "permissions.paperclaw-runner-workspace-read-only.filesystem"
+                        | "permissions.paperclaw-runner-workspace-only.network.enabled"
+                        | "permissions.paperclaw-runner-workspace-read-only.network.enabled"
                         | "shell_environment_policy.inherit"
                         | "shell_environment_policy.ignore_default_excludes"
                         | "shell_environment_policy.include_only"
@@ -4738,7 +4738,7 @@ mod tests {
             "-c",
             "shell_environment_policy.set={PATH=\"/run/b\"}",
             "-c",
-            "shell_environment_policy.include_only=[\"PAPERCLIP_GITHUB_BROKER_TOKEN\"]",
+            "shell_environment_policy.include_only=[\"PAPERCLAW_GITHUB_BROKER_TOKEN\"]",
             "--disable",
             "image_generation",
             "app-server",

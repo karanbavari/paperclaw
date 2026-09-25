@@ -14,7 +14,7 @@
   },
   "runner": {
     "package": {
-      "name": "@paperclipai/paperclip-runner",
+      "name": "@kesarcloud/paperclip-runner",
       "version": "0.0.0"
     },
     "binary": {
@@ -247,7 +247,7 @@
     "uri": "artifact://native/attempt_semantic_denial_0001/",
     "sha256": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
     "byteSize": 4096,
-    "mediaType": "application/vnd.paperclip.runner-artifact-root+json"
+    "mediaType": "application/vnd.paperclaw.runner-artifact-root+json"
   },
   "artifacts": [
     {

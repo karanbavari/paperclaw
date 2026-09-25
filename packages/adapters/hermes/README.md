@@ -61,14 +61,14 @@ normal Paperclip use.
 ### 1. Optional: override the built-in for adapter development
 
 For local adapter development, install the package from a local path in Adapter
-manager, or add an entry to `~/.paperclip/adapter-plugins.json` and restart
+manager, or add an entry to `~/.paperclaw/adapter-plugins.json` and restart
 Paperclip. The external package can override either built-in Hermes adapter
 while it is enabled:
 
 ```json
 [
   {
-    "packageName": "@paperclipai/hermes-paperclip-adapter",
+    "packageName": "@kesarcloud/hermes-paperclip-adapter",
     "localPath": "/absolute/path/to/paperclip/packages/adapters/hermes",
     "type": "hermes_local",
     "installedAt": "2026-06-23T00:00:00.000Z"
@@ -146,25 +146,25 @@ with `POST /v1/runs/{run_id}/stop`.
 
 ### Compatibility with the old gateway package
 
-`@paperclipai/adapter-hermes-gateway` remains as a deprecated compatibility shim
+`@kesarcloud/adapter-hermes-gateway` remains as a deprecated compatibility shim
 for one release. It re-exports the gateway entrypoints from
-`@paperclipai/hermes-paperclip-adapter/gateway` and preserves the legacy exports
+`@kesarcloud/hermes-paperclip-adapter/gateway` and preserves the legacy exports
 for existing plugin installs. New installs and built-in Paperclip registrations
-should use `@paperclipai/hermes-paperclip-adapter`; the adapter type remains
+should use `@kesarcloud/hermes-paperclip-adapter`; the adapter type remains
 `hermes_gateway`.
 
 ### Runtime API guidance
 
 Hermes receives Paperclip runtime identity through environment variables:
 
-- `PAPERCLIP_API_URL`
-- `PAPERCLIP_API_KEY`
-- `PAPERCLIP_RUN_ID`
+- `PAPERCLAW_API_URL`
+- `PAPERCLAW_API_KEY`
+- `PAPERCLAW_RUN_ID`
 
 Prompts should reference those variables directly. Command output may redact
 secret values, so do not copy printed tokens into comments or config. Use
-`Authorization: Bearer $PAPERCLIP_API_KEY` on Paperclip API requests and
-`X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID` on mutating issue requests. For
+`Authorization: Bearer $PAPERCLAW_API_KEY` on Paperclip API requests and
+`X-PaperClaw-Run-Id: $PAPERCLAW_RUN_ID` on mutating issue requests. For
 multiline comments or status updates, preserve newlines with a heredoc plus
 `jq --arg`.
 
@@ -177,15 +177,15 @@ the same as Paperclip waking Hermes through `hermes_local` or `hermes_gateway`.
 Configure Paperclip access in Hermes env/profile secrets, not prompt text:
 
 ```bash
-PAPERCLIP_API_URL=http://127.0.0.1:3100/api
-PAPERCLIP_BRIDGE_API_KEY=<task-bridge-scoped-agent-api-key>
+PAPERCLAW_API_URL=http://127.0.0.1:3100/api
+PAPERCLAW_BRIDGE_API_KEY=<task-bridge-scoped-agent-api-key>
 ```
 
 Optional env values:
 
-- `PAPERCLIP_COMPANY_ID`
-- `PAPERCLIP_AGENT_ID`
-- `PAPERCLIP_RUN_ID`
+- `PAPERCLAW_COMPANY_ID`
+- `PAPERCLAW_AGENT_ID`
+- `PAPERCLAW_RUN_ID`
 
 The bundled `paperclip-task-bridge` skill provides deterministic helper
 commands:
@@ -339,4 +339,4 @@ MIT — see [LICENSE](LICENSE)
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent) — The AI agent this adapter runs
 - [Paperclip](https://github.com/paperclipai/paperclip) — The orchestration platform
 - [Nous Research](https://nousresearch.com) — The team behind Hermes
-- [Paperclip Docs](https://docs.paperclip.ing) — Paperclip documentation
+- [Paperclip Docs](https://docs.paperclaw.ing) — Paperclip documentation

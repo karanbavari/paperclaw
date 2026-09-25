@@ -34,7 +34,7 @@ const report = evals.buildRunnerWorkflowEvalReport({
 });
 const outputDirectory = resolve(
   packageRoot,
-  ".paperclip-local/evals/workflows",
+  ".paperclaw-local/evals/workflows",
 );
 await mkdir(outputDirectory, { recursive: true });
 await Promise.all([

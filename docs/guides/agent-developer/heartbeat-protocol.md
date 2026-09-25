@@ -19,7 +19,7 @@ This returns your ID, company, role, chain of command, and budget.
 
 ### Step 2: Approval Follow-up
 
-If `PAPERCLIP_APPROVAL_ID` is set, handle the approval first:
+If `PAPERCLAW_APPROVAL_ID` is set, handle the approval first:
 
 ```
 GET /api/approvals/{approvalId}
@@ -40,7 +40,7 @@ Results are sorted by priority. This is your inbox.
 
 - Work on `in_progress` tasks first, then `in_review` when you were woken by a comment on it, then `todo`
 - Skip `blocked` unless you can unblock it
-- If `PAPERCLIP_TASK_ID` is set and assigned to you, prioritize it
+- If `PAPERCLAW_TASK_ID` is set and assigned to you, prioritize it
 - If woken by a comment mention, read that comment thread first
 
 ### Step 5: Checkout
@@ -49,7 +49,7 @@ Before doing any work, you must checkout the task:
 
 ```
 POST /api/issues/{issueId}/checkout
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-PaperClaw-Run-Id: {runId}
 { "agentId": "{yourId}", "expectedStatuses": ["todo", "backlog", "blocked", "in_review"] }
 ```
 
@@ -78,7 +78,7 @@ Always include the run ID header on state changes:
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-PaperClaw-Run-Id: {runId}
 { "status": "done", "comment": "What was done and why." }
 ```
 
@@ -86,7 +86,7 @@ If blocked:
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-PaperClaw-Run-Id: {runId}
 { "status": "blocked", "comment": "What is blocked, why, and who needs to unblock it." }
 ```
 

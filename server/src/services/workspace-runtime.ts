@@ -6,9 +6,9 @@ import os from "node:os";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import type { AdapterRuntimeServiceReport } from "@paperclipai/adapter-utils";
-import type { Db } from "@paperclipai/db";
-import { executionWorkspaces, issueComments, issues, projectWorkspaces, workspaceRuntimeServices } from "@paperclipai/db";
+import type { AdapterRuntimeServiceReport } from "@kesarcloud/adapter-utils";
+import type { Db } from "@kesarcloud/db";
+import { executionWorkspaces, issueComments, issues, projectWorkspaces, workspaceRuntimeServices } from "@kesarcloud/db";
 import {
   DEFAULT_TAILSCALE_HTTPS_EXPOSURE,
   deriveViteHmrPort,
@@ -31,7 +31,7 @@ import {
   type WorkspaceOperationPhase,
   type WorkspaceRuntimeDesiredState,
   type WorkspaceRuntimeServiceStateMap,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { and, desc, eq, gte, inArray, isNull, lte, ne, or } from "drizzle-orm";
 import { asNumber, asString, parseObject, renderTemplate } from "../adapters/utils.js";
 import { conflict } from "../errors.js";
@@ -324,7 +324,7 @@ async function isLoopbackPortAvailable(port: number): Promise<boolean> {
 }
 
 function resolveTailscaleBrokerSocketPath(): string {
-  return process.env.PAPERCLIP_TAILSCALE_BROKER_SOCKET?.trim() || DEFAULT_TAILSCALE_BROKER_SOCKET;
+  return process.env.PAPERCLAW_TAILSCALE_BROKER_SOCKET?.trim() || DEFAULT_TAILSCALE_BROKER_SOCKET;
 }
 
 function defaultWorkspaceRuntimeExposureDeps(): WorkspaceRuntimeExposureDeps {
@@ -382,7 +382,7 @@ export function setWorkspaceRuntimeExposureDepsForTests(deps: WorkspaceRuntimeEx
 export type ManagedRuntimeHttpsMode = "auto" | "off" | "force";
 
 export function resolveManagedRuntimeHttpsMode(): ManagedRuntimeHttpsMode {
-  const raw = process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS?.trim().toLowerCase();
+  const raw = process.env.PAPERCLAW_MANAGED_RUNTIME_HTTPS?.trim().toLowerCase();
   if (raw === "off" || raw === "false" || raw === "0") return "off";
   if (raw === "force") return "force";
   return "auto";
@@ -575,7 +575,7 @@ function isLinkedGitWorktreeCheckout(rootDir: string) {
 
 function discoverWorkspacePackagePaths(rootDir: string): Map<string, string> {
   const packagePaths = new Map<string, string>();
-  const ignoredDirNames = new Set([".git", ".paperclip", "dist", "node_modules"]);
+  const ignoredDirNames = new Set([".git", ".paperclaw", "dist", "node_modules"]);
 
   function visit(dirPath: string) {
     if (!existsSync(dirPath)) return;
@@ -677,7 +677,7 @@ export async function ensureServerWorkspaceLinksCurrent(
 export function sanitizeRuntimeServiceBaseEnv(baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("PAPERCLAW_")) {
       delete env[key];
     }
   }
@@ -2880,25 +2880,25 @@ function buildWorkspaceCommandEnv(input: {
   created: boolean;
 }) {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  env.PAPERCLIP_WORKSPACE_CWD = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.branchName;
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.base.baseCwd;
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.repoRoot;
-  env.PAPERCLIP_WORKSPACE_SOURCE = input.base.source;
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_CREATED = input.created ? "true" : "false";
-  env.PAPERCLIP_PROJECT_ID = input.base.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
-  env.PAPERCLIP_AGENT_ID = input.agent.id ?? "";
-  env.PAPERCLIP_AGENT_NAME = input.agent.name;
-  env.PAPERCLIP_COMPANY_ID = input.agent.companyId;
-  env.PAPERCLIP_ISSUE_ID = input.issue?.id ?? "";
-  env.PAPERCLIP_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
-  env.PAPERCLIP_ISSUE_TITLE = input.issue?.title ?? "";
-  env.PAPERCLIP_ISSUE_WORK_MODE = input.issue?.workMode ?? "";
+  env.PAPERCLAW_WORKSPACE_CWD = input.worktreePath;
+  env.PAPERCLAW_WORKSPACE_PATH = input.worktreePath;
+  env.PAPERCLAW_WORKSPACE_WORKTREE_PATH = input.worktreePath;
+  env.PAPERCLAW_WORKSPACE_BRANCH = input.branchName;
+  env.PAPERCLAW_WORKSPACE_BASE_CWD = input.base.baseCwd;
+  env.PAPERCLAW_WORKSPACE_REPO_ROOT = input.repoRoot;
+  env.PAPERCLAW_WORKSPACE_SOURCE = input.base.source;
+  env.PAPERCLAW_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
+  env.PAPERCLAW_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
+  env.PAPERCLAW_WORKSPACE_CREATED = input.created ? "true" : "false";
+  env.PAPERCLAW_PROJECT_ID = input.base.projectId ?? "";
+  env.PAPERCLAW_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
+  env.PAPERCLAW_AGENT_ID = input.agent.id ?? "";
+  env.PAPERCLAW_AGENT_NAME = input.agent.name;
+  env.PAPERCLAW_COMPANY_ID = input.agent.companyId;
+  env.PAPERCLAW_ISSUE_ID = input.issue?.id ?? "";
+  env.PAPERCLAW_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
+  env.PAPERCLAW_ISSUE_TITLE = input.issue?.title ?? "";
+  env.PAPERCLAW_ISSUE_WORK_MODE = input.issue?.workMode ?? "";
   return env;
 }
 
@@ -3160,18 +3160,18 @@ function buildExecutionWorkspaceCleanupEnv(input: {
   projectWorkspaceCwd?: string | null;
 }) {
   const env: NodeJS.ProcessEnv = sanitizeRuntimeServiceBaseEnv(process.env);
-  env.PAPERCLIP_WORKSPACE_CWD = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_PATH = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH =
+  env.PAPERCLAW_WORKSPACE_CWD = input.workspace.cwd ?? "";
+  env.PAPERCLAW_WORKSPACE_PATH = input.workspace.cwd ?? "";
+  env.PAPERCLAW_WORKSPACE_WORKTREE_PATH =
     input.workspace.providerRef ?? input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
-  env.PAPERCLIP_PROJECT_ID = input.workspace.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
-  env.PAPERCLIP_ISSUE_ID = input.workspace.sourceIssueId ?? "";
+  env.PAPERCLAW_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
+  env.PAPERCLAW_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
+  env.PAPERCLAW_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
+  env.PAPERCLAW_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
+  env.PAPERCLAW_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
+  env.PAPERCLAW_PROJECT_ID = input.workspace.projectId ?? "";
+  env.PAPERCLAW_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
+  env.PAPERCLAW_ISSUE_ID = input.workspace.sourceIssueId ?? "";
   return env;
 }
 
@@ -3277,7 +3277,7 @@ export async function realizeExecutionWorkspace(input: {
   const configuredParentDir = asString(rawStrategy.worktreeParentDir, "");
   const worktreeParentDir = configuredParentDir
     ? resolveConfiguredPath(configuredParentDir, repoRoot)
-    : path.join(repoRoot, ".paperclip", "worktrees");
+    : path.join(repoRoot, ".paperclaw", "worktrees");
   const worktreePath = path.join(worktreeParentDir, branchName);
   if (path.relative(worktreeParentDir, worktreePath).startsWith("..")) {
     throw new WorkspaceRuntimeValidationFailure(
@@ -5189,11 +5189,11 @@ function isPaperclipDevRuntimeService(input: { serviceName?: string | null; comm
   );
 }
 
-export const MANAGED_RUNTIME_PUBLIC_URL_ENV = "PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL";
+export const MANAGED_RUNTIME_PUBLIC_URL_ENV = "PAPERCLAW_MANAGED_RUNTIME_PUBLIC_URL";
 
 const EXPLICIT_RUNTIME_ORIGIN_ENV_KEYS = [
-  "PAPERCLIP_PUBLIC_URL",
-  "PAPERCLIP_AUTH_PUBLIC_BASE_URL",
+  "PAPERCLAW_PUBLIC_URL",
+  "PAPERCLAW_AUTH_PUBLIC_BASE_URL",
   "BETTER_AUTH_URL",
   "BETTER_AUTH_BASE_URL",
 ] as const;
@@ -5209,7 +5209,7 @@ function isLoopbackRuntimeHostname(hostname: string) {
 function managedRuntimeOriginError(serviceName: string, reason: string) {
   return new Error(
     `Runtime service "${serviceName}" cannot derive a browser-reachable OAuth callback origin: ${reason}. `
-    + "Configure PAPERCLIP_PUBLIC_URL or BETTER_AUTH_URL for this service, or publish an HTTPS expose.urlTemplate "
+    + "Configure PAPERCLAW_PUBLIC_URL or BETTER_AUTH_URL for this service, or publish an HTTPS expose.urlTemplate "
     + "that the operator's browser can reach (loopback HTTP is also supported).",
   );
 }
@@ -5704,7 +5704,7 @@ function readWorkspaceSeedOperationEvidence(worktreePath: string): {
   error: string | null;
   metadata: Record<string, unknown>;
 } {
-  const manifestPath = path.join(worktreePath, ".paperclip", "seed-manifest.json");
+  const manifestPath = path.join(worktreePath, ".paperclaw", "seed-manifest.json");
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Record<string, unknown>;
     const state = typeof manifest.state === "string" ? manifest.state : "unknown";
@@ -5747,7 +5747,7 @@ export function resolveRuntimeProvisionCommand(input: {
 
   if (input.workspace.strategy !== "git_worktree") return "";
 
-  const stateDir = path.join(input.workspace.cwd, ".paperclip");
+  const stateDir = path.join(input.workspace.cwd, ".paperclaw");
   const manifestPath = path.join(stateDir, "seed-manifest.json");
   const provisionScript = path.join(
     input.workspace.baseCwd,
@@ -5924,8 +5924,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // An exposed listener MUST be loopback-only or the broker denies it. Env vars
   // alone cannot guarantee that: the process that has to honour them is the
   // *guest checkout's* dev runner, and one from before managed exposure existed
-  // overwrites PAPERCLIP_BIND from its own `--bind` argv and deletes
-  // PAPERCLIP_BIND_HOST — which is exactly how a branch pinned at plain master
+  // overwrites PAPERCLAW_BIND from its own `--bind` argv and deletes
+  // PAPERCLAW_BIND_HOST — which is exactly how a branch pinned at plain master
   // bound 0.0.0.0 and failed every start (PAP-17256). argv is honoured by every
   // dev-runner version, so put the loopback bind there.
   //
@@ -6127,7 +6127,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     uiDevMiddlewareHasTransport
     && isPaperclipDevRuntimeService({ serviceName, command })
   ) {
-    env.PAPERCLIP_UI_DEV_MIDDLEWARE ??= "true";
+    env.PAPERCLAW_UI_DEV_MIDDLEWARE ??= "true";
   }
   if (port) {
     const portEnvKey = asString(portConfig.envKey, "PORT");
@@ -6157,15 +6157,15 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     // can be arbitrarily old (PAP-17256): the `--bind loopback` argv
     // added above, these env vars for a runner that reads them, and HOST for one
     // old enough to ignore both and infer its bind mode from HOST alone.
-    env.PAPERCLIP_BIND = RUNTIME_EXPOSURE_BIND_MODE;
-    env.PAPERCLIP_BIND_HOST = RUNTIME_EXPOSURE_BIND_HOST;
+    env.PAPERCLAW_BIND = RUNTIME_EXPOSURE_BIND_MODE;
+    env.PAPERCLAW_BIND_HOST = RUNTIME_EXPOSURE_BIND_HOST;
     env.HOST = RUNTIME_EXPOSURE_BIND_HOST;
-    env.PAPERCLIP_VITE_HMR_PROTOCOL = "wss";
-    env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE = "tailscale_https";
-    env.PAPERCLIP_ALLOWED_HOSTNAMES = exposureHostname!;
-    env.PAPERCLIP_AUTH_BASE_URL_MODE = "explicit";
-    env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = `https://${exposureHostname}:${port}`;
-    env.PAPERCLIP_PUBLIC_URL = `https://${exposureHostname}:${port}`;
+    env.PAPERCLAW_VITE_HMR_PROTOCOL = "wss";
+    env.PAPERCLAW_MANAGED_RUNTIME_EXPOSURE = "tailscale_https";
+    env.PAPERCLAW_ALLOWED_HOSTNAMES = exposureHostname!;
+    env.PAPERCLAW_AUTH_BASE_URL_MODE = "explicit";
+    env.PAPERCLAW_AUTH_PUBLIC_BASE_URL = `https://${exposureHostname}:${port}`;
+    env.PAPERCLAW_PUBLIC_URL = `https://${exposureHostname}:${port}`;
   }
 
   const expose = parseObject(input.service.expose);

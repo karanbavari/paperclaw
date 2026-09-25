@@ -60,8 +60,8 @@ const scanIntervalMs = 1500;
 const autoRestartPollIntervalMs = 2500;
 const gracefulShutdownTimeoutMs = 10_000;
 const changedPathSampleLimit = 5;
-const devServerStatusFilePath = path.join(repoRoot, ".paperclip", "dev-server-status.json");
-const devServerRestartRequestFilePath = path.join(repoRoot, ".paperclip", "dev-server-restart-request.json");
+const devServerStatusFilePath = path.join(repoRoot, ".paperclaw", "dev-server-status.json");
+const devServerRestartRequestFilePath = path.join(repoRoot, ".paperclaw", "dev-server-restart-request.json");
 const devServerStatusToken = mode === "dev" ? randomUUID() : null;
 const devServerStatusTokenHeader = "x-paperclip-dev-server-status-token";
 
@@ -97,8 +97,8 @@ const ignoredDirectoryNames = new Set([
 ]);
 
 const ignoredRelativePaths = new Set([
-  ".paperclip/dev-server-restart-request.json",
-  ".paperclip/dev-server-status.json",
+  ".paperclaw/dev-server-restart-request.json",
+  ".paperclaw/dev-server-status.json",
 ]);
 
 const tailscaleAuthFlagNames = new Set([
@@ -109,7 +109,7 @@ const tailscaleAuthFlagNames = new Set([
 let tailscaleAuth = false;
 let bindMode: BindMode | null = null;
 let bindHost: string | null = null;
-const managedRuntimeExposure = process.env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE === "tailscale_https";
+const managedRuntimeExposure = process.env.PAPERCLAW_MANAGED_RUNTIME_EXPOSURE === "tailscale_https";
 const forwardedArgs: string[] = [];
 
 for (let index = 0; index < cliArgs.length; index += 1) {
@@ -165,23 +165,23 @@ if (bindMode === "custom" && !bindHost) {
 // Managed HTTPS runtimes serve the built UI bundle: the Vite dev middleware's
 // unbundled module waterfall stalls behind the Tailscale HTTPS proxy and the
 // first page load in a fresh browser profile stays blank forever (PAP-18043).
-const explicitUiDevMiddleware = process.env.PAPERCLIP_UI_DEV_MIDDLEWARE;
+const explicitUiDevMiddleware = process.env.PAPERCLAW_UI_DEV_MIDDLEWARE;
 const serveBuiltUiForManagedRuntime = managedRuntimeExposure && explicitUiDevMiddleware === undefined;
 const env: NodeJS.ProcessEnv = {
   ...process.env,
-  PAPERCLIP_UI_DEV_MIDDLEWARE: explicitUiDevMiddleware ?? (serveBuiltUiForManagedRuntime ? "false" : "true"),
+  PAPERCLAW_UI_DEV_MIDDLEWARE: explicitUiDevMiddleware ?? (serveBuiltUiForManagedRuntime ? "false" : "true"),
 };
 
 if (mode === "dev") {
-  env.PAPERCLIP_DEV_SERVER_STATUS_FILE = devServerStatusFilePath;
-  env.PAPERCLIP_DEV_SERVER_STATUS_TOKEN = devServerStatusToken ?? "";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY ??= "true";
+  env.PAPERCLAW_DEV_SERVER_STATUS_FILE = devServerStatusFilePath;
+  env.PAPERCLAW_DEV_SERVER_STATUS_TOKEN = devServerStatusToken ?? "";
+  env.PAPERCLAW_MIGRATION_AUTO_APPLY ??= "true";
 }
 
 if (mode === "watch") {
-  delete env.PAPERCLIP_DEV_SERVER_STATUS_TOKEN;
-  env.PAPERCLIP_MIGRATION_PROMPT ??= "never";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY ??= "true";
+  delete env.PAPERCLAW_DEV_SERVER_STATUS_TOKEN;
+  env.PAPERCLAW_MIGRATION_PROMPT ??= "never";
+  env.PAPERCLAW_MIGRATION_AUTO_APPLY ??= "true";
 }
 
 if (tailscaleAuth || bindMode) {
@@ -189,31 +189,31 @@ if (tailscaleAuth || bindMode) {
   if (tailscaleAuth) {
     console.log("[paperclip] note: --tailscale-auth/--authenticated-private are legacy aliases for --bind lan");
   }
-  env.PAPERCLIP_BIND = effectiveBind;
+  env.PAPERCLAW_BIND = effectiveBind;
   if (bindHost) {
-    env.PAPERCLIP_BIND_HOST = bindHost;
+    env.PAPERCLAW_BIND_HOST = bindHost;
   } else {
-    delete env.PAPERCLIP_BIND_HOST;
+    delete env.PAPERCLAW_BIND_HOST;
   }
   if (effectiveBind === "loopback" && !tailscaleAuth) {
-    delete env.PAPERCLIP_DEPLOYMENT_MODE;
-    delete env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
-    delete env.PAPERCLIP_AUTH_BASE_URL_MODE;
+    delete env.PAPERCLAW_DEPLOYMENT_MODE;
+    delete env.PAPERCLAW_DEPLOYMENT_EXPOSURE;
+    delete env.PAPERCLAW_AUTH_BASE_URL_MODE;
     console.log("[paperclip] dev mode: local_trusted (bind=loopback)");
   } else {
-    env.PAPERCLIP_DEPLOYMENT_MODE = "authenticated";
-    env.PAPERCLIP_DEPLOYMENT_EXPOSURE = "private";
-    env.PAPERCLIP_AUTH_BASE_URL_MODE = managedRuntimeExposure ? "explicit" : "auto";
+    env.PAPERCLAW_DEPLOYMENT_MODE = "authenticated";
+    env.PAPERCLAW_DEPLOYMENT_EXPOSURE = "private";
+    env.PAPERCLAW_AUTH_BASE_URL_MODE = managedRuntimeExposure ? "explicit" : "auto";
     console.log(
       `[paperclip] dev mode: authenticated/private (bind=${effectiveBind}${bindHost ? `:${bindHost}` : ""})`,
     );
   }
 } else {
-  delete env.PAPERCLIP_BIND;
-  delete env.PAPERCLIP_BIND_HOST;
-  delete env.PAPERCLIP_DEPLOYMENT_MODE;
-  delete env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
-  delete env.PAPERCLIP_AUTH_BASE_URL_MODE;
+  delete env.PAPERCLAW_BIND;
+  delete env.PAPERCLAW_BIND_HOST;
+  delete env.PAPERCLAW_DEPLOYMENT_MODE;
+  delete env.PAPERCLAW_DEPLOYMENT_EXPOSURE;
+  delete env.PAPERCLAW_AUTH_BASE_URL_MODE;
   console.log("[paperclip] dev mode: local_trusted (default)");
 }
 
@@ -411,14 +411,14 @@ async function runPnpm(args: string[], options: {
 
 async function getMigrationStatusPayload() {
   const status = await runPnpm(
-    ["--silent", "--filter", "@paperclipai/db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--silent", "--filter", "@kesarcloud/db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[paperclip] Command failed with code ${status.code}: pnpm --filter @paperclipai/db exec tsx src/migration-status.ts --json\n`,
+        `[paperclip] Command failed with code ${status.code}: pnpm --filter @kesarcloud/db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -457,7 +457,7 @@ async function refreshPendingMigrations() {
 
 async function maybePreflightMigrations(options: { interactive?: boolean; autoApply?: boolean; exitOnDecline?: boolean } = {}) {
   const interactive = options.interactive ?? mode === "watch";
-  const autoApply = options.autoApply ?? env.PAPERCLIP_MIGRATION_AUTO_APPLY === "true";
+  const autoApply = options.autoApply ?? env.PAPERCLAW_MIGRATION_AUTO_APPLY === "true";
   const exitOnDecline = options.exitOnDecline ?? mode === "watch";
 
   const payload = await refreshPendingMigrations();
@@ -516,7 +516,7 @@ async function maybePreflightMigrations(options: { interactive?: boolean; autoAp
 async function buildPluginSdk() {
   console.log("[paperclip] building plugin sdk...");
   const result = await runPnpm(
-    ["--filter", "@paperclipai/plugin-sdk", "build"],
+    ["--filter", "@kesarcloud/plugin-sdk", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -534,7 +534,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
     [
       "--silent",
       "--filter",
-      "@paperclipai/server",
+      "@kesarcloud/server",
       "exec",
       "tsx",
       "src/dev-native-runner-status.ts",
@@ -561,7 +561,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
 async function buildPaperclipRunner() {
   console.log("[paperclip] building paperclip runner...");
   const typescriptResult = await runPnpm(
-    ["--filter", "@paperclipai/paperclip-runner", "build:typescript"],
+    ["--filter", "@kesarcloud/paperclip-runner", "build:typescript"],
     { stdio: "inherit" },
   );
   if (typescriptResult.signal) {
@@ -577,7 +577,7 @@ async function buildPaperclipRunner() {
     !paperclipRunnerBinaryNeedsBuild({
       repoRoot,
       nativeRunnerRequired: await getNativeRunnerRequired(),
-      configuredBinary: env.PAPERCLIP_RUNNER_BINARY,
+      configuredBinary: env.PAPERCLAW_RUNNER_BINARY,
     })
   ) {
     return;
@@ -585,7 +585,7 @@ async function buildPaperclipRunner() {
 
   console.log("[paperclip] building paperclip runner native binary...");
   const binaryResult = await runPnpm(
-    ["--filter", "@paperclipai/paperclip-runner", "build:binary"],
+    ["--filter", "@kesarcloud/paperclip-runner", "build:binary"],
     { stdio: "inherit" },
   );
   if (binaryResult.signal) {
@@ -629,7 +629,7 @@ function uiBundleIsFresh(): boolean {
 async function buildUiBundleForManagedRuntime(): Promise<boolean> {
   console.log("[paperclip] managed runtime: building the UI bundle for static serving...");
   const result = await runPnpm(
-    ["--filter", "@paperclipai/ui", "build"],
+    ["--filter", "@kesarcloud/ui", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -713,7 +713,7 @@ async function startServerChild() {
   const serverScript = mode === "watch" ? "dev:watch" : "dev";
   child = spawn(
     pnpmBin,
-    ["--filter", "@paperclipai/server", serverScript, ...forwardedArgs],
+    ["--filter", "@kesarcloud/server", serverScript, ...forwardedArgs],
     { stdio: "inherit", env, shell: process.platform === "win32" },
   );
 
@@ -894,7 +894,7 @@ if (serveBuiltUiForManagedRuntime) {
 }
 await maybePreflightMigrations();
 if (uiBundleBuild) {
-  env.PAPERCLIP_UI_DEV_MIDDLEWARE = (await uiBundleBuild) ? "false" : "true";
+  env.PAPERCLAW_UI_DEV_MIDDLEWARE = (await uiBundleBuild) ? "false" : "true";
 }
 await startServerChild();
 installDevIntervals();

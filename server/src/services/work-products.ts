@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { heartbeatRunEvents, issueWorkProducts, workspaceRuntimeServices } from "@paperclipai/db";
-import type { IssueWorkProduct } from "@paperclipai/shared";
+import type { Db } from "@kesarcloud/db";
+import { heartbeatRunEvents, issueWorkProducts, workspaceRuntimeServices } from "@kesarcloud/db";
+import type { IssueWorkProduct } from "@kesarcloud/shared";
 import { insertRowsInChunks } from "./batch-insert.js";
 import {
   createPullRequestMergeDetailsResolver,

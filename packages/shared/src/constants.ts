@@ -703,6 +703,28 @@ export const APPROVAL_STATUSES = [
 ] as const;
 export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number];
 
+export const RESEARCH_LAB_TYPES = [
+  "research",
+  "prototype",
+  "experiment",
+  "business_case",
+] as const;
+export type ResearchLabType = (typeof RESEARCH_LAB_TYPES)[number];
+
+export const RESEARCH_LAB_STATUSES = [
+  "draft",
+  "researching",
+  "prototype_running",
+  "ceo_review",
+  "board_review",
+  "changes_requested",
+  "approved",
+  "rejected",
+  "archived",
+  "trashed",
+] as const;
+export type ResearchLabStatus = (typeof RESEARCH_LAB_STATUSES)[number];
+
 export const SECRET_PROVIDERS = [
   "local_encrypted",
   "aws_secrets_manager",
@@ -948,6 +970,8 @@ export const LIVE_EVENT_TYPES = [
   "agent.session.goal.changed",
   "agent.status",
   "activity.logged",
+  "direct_chat.message.created",
+  "direct_chat.message.updated",
   "external_object.updated",
   "plugin.ui.updated",
   "plugin.worker.crashed",
@@ -1024,6 +1048,27 @@ export const PERMISSION_KEYS = [
   "joins:approve",
 ] as const;
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
+
+export const TOOL_PERMISSION_EFFECTS = [
+  "inherit",
+  "allow",
+  "deny",
+  "approval_required",
+  "budget_limited",
+] as const;
+export type ToolPermissionEffect = (typeof TOOL_PERMISSION_EFFECTS)[number];
+
+export const TOOL_PERMISSION_SUBJECT_TYPES = ["company", "agent"] as const;
+export type ToolPermissionSubjectType = (typeof TOOL_PERMISSION_SUBJECT_TYPES)[number];
+
+export const TOOL_PERMISSION_DECISIONS = [
+  "allowed",
+  "denied",
+  "approval_required",
+  "budget_limited",
+  "budget_blocked",
+] as const;
+export type ToolPermissionDecision = (typeof TOOL_PERMISSION_DECISIONS)[number];
 
 export const TOOL_APPLICATION_TYPES = ["mcp_http", "mcp_stdio", "paperclip_plugin", "a2a", "chat"] as const;
 export type ToolApplicationType = (typeof TOOL_APPLICATION_TYPES)[number];
@@ -1305,6 +1350,15 @@ export const PLUGIN_CATEGORIES = [
   "connector",
   "workspace",
   "automation",
+  // PaperClaw compatibility categories used by existing local plugins.
+  "communication",
+  "courier-logistics",
+  "developer",
+  "ecommerce",
+  "finance",
+  "legal_law",
+  "productivity",
+  "real-estate",
   "ui",
 ] as const;
 export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number];
@@ -1406,6 +1460,7 @@ export const PLUGIN_CAPABILITIES = [
   "api.routes.register",
   "http.outbound",
   "secrets.read-ref",
+  "secrets.write-ref",
   "environment.drivers.register",
   "local.folders",
   // Agent Tools

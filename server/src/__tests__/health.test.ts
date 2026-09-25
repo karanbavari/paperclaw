@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
 import request from "supertest";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import { healthRoutes } from "../routes/health.js";
 import * as devServerStatus from "../dev-server-status.js";
 import { serverVersion } from "../version.js";
@@ -97,12 +97,12 @@ describe("GET /health", () => {
 
   it("exposes public stack metadata on cloud-simulated health", async () => {
     const app = createApp(undefined, testServerInfo, undefined, {
-      PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN: "tenant-token",
-      PAPERCLIP_CLOUD_STACK_ID: "stack-1",
-      PAPERCLIP_STACK_SLUG: "acme",
-      PAPERCLIP_CLOUD_ACCOUNT_GROUP_ID: "account-group-1",
-      PAPERCLIP_PRIMARY_HOST: "acme.paperclip.app",
-      PAPERCLIP_CLOUD_API_ORIGIN: "https://app.paperclip.app",
+      PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN: "tenant-token",
+      PAPERCLAW_CLOUD_STACK_ID: "stack-1",
+      PAPERCLAW_STACK_SLUG: "acme",
+      PAPERCLAW_CLOUD_ACCOUNT_GROUP_ID: "account-group-1",
+      PAPERCLAW_PRIMARY_HOST: "acme.paperclaw.app",
+      PAPERCLAW_CLOUD_API_ORIGIN: "https://app.paperclaw.app",
     });
 
     const res = await request(app).get("/health");
@@ -112,13 +112,13 @@ describe("GET /health", () => {
       managed: true,
       managedBy: "paperclip-cloud",
       stackSlug: "acme",
-      cloudBaseUrl: "https://app.paperclip.app",
+      cloudBaseUrl: "https://app.paperclaw.app",
     });
   });
 
   it("lists operator-hidden settings and drops unknown keys", async () => {
     const app = createApp(undefined, testServerInfo, undefined, {
-      PAPERCLIP_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
+      PAPERCLAW_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
     });
 
     const res = await request(app).get("/health");
@@ -532,7 +532,7 @@ describe("GET /health", () => {
   });
 
   it("reports bootstrapStatus ready for cloud-managed instances regardless of instance admin count", async () => {
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-tenant-server-token");
+    vi.stubEnv("PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN", "test-tenant-server-token");
     const { healthRoutes } = await import("../routes/health.js");
     const db = {
       execute: vi.fn().mockResolvedValue([{ "?column?": 1 }]),

@@ -21,14 +21,14 @@ reviewed schemas and authority boundaries.
 
 ```ts
 import {
-  PAPERCLIP_SEMANTIC_ACTION_CATALOG,
+  PAPERCLAW_SEMANTIC_ACTION_CATALOG,
   paperclipSemanticAction,
-} from "@paperclipai/paperclip-runner";
+} from "@kesarcloud/paperclip-runner";
 
 const writeDocument = paperclipSemanticAction("write_document");
 ```
 
-`PAPERCLIP_SEMANTIC_ACTION_CATALOG` and every nested declaration are frozen.
+`PAPERCLAW_SEMANTIC_ACTION_CATALOG` and every nested declaration are frozen.
 `paperclipSemanticAction` returns `undefined` for unknown operation IDs.
 
 ## Run-scoped authority
@@ -48,7 +48,7 @@ allowlisted references only.
 runtime declarations. Change the TypeScript source, then run:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner generate:semantic-action-catalog
+pnpm --filter @kesarcloud/paperclip-runner generate:semantic-action-catalog
 ```
 
 The package build and catalog tests compare the checked-in inventory byte for

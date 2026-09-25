@@ -148,7 +148,7 @@ function registerModuleMocks() {
 
   // The adapter registry reads the disabled set from this store. Mock it so a
   // test can declare an adapter disabled without writing to the real
-  // ~/.paperclip/adapter-settings.json.
+  // ~/.paperclaw/adapter-settings.json.
   vi.doMock("../services/adapter-plugin-store.js", () => ({
     getDisabledAdapterTypes: mockAdapterPluginStore.getDisabledAdapterTypes,
     isAdapterDisabled: (type: string) =>
@@ -599,7 +599,7 @@ describe("agent routes adapter validation", () => {
 
   it("refuses to create an agent on an adapter the instance has disabled", async () => {
     // A disabled adapter is one the instance cannot run (e.g. curated out of
-    // PAPERCLIP_ADAPTERS). Creating an agent on it "succeeds" and then every
+    // PAPERCLAW_ADAPTERS). Creating an agent on it "succeeds" and then every
     // run of that agent dies at lease time with "not in the configured adapter
     // registry", so the refusal belongs here, where it can name the choices.
     const { registerServerAdapter } = await import("../adapters/index.js");

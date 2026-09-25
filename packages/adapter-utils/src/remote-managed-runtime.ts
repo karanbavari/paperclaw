@@ -125,13 +125,13 @@ export async function prepareRemoteManagedRuntime(input: {
   const workspaceRemoteDir = syncWorkspace
     ? path.posix.join(
         baseWorkspaceRemoteDir,
-        ".paperclip-runtime",
+        ".paperclaw-runtime",
         "runs",
         input.runId,
         "workspace",
       )
     : baseWorkspaceRemoteDir;
-  const runtimeRootDir = path.posix.join(workspaceRemoteDir, ".paperclip-runtime", input.adapterKey);
+  const runtimeRootDir = path.posix.join(workspaceRemoteDir, ".paperclaw-runtime", input.adapterKey);
 
   const preparedWorkspace = syncWorkspace
     ? await prepareWorkspaceForSshExecution({
@@ -144,8 +144,8 @@ export async function prepareRemoteManagedRuntime(input: {
   const baselineSnapshot = preparedWorkspace
     ? await captureDirectorySnapshot(input.workspaceLocalDir, {
         exclude: preparedWorkspace.gitBacked
-          ? [...GIT_ARCHIVE_EXCLUDES, ".paperclip-runtime"]
-          : [".paperclip-runtime"],
+          ? [...GIT_ARCHIVE_EXCLUDES, ".paperclaw-runtime"]
+          : [".paperclaw-runtime"],
       })
     : null;
 

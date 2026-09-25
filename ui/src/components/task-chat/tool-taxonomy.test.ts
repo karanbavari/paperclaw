@@ -44,7 +44,7 @@ describe("tool activity vocabulary", () => {
     expect(mcpToolIdentity("mcp.linear-server.search_issues")).toEqual({ namespace: "linear-server", name: "search_issues" });
     expect(mcpToolSegment("mcp__linear-server__search_issues")).toBe("Search issues");
     expect(mcpToolSegment("mcp.linear-server.search_issues")).toBe("Search issues");
-    const mcp = toolActivityPresentation({ name: "mcp.paperclip.search_tasks" });
+    const mcp = toolActivityPresentation({ name: "mcp.paperclaw.search_tasks" });
     expect(mcp).toMatchObject({
       family: "mcp",
       icon: McpIcon,

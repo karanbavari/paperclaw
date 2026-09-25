@@ -55,7 +55,7 @@ async function setup(page: Page, request: APIRequestContext, classic: boolean) {
   ).toBeVisible();
   const composer = classic
     ? page.getByTestId("issue-chat-composer")
-    : page.locator(".paperclip-task-chat-composer");
+    : page.locator(".paperclaw-task-chat-composer");
   const editor = composer.getByRole("textbox", {
     name: "editable markdown",
     exact: true,

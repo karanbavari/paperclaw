@@ -429,7 +429,7 @@ None of these gates is represented as a successful live conversation.
 
 - A live-readiness audit found that a webhook-only tunnel was also being used
   as the board origin. That produced valid-looking Paperclip links whose host
-  intentionally returned 404. `PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL` now controls
+  intentionally returned 404. `PAPERCLAW_CHAT_WEBHOOK_PUBLIC_URL` now controls
   only provider callback URLs; the board origin still controls authentication,
   identity confirmation, task links, and trusted hosts. Invalid explicit ingress
   URLs refuse startup without echoing their value. Local/private task links are
@@ -462,7 +462,7 @@ Final combined verification for these changes:
   imported/pasted credential payloads, reveal/hide, and error recovery.
 - Shared, server, and UI typechecks passed. Design token gates and diff checks
   passed. The broad workspace suite was not rerun and is not claimed green.
-- Reports are retained under `.paperclip-runtime/chat-adapters-live/` as
+- Reports are retained under `.paperclaw-runtime/chat-adapters-live/` as
   `origin-verified-integration.json`, `origin-final-unit.json`,
   `origin-verified-ui-unit.json`, and `origin-verified-browser.log`.
 
@@ -478,7 +478,7 @@ Runtime checkpoint after commit `f535dde54`:
   production build also passed (existing chunk-size warnings only).
 - The isolated 3103 server reports `f535dde54` and ready startup recovery. Its
   board/auth origin is `http://127.0.0.1:3103`; only
-  `PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL` uses the current Cloudflare ingress.
+  `PAPERCLAW_CHAT_WEBHOOK_PUBLIC_URL` uses the current Cloudflare ingress.
 - GitHub setup still advertises the exact existing public webhook path. Public
   health and company API checks remain **404**; an unsigned recognized GitHub
   `ping` remains **401**. No board trust or exposure was broadened.
@@ -527,7 +527,7 @@ unqualified until the App PEM is entered and Paperclip connects.
 The corresponding pre-PEM installation regression and the complete chat
 integration suite passed **252/252**, zero skips, on fresh database
 `chat_adapters_test_20260907_github_install_draft`; report:
-`.paperclip-runtime/chat-adapters-live/github-install-draft-integration.json`.
+`.paperclaw-runtime/chat-adapters-live/github-install-draft-integration.json`.
 Only the regression and evidence documentation changed in this checkpoint;
 the running, previously browser-qualified implementation remains `f535dde54`.
 
@@ -559,7 +559,7 @@ Verification after the fixes:
 - Server `tsc --noEmit`: passed.
 - Fresh full chat integration: **252/252**, zero skips, database
   `chat_adapters_test_20260907_discord_member_02`; report
-  `.paperclip-runtime/chat-adapters-live/discord-member-integration-20260907-02.json`.
+  `.paperclaw-runtime/chat-adapters-live/discord-member-integration-20260907-02.json`.
 - The first fresh run was **251/252** because a Slack exact-redelivery test
   sampled its transport count before prior durable denial effects finished.
   The test now waits for those effects and additionally proves redelivery

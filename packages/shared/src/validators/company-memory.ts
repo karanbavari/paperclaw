@@ -85,7 +85,7 @@ export const createCompanyMemoryItemSchema = z.object({
   confidence: z.number().int().min(0).max(100).optional().default(70),
   importance: z.number().int().min(0).max(100).optional().default(50),
   expiresAt: z.coerce.date().nullable().optional(),
-  metadata: z.record(z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export type CreateCompanyMemoryItem = z.infer<typeof createCompanyMemoryItemSchema>;

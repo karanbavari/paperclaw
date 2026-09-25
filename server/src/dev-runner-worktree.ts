@@ -54,11 +54,11 @@ export function isLinkedGitWorktreeCheckout(rootDir: string): boolean {
 }
 
 export function resolveWorktreeEnvFilePath(rootDir: string): string {
-  return path.resolve(rootDir, ".paperclip", ".env");
+  return path.resolve(rootDir, ".paperclaw", ".env");
 }
 
 export function isWorktreeSeedPending(rootDir: string): boolean {
-  const markerDir = path.resolve(rootDir, ".paperclip");
+  const markerDir = path.resolve(rootDir, ".paperclaw");
   const manifestPath = path.resolve(markerDir, "seed-manifest.json");
   if (existsSync(manifestPath)) {
     return !hasVerifiedWorktreeSeedManifest(manifestPath);
@@ -78,7 +78,7 @@ function resolveHomeAwarePath(value: string): string {
 }
 
 function resolveDefaultWorktreeHome(env: NodeJS.ProcessEnv): string {
-  return path.resolve(expandHomePrefix(env.PAPERCLIP_WORKTREES_DIR?.trim() || "~/.paperclip-worktrees"));
+  return path.resolve(expandHomePrefix(env.PAPERCLAW_WORKTREES_DIR?.trim() || "~/.paperclaw-worktrees"));
 }
 
 function repairStaleMigratedWorktreeEnvEntries(
@@ -86,8 +86,8 @@ function repairStaleMigratedWorktreeEnvEntries(
   entries: Record<string, string>,
   env: NodeJS.ProcessEnv,
 ): Record<string, string> {
-  const localConfigPath = path.resolve(rootDir, ".paperclip", "config.json");
-  const configuredPath = entries.PAPERCLIP_CONFIG?.trim();
+  const localConfigPath = path.resolve(rootDir, ".paperclaw", "config.json");
+  const configuredPath = entries.PAPERCLAW_CONFIG?.trim();
   if (!configuredPath) return entries;
 
   const resolvedConfiguredPath = resolveHomeAwarePath(configuredPath);
@@ -100,9 +100,9 @@ function repairStaleMigratedWorktreeEnvEntries(
   const homeDir = resolveDefaultWorktreeHome(env);
   return {
     ...entries,
-    PAPERCLIP_HOME: homeDir,
-    PAPERCLIP_CONFIG: localConfigPath,
-    PAPERCLIP_CONTEXT: path.resolve(homeDir, "context.json"),
+    PAPERCLAW_HOME: homeDir,
+    PAPERCLAW_CONFIG: localConfigPath,
+    PAPERCLAW_CONTEXT: path.resolve(homeDir, "context.json"),
   };
 }
 

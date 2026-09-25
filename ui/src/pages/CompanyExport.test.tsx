@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ExportFidelityReport } from "@paperclipai/shared/portability-fidelity";
+import type { ExportFidelityReport } from "@kesarcloud/shared/portability-fidelity";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CompanyExport, resolveExportPreviewImageSrc } from "./CompanyExport";
 
@@ -98,7 +98,7 @@ function buildExportPreviewResult() {
     fileInventory: [],
     counts: { files: 1, agents: 0, skills: 0, projects: 0, issues: 0 },
     warnings: [],
-    paperclipExtensionPath: ".paperclip.yaml",
+    paperclipExtensionPath: ".paperclaw.yaml",
   };
 }
 
@@ -118,7 +118,7 @@ function buildRichExportPreviewResult() {
     ...base,
     files: {
       "README.md": "# Paperclip\n",
-      ".paperclip.yaml": "schema: paperclip/v1\n",
+      ".paperclaw.yaml": "schema: paperclaw/v1\n",
       "agents/ceo/AGENT.md": "# CEO\n",
       "tasks/one-off/TASK.md": "# One-off\n",
       "tasks/weekly-report/TASK.md": "# Weekly report\n",
@@ -326,7 +326,7 @@ describe("CompanyExport", () => {
     expect(mockCompaniesApi.exportBundle).toHaveBeenCalledTimes(1);
     const request = mockCompaniesApi.exportBundle.mock.calls[0]![1];
     expect(request.selectedFiles).toEqual([
-      ".paperclip.yaml",
+      ".paperclaw.yaml",
       "README.md",
       "agents/ceo/AGENT.md",
       "blobs/aaa111",
@@ -434,7 +434,7 @@ describe("CompanyExport", () => {
     expect(mockCompaniesApi.exportBundle).toHaveBeenCalledTimes(1);
     const request = mockCompaniesApi.exportBundle.mock.calls[0]![1];
     expect(request.selectedFiles).toEqual([
-      ".paperclip.yaml",
+      ".paperclaw.yaml",
       "README.md",
       "agents/ceo/AGENT.md",
       "tasks/weekly-report/TASK.md",

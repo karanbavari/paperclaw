@@ -4,7 +4,7 @@ set -euo pipefail
 PACKAGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$PACKAGE_DIR/infra/aws-agentcore-paperclip.yaml"
 STACK_DESCRIPTION="Paperclip proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles."
-LOCAL_DIR="$PACKAGE_DIR/.paperclip-local"
+LOCAL_DIR="$PACKAGE_DIR/.paperclaw-local"
 ENV_FILE="$LOCAL_DIR/aws-agentcore.env"
 ACTIVE_FILE="$LOCAL_DIR/aws-agentcore-lab.pid"
 ACTION="${1:-}"
@@ -22,7 +22,7 @@ MODEL_ID="global.anthropic.claude-sonnet-4-6"
 MARKETPLACE_PRODUCT_ID="prod-ffvjxvh4ltq64"
 MARKETPLACE_PRODUCT_ID_EXPLICIT=false
 TRUSTED_PRINCIPAL=""
-GITHUB_OIDC_PROVIDER_ARN="${PAPERCLIP_AWS_AGENTCORE_GITHUB_OIDC_PROVIDER_ARN:-}"
+GITHUB_OIDC_PROVIDER_ARN="${PAPERCLAW_AWS_AGENTCORE_GITHUB_OIDC_PROVIDER_ARN:-}"
 GITHUB_REPOSITORY="paperclipai/paperclip"
 GITHUB_ENVIRONMENT="runner-e2e-paid"
 CONTEXT_PREFIX=""
@@ -215,11 +215,11 @@ load_local_env() {
   set +a
   if $AWS_PROFILE_EXPLICIT; then AWS_PROFILE_NAME="$requested_profile"; else AWS_PROFILE_NAME="${AWS_PROFILE:-$requested_profile}"; fi
   if $AWS_REGION_EXPLICIT; then AWS_REGION_NAME="$requested_region"; else AWS_REGION_NAME="${AWS_REGION:-$requested_region}"; fi
-  if $STACK_NAME_EXPLICIT; then STACK_NAME="$requested_stack"; else STACK_NAME="${PAPERCLIP_AWS_AGENTCORE_STACK_NAME:-$requested_stack}"; fi
+  if $STACK_NAME_EXPLICIT; then STACK_NAME="$requested_stack"; else STACK_NAME="${PAPERCLAW_AWS_AGENTCORE_STACK_NAME:-$requested_stack}"; fi
   export AWS_PROFILE="$AWS_PROFILE_NAME"
   export AWS_REGION="$AWS_REGION_NAME"
   export AWS_DEFAULT_REGION="$AWS_REGION_NAME"
-  export PAPERCLIP_AWS_AGENTCORE_STACK_NAME="$STACK_NAME"
+  export PAPERCLAW_AWS_AGENTCORE_STACK_NAME="$STACK_NAME"
 }
 
 write_teardown_metadata() {
@@ -230,7 +230,7 @@ write_teardown_metadata() {
     "AWS_PROFILE=$AWS_PROFILE_NAME" \
     "AWS_REGION=$AWS_REGION_NAME" \
     "AWS_DEFAULT_REGION=$AWS_REGION_NAME" \
-    "PAPERCLIP_AWS_AGENTCORE_STACK_NAME=$STACK_NAME" >"$tmp"
+    "PAPERCLAW_AWS_AGENTCORE_STACK_NAME=$STACK_NAME" >"$tmp"
   if [[ -n "${AWS_CONFIG_FILE:-}" ]]; then
     printf 'AWS_CONFIG_FILE=%q\n' "$AWS_CONFIG_FILE" >>"$tmp"
   fi
@@ -259,34 +259,34 @@ assume_runner_role() {
 probe() {
   load_local_env
   local profile_save="$AWS_PROFILE_NAME" harness_json
-  assume_runner_role "$PAPERCLIP_AWS_AGENTCORE_INVOCATION_ROLE_ARN"
+  assume_runner_role "$PAPERCLAW_AWS_AGENTCORE_INVOCATION_ROLE_ARN"
   AWS_PROFILE_NAME=""
   harness_json="$(aws --region "$AWS_REGION_NAME" --no-cli-pager bedrock-agentcore-control get-harness \
-    --harness-id "$PAPERCLIP_AWS_AGENTCORE_HARNESS_ID" \
-    --harness-version "$PAPERCLIP_AWS_AGENTCORE_HARNESS_VERSION" --output json)"
+    --harness-id "$PAPERCLAW_AWS_AGENTCORE_HARNESS_ID" \
+    --harness-version "$PAPERCLAW_AWS_AGENTCORE_HARNESS_VERSION" --output json)"
   printf '%s' "$harness_json" | node -e '
     const fs = require("fs");
     const h = JSON.parse(fs.readFileSync(0, "utf8")).harness;
-    const expectedModel = process.env.PAPERCLIP_AWS_AGENTCORE_MODEL;
+    const expectedModel = process.env.PAPERCLAW_AWS_AGENTCORE_MODEL;
     if (!h || h.model?.bedrockModelConfig?.modelId !== expectedModel) throw new Error("AgentCore model drift");
     if (JSON.stringify(h.allowedTools) !== JSON.stringify(["@*/pc_*"])) throw new Error("AgentCore tool allowlist drift");
     if (!Array.isArray(h.tools) || h.tools.length !== 0) throw new Error("AgentCore persistent tool drift");
     if (!Array.isArray(h.skills) || h.skills.length !== 0) throw new Error("AgentCore skill drift");
   '
   aws --region "$AWS_REGION_NAME" --no-cli-pager bedrock-agentcore-control get-harness-endpoint \
-    --harness-id "$PAPERCLIP_AWS_AGENTCORE_HARNESS_ID" \
-    --endpoint-name "$PAPERCLIP_AWS_AGENTCORE_ENDPOINT_QUALIFIER" >/dev/null
+    --harness-id "$PAPERCLAW_AWS_AGENTCORE_HARNESS_ID" \
+    --endpoint-name "$PAPERCLAW_AWS_AGENTCORE_ENDPOINT_QUALIFIER" >/dev/null
   aws --region "$AWS_REGION_NAME" --no-cli-pager bedrock-agentcore-control get-memory \
-    --memory-id "$PAPERCLIP_AWS_AGENTCORE_MEMORY_ID" --view full >/dev/null
-  [[ -n "$PAPERCLIP_AWS_AGENTCORE_CONTEXT_BUCKET" && -n "$PAPERCLIP_AWS_AGENTCORE_CONTEXT_PREFIX" && -n "$PAPERCLIP_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN" ]] || {
+    --memory-id "$PAPERCLAW_AWS_AGENTCORE_MEMORY_ID" --view full >/dev/null
+  [[ -n "$PAPERCLAW_AWS_AGENTCORE_CONTEXT_BUCKET" && -n "$PAPERCLAW_AWS_AGENTCORE_CONTEXT_PREFIX" && -n "$PAPERCLAW_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN" ]] || {
     printf 'AWS AgentCore profile is missing its qualified S3/KMS runtime context.\n' >&2
     exit 1
   }
   unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
   AWS_PROFILE_NAME="$profile_save"
   printf 'AWS AgentCore profile qualified: %s (%s, Harness %s, Memory %s; 90-day retention).\n' \
-    "$PAPERCLIP_AWS_AGENTCORE_PROFILE_ID" "$AWS_REGION_NAME" \
-    "$PAPERCLIP_AWS_AGENTCORE_HARNESS_VERSION" "$PAPERCLIP_AWS_AGENTCORE_MEMORY_ID"
+    "$PAPERCLAW_AWS_AGENTCORE_PROFILE_ID" "$AWS_REGION_NAME" \
+    "$PAPERCLAW_AWS_AGENTCORE_HARNESS_VERSION" "$PAPERCLAW_AWS_AGENTCORE_MEMORY_ID"
 }
 
 provision() {
@@ -417,25 +417,25 @@ provision() {
     "AWS_PROFILE=$AWS_PROFILE_NAME" \
     "AWS_REGION=$AWS_REGION_NAME" \
     "AWS_DEFAULT_REGION=$AWS_REGION_NAME" \
-    "PAPERCLIP_AWS_AGENTCORE_STACK_NAME=$STACK_NAME" \
-    "PAPERCLIP_AWS_AGENTCORE_PROFILE_ID=$STACK_NAME" \
-    "PAPERCLIP_AWS_AGENTCORE_ACCOUNT_ID=$account_id" \
-    "PAPERCLIP_AWS_AGENTCORE_HARNESS_ARN=$harness_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_HARNESS_ID=$harness_id" \
-    "PAPERCLIP_AWS_AGENTCORE_HARNESS_VERSION=$harness_version" \
-    "PAPERCLIP_AWS_AGENTCORE_ENDPOINT_ARN=$endpoint_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_ENDPOINT_QUALIFIER=$ENDPOINT_NAME" \
-    "PAPERCLIP_AWS_AGENTCORE_RUNTIME_ARN=$runtime_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_MEMORY_ARN=$memory_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_MEMORY_ID=$memory_id" \
-    "PAPERCLIP_AWS_AGENTCORE_INVOCATION_ROLE_ARN=$role_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_EXECUTION_ROLE_ARN=$role_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_BUCKET=$context_bucket" \
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_PREFIX=$context_prefix" \
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN=$context_kms_key_arn" \
-    "PAPERCLIP_AWS_AGENTCORE_MODEL=$MODEL_ID" \
-    "PAPERCLIP_AWS_AGENTCORE_QUALIFICATION_REVISION=$qualification_revision" \
-    "PAPERCLIP_AWS_AGENTCORE_EVENT_EXPIRY_DAYS=90" >"$tmp"
+    "PAPERCLAW_AWS_AGENTCORE_STACK_NAME=$STACK_NAME" \
+    "PAPERCLAW_AWS_AGENTCORE_PROFILE_ID=$STACK_NAME" \
+    "PAPERCLAW_AWS_AGENTCORE_ACCOUNT_ID=$account_id" \
+    "PAPERCLAW_AWS_AGENTCORE_HARNESS_ARN=$harness_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_HARNESS_ID=$harness_id" \
+    "PAPERCLAW_AWS_AGENTCORE_HARNESS_VERSION=$harness_version" \
+    "PAPERCLAW_AWS_AGENTCORE_ENDPOINT_ARN=$endpoint_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_ENDPOINT_QUALIFIER=$ENDPOINT_NAME" \
+    "PAPERCLAW_AWS_AGENTCORE_RUNTIME_ARN=$runtime_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_MEMORY_ARN=$memory_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_MEMORY_ID=$memory_id" \
+    "PAPERCLAW_AWS_AGENTCORE_INVOCATION_ROLE_ARN=$role_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_EXECUTION_ROLE_ARN=$role_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_BUCKET=$context_bucket" \
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_PREFIX=$context_prefix" \
+    "PAPERCLAW_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN=$context_kms_key_arn" \
+    "PAPERCLAW_AWS_AGENTCORE_MODEL=$MODEL_ID" \
+    "PAPERCLAW_AWS_AGENTCORE_QUALIFICATION_REVISION=$qualification_revision" \
+    "PAPERCLAW_AWS_AGENTCORE_EVENT_EXPIRY_DAYS=90" >"$tmp"
   if [[ -n "${AWS_CONFIG_FILE:-}" ]]; then
     printf 'AWS_CONFIG_FILE=%q\n' "$AWS_CONFIG_FILE" >>"$tmp"
   fi

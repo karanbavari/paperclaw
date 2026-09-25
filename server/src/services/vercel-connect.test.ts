@@ -7,7 +7,7 @@ import {
   vercelGrantReference,
   vercelTokenRequest,
 } from "./vercel-connect.js";
-import type { VercelConnectCredentialReference } from "@paperclipai/shared";
+import type { VercelConnectCredentialReference } from "@kesarcloud/shared";
 
 const credential: VercelConnectCredentialReference = {
   provider: "vercel_connect",
@@ -37,17 +37,17 @@ describe("Vercel Connect credential adapter", () => {
 
   it("gates new setup separately from runtime credential availability", () => {
     expect(vercelConnectIntegrationStatus({
-      PAPERCLIP_VERCEL_CONNECT_ENABLED: "false",
-      PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN: "bootstrap-token",
+      PAPERCLAW_VERCEL_CONNECT_ENABLED: "false",
+      PAPERCLAW_VERCEL_CONNECT_ACCESS_TOKEN: "bootstrap-token",
     } as NodeJS.ProcessEnv)).toMatchObject({
       enabled: false,
       configured: true,
       authentication: "access_token",
     });
     expect(vercelConnectIntegrationStatus({
-      PAPERCLIP_VERCEL_CONNECT_ENABLED: "true",
+      PAPERCLAW_VERCEL_CONNECT_ENABLED: "true",
       VERCEL_OIDC_TOKEN: "workload-token",
-      PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN: "fallback-token",
+      PAPERCLAW_VERCEL_CONNECT_ACCESS_TOKEN: "fallback-token",
     } as NodeJS.ProcessEnv)).toMatchObject({
       enabled: true,
       configured: true,
@@ -58,10 +58,10 @@ describe("Vercel Connect credential adapter", () => {
   it("prefers workload OIDC over the access-token fallback", () => {
     expect(vercelConnectSdkOptions({
       VERCEL_OIDC_TOKEN: "workload-token",
-      PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN: "stale-fallback-token",
+      PAPERCLAW_VERCEL_CONNECT_ACCESS_TOKEN: "stale-fallback-token",
     } as NodeJS.ProcessEnv)).toEqual({});
     expect(vercelConnectSdkOptions({
-      PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN: "fallback-token",
+      PAPERCLAW_VERCEL_CONNECT_ACCESS_TOKEN: "fallback-token",
     } as NodeJS.ProcessEnv, true)).toEqual({
       vercelToken: "fallback-token",
       forceRefresh: true,
@@ -69,7 +69,7 @@ describe("Vercel Connect credential adapter", () => {
   });
 
   it("derives stable company- and user-bound subjects without browser input", () => {
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "instance-one");
+    vi.stubEnv("PAPERCLAW_INSTANCE_ID", "instance-one");
     const base = {
       credential,
       connectionId: "connection-one",

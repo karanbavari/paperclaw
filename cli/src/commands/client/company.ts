@@ -12,7 +12,7 @@ import type {
   CompanyPortabilityInclude,
   CompanyPortabilityPreviewResult,
   CompanyPortabilityImportResult,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   buildAlreadyImportedMessage,
   companyImportTransferApplyPath,
@@ -21,7 +21,7 @@ import {
   COMPANY_IMPORT_TRANSFERS_ROUTE_PATH,
   type CompanyImportTransferCreated,
   type CompanyImportTransferDeclaration,
-} from "@paperclipai/shared/company-import-transfer";
+} from "@kesarcloud/shared/company-import-transfer";
 import { getTelemetryClient, trackCompanyImported } from "../../telemetry.js";
 import { ApiRequestError, type PaperclipApiClient } from "../../client/http.js";
 import { openUrl } from "../../client/board-auth.js";
@@ -217,15 +217,15 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isPaperclipYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isPaperclipYaml = baseName === ".paperclaw.yaml" || baseName === ".paperclaw.yml";
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
   return isMarkdown || isPaperclipYaml || Boolean(contentType) || isBlobStorePath(filePath);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
-  if (files[".paperclip.yaml"] !== undefined) return ".paperclip.yaml";
-  if (files[".paperclip.yml"] !== undefined) return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  if (files[".paperclaw.yaml"] !== undefined) return ".paperclaw.yaml";
+  if (files[".paperclaw.yml"] !== undefined) return ".paperclaw.yml";
+  return Object.keys(files).find((entry) => entry.endsWith("/.paperclaw.yaml") || entry.endsWith("/.paperclaw.yml")) ?? null;
 }
 
 function collectFilesUnderDirectory(
@@ -2040,7 +2040,7 @@ async function resolveCurrentCompanyId(ctx: { companyId?: string; api: { get<T>(
   } catch (error) {
     if (error instanceof ApiRequestError && (error.status === 401 || error.status === 403)) {
       throw new Error(
-        "Current company is not available. Pass --company-id, set PAPERCLIP_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
+        "Current company is not available. Pass --company-id, set PAPERCLAW_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
       );
     }
     throw error;
@@ -2049,7 +2049,7 @@ async function resolveCurrentCompanyId(ctx: { companyId?: string; api: { get<T>(
   const fromAgent = agent?.companyId?.trim();
   if (fromAgent) return fromAgent;
   throw new Error(
-    "Current company is not available. Pass --company-id, set PAPERCLIP_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
+    "Current company is not available. Pass --company-id, set PAPERCLAW_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
   );
 }
 

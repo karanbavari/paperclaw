@@ -351,7 +351,7 @@ describe.sequential("company portability routes", () => {
       fileInventory: [],
       counts: { files: 0, agents: 0, skills: 0, projects: 0, issues: 0 },
       warnings: [],
-      paperclipExtensionPath: ".paperclip.yaml",
+      paperclipExtensionPath: ".paperclaw.yaml",
     });
     mockCompanyPortabilityService.previewImport.mockResolvedValue({ ok: true });
     mockCompanyPortabilityService.importBundle.mockResolvedValue({
@@ -423,7 +423,7 @@ describe.sequential("company portability routes", () => {
       fileInventory: [],
       counts: { files: 0, agents: 0, skills: 0, projects: 0, issues: 0 },
       warnings: [],
-      paperclipExtensionPath: ".paperclip.yaml",
+      paperclipExtensionPath: ".paperclaw.yaml",
     });
     const app = await createApp({
       type: "agent",
@@ -1036,7 +1036,7 @@ describe.sequential("company portability routes", () => {
     // purpose: the import floor keys on isCloudManagedInstance(), not on the
     // actor. With the signal present, even the trusted tenant actor is
     // floored — importing is disabled on cloud-managed instances outright.
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "tenant-secret");
+    vi.stubEnv("PAPERCLAW_CLOUD_TENANT_SERVER_TOKEN", "tenant-secret");
     try {
       const app = await createApp(cloudTenantActor());
 

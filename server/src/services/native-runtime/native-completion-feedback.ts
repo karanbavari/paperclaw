@@ -9,7 +9,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@paperclipai/db";
+} from "@kesarcloud/db";
 import {
   normalizePrpResultSignals,
   type PrpStructuredRunResult,

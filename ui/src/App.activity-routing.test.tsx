@@ -93,6 +93,13 @@ vi.mock("./pages/Issues", () => ({
   },
 }));
 
+vi.mock("./pages/Marketplace", () => ({
+  Marketplace: () => {
+    const location = useLocation();
+    return <div>{`MARKETPLACE_PAGE@${location.pathname}`}</div>;
+  },
+}));
+
 vi.mock("./pages/audit/CompanyActivity.production", () => ({
   CompanyActivity: () => {
     const location = useLocation();
@@ -258,6 +265,20 @@ describe("App Activity routing (PAP-16302)", () => {
     const root = renderAppAt(container, "/tasks");
     await waitForRoute(container, "TASKS_PAGE@/PAP/issues");
     expect(container.textContent).not.toContain("/tasks/dashboard");
+    flushSync(() => root.unmount());
+  });
+
+  it("redirects the bare PaperClaw marketplace route to the selected organization", async () => {
+    const root = renderAppAt(container, "/marketplace");
+    await waitForRoute(container, "MARKETPLACE_PAGE@/PAP/marketplace");
+    expect(container.textContent).not.toContain("No organization matches prefix");
+    flushSync(() => root.unmount());
+  });
+
+  it("repairs the malformed /MARKETPLACE/dashboard URL emitted by the old router", async () => {
+    const root = renderAppAt(container, "/MARKETPLACE/dashboard");
+    await waitForRoute(container, "MARKETPLACE_PAGE@/PAP/marketplace");
+    expect(container.textContent).not.toContain("No organization matches prefix");
     flushSync(() => root.unmount());
   });
 

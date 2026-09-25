@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
   InstanceExperimentalSettings as InstanceExperimentalSettingsPayload,
   InstanceExperimentalSettingsWithManaged,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InstanceExperimentalSettings } from "./InstanceExperimentalSettings";
 import { queryKeys } from "../lib/queryKeys";
@@ -54,7 +54,7 @@ const DECISIONS_TOGGLE_SELECTOR =
   'button[aria-label="Toggle decisions experimental setting"]';
 const SERVER_INFO_TOGGLE_SELECTOR =
   'button[aria-label="Toggle server info debug view experimental setting"]';
-const PAPERCLIP_DEVELOPER_MODE_TOGGLE_SELECTOR =
+const PAPERCLAW_DEVELOPER_MODE_TOGGLE_SELECTOR =
   'button[aria-label="Toggle Paperclip developer mode experimental setting"]';
 const BUILT_IN_AGENTS_TOGGLE_SELECTOR =
   'button[aria-label="Toggle built-in agents experimental setting"]';
@@ -64,7 +64,7 @@ const SUMMARIES_TOGGLE_SELECTOR =
   'button[aria-label="Toggle summaries experimental setting"]';
 const STATUS_CARDS_TOGGLE_SELECTOR =
   'button[aria-label="Toggle status cards experimental setting"]';
-const PAPERCLIP_RUNNER_TOGGLE_SELECTOR =
+const PAPERCLAW_RUNNER_TOGGLE_SELECTOR =
   'button[aria-label="Toggle Paperclip Runner experimental setting"]';
 
 function defaultExperimentalSettings(): InstanceExperimentalSettingsPayload {
@@ -300,7 +300,7 @@ describe("InstanceExperimentalSettings — Conference Room Chat card (PAP-11233)
     expect(container.textContent).toContain("Paperclip Runner");
     expect(container.textContent).toContain("Onboarding continues to use legacy adapters");
     const toggle = container.querySelector<HTMLButtonElement>(
-      PAPERCLIP_RUNNER_TOGGLE_SELECTOR,
+      PAPERCLAW_RUNNER_TOGGLE_SELECTOR,
     );
     expect(toggle?.getAttribute("aria-checked")).toBe("false");
 
@@ -715,7 +715,7 @@ describe("InstanceExperimentalSettings — Conference Room Chat card (PAP-11233)
     expect(container.textContent).toContain("including Honeycomb trace queries on run pages");
 
     const toggle = container.querySelector<HTMLButtonElement>(
-      PAPERCLIP_DEVELOPER_MODE_TOGGLE_SELECTOR,
+      PAPERCLAW_DEVELOPER_MODE_TOGGLE_SELECTOR,
     );
     expect(toggle?.getAttribute("aria-checked")).toBe("false");
 

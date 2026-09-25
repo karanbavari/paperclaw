@@ -2,15 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AdapterRuntimeMcpServer } from "@paperclipai/adapter-utils";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterRuntimeMcpServer } from "@kesarcloud/adapter-utils";
+import { runChildProcess } from "@kesarcloud/adapter-utils/server-utils";
 import {
   claudeCommandSupportsEffortFlag,
   claudeSessionCwdMatchesExecutionTarget,
   execute,
   resetClaudeCliCapabilitiesCacheForTests,
   sessionCodec,
-} from "@paperclipai/adapter-claude-local/server";
+} from "@kesarcloud/adapter-claude-local/server";
 
 async function writeFailingClaudeCommand(
   commandPath: string,
@@ -56,7 +56,7 @@ const instructionsIndex = argv.indexOf("--append-system-prompt-file");
 const instructionsFilePath = instructionsIndex >= 0 ? argv[instructionsIndex + 1] : null;
 const mcpConfigIndex = argv.indexOf("--mcp-config");
 const mcpConfigPath = mcpConfigIndex >= 0 ? argv[mcpConfigIndex + 1] : null;
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
 const payload = {
   argv,
   prompt: fs.readFileSync(0, "utf8"),
@@ -70,9 +70,9 @@ const payload = {
   claudeConfigEntries: process.env.CLAUDE_CONFIG_DIR && fs.existsSync(process.env.CLAUDE_CONFIG_DIR)
     ? fs.readdirSync(process.env.CLAUDE_CONFIG_DIR).sort()
     : [],
-  paperclipApiUrl: process.env.PAPERCLIP_API_URL || null,
-  paperclipApiKey: process.env.PAPERCLIP_API_KEY || null,
-  paperclipApiBridgeMode: process.env.PAPERCLIP_API_BRIDGE_MODE || null,
+  paperclipApiUrl: process.env.PAPERCLAW_API_URL || null,
+  paperclipApiKey: process.env.PAPERCLAW_API_KEY || null,
+  paperclipApiBridgeMode: process.env.PAPERCLAW_API_BRIDGE_MODE || null,
 };
 if (capturePath) {
   fs.writeFileSync(capturePath, JSON.stringify(payload), "utf8");
@@ -103,7 +103,7 @@ const addDirIndex = argv.indexOf("--add-dir");
 const addDir = addDirIndex >= 0 ? argv[addDirIndex + 1] : null;
 const instructionsIndex = argv.indexOf("--append-system-prompt-file");
 const instructionsFilePath = instructionsIndex >= 0 ? argv[instructionsIndex + 1] : null;
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
 const payload = {
   argv,
   prompt: fs.readFileSync(0, "utf8"),
@@ -130,7 +130,7 @@ const path = require("node:path");
 
 const argv = process.argv.slice(2);
 if (argv.includes("--help")) {
-  const helpCountPath = process.env.PAPERCLIP_TEST_HELP_COUNT_PATH;
+  const helpCountPath = process.env.PAPERCLAW_TEST_HELP_COUNT_PATH;
   if (helpCountPath) {
     const current = fs.existsSync(helpCountPath) ? Number(fs.readFileSync(helpCountPath, "utf8")) || 0 : 0;
     fs.writeFileSync(helpCountPath, String(current + 1), "utf8");
@@ -142,7 +142,7 @@ const addDirIndex = argv.indexOf("--add-dir");
 const addDir = addDirIndex >= 0 ? argv[addDirIndex + 1] : null;
 const instructionsIndex = argv.indexOf("--append-system-prompt-file");
 const instructionsFilePath = instructionsIndex >= 0 ? argv[instructionsIndex + 1] : null;
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
 const payload = {
   argv,
   prompt: fs.readFileSync(0, "utf8"),
@@ -186,8 +186,8 @@ async function writePoisonedMessageIdClaudeCommand(commandPath: string): Promise
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
-const statePath = process.env.PAPERCLIP_TEST_STATE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
+const statePath = process.env.PAPERCLAW_TEST_STATE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
@@ -222,7 +222,7 @@ async function writeAlwaysPoisonedMessageIdClaudeCommand(commandPath: string): P
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
@@ -252,8 +252,8 @@ async function writeRetryThenSucceedClaudeCommand(commandPath: string): Promise<
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
-const statePath = process.env.PAPERCLIP_TEST_STATE_PATH;
+const capturePath = process.env.PAPERCLAW_TEST_CAPTURE_PATH;
+const statePath = process.env.PAPERCLAW_TEST_STATE_PATH;
 const promptFileFlagIndex = process.argv.indexOf("--append-system-prompt-file");
 const appendedSystemPromptFilePath = promptFileFlagIndex >= 0 ? process.argv[promptFileFlagIndex + 1] : null;
 const payload = {
@@ -366,7 +366,7 @@ describe("claude execute", () => {
         runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
         config: {
           engine: "cli", model, command: commandPath, cwd: workspace,
-          env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
         },
         context: {}, onLog: async () => {},
       });
@@ -392,7 +392,7 @@ describe("claude execute", () => {
             engine: "cli",
             command: commandPath,
             cwd: workspace,
-            env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+            env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
             promptTemplate: "Do work.",
           },
           runtimeMcp: { getServers: () => servers },
@@ -453,7 +453,7 @@ describe("claude execute", () => {
           engine: "cli",
           command: commandPath,
           cwd: workspace,
-          env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
           promptTemplate: "Do work.",
           instructionsFilePath: instructionsFile,
         },
@@ -487,7 +487,7 @@ describe("claude execute", () => {
           engine: "cli",
           command: commandPath,
           cwd: workspace,
-          env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
           promptTemplate: "Do work.",
           instructionsFilePath: instructionsFile,
         },
@@ -591,8 +591,8 @@ describe("claude execute", () => {
           command: commandPath,
           cwd: workspace,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
-            PAPERCLIP_TEST_STATE_PATH: statePath,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLAW_TEST_STATE_PATH: statePath,
           },
           promptTemplate: "Do work.",
           instructionsFilePath: instructionsFile,
@@ -795,7 +795,7 @@ describe("claude execute", () => {
           command: "claude",
           cwd: workspace,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
@@ -816,7 +816,7 @@ describe("claude execute", () => {
       expect(loggedCommand).toBe(commandPath);
       expect(loggedEnv.HOME).toBe(root);
       expect(loggedEnv.CLAUDE_CONFIG_DIR).toBe(claudeConfigDir);
-      expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(commandPath);
+      expect(loggedEnv.PAPERCLAW_RESOLVED_COMMAND).toBe(commandPath);
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -870,7 +870,7 @@ describe("claude execute", () => {
           command: commandPath,
           cwd: localWorkspace,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath1,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath1,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
@@ -906,7 +906,7 @@ describe("claude execute", () => {
         "Task AskUserQuestion Bash CronCreate CronDelete CronList Edit EnterPlanMode EnterWorktree ExitPlanMode ExitWorktree Glob Grep Monitor NotebookEdit PushNotification Read RemoteTrigger ScheduleWakeup Skill TaskOutput TaskStop TodoWrite ToolSearch WebFetch WebSearch Write",
       );
       expect(capture.argv).not.toContain("--dangerously-skip-permissions");
-      expect(capture.claudeConfigDir).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "claude", "config"));
+      expect(capture.claudeConfigDir).toBe(path.join(remoteWorkspace, ".paperclaw-runtime", "claude", "config"));
       expect(capture.claudeConfigEntries).toContain("settings.json");
       expect(capture.paperclipApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
       expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
@@ -950,7 +950,7 @@ describe("claude execute", () => {
           cwd: workspace,
           effort: "low",
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
           },
           promptTemplate: "Fallback cleanly if the sandbox CLI is old.",
         },
@@ -1007,8 +1007,8 @@ describe("claude execute", () => {
         cwd: workspace,
         effort: "low",
         env: {
-          PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
-          PAPERCLIP_TEST_HELP_COUNT_PATH: helpCountPath,
+          PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
+          PAPERCLAW_TEST_HELP_COUNT_PATH: helpCountPath,
         },
         promptTemplate: "Keep the requested effort when supported.",
       },
@@ -1121,11 +1121,11 @@ describe("claude execute", () => {
     await writeFakeClaudeCommand(commandPath);
 
     const previousHome = process.env.HOME;
-    const previousPaperclipHome = process.env.PAPERCLIP_HOME;
-    const previousPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+    const previousPaperclipHome = process.env.PAPERCLAW_HOME;
+    const previousPaperclipInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
     process.env.HOME = root;
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.PAPERCLAW_HOME = paperclipHome;
+    delete process.env.PAPERCLAW_INSTANCE_ID;
 
     try {
       const first = await execute({
@@ -1149,7 +1149,7 @@ describe("claude execute", () => {
           cwd: workspace,
           instructionsFilePath: instructionsPath,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath1,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath1,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
           paperclipSkillSync: {
@@ -1198,7 +1198,7 @@ describe("claude execute", () => {
           cwd: workspace,
           instructionsFilePath: instructionsPath,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath2,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath2,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
           paperclipSkillSync: {
@@ -1282,10 +1282,10 @@ describe("claude execute", () => {
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-      else process.env.PAPERCLIP_INSTANCE_ID = previousPaperclipInstanceId;
+      if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+      else process.env.PAPERCLAW_HOME = previousPaperclipHome;
+      if (previousPaperclipInstanceId === undefined) delete process.env.PAPERCLAW_INSTANCE_ID;
+      else process.env.PAPERCLAW_INSTANCE_ID = previousPaperclipInstanceId;
       await fs.rm(root, { recursive: true, force: true });
     }
   });
@@ -1304,11 +1304,11 @@ describe("claude execute", () => {
     await writeFakeClaudeCommand(commandPath);
 
     const previousHome = process.env.HOME;
-    const previousPaperclipHome = process.env.PAPERCLIP_HOME;
-    const previousPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+    const previousPaperclipHome = process.env.PAPERCLAW_HOME;
+    const previousPaperclipInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
     process.env.HOME = root;
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.PAPERCLAW_HOME = paperclipHome;
+    delete process.env.PAPERCLAW_INSTANCE_ID;
 
     try {
       const first = await execute({
@@ -1332,7 +1332,7 @@ describe("claude execute", () => {
           cwd: workspace,
           instructionsFilePath: instructionsPath,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath1,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath1,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
@@ -1364,7 +1364,7 @@ describe("claude execute", () => {
           cwd: workspace,
           instructionsFilePath: instructionsPath,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath2,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath2,
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
@@ -1389,10 +1389,10 @@ describe("claude execute", () => {
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-      else process.env.PAPERCLIP_INSTANCE_ID = previousPaperclipInstanceId;
+      if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+      else process.env.PAPERCLAW_HOME = previousPaperclipHome;
+      if (previousPaperclipInstanceId === undefined) delete process.env.PAPERCLAW_INSTANCE_ID;
+      else process.env.PAPERCLAW_INSTANCE_ID = previousPaperclipInstanceId;
       await fs.rm(root, { recursive: true, force: true });
     }
   }, 15_000);
@@ -1651,8 +1651,8 @@ describe("claude execute", () => {
           command: commandPath,
           cwd: workspace,
           env: {
-            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
-            PAPERCLIP_TEST_STATE_PATH: statePath,
+            PAPERCLAW_TEST_CAPTURE_PATH: capturePath,
+            PAPERCLAW_TEST_STATE_PATH: statePath,
           },
           promptTemplate: "Do work.",
         },
@@ -1697,7 +1697,7 @@ describe("claude execute", () => {
           engine: "cli",
           command: commandPath,
           cwd: workspace,
-          env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
           promptTemplate: "Do work.",
         },
         context: {},
@@ -1746,7 +1746,7 @@ describe("claude execute", () => {
           engine: "cli",
           command: commandPath,
           cwd: workspace,
-          env: { PAPERCLIP_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERCLAW_TEST_CAPTURE_PATH: capturePath },
           promptTemplate: "Do work.",
         },
         context: {},

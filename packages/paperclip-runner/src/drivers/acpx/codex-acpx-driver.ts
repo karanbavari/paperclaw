@@ -31,7 +31,7 @@ import {
   type OpenHarnessSessionInput,
   type PersistedHarnessSession,
 } from "../../contracts/harness-driver.js";
-import { PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2 } from "../../contracts/question-set.js";
+import { PAPERCLAW_RUNTIME_REQUEST_SCHEMA_V2 } from "../../contracts/question-set.js";
 import type { NativeAcpxPermissionMode } from "../../contracts/native-execution.js";
 import type { NativeUserMessage } from "../../contracts/types.js";
 import type {
@@ -1831,7 +1831,7 @@ function runtimeInputProtocolPayload(
     throw new Error("ACPX runtime input request omitted its question set");
   }
   return {
-    schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+    schema: PAPERCLAW_RUNTIME_REQUEST_SCHEMA_V2,
     requestKind: "runtime",
     requestId: request.requestId,
     type: "input",
@@ -2116,7 +2116,7 @@ function reportRetainedAcpxCleanupFailure(
       errorName,
     }),
     {
-      code: "PAPERCLIP_ACPX_RETAINED_CLEANUP_FAILURE",
+      code: "PAPERCLAW_ACPX_RETAINED_CLEANUP_FAILURE",
       type: "PaperclipRunnerCleanupWarning",
     },
   );

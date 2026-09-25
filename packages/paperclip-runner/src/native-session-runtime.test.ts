@@ -20,8 +20,8 @@ import type {
 } from "./protocol/replay-contract.js";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  PAPERCLAW_EXECUTION_PROMPT,
+  PAPERCLAW_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
 } from "./contracts/runtime-context.js";
@@ -1928,8 +1928,8 @@ describe("executeNativeSession recovery", () => {
     const digest = "0".repeat(64);
     const context = {
       prompt: {
-        revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-        text: PAPERCLIP_EXECUTION_PROMPT,
+        revision: PAPERCLAW_EXECUTION_PROMPT_REVISION,
+        text: PAPERCLAW_EXECUTION_PROMPT,
         digest: nativeRuntimePromptDigest(),
       },
       instructions: {

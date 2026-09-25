@@ -160,7 +160,7 @@ function resourceByProfile(
   const matches = resources.filter(
     (resource) =>
       typeof resource.id === "string"
-      && record(resource.metadata).paperclip_profile === profileKey,
+      && record(resource.metadata).paperclaw_profile === profileKey,
   );
   if (matches.length > 1) {
     throw new Error(

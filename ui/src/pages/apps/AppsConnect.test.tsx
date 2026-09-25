@@ -3,7 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CONNECTABLE_APP_DEFINITIONS, GOOGLE_WORKSPACE_CONNECTOR_PROFILES, getAppStoreDefinition } from "@paperclipai/shared";
+import { CONNECTABLE_APP_DEFINITIONS, GOOGLE_WORKSPACE_CONNECTOR_PROFILES, getAppStoreDefinition } from "@kesarcloud/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -248,7 +248,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValue({
       configured: true,
       status: "active",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: "inst-test",
       environment: "staging",
       origins: ["https://paperclip.example.test"],
@@ -256,11 +256,11 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     startCloudConnectorEnrollmentMock.mockResolvedValue({
       configured: false,
       status: "pending",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: "inst-test",
       environment: "staging",
       origins: [],
-      verificationUrl: "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
+      verificationUrl: "https://my-staging.paperclaw.app/connections/enroll?id=enroll-test",
     });
     connectAppMock.mockResolvedValue({
       connectionId: "conn-1",
@@ -834,7 +834,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValueOnce({
       configured: false,
       status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: null,
       environment: "staging",
       origins: [],
@@ -862,7 +862,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       "/apps/connect?source=gmail&stage=setup",
     );
     expect(navigateTopLevelMock).toHaveBeenCalledWith(
-      "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
+      "https://my-staging.paperclaw.app/connections/enroll?id=enroll-test",
     );
   });
 
@@ -883,11 +883,11 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     if (popupBlocked) {
       expect(popup.location.assign).not.toHaveBeenCalled();
     } else {
-      expect(popup.location.assign).toHaveBeenCalledWith("https://my-staging.paperclip.app/connections/enroll?id=enroll-test");
+      expect(popup.location.assign).toHaveBeenCalledWith("https://my-staging.paperclaw.app/connections/enroll?id=enroll-test");
     }
     const fallback = container.querySelector<HTMLAnchorElement>('a[target="_blank"]');
     expect(fallback?.textContent).toBe("Open authorization in a new tab");
-    expect(fallback?.href).toBe("https://my-staging.paperclip.app/connections/enroll?id=enroll-test");
+    expect(fallback?.href).toBe("https://my-staging.paperclaw.app/connections/enroll?id=enroll-test");
     expect(navigateTopLevelMock).not.toHaveBeenCalled();
     expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith("company-1", "Paperclip", "/apps/connect?source=gmail&stage=setup&intent=intent-1&enrollment_host=dialog");
     listGalleryMock.mockResolvedValue({ apps: [{ ...GMAIL, ownershipAvailability: { ...GMAIL.ownershipAvailability, platform_shared: true } }] });
@@ -958,11 +958,11 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       getCloudConnectorEnrollmentMock.mockResolvedValue({
         configured: false,
         status: "pending",
-        brokerBaseUrl: "https://my-staging.paperclip.app",
+        brokerBaseUrl: "https://my-staging.paperclaw.app",
         instanceId: "inst-test",
         environment: "staging",
         origins: [],
-        verificationUrl: "https://my-staging.paperclip.app/connections/enroll?id=cached",
+        verificationUrl: "https://my-staging.paperclaw.app/connections/enroll?id=cached",
         expiresAt,
       });
 
@@ -977,10 +977,10 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
         "company-1", "Paperclip", "/apps/connect?source=github&stage=setup",
       );
       expect(navigateTopLevelMock).toHaveBeenCalledWith(
-        "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
+        "https://my-staging.paperclaw.app/connections/enroll?id=enroll-test",
       );
       expect(navigateTopLevelMock).not.toHaveBeenCalledWith(
-        "https://my-staging.paperclip.app/connections/enroll?id=cached",
+        "https://my-staging.paperclaw.app/connections/enroll?id=cached",
       );
     },
   );
@@ -1029,7 +1029,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValueOnce({
       configured: false,
       status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: null,
       environment: "staging",
       origins: [],
@@ -1102,7 +1102,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       .mockResolvedValueOnce({
         configured: true,
         status: "active",
-        brokerBaseUrl: "https://my-staging.paperclip.app",
+        brokerBaseUrl: "https://my-staging.paperclaw.app",
         instanceId: "inst-test",
         environment: "staging",
         origins: ["https://paperclip.example.test"],
@@ -1142,7 +1142,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValue({
       configured: false,
       status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: null,
       environment: "staging",
       origins: [],
@@ -1192,7 +1192,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValue({
       configured: true,
       status: "active",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
+      brokerBaseUrl: "https://my-staging.paperclaw.app",
       instanceId: "inst-test",
       environment: "staging",
       origins: ["https://paperclip.example.test"],
@@ -3221,7 +3221,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     connectAppMock.mockRejectedValue(apiError(
       422,
       "oauth_redirect_origin_unsupported",
-      "OAuth connections require PAPERCLIP_PUBLIC_URL or an auth public base URL",
+      "OAuth connections require PAPERCLAW_PUBLIC_URL or an auth public base URL",
     ));
     await render();
     await gotoLinkFrame(container, "https://mcp.example.test/mcp");
@@ -3232,7 +3232,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await flushReact();
 
     expect(container.textContent).toContain("This Paperclip needs a public HTTPS address first");
-    expect(container.textContent).not.toContain("PAPERCLIP_PUBLIC_URL");
+    expect(container.textContent).not.toContain("PAPERCLAW_PUBLIC_URL");
   });
 
   it("does not ask the operator to resolve an internal name conflict", async () => {
@@ -3307,7 +3307,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
       suggestedDefaults: {},
       auth: {
         kind: "oauth",
-        startUrl: "https://my.paperclip.app/connections/confirm?session=legacy",
+        startUrl: "https://my.paperclaw.app/connections/confirm?session=legacy",
         handoff: { kind: "paperclip_cloud", session },
       },
     });

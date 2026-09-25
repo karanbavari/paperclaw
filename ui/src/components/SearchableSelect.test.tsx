@@ -397,7 +397,7 @@ describe("SearchableSelect", () => {
       workspace({
         id: "workspace-paperclip",
         name: "Paperclip app",
-        cwd: "/srv/paperclip/home/paperclipai/paperclip/.paperclip/worktrees/PAP-11722-new-existing-workspace-selector",
+        cwd: "/srv/paperclip/home/paperclipai/paperclip/.paperclaw/worktrees/PAP-11722-new-existing-workspace-selector",
         branchName: "feature/reusable-workspaces",
         status: "running",
         lastUsedAt: "2026-06-24T10:00:00.000Z",

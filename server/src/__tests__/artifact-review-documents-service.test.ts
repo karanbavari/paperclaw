@@ -12,8 +12,8 @@ import {
   issueAttachments,
   issueDocuments,
   issues,
-} from "@paperclipai/db";
-import { artifactReviewDocumentKey } from "@paperclipai/shared";
+} from "@kesarcloud/db";
+import { artifactReviewDocumentKey } from "@kesarcloud/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

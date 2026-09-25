@@ -85,7 +85,7 @@ index b80888b6d87e8ad429d18cc955c4c5048a55722a..081e3b1664d3e65d1decf82bbf314909
 +          files,
 +          channel,
 +          threadTs,
-+          this.paperclipFileUploadReceiptContext?.getStore?.()
++          this.paperclawFileUploadReceiptContext?.getStore?.()
 +        );
          const hasText = typeof message === "string" || typeof message === "object" && message !== null && ("raw" in message && message.raw || "markdown" in message && message.markdown || "ast" in message && message.ast);
          const card2 = extractCard(message);
@@ -178,7 +178,7 @@ index b80888b6d87e8ad429d18cc955c4c5048a55722a..081e3b1664d3e65d1decf82bbf314909
 +    );
 +    if (!messageId) {
 +      try {
-+        messageId = await this.paperclipResolveFileUploadMessageId(fileIds, channel, threadTs);
++        messageId = await this.paperclawResolveFileUploadMessageId(fileIds, channel, threadTs);
 +      } catch {
 +        throw new Error(
 +          "Slack file upload completed, but its message identity could not be confirmed"
@@ -200,7 +200,7 @@ index b80888b6d87e8ad429d18cc955c4c5048a55722a..081e3b1664d3e65d1decf82bbf314909
 +    }
 +    const { channel, threadTs: rawThreadTs } = this.decodeThreadId(threadId);
 +    try {
-+      return await this.paperclipResolveFileUploadMessageId(fileIds, channel, rawThreadTs || void 0);
++      return await this.paperclawResolveFileUploadMessageId(fileIds, channel, rawThreadTs || void 0);
 +    } catch (error) {
 +      this.handleSlackError(error);
 +    }

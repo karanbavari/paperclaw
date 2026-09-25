@@ -23,9 +23,9 @@ require_cmd() {
   command -v "$cmd" >/dev/null 2>&1 || fail "missing required command: ${cmd}"
 }
 
-PAPERCLIP_API_URL="${PAPERCLIP_API_URL:-http://127.0.0.1:3100}"
-API_BASE="${PAPERCLIP_API_URL%/}/api"
-COMPANY_ID="${COMPANY_ID:-${PAPERCLIP_COMPANY_ID:-}}"
+PAPERCLAW_API_URL="${PAPERCLAW_API_URL:-http://127.0.0.1:3100}"
+API_BASE="${PAPERCLAW_API_URL%/}/api"
+COMPANY_ID="${COMPANY_ID:-${PAPERCLAW_COMPANY_ID:-}}"
 COMPANY_SELECTOR="${COMPANY_SELECTOR:-}"
 
 RUN_SUFFIX="${HERMES_SMOKE_RUN_SUFFIX:-$(date +%Y%m%d-%H%M%S)-$$}"
@@ -53,7 +53,7 @@ HERMES_SMOKE_MODEL_PROVIDER="${HERMES_SMOKE_MODEL_PROVIDER:-}"
 HERMES_SMOKE_MODEL_DEFAULT="${HERMES_SMOKE_MODEL_DEFAULT:-}"
 HERMES_SMOKE_MODEL_BASE_URL="${HERMES_SMOKE_MODEL_BASE_URL:-}"
 HERMES_AGENT_NAME="${HERMES_AGENT_NAME:-Hermes Gateway Smoke Agent ${RUN_SUFFIX}}"
-PAPERCLIP_API_URL_FOR_HERMES="${PAPERCLIP_API_URL_FOR_HERMES:-http://host.docker.internal:3100}"
+PAPERCLAW_API_URL_FOR_HERMES="${PAPERCLAW_API_URL_FOR_HERMES:-http://host.docker.internal:3100}"
 RUN_TIMEOUT_SEC="${RUN_TIMEOUT_SEC:-420}"
 CASE_TIMEOUT_SEC="${CASE_TIMEOUT_SEC:-420}"
 GATEWAY_READY_TIMEOUT_SEC="${GATEWAY_READY_TIMEOUT_SEC:-90}"
@@ -77,8 +77,8 @@ issue, verifies the issue result, captures redacted diagnostics, and cleans up
 Paperclip and Docker state unless HERMES_SMOKE_KEEP=1.
 
 Required:
-  PAPERCLIP_API_URL=http://127.0.0.1:3100
-  PAPERCLIP_AUTH_HEADER='Bearer <board-token>'     # or PAPERCLIP_COOKIE
+  PAPERCLAW_API_URL=http://127.0.0.1:3100
+  PAPERCLAW_AUTH_HEADER='Bearer <board-token>'     # or PAPERCLAW_COOKIE
 
 Common flags:
   COMPANY_ID=<uuid> or COMPANY_SELECTOR=<prefix|name|uuid>
@@ -87,7 +87,7 @@ Common flags:
   HERMES_GATEWAY_PORT=8642
   HERMES_GATEWAY_API_BASE_URL=http://127.0.0.1:8642
   HERMES_GATEWAY_PROBE_URL=http://127.0.0.1:8642
-  PAPERCLIP_API_URL_FOR_HERMES=http://host.docker.internal:3100
+  PAPERCLAW_API_URL_FOR_HERMES=http://host.docker.internal:3100
   HERMES_GATEWAY_ALLOW_INSECURE_HTTP=1             # dev-only non-loopback HTTP
   HERMES_SMOKE_NETWORK=<docker-network>
   HERMES_DOCKER_ADD_HOST=0|1
@@ -123,15 +123,15 @@ case "${1:-}" in
 esac
 
 AUTH_HEADERS=()
-if [[ -n "${PAPERCLIP_AUTH_HEADER:-}" ]]; then
-  AUTH_HEADERS+=(-H "Authorization: ${PAPERCLIP_AUTH_HEADER}")
-elif [[ -n "${PAPERCLIP_API_KEY:-}" ]]; then
-  AUTH_HEADERS+=(-H "Authorization: Bearer ${PAPERCLIP_API_KEY}")
+if [[ -n "${PAPERCLAW_AUTH_HEADER:-}" ]]; then
+  AUTH_HEADERS+=(-H "Authorization: ${PAPERCLAW_AUTH_HEADER}")
+elif [[ -n "${PAPERCLAW_API_KEY:-}" ]]; then
+  AUTH_HEADERS+=(-H "Authorization: Bearer ${PAPERCLAW_API_KEY}")
 fi
-if [[ -n "${PAPERCLIP_COOKIE:-}" ]]; then
-  AUTH_HEADERS+=(-H "Cookie: ${PAPERCLIP_COOKIE}")
-  PAPERCLIP_BROWSER_ORIGIN="${PAPERCLIP_BROWSER_ORIGIN:-${PAPERCLIP_API_URL%/}}"
-  AUTH_HEADERS+=(-H "Origin: ${PAPERCLIP_BROWSER_ORIGIN}" -H "Referer: ${PAPERCLIP_BROWSER_ORIGIN}/")
+if [[ -n "${PAPERCLAW_COOKIE:-}" ]]; then
+  AUTH_HEADERS+=(-H "Cookie: ${PAPERCLAW_COOKIE}")
+  PAPERCLAW_BROWSER_ORIGIN="${PAPERCLAW_BROWSER_ORIGIN:-${PAPERCLAW_API_URL%/}}"
+  AUTH_HEADERS+=(-H "Origin: ${PAPERCLAW_BROWSER_ORIGIN}" -H "Referer: ${PAPERCLAW_BROWSER_ORIGIN}/")
 fi
 
 RESPONSE_CODE=""
@@ -176,9 +176,9 @@ redact_text() {
   for secret in \
     "${HERMES_GATEWAY_API_KEY:-}" \
     "${AGENT_API_KEY:-}" \
-    "${PAPERCLIP_API_KEY:-}" \
-    "${PAPERCLIP_AUTH_HEADER:-}" \
-    "${PAPERCLIP_COOKIE:-}"; do
+    "${PAPERCLAW_API_KEY:-}" \
+    "${PAPERCLAW_AUTH_HEADER:-}" \
+    "${PAPERCLAW_COOKIE:-}"; do
     if [[ -n "$secret" ]]; then
       text="${text//$secret/[redacted len=${#secret}]}"
     fi
@@ -240,7 +240,7 @@ api_request() {
   if [[ "$path" == http://* || "$path" == https://* ]]; then
     url="$path"
   elif [[ "$path" == /api/* ]]; then
-    url="${PAPERCLIP_API_URL%/}${path}"
+    url="${PAPERCLAW_API_URL%/}${path}"
   else
     url="${API_BASE}${path}"
   fi
@@ -304,7 +304,7 @@ wait_http_ready() {
 
 require_board_auth() {
   if [[ ${#AUTH_HEADERS[@]} -eq 0 ]]; then
-    fail "board/operator auth required. Set PAPERCLIP_COOKIE, PAPERCLIP_AUTH_HEADER, or a board-capable PAPERCLIP_API_KEY."
+    fail "board/operator auth required. Set PAPERCLAW_COOKIE, PAPERCLAW_AUTH_HEADER, or a board-capable PAPERCLAW_API_KEY."
   fi
   api_request "GET" "/companies"
   if [[ "$RESPONSE_CODE" != "200" ]]; then
@@ -397,8 +397,8 @@ capture_diagnostics() {
     echo "image=${HERMES_IMAGE}"
     echo "gateway=${HERMES_GATEWAY_API_BASE_URL}"
     echo "gatewayProbe=${HERMES_GATEWAY_PROBE_URL}"
-    echo "paperclipApiUrl=${PAPERCLIP_API_URL}"
-    echo "paperclipApiUrlForHermes=${PAPERCLIP_API_URL_FOR_HERMES}"
+    echo "paperclipApiUrl=${PAPERCLAW_API_URL}"
+    echo "paperclipApiUrlForHermes=${PAPERCLAW_API_URL_FOR_HERMES}"
     echo "apiServerKeySha256=$(hash_prefix "${HERMES_GATEWAY_API_KEY:-}") len=${#HERMES_GATEWAY_API_KEY}"
     echo "agentApiKeySha256=$(hash_prefix "${AGENT_API_KEY:-}") len=${#AGENT_API_KEY}"
   } > "${HERMES_SMOKE_DIAG_DIR}/summary.env"
@@ -549,7 +549,7 @@ start_container() {
     -e API_SERVER_KEY="$HERMES_GATEWAY_API_KEY"
     -e API_SERVER_HOST=0.0.0.0
     -e API_SERVER_PORT=8642
-    -e PAPERCLIP_API_URL="$PAPERCLIP_API_URL_FOR_HERMES"
+    -e PAPERCLAW_API_URL="$PAPERCLAW_API_URL_FOR_HERMES"
     -e NO_COLOR=1
     -v "${HERMES_SMOKE_STATE_DIR}/hermes-home:/home/hermes/.hermes"
     -v "${HERMES_SMOKE_STATE_DIR}/workspace:/home/hermes/workspace"
@@ -582,17 +582,17 @@ start_container() {
 assert_fresh_container_state() {
   log "asserting container does not see host Hermes state"
   docker exec "$HERMES_CONTAINER_NAME" sh -lc 'test ! -e "$HERMES_HOME/host-sentinel.txt"'
-  docker exec "$HERMES_CONTAINER_NAME" sh -lc 'env | sort | grep -E "^(HOME|HERMES_HOME|XDG_|API_SERVER_|PAPERCLIP_API_URL)=" || true' > "${HERMES_SMOKE_DIAG_DIR}/container-env.txt"
+  docker exec "$HERMES_CONTAINER_NAME" sh -lc 'env | sort | grep -E "^(HOME|HERMES_HOME|XDG_|API_SERVER_|PAPERCLAW_API_URL)=" || true' > "${HERMES_SMOKE_DIAG_DIR}/container-env.txt"
   docker exec "$HERMES_CONTAINER_NAME" sh -lc 'find "$HERMES_HOME" -maxdepth 2 -type f -print | sort' > "${HERMES_SMOKE_DIAG_DIR}/container-hermes-home-files-before.txt" || true
-  if docker exec "$HERMES_CONTAINER_NAME" sh -lc 'env | grep -q "^PAPERCLIP_API_KEY="'; then
-    fail "container unexpectedly has PAPERCLIP_API_KEY before join/key claim"
+  if docker exec "$HERMES_CONTAINER_NAME" sh -lc 'env | grep -q "^PAPERCLAW_API_KEY="'; then
+    fail "container unexpectedly has PAPERCLAW_API_KEY before join/key claim"
   fi
 }
 
 probe_container_to_paperclip() {
-  log "probing container-to-Paperclip connectivity at ${PAPERCLIP_API_URL_FOR_HERMES}/api/health"
-  if ! docker exec "$HERMES_CONTAINER_NAME" curl -fsS --max-time 8 "${PAPERCLIP_API_URL_FOR_HERMES%/}/api/health" > "${HERMES_SMOKE_DIAG_DIR}/container-paperclip-health.json"; then
-    fail "Hermes container cannot reach Paperclip. Set PAPERCLIP_API_URL_FOR_HERMES to a URL reachable from inside Docker, or keep HERMES_DOCKER_ADD_HOST=1 for Linux host.docker.internal."
+  log "probing container-to-Paperclip connectivity at ${PAPERCLAW_API_URL_FOR_HERMES}/api/health"
+  if ! docker exec "$HERMES_CONTAINER_NAME" curl -fsS --max-time 8 "${PAPERCLAW_API_URL_FOR_HERMES%/}/api/health" > "${HERMES_SMOKE_DIAG_DIR}/container-paperclip-health.json"; then
+    fail "Hermes container cannot reach Paperclip. Set PAPERCLAW_API_URL_FOR_HERMES to a URL reachable from inside Docker, or keep HERMES_DOCKER_ADD_HOST=1 for Linux host.docker.internal."
   fi
 }
 
@@ -752,11 +752,11 @@ join_hermes_agent() {
   HERMES_GATEWAY_ALLOW_INSECURE_HTTP="$HERMES_GATEWAY_ALLOW_INSECURE_HTTP" \
   HERMES_GATEWAY_SESSION_KEY_STRATEGY="$HERMES_GATEWAY_SESSION_KEY_STRATEGY" \
   HERMES_GATEWAY_TIMEOUT_SEC="$HERMES_ADAPTER_TIMEOUT_SEC" \
-  PAPERCLIP_API_URL="$PAPERCLIP_API_URL" \
-  PAPERCLIP_API_URL_FOR_HERMES="$PAPERCLIP_API_URL_FOR_HERMES" \
-  PAPERCLIP_AUTH_HEADER="${PAPERCLIP_AUTH_HEADER:-}" \
-  PAPERCLIP_API_KEY="${PAPERCLIP_API_KEY:-}" \
-  PAPERCLIP_COOKIE="${PAPERCLIP_COOKIE:-}" \
+  PAPERCLAW_API_URL="$PAPERCLAW_API_URL" \
+  PAPERCLAW_API_URL_FOR_HERMES="$PAPERCLAW_API_URL_FOR_HERMES" \
+  PAPERCLAW_AUTH_HEADER="${PAPERCLAW_AUTH_HEADER:-}" \
+  PAPERCLAW_API_KEY="${PAPERCLAW_API_KEY:-}" \
+  PAPERCLAW_COOKIE="${PAPERCLAW_COOKIE:-}" \
   COMPANY_ID="$COMPANY_ID" \
   COMPANY_SELECTOR="$COMPANY_SELECTOR" \
   HERMES_JOIN_OUTPUT_FILE="$JOIN_OUTPUT_FILE" \
@@ -795,7 +795,7 @@ patch_agent_instructions_with_claimed_key() {
   assert_status "200"
 
   local instructions patch_payload
-  instructions="For this smoke run only, call Paperclip at ${PAPERCLIP_API_URL_FOR_HERMES}. Read /home/hermes/workspace/paperclip-claimed-api-key.json and use its token as PAPERCLIP_API_KEY for Paperclip API requests. Do not reveal this key. When mutating Paperclip, include X-Paperclip-Run-Id with the current Paperclip run id when available."
+  instructions="For this smoke run only, call Paperclip at ${PAPERCLAW_API_URL_FOR_HERMES}. Read /home/hermes/workspace/paperclip-claimed-api-key.json and use its token as PAPERCLAW_API_KEY for Paperclip API requests. Do not reveal this key. When mutating Paperclip, include X-PaperClaw-Run-Id with the current Paperclip run id when available."
   patch_payload="$(jq -c --arg instructions "$instructions" '
     {adapterConfig: ((.adapterConfig // {}) + {instructions: $instructions})}
   ' <<<"$RESPONSE_BODY")"
@@ -804,7 +804,7 @@ patch_agent_instructions_with_claimed_key() {
 }
 
 create_smoke_issue() {
-  local marker="HERMES_PAPERCLIP_E2E_OK_${RUN_SUFFIX}"
+  local marker="HERMES_PAPERCLAW_E2E_OK_${RUN_SUFFIX}"
   local title="[Hermes Gateway Smoke] ${RUN_SUFFIX}"
   local description
   description="Hermes gateway full Docker e2e smoke.\n\n1. Read this issue.\n2. Post a Paperclip issue comment containing exactly: ${marker}\n3. Mark this issue done.\n\nUse the Paperclip API URL and key provided in your run instructions. Do not reveal secrets."

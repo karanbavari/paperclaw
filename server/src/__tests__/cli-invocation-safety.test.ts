@@ -324,7 +324,7 @@ function findOffenders(relPath: string, text: string): string[] {
 // `doc/logs` holds past verification logs, `doc/plans` holds dated design
 // plans, and `scripts` holds trusted automation with fixed arguments. It skips
 // test files, because a test names the unsafe form to assert against it. The
-// root .paperclip-runtime directory contains ignored historical session
+// root .paperclaw-runtime directory contains ignored historical session
 // recordings, not checked-in guidance; never scan those private recordings.
 
 const SKIP_DIRS = new Set([
@@ -334,7 +334,7 @@ const SKIP_DIRS = new Set([
   "build",
   ".next",
   "coverage",
-  ".paperclip",
+  ".paperclaw",
   "tmp",
 ]);
 
@@ -375,7 +375,7 @@ function listGuidanceFiles(rootDir = repoRoot): string[] {
       if (entry.isDirectory()) {
         if (SKIP_DIRS.has(entry.name)) continue;
         if (SKIP_PATH_PREFIXES.some((prefix) => `${relPath}/`.startsWith(prefix))) continue;
-        if (SKIP_DIRS.has(entry.name) || relPath === ".paperclip-runtime") continue;
+        if (SKIP_DIRS.has(entry.name) || relPath === ".paperclaw-runtime") continue;
         walk(path.join(absDir, entry.name), relPath);
         continue;
       }
@@ -506,8 +506,8 @@ describe("paperclipai CLI invocation safety", () => {
       const fixtures = [
         "doc/CLI.md",
         "src/guidance.ts",
-        "src/.paperclip-runtime/guidance.md",
-        ".paperclip-runtime/sessions/recording.json",
+        "src/.paperclaw-runtime/guidance.md",
+        ".paperclaw-runtime/sessions/recording.json",
       ];
       for (const relPath of fixtures) {
         const file = path.join(fixtureRoot, relPath);
@@ -517,7 +517,7 @@ describe("paperclipai CLI invocation safety", () => {
       const files = listGuidanceFiles(fixtureRoot).sort();
       expect(files).toEqual([
         "doc/CLI.md",
-        "src/.paperclip-runtime/guidance.md",
+        "src/.paperclaw-runtime/guidance.md",
         "src/guidance.ts",
       ]);
       for (const relPath of files) {
@@ -567,7 +567,7 @@ describe("paperclipai CLI invocation safety", () => {
     // Path, ref, id, and name options on worktree commands.
     expect(scanText("doc/E.md", "pnpm paperclipai worktree repair --branch PAP-1-x")).toHaveLength(1);
     expect(scanText("doc/E.md", "pnpm paperclipai worktree:make my-feature --start-point origin/main")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclipai worktree init --from-config ~/.paperclip/config.json")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm paperclipai worktree init --from-config ~/.paperclaw/config.json")).toHaveLength(1);
     expect(scanText("doc/E.md", "pnpm paperclipai worktree reseed --to PAP-1-x")).toHaveLength(1);
   });
 

@@ -804,6 +804,8 @@ export {
   installPluginSchema,
   upsertPluginConfigSchema,
   patchPluginConfigSchema,
+  pluginSetupPatchSchema,
+  pluginToolConsoleTestRequestSchema,
   updatePluginStatusSchema,
   uninstallPluginSchema,
   pluginStateScopeKeySchema,
@@ -826,6 +828,8 @@ export {
   type InstallPlugin,
   type UpsertPluginConfig,
   type PatchPluginConfig,
+  type PluginSetupPatch,
+  type PluginToolConsoleTestRequestInput,
   type UpdatePluginStatus,
   type UninstallPlugin,
   type PluginStateScopeKey,
@@ -979,3 +983,12 @@ export * from "./app-definition.js";
 export * from "./chat-channels.js";
 
 export * from "./email.js";
+
+export * from "./company-memory.js";
+export * from "./direct-chat.js";
+export * from "./marketplace.js";
+export * from "./meeting.js";
+export * from "./ops-incident.js";
+export * from "./outcome-center.js";
+export * from "./research-lab.js";
+export * from "./tool-permissions.js";

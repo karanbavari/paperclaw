@@ -1,4 +1,4 @@
-# @paperclipai/shared
+# @kesarcloud/shared
 
 ## 0.3.1
 

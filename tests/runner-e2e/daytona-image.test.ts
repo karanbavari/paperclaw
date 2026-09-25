@@ -44,7 +44,7 @@ describe("runner E2E Daytona image contract", () => {
       "/opt/paperclip-runner/provider-pack/provider-pack.json",
     );
     expect(dockerfile).toContain(
-      "${PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin",
+      "${PAPERCLAW_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin",
     );
     for (const command of ["acpx", "claude-agent-acp", "codex-acp"]) {
       expect(dockerfile).toContain(command);
@@ -56,7 +56,7 @@ describe("runner E2E Daytona image contract", () => {
       'metadata="$(paperclip-runnerd --build-metadata)"',
     );
     expect(dockerfile).toContain("provider-pack.json");
-    expect(dockerfile).toContain("io.paperclip.runner.content-id");
+    expect(dockerfile).toContain("io.paperclaw.runner.content-id");
     expect(dockerfile).toContain("org.opencontainers.image.revision");
     expect(extractDaytonaDockerfileFrontendDigest(dockerfile)).toBe(
       "sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e",
@@ -91,7 +91,7 @@ describe("runner E2E Daytona image contract", () => {
       "e2e-content-${{ needs.catalog.outputs.daytona_image_content_id }}",
     );
     expect(workflow).toContain(
-      '--build-arg "PAPERCLIP_RUNNER_CONTENT_ID=${IMAGE_CONTENT_ID}"',
+      '--build-arg "PAPERCLAW_RUNNER_CONTENT_ID=${IMAGE_CONTENT_ID}"',
     );
     expect(workflow).toContain(
       "IMAGE_CACHE: ghcr.io/paperclipai/paperclip-daytona-runner:e2e-buildcache-amd64",
@@ -117,15 +117,15 @@ describe("runner E2E Daytona image contract", () => {
     expect(workflow).toContain('.architecture == "amd64"');
     expect(workflow).toContain('.os == "linux"');
     expect(workflow).toContain('.config.User == "daytona"');
-    expect(workflow).toContain("PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT=");
+    expect(workflow).toContain("PAPERCLAW_RUNNER_PROVIDER_PACK_ROOT=");
     expect(workflow).toContain(
       "node packages/paperclip-runner/scripts/build-provider-pack.mjs packages/paperclip-runner/provider-pack",
     );
     expect(workflow).toContain(
-      "PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/paperclip-runner/provider-pack",
+      "PAPERCLAW_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/paperclip-runner/provider-pack",
     );
     expect(workflow).toContain(
-      "PAPERCLIP_RUNNER_SOURCE_REVISION: ${{ needs.daytona_image.outputs.source_revision }}",
+      "PAPERCLAW_RUNNER_SOURCE_REVISION: ${{ needs.daytona_image.outputs.source_revision }}",
     );
     expect(workflow.indexOf("cosign verify")).toBeLessThan(
       workflow.indexOf("docker logout ghcr.io"),
@@ -134,17 +134,17 @@ describe("runner E2E Daytona image contract", () => {
       workflow.indexOf(`--format '{{json .Image}}'`),
     );
     const providerInstall = dockerfile.indexOf(
-      "pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'",
+      "pnpm install --frozen-lockfile --filter '@kesarcloud/paperclip-runner...'",
     );
     const runnerSourceCopy = dockerfile.indexOf(
       "COPY packages ./packages",
     );
     const providerRevisionArg = dockerfile.indexOf(
-      "ARG PAPERCLIP_RUNNER_SOURCE_REVISION",
+      "ARG PAPERCLAW_RUNNER_SOURCE_REVISION",
     );
     const cliInstall = dockerfile.indexOf("npm install -g");
     const finalMetadataArgs = dockerfile.lastIndexOf(
-      "ARG PAPERCLIP_RUNNER_CONTENT_ID",
+      "ARG PAPERCLAW_RUNNER_CONTENT_ID",
     );
     expect(providerInstall).toBeGreaterThan(0);
     expect(runnerSourceCopy).toBeGreaterThan(0);
@@ -224,7 +224,7 @@ describe("runner E2E Daytona image contract", () => {
       );
       await writeFile(
         path.join(root, "packages/paperclip-runner/package.json"),
-        '{"name":"@paperclipai/paperclip-runner"}\n',
+        '{"name":"@kesarcloud/paperclip-runner"}\n',
       );
       await writeFile(
         path.join(root, "packages/paperclip-runner/src/runner.ts"),

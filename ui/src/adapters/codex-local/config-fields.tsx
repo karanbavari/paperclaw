@@ -15,17 +15,17 @@ import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
   isCodexLocalFastModeSupported,
   isCodexLocalManualModel,
-} from "@paperclipai/adapter-codex-local";
+} from "@kesarcloud/adapter-codex-local";
 import {
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS,
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
+  PAPERCLAW_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
+  PAPERCLAW_RUNNER_IDLE_TIMEOUT_MAX_MS,
+  PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES,
   isPaperclipRunnerProvider,
   resolvePaperclipRunnerIdleTimeoutMs,
   resolvePaperclipRunnerPermissionMode,
   type PaperclipRunnerPermissionMode,
   type PaperclipRunnerProvider,
-} from "@paperclipai/adapter-utils";
+} from "@kesarcloud/adapter-utils";
 
 const inputClass =
   "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
@@ -67,7 +67,7 @@ export function CodexLocalConfigFields({
     ? configuredRunnerProvider
     : "codex";
   const runnerPermissionCapability =
-    PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[runnerProvider];
+    PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES[runnerProvider];
   const configuredRunnerPermissionMode =
     runnerManaged && runnerPermissionCapability.configurable
       ? isCreate
@@ -128,7 +128,7 @@ export function CodexLocalConfigFields({
           ? values!.paperclipRunnerIdleTimeoutMs
           : eff("adapterConfig", "idleTimeoutMs", config.idleTimeoutMs),
       )
-    : PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
+    : PAPERCLAW_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
   const rawEngine = runnerManaged
     ? "cli"
     : isCreate
@@ -459,7 +459,7 @@ export function CodexLocalConfigFields({
             <input
               type="number"
               min={1}
-              max={PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS}
+              max={PAPERCLAW_RUNNER_IDLE_TIMEOUT_MAX_MS}
               className={inputClass}
               value={runnerIdleTimeoutMs}
               onChange={(event) =>
@@ -475,7 +475,7 @@ export function CodexLocalConfigFields({
             <DraftNumberInput
               value={runnerIdleTimeoutMs}
               min={1}
-              max={PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS}
+              max={PAPERCLAW_RUNNER_IDLE_TIMEOUT_MAX_MS}
               onCommit={(value) =>
                 mark(
                   "adapterConfig",

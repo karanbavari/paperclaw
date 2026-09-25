@@ -16,7 +16,7 @@ import {
   updateIssueSchema,
   upsertIssueDocumentSchema,
   linkIssueApprovalSchema,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { PaperclipApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 
@@ -56,11 +56,11 @@ function parseOptionalJson(raw: string | undefined | null): unknown {
 }
 
 async function callRuntimeConnectionTool(
-  endpointEnv: "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
+  endpointEnv: "PAPERCLAW_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "PAPERCLAW_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
   body: unknown,
 ) {
   const endpoint = process.env[endpointEnv]?.trim();
-  const token = process.env.PAPERCLIP_RUNTIME_TOOLS_TOKEN?.trim();
+  const token = process.env.PAPERCLAW_RUNTIME_TOOLS_TOKEN?.trim();
   if (!endpoint || !token) {
     throw new Error("Connection intent tools are available only inside an active Paperclip heartbeat run");
   }
@@ -274,7 +274,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
       connectionsSearchInputSchema,
       async (input) => callRuntimeConnectionTool(
-        "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL",
+        "PAPERCLAW_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL",
         input,
       ),
     ),
@@ -283,7 +283,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       CONNECTION_REQUEST_TOOL_DESCRIPTION,
       connectionRequestInputSchema,
       async (input) => callRuntimeConnectionTool(
-        "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
+        "PAPERCLAW_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
         input,
       ),
     ),

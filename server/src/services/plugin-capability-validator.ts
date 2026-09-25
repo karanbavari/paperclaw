@@ -24,7 +24,7 @@ import type {
   PaperclipPluginManifestV1,
   PluginUiSlotType,
   PluginLauncherPlacementZone,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 
@@ -128,6 +128,7 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "webhooks.receive": ["webhooks.receive"],
   "http.request": ["http.outbound"],
   "secrets.resolve": ["secrets.read-ref"],
+  "secrets.upsert": ["secrets.write-ref"],
 
   // Agent tools
   "agent.tools.register": ["agent.tools.register"],

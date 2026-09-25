@@ -68,7 +68,7 @@ or staging script. The live staged binary retained the baseline digest after
 the comparison.
 
 Exact local evidence filenames, under the ignored
-`.paperclip-runtime/chat-adapters-live/runner-output-burst-benchmark-20260908/`:
+`.paperclaw-runtime/chat-adapters-live/runner-output-burst-benchmark-20260908/`:
 
 - `baseline.metrics.jsonl`: selected closed metric fields exported from captured
   `FINAL_BURST_BENCHMARK` stdout, execution session `62858`, 9/9 passed.
@@ -81,11 +81,11 @@ were captured by the execution tool: baseline 103.48 s, candidate 83.97 s.
 Run from `packages/paperclip-runner`:
 
 ```sh
-PAPERCLIP_FINAL_BURST_BENCHMARK=1 PAPERCLIP_FINAL_BURST_REPETITIONS=3 PAPERCLIP_FINAL_BURST_BINARY=/tmp/paperclip-final-burst-cargo.YoIBsw/baseline-paperclip-runnerd pnpm exec vitest run src/live/runnerd-final-output-burst.benchmark.test.ts
-PAPERCLIP_FINAL_BURST_BENCHMARK=1 PAPERCLIP_FINAL_BURST_REPETITIONS=3 PAPERCLIP_FINAL_BURST_BINARY=/tmp/paperclip-final-burst-cargo.YoIBsw/release/paperclip-runnerd pnpm exec vitest run src/live/runnerd-final-output-burst.benchmark.test.ts
+PAPERCLAW_FINAL_BURST_BENCHMARK=1 PAPERCLAW_FINAL_BURST_REPETITIONS=3 PAPERCLAW_FINAL_BURST_BINARY=/tmp/paperclip-final-burst-cargo.YoIBsw/baseline-paperclip-runnerd pnpm exec vitest run src/live/runnerd-final-output-burst.benchmark.test.ts
+PAPERCLAW_FINAL_BURST_BENCHMARK=1 PAPERCLAW_FINAL_BURST_REPETITIONS=3 PAPERCLAW_FINAL_BURST_BINARY=/tmp/paperclip-final-burst-cargo.YoIBsw/release/paperclip-runnerd pnpm exec vitest run src/live/runnerd-final-output-burst.benchmark.test.ts
 ```
 
-Without `PAPERCLIP_FINAL_BURST_BINARY`, the test selects the existing staged
+Without `PAPERCLAW_FINAL_BURST_BINARY`, the test selects the existing staged
 runner (or the existing debug runner if none is staged). It never builds one.
 Every invocation copies the selected binary into a private fixture directory,
 checks its SHA before and after, and uses an explicit empty Codex home and no

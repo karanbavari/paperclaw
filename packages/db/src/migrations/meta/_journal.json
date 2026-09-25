@@ -1947,6 +1947,76 @@
       "when": 1789390281190,
       "tag": "0279_tired_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 280,
+      "version": "7",
+      "when": 1790000000000,
+      "tag": "9000_meeting_rooms",
+      "breakpoints": true
+    },
+    {
+      "idx": 281,
+      "version": "7",
+      "when": 1790000001000,
+      "tag": "9001_meeting_search_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 282,
+      "version": "7",
+      "when": 1790000002000,
+      "tag": "9002_company_memory",
+      "breakpoints": true
+    },
+    {
+      "idx": 283,
+      "version": "7",
+      "when": 1790000003000,
+      "tag": "9003_company_profile_localization",
+      "breakpoints": true
+    },
+    {
+      "idx": 284,
+      "version": "7",
+      "when": 1790000004000,
+      "tag": "9004_marketplace_skill_approvals",
+      "breakpoints": true
+    },
+    {
+      "idx": 285,
+      "version": "7",
+      "when": 1790000005000,
+      "tag": "9005_research_labs",
+      "breakpoints": true
+    },
+    {
+      "idx": 286,
+      "version": "7",
+      "when": 1790000006000,
+      "tag": "9006_direct_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 287,
+      "version": "7",
+      "when": 1790000007000,
+      "tag": "9007_tool_permission_system",
+      "breakpoints": true
+    },
+    {
+      "idx": 288,
+      "version": "7",
+      "when": 1790000008000,
+      "tag": "9008_disable_agent_cheap_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 289,
+      "version": "7",
+      "when": 1790000009000,
+      "tag": "9009_company_context_and_run_limit",
+      "breakpoints": true
     }
   ]
 }

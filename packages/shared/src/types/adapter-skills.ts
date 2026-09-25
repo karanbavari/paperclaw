@@ -11,6 +11,7 @@ export type AgentSkillState =
   | "external";
 
 export type AgentSkillOrigin =
+  | "paperclaw_required"
   | "company_managed"
   | "user_installed"
   | "external_unknown";
@@ -27,6 +28,9 @@ export interface AgentSkillEntry {
   currentVersionId?: string | null;
   desired: boolean;
   managed: boolean;
+  /** Backwards-compatible required-skill marker used by PaperClaw adapters. */
+  required?: boolean;
+  requiredReason?: string | null;
   state: AgentSkillState;
   origin?: AgentSkillOrigin;
   originLabel?: string | null;

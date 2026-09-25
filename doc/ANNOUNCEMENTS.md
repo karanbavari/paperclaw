@@ -1,13 +1,13 @@
 # In-app announcements
 
 Paperclip displays one optional announcement card in the board UI. Its feed is
-`https://pages.paperclip.ing/announcements/v1/current.json`. The instance fetches
+`https://pages.paperclaw.ing/announcements/v1/current.json`. The instance fetches
 JSON on demand and renders it with native components.
 
 ## Operator configuration
 
-- `PAPERCLIP_ANNOUNCEMENTS_ENABLED=false` disables fetching and display.
-- `PAPERCLIP_ANNOUNCEMENTS_FEED_URL` overrides the public HTTPS manifest URL.
+- `PAPERCLAW_ANNOUNCEMENTS_ENABLED=false` disables fetching and display.
+- `PAPERCLAW_ANNOUNCEMENTS_FEED_URL` overrides the public HTTPS manifest URL.
   Credentials, query strings, private destinations and redirects are rejected.
 
 Announcements are independent of telemetry. Feed/media requests originate from
@@ -55,11 +55,11 @@ then run:
 node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts announcements --dry-run
 ```
 
-Set `PAPERCLIP_PAGE_BUCKET`, optionally `PAPERCLIP_PAGE_BASE_URL`, and the page
-uploader's namespaced `PAPERCLIP_PAGE_AWS_ACCESS_KEY_ID` and
-`PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY` (optional `PAPERCLIP_PAGE_AWS_SESSION_TOKEN`),
-or `PAPERCLIP_PAGE_AWS_PROFILE`. Ambient AWS credentials also work.
-For a host serving a subdirectory, `PAPERCLIP_PAGE_DEFAULT_PREFIX` prepends a
+Set `PAPERCLAW_PAGE_BUCKET`, optionally `PAPERCLAW_PAGE_BASE_URL`, and the page
+uploader's namespaced `PAPERCLAW_PAGE_AWS_ACCESS_KEY_ID` and
+`PAPERCLAW_PAGE_AWS_SECRET_ACCESS_KEY` (optional `PAPERCLAW_PAGE_AWS_SESSION_TOKEN`),
+or `PAPERCLAW_PAGE_AWS_PROFILE`. Ambient AWS credentials also work.
+For a host serving a subdirectory, `PAPERCLAW_PAGE_DEFAULT_PREFIX` prepends a
 validated path to both S3 keys and public URLs. Use lowercase letters, numbers
 and hyphens in each segment, without leading/trailing slashes.
 
@@ -127,10 +127,10 @@ The complete authoring example is `announcements/examples/animated/`. Preview
 it with the same staging/test-drive workflow below:
 
 ```sh
-cp -R announcements/examples/animated .paperclip/announcement-animation-preview
+cp -R announcements/examples/animated .paperclaw/announcement-animation-preview
 # Edit HTML; recompute its digest and rename it; update current.json.
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-animation-preview --staging animated-preview --dry-run
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-animation-preview --staging animated-preview --publish
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclaw/announcement-animation-preview --staging animated-preview --dry-run
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclaw/announcement-animation-preview --staging animated-preview --publish
 ```
 
 Point the isolated instance at the printed URL and restart it. Verify movement,
@@ -152,16 +152,16 @@ CloudFront already has permission to read:
 
 ```sh
 aws sso login --profile paperclip-dev
-export PAPERCLIP_PAGE_AWS_PROFILE=paperclip-dev
-export PAPERCLIP_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
-export PAPERCLIP_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
-export PAPERCLIP_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
+export PAPERCLAW_PAGE_AWS_PROFILE=paperclip-dev
+export PAPERCLAW_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
+export PAPERCLAW_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
+export PAPERCLAW_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
 
 # Copy the public fixture into an ignored directory and edit current.json there.
-mkdir -p .paperclip
-cp -R announcements/examples/staging .paperclip/announcement-preview
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --dry-run
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --publish
+mkdir -p .paperclaw
+cp -R announcements/examples/staging .paperclaw/announcement-preview
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclaw/announcement-preview --staging my-preview --dry-run
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclaw/announcement-preview --staging my-preview --publish
 ```
 
 Choose a unique staging name for your test and use the printed manifest URL.
@@ -174,23 +174,23 @@ prefix, then verify its matching cache behavior as described above.
 
 Create a test-drive configuration in this worktree. Put the feed override in
 the **selected instance's `.env`**, not just the invoking shell: test-drive
-deliberately clears inherited `PAPERCLIP_*` variables.
+deliberately clears inherited `PAPERCLAW_*` variables.
 
 ```sh
-mkdir -p .paperclip/announcement-test-drive/instances/default
+mkdir -p .paperclaw/announcement-test-drive/instances/default
 # On a new test directory, create this file. On reuse, update these entries
 # while preserving the file's existing keys.
-cat > .paperclip/announcement-test-drive/instances/default/.env <<'EOF'
-PAPERCLIP_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
-PAPERCLIP_ANNOUNCEMENTS_ENABLED=true
-PAPERCLIP_DB_BACKUP_ENABLED=false
+cat > .paperclaw/announcement-test-drive/instances/default/.env <<'EOF'
+PAPERCLAW_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
+PAPERCLAW_ANNOUNCEMENTS_ENABLED=true
+PAPERCLAW_DB_BACKUP_ENABLED=false
 HEARTBEAT_SCHEDULER_ENABLED=false
 EOF
 
 # A fresh test-drive needs a provider key for its initial CEO. Use your usual
 # provider environment variable; never put a real key into a manifest or commit.
 # Reusing an initialized data directory does not require a bootstrap key.
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir .paperclip/announcement-test-drive --no-browser
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir .paperclaw/announcement-test-drive --no-browser
 ```
 
 See [test-drive setup](DEVELOPING.md#one-command-isolated-manual-test-drive) for harness/key options.

@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-export const HEARTBEAT_RUN_SCRATCH_MARKER = ".paperclip-run-scratch.json";
+export const HEARTBEAT_RUN_SCRATCH_MARKER = ".paperclaw-run-scratch.json";
 
 export interface HeartbeatRunScratchMetadata {
   version: 1;
@@ -107,10 +107,10 @@ export function buildHeartbeatRunScratchEnv(
   scratch: HeartbeatRunScratch,
 ): HeartbeatRunScratchEnvResult {
   const env: Record<string, string> = {
-    PAPERCLIP_RUN_SCRATCH_DIR: scratch.dir,
-    PAPERCLIP_TASK_SCRATCH_DIR: scratch.dir,
-    PAPERCLIP_SCRATCH_DIR: scratch.dir,
-    PAPERCLIP_TMPDIR: scratch.dir,
+    PAPERCLAW_RUN_SCRATCH_DIR: scratch.dir,
+    PAPERCLAW_TASK_SCRATCH_DIR: scratch.dir,
+    PAPERCLAW_SCRATCH_DIR: scratch.dir,
+    PAPERCLAW_TMPDIR: scratch.dir,
   };
   const tempKeysApplied: string[] = [];
   for (const key of TEMP_ENV_KEYS) {

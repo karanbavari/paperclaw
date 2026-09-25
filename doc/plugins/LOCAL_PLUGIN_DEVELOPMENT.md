@@ -60,7 +60,7 @@ Paperclip listens on `http://127.0.0.1:3100` by default. The CLI talks to that s
 paperclipai plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 ```
 
-This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@paperclipai/plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@kesarcloud/plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -131,9 +131,9 @@ If you install the plugin into a long-lived control-plane host that is still on 
 The CLI resolves the API base URL in this order (highest priority first):
 
 1. `--api-base <url>` flag on the command,
-2. `PAPERCLIP_API_URL` environment variable,
+2. `PAPERCLAW_API_URL` environment variable,
 3. the active CLI context profile's `apiBase`,
-4. inferred default `http://<PAPERCLIP_SERVER_HOST|localhost>:<PAPERCLIP_SERVER_PORT|config.server.port|3100>`.
+4. inferred default `http://<PAPERCLAW_SERVER_HOST|localhost>:<PAPERCLAW_SERVER_PORT|config.server.port|3100>`.
 
 So the API URL is explicit and overridable — the gap was never that you *couldn't* point at a branch server, it was that nothing told you which server you ended up on. `paperclipai plugin target` and the pre-install probe close that gap.
 
@@ -142,7 +142,7 @@ So the API URL is explicit and overridable — the gap was never that you *could
 ```bash
 # 1. From the branch checkout (e.g. an issue worktree), run that branch's server.
 #    Pick a port that does not collide with any control-plane instance.
-PAPERCLIP_SERVER_PORT=3120 pnpm dev          # or: pnpm paperclipai run
+PAPERCLAW_SERVER_PORT=3120 pnpm dev          # or: pnpm paperclipai run
 
 # 2. Confirm the CLI will talk to that exact branch service before installing.
 paperclipai plugin target --api-base http://127.0.0.1:3120
@@ -154,7 +154,7 @@ paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin \
   --api-base http://127.0.0.1:3120
 
 # Prefer setting it once for the shell instead of repeating --api-base:
-export PAPERCLIP_API_URL=http://127.0.0.1:3120
+export PAPERCLAW_API_URL=http://127.0.0.1:3120
 paperclipai plugin target
 paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin
 ```
@@ -168,7 +168,7 @@ When the behavior you care about is a branch-only route, hit it directly against
 ```bash
 # Same base URL you installed into; expect JSON, not "API route not found".
 curl -s "http://127.0.0.1:3120/api/companies/<companyId>/<branch-route>" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" | head
+  -H "Authorization: Bearer $PAPERCLAW_API_KEY" | head
 ```
 
 If that returns the route's JSON, the branch runtime is serving the route and the plugin is exercising real published behavior. If it returns `API route not found`, the service on that port is not running your branch code — restart the branch server (step 1) and re-check `plugin target` before continuing.
@@ -187,9 +187,9 @@ What that means in practice:
 - **Manifest:** save `src/manifest.ts` → `dist/manifest.js` rewrites → the worker restarts and the host re-reads the manifest.
 - **Plugin UI:** save a `.tsx` file → esbuild rewrites `dist/ui/` → Paperclip reloads the UI bundle on its next mount. To get HMR during UI iteration, run `pnpm dev:ui` and point at the dev server with `devUiUrl` in your manifest while developing.
 - **Without `pnpm dev`:** the watcher only fires on `dist/*` changes. If you stop the watch build, source edits do not reach Paperclip. Restart `pnpm dev` (or run `pnpm build` once) before expecting changes.
-- **`node_modules`, `.git`, `.paperclip-sdk`, and other dotfolders are ignored.** Adding a dependency requires the new code to actually be imported and rebuilt before the worker sees it.
+- **`node_modules`, `.git`, `.paperclaw-sdk`, and other dotfolders are ignored.** Adding a dependency requires the new code to actually be imported and rebuilt before the worker sees it.
 
-The package's own build scripts still own compilation. Paperclip does not compile arbitrary local-path plugins for you. The exceptions are bundled plugins inside the Paperclip repo under `packages/plugins/`: workspace packages auto-build once with `pnpm --filter <package> build`, and standalone sandbox-provider packages under `packages/plugins/sandbox-providers/` first bootstrap package-local dependencies with `pnpm install --ignore-workspace ...` and then run `pnpm build` in place. Set `PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD=1` in the server environment to disable those fallbacks.
+The package's own build scripts still own compilation. Paperclip does not compile arbitrary local-path plugins for you. The exceptions are bundled plugins inside the Paperclip repo under `packages/plugins/`: workspace packages auto-build once with `pnpm --filter <package> build`, and standalone sandbox-provider packages under `packages/plugins/sandbox-providers/` first bootstrap package-local dependencies with `pnpm install --ignore-workspace ...` and then run `pnpm build` in place. Set `PAPERCLAW_DISABLE_PLUGIN_AUTOBUILD=1` in the server environment to disable those fallbacks.
 
 ## Local path plugins vs npm packages
 
@@ -204,7 +204,7 @@ When you are done iterating locally, publish the package and reinstall the npm-p
 
 - **Restart cleanly:** `paperclipai plugin disable <key>` pauses the plugin without removing it. `paperclipai plugin enable <key>` brings it back. `paperclipai plugin uninstall <key>` removes the install record; add `--force` to also purge plugin state and settings.
 - **Browse examples:** `paperclipai plugin examples` lists the bundled example plugins that ship with the repo, each with a ready-to-run `paperclipai plugin install <path>` line.
-- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@paperclipai/plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
+- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@kesarcloud/plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
 - **Routine-first automation:** If your plugin should produce periodic issue work, prefer managed routines and `ctx.routines.managed` reconciliation over custom process loops or unobserved cron code.
 
 ## Troubleshooting

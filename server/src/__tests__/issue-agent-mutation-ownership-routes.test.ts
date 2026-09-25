@@ -160,7 +160,7 @@ const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 const mockObserveCrossIssueInfluence = vi.hoisted(() => vi.fn(async () => null));
 
 function registerRouteMocks() {
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@kesarcloud/shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -439,7 +439,7 @@ function boardActor() {
 describe("agent issue mutation checkout ownership", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@paperclipai/shared/telemetry");
+    vi.doUnmock("@kesarcloud/shared/telemetry");
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
@@ -1073,7 +1073,7 @@ describe("agent issue mutation checkout ownership", () => {
 
   it("rejects the checked-out owner without a run id on attachment upload (401)", async () => {
     // Regression: an agent-authenticated client (e.g. the CLI's attachment:upload)
-    // that fails to send X-Paperclip-Run-Id must be rejected — mutating your own
+    // that fails to send X-PaperClaw-Run-Id must be rejected — mutating your own
     // in-progress checkout requires proving run ownership.
     const app = await createApp({
       type: "agent",

@@ -184,10 +184,10 @@ describe("command managed runtime", () => {
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
-    await mkdir(path.join(localWorkspaceDir, ".paperclip-runtime"), { recursive: true });
+    await mkdir(path.join(localWorkspaceDir, ".paperclaw-runtime"), { recursive: true });
     await mkdir(remoteWorkspaceDir, { recursive: true });
     await writeFile(path.join(localWorkspaceDir, "README.md"), "local workspace\n", "utf8");
-    await writeFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "{\"keep\":true}\n", "utf8");
+    await writeFile(path.join(localWorkspaceDir, ".paperclaw-runtime", "state.json"), "{\"keep\":true}\n", "utf8");
 
     const calls: Array<{
       command: string;
@@ -221,8 +221,8 @@ describe("command managed runtime", () => {
           (args[0] === "-c" || args[0] === "-lc") &&
           typeof args[1] === "string"
         ) {
-          env.PAPERCLIP_TEST_STDIN = input.stdin;
-          args[1] = `printf '%s' \"$PAPERCLIP_TEST_STDIN\" | (${args[1]})`;
+          env.PAPERCLAW_TEST_STDIN = input.stdin;
+          args[1] = `printf '%s' \"$PAPERCLAW_TEST_STDIN\" | (${args[1]})`;
         }
         try {
           const result = await execFile(command, args, {
@@ -272,21 +272,21 @@ describe("command managed runtime", () => {
     });
 
     await expect(readFile(path.join(remoteWorkspaceDir, "README.md"), "utf8")).resolves.toBe("local workspace\n");
-    await expect(readFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "state.json"), "utf8")).rejects
+    await expect(readFile(path.join(remoteWorkspaceDir, ".paperclaw-runtime", "state.json"), "utf8")).rejects
       .toMatchObject({ code: "ENOENT" });
     // The single-stream upload pipes the tarball through exactly one stdin-backed
     // process (the speed fix); nothing else streams stdin.
     expect(calls.filter((call) => call.stdin != null).length).toBe(1);
 
-    await mkdir(path.join(remoteWorkspaceDir, ".paperclip-runtime"), { recursive: true });
+    await mkdir(path.join(remoteWorkspaceDir, ".paperclaw-runtime"), { recursive: true });
     await writeFile(path.join(remoteWorkspaceDir, "README.md"), "remote workspace\n", "utf8");
-    await writeFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "remote-state.json"), "{\"remote\":true}\n", "utf8");
+    await writeFile(path.join(remoteWorkspaceDir, ".paperclaw-runtime", "remote-state.json"), "{\"remote\":true}\n", "utf8");
     await prepared.restoreWorkspace();
 
     await expect(readFile(path.join(localWorkspaceDir, "README.md"), "utf8")).resolves.toBe("remote workspace\n");
-    await expect(readFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "utf8")).resolves
+    await expect(readFile(path.join(localWorkspaceDir, ".paperclaw-runtime", "state.json"), "utf8")).resolves
       .toBe("{\"keep\":true}\n");
-    await expect(readFile(path.join(localWorkspaceDir, ".paperclip-runtime", "remote-state.json"), "utf8")).rejects
+    await expect(readFile(path.join(localWorkspaceDir, ".paperclaw-runtime", "remote-state.json"), "utf8")).rejects
       .toMatchObject({ code: "ENOENT" });
     // Restore streams the download through `base64`/onLog (no stdin), so the only
     // stdin-backed call remains the single upload from prepare.
@@ -330,7 +330,7 @@ describe("command managed runtime", () => {
     });
 
     expect(prepared.workspaceRemoteDir).toBe(remoteWorkspaceDir);
-    expect(prepared.assetDirs.home).toBe(path.join(remoteWorkspaceDir, ".paperclip-runtime", "codex", "home"));
+    expect(prepared.assetDirs.home).toBe(path.join(remoteWorkspaceDir, ".paperclaw-runtime", "codex", "home"));
     await expect(readFile(path.join(remoteWorkspaceDir, "README.md"), "utf8")).resolves.toBe(
       "authoritative workspace\n",
     );
@@ -383,7 +383,7 @@ describe("command managed runtime", () => {
       ],
     });
 
-    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "claude");
+    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclaw-runtime", "claude");
     expect(Object.keys(prepared.additionalSourceDirs).sort()).toEqual(["one", "two"]);
     expect(prepared.additionalSourceDirs.one).toBe(path.posix.join(runtimeRootDir, "project-one"));
     expect(prepared.additionalSourceDirs.two).toBe(path.posix.join(runtimeRootDir, "project-two"));
@@ -436,7 +436,7 @@ describe("command managed runtime", () => {
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteBaseDir = path.join(rootDir, "remote-base");
-    const remoteWorkspaceDir = path.join(remoteBaseDir, ".paperclip-runtime", "runs", "test", "workspace");
+    const remoteWorkspaceDir = path.join(remoteBaseDir, ".paperclaw-runtime", "runs", "test", "workspace");
     await mkdir(localWorkspaceDir, { recursive: true });
     await mkdir(remoteBaseDir, { recursive: true });
     await writeFile(path.join(localWorkspaceDir, "README.md"), "local workspace\n", "utf8");
@@ -496,7 +496,7 @@ describe("command managed runtime", () => {
     expect(progress.at(-1)).toEqual({ done: payload.length, total: payload.length });
   });
 
-  it("stages a single-file write to <path>.paperclip-upload then atomically renames it (single-stream path)", async () => {
+  it("stages a single-file write to <path>.paperclaw-upload then atomically renames it (single-stream path)", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-atomic-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
@@ -506,12 +506,12 @@ describe("command managed runtime", () => {
     await client.writeFile(remotePath, toArrayBuffer(Buffer.from("hello atomic\n")));
 
     // Characterization guardrail: the legacy single-file transport must keep its
-    // stage-then-atomic-rename shape (temp .paperclip-upload + `mv -f`).
+    // stage-then-atomic-rename shape (temp .paperclaw-upload + `mv -f`).
     const script = (calls[0].args ?? []).join(" ");
-    expect(script).toContain(`${remotePath}.paperclip-upload`);
+    expect(script).toContain(`${remotePath}.paperclaw-upload`);
     expect(script).toContain(`trap cleanup EXIT`);
     expect(script).toContain(`mv -f`);
-    expect(script.indexOf(".paperclip-upload")).toBeLessThan(script.indexOf("mv -f"));
+    expect(script.indexOf(".paperclaw-upload")).toBeLessThan(script.indexOf("mv -f"));
     expect(await readFile(remotePath, "utf8")).toBe("hello atomic\n");
   });
 
@@ -525,7 +525,7 @@ describe("command managed runtime", () => {
     const delegatedExecute = runner.execute.bind(runner);
     runner.execute = async (input) => {
       const script = (input.args ?? []).join(" ");
-      if (script.includes("mv -f") && script.includes(".paperclip-upload.")) {
+      if (script.includes("mv -f") && script.includes(".paperclaw-upload.")) {
         calls.push({ command: input.command, args: input.args, cwd: input.cwd, stdin: input.stdin });
         return {
           exitCode: 1,
@@ -543,9 +543,9 @@ describe("command managed runtime", () => {
 
     await expect(client.writeFile(remotePath, toArrayBuffer(payload))).rejects.toThrow(/rename failed/);
 
-    const uploadCall = calls.find((call) => (call.args ?? []).join(" ").includes(".paperclip-upload."));
+    const uploadCall = calls.find((call) => (call.args ?? []).join(" ").includes(".paperclaw-upload."));
     expect(uploadCall).toBeDefined();
-    const stagedPath = (uploadCall?.args ?? []).join(" ").match(/([/A-Za-z0-9_.-]+\.paperclip-upload\.[A-Za-z0-9-]+)/)?.[1];
+    const stagedPath = (uploadCall?.args ?? []).join(" ").match(/([/A-Za-z0-9_.-]+\.paperclaw-upload\.[A-Za-z0-9-]+)/)?.[1];
     expect(stagedPath).toBeDefined();
     await expect(readFile(stagedPath!, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
     expect(calls.some((call) => (call.args ?? []).join(" ").includes(`rm -rf '${stagedPath}'`))).toBe(true);
@@ -564,7 +564,7 @@ describe("command managed runtime", () => {
     await client.writeFile(remotePath, toArrayBuffer(payload));
 
     const scripts = calls.map((call) => (call.args ?? []).join(" "));
-    expect(scripts.some((script) => script.includes(`${remotePath}.paperclip-upload`))).toBe(true);
+    expect(scripts.some((script) => script.includes(`${remotePath}.paperclaw-upload`))).toBe(true);
     expect(scripts.some((script) => script.includes(`mv -f`))).toBe(true);
     expect((await readFile(remotePath)).equals(payload)).toBe(true);
   });
@@ -726,7 +726,7 @@ describe("command managed runtime", () => {
     // Ordering: upload → untar → command 1 → command 2. The tarball upload is the
     // single stdin-backed call; the untar and the two commands follow it in order.
     const scripts = calls.map((call) => (call.args ?? []).join("\n"));
-    const uploadIdx = scripts.findIndex((s) => s.includes(".paperclip-syncin.tar") && s.includes("base64 -d"));
+    const uploadIdx = scripts.findIndex((s) => s.includes(".paperclaw-syncin.tar") && s.includes("base64 -d"));
     const untarIdx = scripts.findIndex((s) => s.includes("tar -xf") && s.includes(targetDir));
     const cmd1Idx = scripts.findIndex((s) => s.includes("1-first"));
     const cmd2Idx = scripts.findIndex((s) => s.includes("2-second"));
@@ -790,8 +790,8 @@ describe("command managed runtime", () => {
     // The write goes straight to the target path. No staging name and no
     // rename step exist between the write and the chmod.
     const scripts = calls.map((call) => (call.args ?? []).join(" "));
-    expect(scripts.some((script) => script.includes(".paperclip-syncin."))).toBe(false);
-    expect(scripts.some((script) => script.includes("mv -f") && script.includes(".paperclip-syncin."))).toBe(
+    expect(scripts.some((script) => script.includes(".paperclaw-syncin."))).toBe(false);
+    expect(scripts.some((script) => script.includes("mv -f") && script.includes(".paperclaw-syncin."))).toBe(
       false,
     );
     const chmodScript = scripts.find((script) => script.includes("chmod 640"));

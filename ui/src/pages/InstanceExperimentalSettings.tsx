@@ -7,8 +7,8 @@ import type {
   InstanceFeatureKey,
   ManagedSettingMetadata,
   PatchInstanceExperimentalSettings,
-} from "@paperclipai/shared";
-import { experimentalSettingKey } from "@paperclipai/shared";
+} from "@kesarcloud/shared";
+import { experimentalSettingKey } from "@kesarcloud/shared";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { getWorktreeInstanceId, isWorktreeRuntime } from "../lib/worktree-branding";

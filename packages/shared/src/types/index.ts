@@ -129,7 +129,7 @@ export {
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
-  PAPERCLIP_CLOUD_MANAGED_BY,
+  PAPERCLAW_CLOUD_MANAGED_BY,
 } from "./instance.js";
 export {
   TRUST_PRESETS,
@@ -666,6 +666,8 @@ export type {
   IssueBlockerAttentionIssueSummary,
   IssueBlockerAttentionReason,
   IssueBlockerAttentionState,
+  IssueProductivityReview,
+  IssueProductivityReviewTrigger,
   IssueReviewAttention,
   IssueReviewAttentionPath,
   IssueReviewAttentionPathKind,
@@ -1066,3 +1068,26 @@ export * from "./app-definition.js";
 export * from "./chat-channels.js";
 
 export * from "./email.js";
+
+export * from "./company-memory.js";
+export * from "./direct-chat.js";
+export * from "./marketplace.js";
+export * from "./meeting.js";
+export * from "./ops-incident.js";
+export * from "./outcome-center.js";
+export * from "./research-lab.js";
+export * from "./tool-permissions.js";
+export type {
+  PluginSetupOverallStatus,
+  PluginSetupPatchRequest,
+  PluginSetupStep,
+  PluginSetupStepKind,
+  PluginSetupStepStatus,
+  PluginSetupSummary,
+  PluginSetupWizardState,
+  PluginSetupWizardStatus,
+  PluginToolConsoleDescriptor,
+  PluginToolConsoleDiscoveryResponse,
+  PluginToolConsoleTestRequest,
+  PluginToolConsoleTestResult,
+} from "./plugin.js";

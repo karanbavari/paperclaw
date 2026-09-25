@@ -24,11 +24,11 @@ import type {
   SandboxReuseCandidate,
   StagedRuntimeResource,
 } from "./run-contracts.js";
-import type { PreparedAdapterExecutionTargetRuntime } from "@paperclipai/adapter-utils/execution-target";
+import type { PreparedAdapterExecutionTargetRuntime } from "@kesarcloud/adapter-utils/execution-target";
 
 function makeStagedRuntime(id: string): PreparedAdapterExecutionTargetRuntime {
   return {
-    runtimeRootDir: `/remote/${id}/.paperclip-runtime/acpx`,
+    runtimeRootDir: `/remote/${id}/.paperclaw-runtime/acpx`,
     additionalSourceDirs: {},
     additionalSourceFailures: [],
   } as unknown as PreparedAdapterExecutionTargetRuntime;
@@ -90,7 +90,7 @@ function makeSite(overrides: Partial<SandboxRunSiteOptions> = {}) {
     onReuseLog: async () => {},
     startPaperclipBridge: async () => {
       bridgeCalls.push("paperclip:start");
-      return { env: { PAPERCLIP_API_KEY: "run-token" }, stop: async () => {} } as never;
+      return { env: { PAPERCLAW_API_KEY: "run-token" }, stop: async () => {} } as never;
     },
     startProcessSessionBridge: async ({ launchEnv }) => {
       bridgeCalls.push("process-session:start");
@@ -148,7 +148,7 @@ describe("sandbox run site", () => {
     // A referenced project that fails to stage carries its failure reason back on
     // the placed-workspace result, so a reader of the run learns why it dropped.
     const failedStaged = {
-      runtimeRootDir: "/remote/fail/.paperclip-runtime/acpx",
+      runtimeRootDir: "/remote/fail/.paperclaw-runtime/acpx",
       additionalSourceDirs: {},
       additionalSourceFailures: [{ projectId: "proj-x", error: "extract failed: boom" }],
     } as unknown as PreparedAdapterExecutionTargetRuntime;
@@ -173,7 +173,7 @@ describe("sandbox run site", () => {
         events.push("paperclip:start");
         await paperclipGate;
         events.push("paperclip:env-ready");
-        return { env: { PAPERCLIP_API_KEY: "run-token" }, stop: async () => {} } as never;
+        return { env: { PAPERCLAW_API_KEY: "run-token" }, stop: async () => {} } as never;
       },
       startProcessSessionBridge: async ({ launchEnv }) => {
         events.push("process-session:start");
@@ -198,7 +198,7 @@ describe("sandbox run site", () => {
     releasePaperclip();
     const transport = await transportPromise;
     expect(events.indexOf("paperclip:env-ready")).toBeLessThan(events.indexOf("process-session:launch"));
-    expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", PAPERCLIP_API_KEY: "run-token" });
+    expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", PAPERCLAW_API_KEY: "run-token" });
     expect(transport.launchEnv).toEqual(processLaunchEnv);
   });
 

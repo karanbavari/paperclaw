@@ -80,7 +80,7 @@ function assertNoCredentialMaterial(value, credentials, checkpoint) {
 
 function issueMutationHeaders(config, method, pathname) {
   if (method === "GET" || !pathname.startsWith("/api/issues/")) return {};
-  return { "X-Paperclip-Run-Id": config.runId };
+  return { "X-PaperClaw-Run-Id": config.runId };
 }
 
 async function apiJson(request, config, method, pathname, data, checkpoint, expectedStatuses = [200]) {
@@ -160,12 +160,12 @@ async function loginPaperclipBoard(page, context, config) {
       page,
       loginUrl,
       () => page.getByLabel(/^email$/i),
-      "A.paperclip-login",
+      "A.paperclaw-login",
       "email_field_missing",
     );
     const paperclipEmailInput = page.getByLabel(/^email$/i);
     const paperclipPasswordInput = page.getByLabel(/^password$/i);
-    await expectVisible(paperclipPasswordInput, "A.paperclip-login", "password_field_missing");
+    await expectVisible(paperclipPasswordInput, "A.paperclaw-login", "password_field_missing");
     await paperclipEmailInput.fill(config.paperclipEmail);
     await paperclipPasswordInput.fill(config.paperclipPassword);
     const loginResponsePromise = page.waitForResponse((response) =>
@@ -173,7 +173,7 @@ async function loginPaperclipBoard(page, context, config) {
     );
     await page.getByRole("button", { name: /^sign in$/i }).click();
     const loginResponse = await loginResponsePromise;
-    if (!loginResponse.ok()) fail("A.paperclip-login", `http_${loginResponse.status()}`);
+    if (!loginResponse.ok()) fail("A.paperclaw-login", `http_${loginResponse.status()}`);
 
     // A redirect is a UI implementation detail; the authenticated session is
     // the prerequisite the smoke actually needs. A successful sign-in response
@@ -185,7 +185,7 @@ async function loginPaperclipBoard(page, context, config) {
     if (session.ok()) return;
     if (attempt < 2) await page.waitForTimeout(500);
   }
-  fail("A.paperclip-login", "session_cookie_missing");
+  fail("A.paperclaw-login", "session_cookie_missing");
 }
 
 async function clickVisibleButton(page, names) {
@@ -548,7 +548,7 @@ async function runSmoke({ config, chromium }) {
   const connectionName = `Notion generic self-test ${startedAt.toISOString()}`;
   const outputDirectory = process.env.NOTION_EVIDENCE_DIR
     ? path.resolve(process.env.NOTION_EVIDENCE_DIR)
-    : path.join(process.env.PAPERCLIP_RUN_SCRATCH_DIR || process.cwd(), `notion-generic-live-${runKey}`);
+    : path.join(process.env.PAPERCLAW_RUN_SCRATCH_DIR || process.cwd(), `notion-generic-live-${runKey}`);
   await mkdir(outputDirectory, { recursive: true });
 
   const summary = {
@@ -577,7 +577,7 @@ async function runSmoke({ config, chromium }) {
   let companyId = null;
   let cleanupComplete = false;
   let caughtFailure = null;
-  let activeCheckpoint = "A.paperclip-login";
+  let activeCheckpoint = "A.paperclaw-login";
 
   try {
     browser = await chromium.launch({ headless: process.env.NOTION_SMOKE_HEADED !== "1" });

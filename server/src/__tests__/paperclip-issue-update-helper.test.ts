@@ -71,9 +71,9 @@ describe("paperclip issue update helper", () => {
       const child = spawn("bash", [HELPER_PATH, ...args], {
         env: {
           ...process.env,
-          PAPERCLIP_API_URL: apiUrl,
-          PAPERCLIP_API_KEY: "test-key",
-          PAPERCLIP_RUN_ID: "test-run",
+          PAPERCLAW_API_URL: apiUrl,
+          PAPERCLAW_API_KEY: "test-key",
+          PAPERCLAW_RUN_ID: "test-run",
         },
         stdio: ["ignore", "pipe", "pipe"],
       });

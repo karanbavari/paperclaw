@@ -15,9 +15,9 @@ import {
   toolProfileBindings,
   toolProfileEntries,
   toolProfiles,
-} from "@paperclipai/db";
-import type { AdapterRuntimeMcpServer } from "@paperclipai/adapter-utils";
-import type { PaperclipSkillEntry } from "@paperclipai/adapter-utils/server-utils";
+} from "@kesarcloud/db";
+import type { AdapterRuntimeMcpServer } from "@kesarcloud/adapter-utils";
+import type { PaperclipSkillEntry } from "@kesarcloud/adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -69,14 +69,14 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-runtime-skills-");
     db = createDb(tempDb.connectionString);
-    oldPaperclipHome = process.env.PAPERCLIP_HOME;
+    oldPaperclipHome = process.env.PAPERCLAW_HOME;
     paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-skills-home-"));
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    // The server normalizes PAPERCLIP_API_URL into its own env at boot
+    process.env.PAPERCLAW_HOME = paperclipHome;
+    // The server normalizes PAPERCLAW_API_URL into its own env at boot
     // (server/src/index.ts); heartbeat gateway delivery requires it, so pin
     // a deterministic value for tests that never boot the full server.
-    oldPaperclipApiUrl = process.env.PAPERCLIP_API_URL;
-    process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
+    oldPaperclipApiUrl = process.env.PAPERCLAW_API_URL;
+    process.env.PAPERCLAW_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({
       type: TEST_ADAPTER_TYPE,
       execute: async (ctx) => {
@@ -134,10 +134,10 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
 
   afterAll(async () => {
     unregisterServerAdapter(TEST_ADAPTER_TYPE);
-    if (oldPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = oldPaperclipHome;
-    if (oldPaperclipApiUrl === undefined) delete process.env.PAPERCLIP_API_URL;
-    else process.env.PAPERCLIP_API_URL = oldPaperclipApiUrl;
+    if (oldPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+    else process.env.PAPERCLAW_HOME = oldPaperclipHome;
+    if (oldPaperclipApiUrl === undefined) delete process.env.PAPERCLAW_API_URL;
+    else process.env.PAPERCLAW_API_URL = oldPaperclipApiUrl;
     if (paperclipHome) {
       await fs.rm(paperclipHome, { recursive: true, force: true });
     }

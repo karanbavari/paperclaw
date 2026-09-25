@@ -23,7 +23,7 @@ function customPropertyValue(name: string): string {
 describe("task-chat composer styles", () => {
   it("wraps long placeholders within the composer instead of clipping them", () => {
     const block = cssBlock(
-      '.paperclip-task-chat-composer .paperclip-mdxeditor [class*="_placeholder_"]',
+      '.paperclaw-task-chat-composer .paperclaw-mdxeditor [class*="_placeholder_"]',
     );
 
     expect(block).toContain("display: block");

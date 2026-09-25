@@ -67,7 +67,7 @@ managed method. The available authentication methods are:
 
 - **Connect with Paperclip** uses the Paperclip Cloud broker when that exact
   profile is returned for this enrolled instance by the signed
-  `POST https://my.paperclip.app/v1/connector/instance-status` request. The
+  `POST https://my.paperclaw.app/v1/connector/instance-status` request. The
   anonymous capabilities document is global discovery only and never enables
   an internal-pilot method locally.
 - **Use your own Google OAuth app** uses customer-supplied OAuth credentials and
@@ -119,11 +119,11 @@ whose provider, profile, or exact scope set does not match its closed registry.
 All Paperclip-managed Google methods use the existing enrolled-instance keys:
 
 ```dotenv
-PAPERCLIP_CLOUD_CONNECTOR_BASE_URL=https://my.paperclip.app
-PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT=production
-PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID=inst_example
-PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY=...
-PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY=...
+PAPERCLAW_CLOUD_CONNECTOR_BASE_URL=https://my.paperclaw.app
+PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT=production
+PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID=inst_example
+PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY=...
+PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY=...
 ```
 
 No per-app client secret is stored on the Paperclip instance for the managed
@@ -136,8 +136,8 @@ delivery path. A self-hosted instance creates its keys during enrollment and
 stores them with owner-only permissions in the instance's ignored secret
 directory. The setup page supplies its authenticated same-origin HTTPS address
 to enrollment, so a normal Tailscale-hosted self-hoster does not need to edit
-`config.json` or set `PAPERCLIP_PUBLIC_URL`; the enrolled origin becomes the
-durable callback binding. The former `PAPERCLIP_ID_CONNECTOR_*` values use an incompatible
+`config.json` or set `PAPERCLAW_PUBLIC_URL`; the enrolled origin becomes the
+durable callback binding. The former `PAPERCLAW_ID_CONNECTOR_*` values use an incompatible
 Paperclip ID protocol and are not read aliases. Enroll with Paperclip Cloud and
 reconnect legacy grants before their old access tokens expire.
 

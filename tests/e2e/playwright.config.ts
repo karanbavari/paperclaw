@@ -5,30 +5,30 @@ import { defineConfig } from "@playwright/test";
 
 // Use a dedicated port so e2e tests always start their own server in local_trusted mode,
 // even when the dev server is running on :3100 in authenticated mode.
-const PORT = Number(process.env.PAPERCLIP_E2E_PORT ?? 3199);
+const PORT = Number(process.env.PAPERCLAW_E2E_PORT ?? 3199);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
-const PAPERCLIP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-e2e-home-"));
-const PAPERCLIP_INSTANCE_ID = "playwright-e2e";
-const PAPERCLIP_CONFIG = path.join(PAPERCLIP_HOME, "instances", PAPERCLIP_INSTANCE_ID, "config.json");
-const PAPERCLIP_AGENT_JWT_SECRET = process.env.PAPERCLIP_AGENT_JWT_SECRET ?? "playwright-e2e-agent-jwt-secret";
-const PAPERCLIP_DECISION_SIGNING_SECRET =
-  process.env.PAPERCLIP_DECISION_SIGNING_SECRET ?? "playwright-e2e-decision-signing-secret";
-const PAPERCLIP_TOOL_ACTION_SIGNING_SECRET =
-  process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET ?? "playwright-e2e-tool-action-signing-secret";
-const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL;
+const PAPERCLAW_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-e2e-home-"));
+const PAPERCLAW_INSTANCE_ID = "playwright-e2e";
+const PAPERCLAW_CONFIG = path.join(PAPERCLAW_HOME, "instances", PAPERCLAW_INSTANCE_ID, "config.json");
+const PAPERCLAW_AGENT_JWT_SECRET = process.env.PAPERCLAW_AGENT_JWT_SECRET ?? "playwright-e2e-agent-jwt-secret";
+const PAPERCLAW_DECISION_SIGNING_SECRET =
+  process.env.PAPERCLAW_DECISION_SIGNING_SECRET ?? "playwright-e2e-decision-signing-secret";
+const PAPERCLAW_TOOL_ACTION_SIGNING_SECRET =
+  process.env.PAPERCLAW_TOOL_ACTION_SIGNING_SECRET ?? "playwright-e2e-tool-action-signing-secret";
+const PLAYWRIGHT_CHANNEL = process.env.PAPERCLAW_PLAYWRIGHT_CHANNEL;
 
-process.env.PAPERCLIP_HOME = PAPERCLIP_HOME;
-process.env.PAPERCLIP_CONFIG = PAPERCLIP_CONFIG;
+process.env.PAPERCLAW_HOME = PAPERCLAW_HOME;
+process.env.PAPERCLAW_CONFIG = PAPERCLAW_CONFIG;
 // Worker processes reload this config; retain the main process's server path
 // for specs that seed historical database state in the throwaway instance.
-process.env.PAPERCLIP_E2E_SERVER_CONFIG ??= PAPERCLIP_CONFIG;
+process.env.PAPERCLAW_E2E_SERVER_CONFIG ??= PAPERCLAW_CONFIG;
 // Specs that mint agent JWTs in-process (via createLocalAgentJwt) must derive
 // the same per-instance signing key as the webServer, or verification fails
 // with a 401 instead of authenticating as the agent.
-process.env.PAPERCLIP_INSTANCE_ID = PAPERCLIP_INSTANCE_ID;
-process.env.PAPERCLIP_AGENT_JWT_SECRET = PAPERCLIP_AGENT_JWT_SECRET;
-process.env.PAPERCLIP_DECISION_SIGNING_SECRET = PAPERCLIP_DECISION_SIGNING_SECRET;
-process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET = PAPERCLIP_TOOL_ACTION_SIGNING_SECRET;
+process.env.PAPERCLAW_INSTANCE_ID = PAPERCLAW_INSTANCE_ID;
+process.env.PAPERCLAW_AGENT_JWT_SECRET = PAPERCLAW_AGENT_JWT_SECRET;
+process.env.PAPERCLAW_DECISION_SIGNING_SECRET = PAPERCLAW_DECISION_SIGNING_SECRET;
+process.env.PAPERCLAW_TOOL_ACTION_SIGNING_SECRET = PAPERCLAW_TOOL_ACTION_SIGNING_SECRET;
 
 export default defineConfig({
   testDir: ".",
@@ -59,7 +59,7 @@ export default defineConfig({
     },
   ],
   // The webServer directive bootstraps a throwaway instance and then starts it.
-  // `onboard --yes --run` works in a non-interactive temp PAPERCLIP_HOME.
+  // `onboard --yes --run` works in a non-interactive temp PAPERCLAW_HOME.
   webServer: {
     command: `pnpm paperclipai onboard --yes --run`,
     url: `${BASE_URL}/api/health`,
@@ -74,17 +74,17 @@ export default defineConfig({
       NODE_ENV: "test",
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${path.resolve(import.meta.dirname, "fixtures/agent-chat-github.mjs")}`,
       PORT: String(PORT),
-      PAPERCLIP_OPEN_ON_LISTEN: "false",
-      PAPERCLIP_API_URL: BASE_URL,
-      PAPERCLIP_HOME,
-      PAPERCLIP_INSTANCE_ID,
-      PAPERCLIP_CONFIG,
-      PAPERCLIP_AGENT_JWT_SECRET,
-      PAPERCLIP_DECISION_SIGNING_SECRET,
-      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET,
-      PAPERCLIP_BIND: "loopback",
-      PAPERCLIP_DEPLOYMENT_MODE: "local_trusted",
-      PAPERCLIP_DEPLOYMENT_EXPOSURE: "private",
+      PAPERCLAW_OPEN_ON_LISTEN: "false",
+      PAPERCLAW_API_URL: BASE_URL,
+      PAPERCLAW_HOME,
+      PAPERCLAW_INSTANCE_ID,
+      PAPERCLAW_CONFIG,
+      PAPERCLAW_AGENT_JWT_SECRET,
+      PAPERCLAW_DECISION_SIGNING_SECRET,
+      PAPERCLAW_TOOL_ACTION_SIGNING_SECRET,
+      PAPERCLAW_BIND: "loopback",
+      PAPERCLAW_DEPLOYMENT_MODE: "local_trusted",
+      PAPERCLAW_DEPLOYMENT_EXPOSURE: "private",
     },
   },
   outputDir: "./test-results",

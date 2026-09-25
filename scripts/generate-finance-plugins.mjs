@@ -391,7 +391,7 @@ async function writePlugin(plugin) {
     type: "module",
     private: true,
     exports: { ".": "./src/index.ts" },
-    paperclawPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js", ui: "./dist/ui/" },
+    paperclipPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js", ui: "./dist/ui/" },
     scripts: {
       prebuild: "pnpm --filter @kesarcloud/plugin-sdk ensure-build-deps",
       build: "tsc",

@@ -15,11 +15,11 @@ function required(name: string) {
   return value;
 }
 
-const logPath = required("PAPERCLIP_RUNNER_E2E_SERVER_LOG");
-const temporaryRoot = required("PAPERCLIP_RUNNER_E2E_TEMP_ROOT");
-const paperclipHome = required("PAPERCLIP_HOME");
-const configPath = required("PAPERCLIP_CONFIG");
-const port = required("PAPERCLIP_RUNNER_E2E_PORT");
+const logPath = required("PAPERCLAW_RUNNER_E2E_SERVER_LOG");
+const temporaryRoot = required("PAPERCLAW_RUNNER_E2E_TEMP_ROOT");
+const paperclipHome = required("PAPERCLAW_HOME");
+const configPath = required("PAPERCLAW_CONFIG");
+const port = required("PAPERCLAW_RUNNER_E2E_PORT");
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 const tsxCli = path.join(repositoryRoot, "cli/node_modules/tsx/dist/cli.mjs");
 const paperclipCli = path.join(repositoryRoot, "cli/src/index.ts");
@@ -36,31 +36,31 @@ const serverEnvironment = buildPaperclipServerEnvironment(process.env, {
   // Keep provider caches attempt-private without changing Playwright's browser
   // cache lookup in the parent process.
   XDG_CACHE_HOME: path.join(temporaryRoot, "xdg-cache"),
-  PAPERCLIP_HOME: paperclipHome,
-  PAPERCLIP_CONFIG: configPath,
-  PAPERCLIP_INSTANCE_ID: required("PAPERCLIP_INSTANCE_ID"),
-  PAPERCLIP_AGENT_JWT_SECRET: required("PAPERCLIP_AGENT_JWT_SECRET"),
-  PAPERCLIP_DECISION_SIGNING_SECRET: required(
-    "PAPERCLIP_DECISION_SIGNING_SECRET",
+  PAPERCLAW_HOME: paperclipHome,
+  PAPERCLAW_CONFIG: configPath,
+  PAPERCLAW_INSTANCE_ID: required("PAPERCLAW_INSTANCE_ID"),
+  PAPERCLAW_AGENT_JWT_SECRET: required("PAPERCLAW_AGENT_JWT_SECRET"),
+  PAPERCLAW_DECISION_SIGNING_SECRET: required(
+    "PAPERCLAW_DECISION_SIGNING_SECRET",
   ),
-  PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: required(
-    "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET",
+  PAPERCLAW_TOOL_ACTION_SIGNING_SECRET: required(
+    "PAPERCLAW_TOOL_ACTION_SIGNING_SECRET",
   ),
   BETTER_AUTH_SECRET: required("BETTER_AUTH_SECRET"),
-  PAPERCLIP_BIND: "loopback",
-  PAPERCLIP_BIND_HOST: "127.0.0.1",
-  PAPERCLIP_DEPLOYMENT_MODE: "local_trusted",
-  PAPERCLIP_DEPLOYMENT_EXPOSURE: "private",
+  PAPERCLAW_BIND: "loopback",
+  PAPERCLAW_BIND_HOST: "127.0.0.1",
+  PAPERCLAW_DEPLOYMENT_MODE: "local_trusted",
+  PAPERCLAW_DEPLOYMENT_EXPOSURE: "private",
   SERVE_UI: "true",
-  PAPERCLIP_STORAGE_PROVIDER: "local_disk",
-  PAPERCLIP_STORAGE_LOCAL_DIR: path.join(temporaryRoot, "storage"),
-  PAPERCLIP_SECRETS_PROVIDER: "local_encrypted",
-  PAPERCLIP_SECRETS_STRICT_MODE: "true",
-  PAPERCLIP_DB_BACKUP_ENABLED: "false",
-  PAPERCLIP_DB_BACKUP_DIR: path.join(temporaryRoot, "backups"),
+  PAPERCLAW_STORAGE_PROVIDER: "local_disk",
+  PAPERCLAW_STORAGE_LOCAL_DIR: path.join(temporaryRoot, "storage"),
+  PAPERCLAW_SECRETS_PROVIDER: "local_encrypted",
+  PAPERCLAW_SECRETS_STRICT_MODE: "true",
+  PAPERCLAW_DB_BACKUP_ENABLED: "false",
+  PAPERCLAW_DB_BACKUP_DIR: path.join(temporaryRoot, "backups"),
   // Onboarding normally opens the app after listen. Browser ownership belongs
   // to Playwright in this harness, so never create a developer desktop tab.
-  PAPERCLIP_OPEN_ON_LISTEN: "false",
+  PAPERCLAW_OPEN_ON_LISTEN: "false",
 });
 assertIsolatedServerEnvironment(serverEnvironment, {
   temporaryRoot,

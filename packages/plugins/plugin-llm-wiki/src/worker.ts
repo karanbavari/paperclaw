@@ -5,9 +5,9 @@ import {
   type PluginContext,
   type PluginManagedRoutineDeclaration,
   type PluginManagedRoutineResolution,
-} from "@paperclipai/plugin-sdk";
+} from "@kesarcloud/plugin-sdk";
 import {
-  PAPERCLIP_DISTILL_SKILL_KEY,
+  PAPERCLAW_DISTILL_SKILL_KEY,
   WIKI_MAINTENANCE_ROUTINE_KEYS,
   WIKI_ROOT_FOLDER_KEY,
 } from "./manifest.js";
@@ -86,7 +86,7 @@ function routineOverridesFromParams(params: Record<string, unknown>) {
 }
 
 let activeContext: PluginContext | null = null;
-const PAPERCLIP_EVENT_INGESTION_EVENTS = [
+const PAPERCLAW_EVENT_INGESTION_EVENTS = [
   "issue.created",
   "issue.updated",
   "issue.comment.created",
@@ -127,7 +127,7 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
     "Manual LLM Wiki distillation requested outside recurring cadence.",
     "",
     "Prompt source: LLM Wiki plugin action `distill-paperclip-now` (`packages/plugins/plugin-llm-wiki/src/worker.ts`).",
-    `Required skill: use the installed \`${PAPERCLIP_DISTILL_SKILL_KEY}\` skill before changing wiki files.`,
+    `Required skill: use the installed \`${PAPERCLAW_DISTILL_SKILL_KEY}\` skill before changing wiki files.`,
     "",
     "Scope:",
     `- Company ID: ${input.companyId}`,
@@ -188,7 +188,7 @@ const plugin = definePlugin({
     activeContext = ctx;
     await registerWikiTools(ctx);
 
-    for (const eventName of PAPERCLIP_EVENT_INGESTION_EVENTS) {
+    for (const eventName of PAPERCLAW_EVENT_INGESTION_EVENTS) {
       ctx.events.on(eventName, async (event) => {
         const result = await handlePaperclipEventIngestion(ctx, event);
         if (result.status === "recorded") {

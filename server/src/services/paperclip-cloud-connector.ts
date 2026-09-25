@@ -18,7 +18,7 @@ import {
   isGoogleWorkspaceConnectorProfileId,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import {
   loadPaperclipCloudConnectorIdentity,
   paperclipCloudConnectorEnrollmentStatus,
@@ -146,16 +146,16 @@ export function paperclipCloudConnectorConfigFromEnv(
 ): PaperclipCloudConnectorConfig | null {
   const localIdentity = loadPaperclipCloudConnectorIdentity();
   const legacyConfigured = [
-    env.PAPERCLIP_ID_CONNECTOR_INSTANCE_ID,
-    env.PAPERCLIP_ID_CONNECTOR_SIGN_PRIVATE_KEY,
-    env.PAPERCLIP_ID_CONNECTOR_SEAL_PRIVATE_KEY,
-    env.PAPERCLIP_ID_CONNECTOR_ENVIRONMENT,
-    env.PAPERCLIP_ID_CONNECTOR_BASE_URL,
+    env.PAPERCLAW_ID_CONNECTOR_INSTANCE_ID,
+    env.PAPERCLAW_ID_CONNECTOR_SIGN_PRIVATE_KEY,
+    env.PAPERCLAW_ID_CONNECTOR_SEAL_PRIVATE_KEY,
+    env.PAPERCLAW_ID_CONNECTOR_ENVIRONMENT,
+    env.PAPERCLAW_ID_CONNECTOR_BASE_URL,
   ].some((value) => Boolean(value?.trim()));
-  const managedInstanceId = env.PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID?.trim();
-  const managedSignPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY?.trim();
-  const managedSealPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY?.trim();
-  const managedEnvironment = env.PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT?.trim();
+  const managedInstanceId = env.PAPERCLAW_CLOUD_CONNECTOR_INSTANCE_ID?.trim();
+  const managedSignPrivateKey = env.PAPERCLAW_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY?.trim();
+  const managedSealPrivateKey = env.PAPERCLAW_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY?.trim();
+  const managedEnvironment = env.PAPERCLAW_CLOUD_CONNECTOR_ENVIRONMENT?.trim();
   const hasManagedIdentityOverride = [managedInstanceId, managedSignPrivateKey, managedSealPrivateKey]
     .some(Boolean);
   const localStatus = hasManagedIdentityOverride ? null : paperclipCloudConnectorEnrollmentStatus(env);
@@ -172,9 +172,9 @@ export function paperclipCloudConnectorConfigFromEnv(
   const signPrivateKey = hasManagedIdentityOverride ? managedSignPrivateKey : localIdentity!.signPrivateKey;
   const sealPrivateKey = hasManagedIdentityOverride ? managedSealPrivateKey : localIdentity!.sealPrivateKey;
   const environment = hasManagedIdentityOverride ? managedEnvironment : localIdentity!.environment;
-  const baseUrl = env.PAPERCLIP_CLOUD_CONNECTOR_BASE_URL?.trim()
+  const baseUrl = env.PAPERCLAW_CLOUD_CONNECTOR_BASE_URL?.trim()
     || (hasActiveLocalIdentity ? localIdentity!.brokerBaseUrl : undefined)
-    || "https://my.paperclip.app";
+    || "https://my.paperclaw.app";
   const values = [instanceId, signPrivateKey, sealPrivateKey, environment];
   if (values.some((value) => !value)) {
     throw new PaperclipCloudConnectorError("Paperclip Cloud connector configuration is incomplete", "CONNECTOR_CONFIG_INCOMPLETE");
@@ -190,8 +190,8 @@ export function paperclipCloudConnectorConfigFromEnv(
     throw new PaperclipCloudConnectorError("Paperclip Cloud connector URL is invalid", "CONNECTOR_CONFIG_INVALID");
   }
   const brokerHost = parsedBaseUrl.hostname.toLowerCase();
-  if ((brokerHost === "my.paperclip.app" && environment !== "production")
-    || (brokerHost === "my-staging.paperclip.app" && environment !== "staging")) {
+  if ((brokerHost === "my.paperclaw.app" && environment !== "production")
+    || (brokerHost === "my-staging.paperclaw.app" && environment !== "staging")) {
     throw new PaperclipCloudConnectorError(
       "Paperclip Cloud connector broker and environment do not match",
       "CONNECTOR_CONFIG_INVALID",

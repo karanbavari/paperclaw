@@ -16,16 +16,16 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@paperclipai/paperclip-runner/browser": [
+      "@kesarcloud/paperclip-runner/browser": [
         "src/browser/index.ts"
       ],
-      "@paperclipai/paperclip-runner/react": [
+      "@kesarcloud/paperclip-runner/react": [
         "src/react/index.ts"
       ],
-      "@paperclipai/paperclip-runner/standalone": [
+      "@kesarcloud/paperclip-runner/standalone": [
         "src/standalone/index.ts"
       ],
-      "@paperclipai/paperclip-runner/styles.css": [
+      "@kesarcloud/paperclip-runner/styles.css": [
         "styles.css"
       ],
       "@paperclip-runner-local/capability": [

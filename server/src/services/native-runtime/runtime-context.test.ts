@@ -1,11 +1,11 @@
 import { mkdtemp, mkdir, readFile, readdir, chmod, lstat, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
-  PAPERCLIP_OPERATIONAL_SKILL_KEY,
+  PAPERCLAW_OPERATIONAL_SKILL_KEY,
   type PaperclipSkillEntry,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@kesarcloud/adapter-utils/server-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const serviceMocks = vi.hoisted(() => ({
@@ -45,12 +45,12 @@ async function makeTreeWritable(target: string): Promise<void> {
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  previousPaperclipHome = process.env.PAPERCLIP_HOME;
-  previousInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+  previousPaperclipHome = process.env.PAPERCLAW_HOME;
+  previousInstanceId = process.env.PAPERCLAW_INSTANCE_ID;
   const root = await mkdtemp(path.join(tmpdir(), "paperclip-native-context-"));
   temporaryRoots.push(root);
-  process.env.PAPERCLIP_HOME = root;
-  process.env.PAPERCLIP_INSTANCE_ID = "runtime_context_test";
+  process.env.PAPERCLAW_HOME = root;
+  process.env.PAPERCLAW_INSTANCE_ID = "runtime_context_test";
   serviceMocks.getEffectiveProfilesForAgent.mockResolvedValue({
     agentId: "agent-1",
     profiles: [],
@@ -69,10 +69,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-  if (previousInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-  else process.env.PAPERCLIP_INSTANCE_ID = previousInstanceId;
+  if (previousPaperclipHome === undefined) delete process.env.PAPERCLAW_HOME;
+  else process.env.PAPERCLAW_HOME = previousPaperclipHome;
+  if (previousInstanceId === undefined) delete process.env.PAPERCLAW_INSTANCE_ID;
+  else process.env.PAPERCLAW_INSTANCE_ID = previousInstanceId;
   // A rejected Promise.all does not cancel the other materializers. Let their
   // bounded local writes settle before removing the read-only asset tree.
   await new Promise((resolve) => setTimeout(resolve, 25));
@@ -281,12 +281,12 @@ describe("buildNativeRuntimeContext", () => {
       ...base,
       runtimeConfig: {
         paperclipSkillSync: {
-          desiredSkills: [PAPERCLIP_OPERATIONAL_SKILL_KEY, "company-1/supported"],
+          desiredSkills: [PAPERCLAW_OPERATIONAL_SKILL_KEY, "company-1/supported"],
         },
       },
       runtimeSkillEntries: [
         {
-          key: PAPERCLIP_OPERATIONAL_SKILL_KEY,
+          key: PAPERCLAW_OPERATIONAL_SKILL_KEY,
           runtimeName: "paperclip",
           source: "/unused",
         },

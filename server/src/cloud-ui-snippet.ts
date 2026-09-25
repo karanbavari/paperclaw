@@ -16,9 +16,9 @@ export function injectCloudUiSnippet(html: string, env: CloudInstanceEnv = proce
  * snippet through them unchanged.
  */
 function resolveCloudUiSnippet(env: CloudInstanceEnv): string | null {
-  const plain = env.PAPERCLIP_CLOUD_UI_SNIPPET;
+  const plain = env.PAPERCLAW_CLOUD_UI_SNIPPET;
   if (plain !== undefined) return asInjectableMarkup(plain);
-  const encoded = env.PAPERCLIP_CLOUD_UI_SNIPPET_B64?.replace(/\s+/g, "");
+  const encoded = env.PAPERCLAW_CLOUD_UI_SNIPPET_B64?.replace(/\s+/g, "");
   if (!encoded) return null;
   const decoded = decodeBase64(encoded);
   return decoded !== null ? asInjectableMarkup(decoded) : null;

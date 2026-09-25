@@ -17,7 +17,7 @@ All commands support:
 
 | Flag | Description |
 |------|-------------|
-| `--data-dir <path>` | Local Paperclip data root (isolates from `~/.paperclip`) |
+| `--data-dir <path>` | Local Paperclip data root (isolates from `~/.paperclaw`) |
 | `--api-base <url>` | API base URL |
 | `--api-key <token>` | API authentication token |
 | `--context <path>` | Context file path |
@@ -53,8 +53,8 @@ npx paperclipai context use default
 To avoid storing secrets in context, use an env var:
 
 ```sh
-npx paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+npx paperclipai context set --api-key-env-var-name PAPERCLAW_API_KEY
+export PAPERCLAW_API_KEY=...
 ```
 
 Secret operations are available under `paperclipai secrets`:
@@ -67,7 +67,7 @@ npx paperclipai secrets doctor --company-id <company-id>
 npx paperclipai secrets migrate-inline-env --company-id <company-id> --apply
 ```
 
-Context is stored at `~/.paperclip/context.json`.
+Context is stored at `~/.paperclaw/context.json`.
 
 ## Command Categories
 

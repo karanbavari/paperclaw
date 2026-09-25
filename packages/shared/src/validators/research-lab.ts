@@ -27,7 +27,7 @@ export const createResearchLabSchema = z.object({
   demoUrls: z.array(z.string().trim().url()).max(20).optional().default([]),
   artifacts: z.array(researchLabArtifactSchema).max(50).optional().default([]),
   finalReport: nullableTrimmedString,
-  metadata: z.record(z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export type CreateResearchLab = z.infer<typeof createResearchLabSchema>;

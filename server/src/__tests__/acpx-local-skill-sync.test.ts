@@ -5,7 +5,7 @@ import {
 } from "@kesarcloud/adapter-acpx-local/server";
 
 describe("acpx local skill sync", () => {
-  const paperclawKey = "karanbavari/paperclaw/paperclaw";
+  const paperclipKey = "karanbavari/paperclaw/paperclaw";
   const createAgentKey = "karanbavari/paperclaw/paperclaw-create-agent";
 
   it("reports ACPX Claude skills as supported runtime-mounted state", async () => {
@@ -15,8 +15,8 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "claude",
-        paperclawSkillSync: {
-          desiredSkills: [paperclawKey],
+        paperclipSkillSync: {
+          desiredSkills: [paperclipKey],
         },
       },
     });
@@ -24,10 +24,10 @@ describe("acpx local skill sync", () => {
     expect(snapshot.adapterType).toBe("acpx_local");
     expect(snapshot.supported).toBe(true);
     expect(snapshot.mode).toBe("ephemeral");
-    expect(snapshot.desiredSkills).toContain(paperclawKey);
+    expect(snapshot.desiredSkills).toContain(paperclipKey);
     expect(snapshot.desiredSkills).toContain(createAgentKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.detail).toContain("ACPX Claude session");
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.detail).toContain("ACPX Claude session");
     expect(snapshot.warnings).toEqual([]);
   });
 
@@ -38,7 +38,7 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "codex",
-        paperclawSkillSync: {
+        paperclipSkillSync: {
           desiredSkills: ["paperclaw"],
         },
       },
@@ -46,10 +46,10 @@ describe("acpx local skill sync", () => {
 
     expect(snapshot.supported).toBe(true);
     expect(snapshot.mode).toBe("ephemeral");
-    expect(snapshot.desiredSkills).toContain(paperclawKey);
+    expect(snapshot.desiredSkills).toContain(paperclipKey);
     expect(snapshot.desiredSkills).not.toContain("paperclaw");
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.detail).toContain("CODEX_HOME/skills/");
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.detail).toContain("CODEX_HOME/skills/");
     expect(snapshot.warnings).toEqual([]);
   });
 
@@ -60,17 +60,17 @@ describe("acpx local skill sync", () => {
       adapterType: "acpx_local",
       config: {
         agent: "custom",
-        paperclawSkillSync: {
-          desiredSkills: [paperclawKey],
+        paperclipSkillSync: {
+          desiredSkills: [paperclipKey],
         },
       },
     });
 
     expect(snapshot.supported).toBe(false);
     expect(snapshot.mode).toBe("unsupported");
-    expect(snapshot.desiredSkills).toContain(paperclawKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.desired).toBe(true);
-    expect(snapshot.entries.find((entry) => entry.key === paperclawKey)?.detail).toContain("stored in PaperClaw only");
+    expect(snapshot.desiredSkills).toContain(paperclipKey);
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.desired).toBe(true);
+    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.detail).toContain("stored in PaperClaw only");
     expect(snapshot.warnings).toContain(
       "Custom ACP commands do not expose a PaperClaw skill integration contract yet; selected skills are tracked only.",
     );

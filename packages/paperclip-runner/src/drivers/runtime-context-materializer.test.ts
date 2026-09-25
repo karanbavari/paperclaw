@@ -16,8 +16,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  PAPERCLAW_EXECUTION_PROMPT,
+  PAPERCLAW_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   type NativeRuntimeContextSnapshot,
@@ -58,8 +58,8 @@ function context(
   const digest = "0".repeat(64);
   const value = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: PAPERCLAW_EXECUTION_PROMPT_REVISION,
+      text: PAPERCLAW_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -95,14 +95,14 @@ describe("runtime context materialization", () => {
   it("validates native MCP launch bindings before they reach Codex", () => {
     expect(nativeMcpLaunchBinding({})).toBeNull();
     expect(() => nativeMcpLaunchBinding({
-      PAPERCLIP_NATIVE_MCP_NAME: "paperclip",
-      PAPERCLIP_NATIVE_MCP_URL: "http://paperclip.example/mcp",
-      PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+      PAPERCLAW_NATIVE_MCP_NAME: "paperclip",
+      PAPERCLAW_NATIVE_MCP_URL: "http://paperclip.example/mcp",
+      PAPERCLAW_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("requires HTTPS or loopback HTTP");
     expect(() => nativeMcpLaunchBinding({
-      PAPERCLIP_NATIVE_MCP_NAME: "paperclip",
-      PAPERCLIP_NATIVE_MCP_URL: "https://user:pass@paperclip.example/mcp#secret",
-      PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+      PAPERCLAW_NATIVE_MCP_NAME: "paperclip",
+      PAPERCLAW_NATIVE_MCP_URL: "https://user:pass@paperclip.example/mcp#secret",
+      PAPERCLAW_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("contains forbidden URL data");
   });
 
@@ -131,9 +131,9 @@ describe("runtime context materialization", () => {
       codexHome,
       sourceCodexHome: join(root, "host-home"),
       nativeMcp: nativeMcpLaunchBinding({
-        PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned",
-        PAPERCLIP_NATIVE_MCP_URL: "https://paperclip.example/mcp",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+        PAPERCLAW_NATIVE_MCP_NAME: "paperclip-assigned",
+        PAPERCLAW_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        PAPERCLAW_NATIVE_MCP_TOKEN: "x".repeat(40),
       }),
     });
 
@@ -324,7 +324,7 @@ describe("runtime context materialization", () => {
     await expect(stat(join(skillsHome, "replacement"))).rejects.toThrow();
     expect(
       (await readdir(dirname(skillsHome))).filter((entry) =>
-        entry.startsWith(".paperclip-skills-"),
+        entry.startsWith(".paperclaw-skills-"),
       ),
     ).toEqual([]);
   });
@@ -355,7 +355,7 @@ describe("runtime context materialization", () => {
     await expect(stat(skillsHome)).rejects.toThrow();
     expect(
       (await readdir(dirname(skillsHome))).filter((entry) =>
-        entry.startsWith(".paperclip-skills-staging-"),
+        entry.startsWith(".paperclaw-skills-staging-"),
       ),
     ).toEqual([]);
   });

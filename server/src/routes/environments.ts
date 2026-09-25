@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@kesarcloud/db";
 import {
   AGENT_ADAPTER_TYPES,
   cancelEnvironmentCustomImageSetupSessionSchema,
@@ -15,7 +15,7 @@ import {
   startEnvironmentCustomImageSetupSessionSchema,
   type EnvironmentDeleteBlastRadius,
   updateEnvironmentSchema,
-} from "@paperclipai/shared";
+} from "@kesarcloud/shared";
 import { conflict, forbidden, unprocessable } from "../errors.js";
 import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getManagedInstanceConfig, SECRET_LIKE_CONFIG_KEY_PATTERN } from "../services/managed-config.js";
@@ -156,7 +156,7 @@ const PLATFORM_PROVISIONED_MARKER_KEYS = [
  * Whether some bootstrap path on this instance currently owns the managed
  * sandbox slot: the managed-config `environments` section
  * (`applyManagedEnvironments`) or the forced execution-mode bootstrap
- * (`PAPERCLIP_EXECUTION_MODE=kubernetes`). Both adopt and refresh the
+ * (`PAPERCLAW_EXECUTION_MODE=kubernetes`). Both adopt and refresh the
  * marked sandbox row on every boot. Fails closed: an unparseable document
  * or env value counts as configured, keeping the slot protected (a
  * malformed value refuses startup anyway, so a running server never hits
@@ -342,7 +342,7 @@ export function environmentRoutes(
   const instanceSettings = instanceSettingsService(db);
   const projects = projectService(db);
   const secrets = secretService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.PAPERCLAW_SECRETS_STRICT_MODE === "true";
 
   function parseObject(value: unknown): Record<string, unknown> {
     return value && typeof value === "object" && !Array.isArray(value)

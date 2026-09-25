@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import type { ReactNode } from "react";
-import type { IssueAttachment } from "@paperclipai/shared";
+import type { IssueAttachment } from "@kesarcloud/shared";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -270,7 +270,7 @@ describe("TaskChatBubble accent-bubble text color", () => {
 
   it("marks the human bubble's markdown as on-accent so prose text follows text-white", () => {
     render({ id: "m1", kind: "message", author: "human", text: "when a new task is created…" });
-    const body = container.querySelector(".paperclip-markdown");
+    const body = container.querySelector(".paperclaw-markdown");
     expect(body).not.toBeNull();
     // Without this class the light-mode prose body color reads as black on blue.
     expect(body?.className).toContain("paperclip-markdown-on-accent");
@@ -278,7 +278,7 @@ describe("TaskChatBubble accent-bubble text color", () => {
 
   it("leaves the neutral agent bubble on default prose colors", () => {
     render({ id: "m1", kind: "message", author: "agent", authorName: "CEO", text: "Final reply." });
-    const body = container.querySelector(".paperclip-markdown");
+    const body = container.querySelector(".paperclaw-markdown");
     expect(body).not.toBeNull();
     expect(body?.className).not.toContain("paperclip-markdown-on-accent");
   });

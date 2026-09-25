@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { hidesCompanyPage, type Company } from "@paperclipai/shared";
+import { hidesCompanyPage, type Company } from "@kesarcloud/shared";
 import { Link, useLocation, useNavigate } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { cloudApi, type CloudStackSummary } from "@/api/cloud";
@@ -253,7 +253,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
   const cloud = useCloudInstance();
   const isCloud = Boolean(cloud);
   // The invite shortcut points at the company Invites surface, so an operator
-  // that hides that surface via PAPERCLIP_HIDDEN_SETTINGS (company.invites or
+  // that hides that surface via PAPERCLAW_HIDDEN_SETTINGS (company.invites or
   // company.members) hides this shortcut too. This is the per-deployment knob
   // Paperclip Cloud uses to drop the shortcut on its managed stacks while
   // other hosters keep it; the streamlined menu already honors it, this shell
