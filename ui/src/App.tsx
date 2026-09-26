@@ -53,6 +53,8 @@ import { GoalDetail } from "./pages/GoalDetail";
 import { Meetings } from "./pages/Meetings";
 import { DirectChat } from "./pages/DirectChat";
 import { ResearchLab } from "./pages/ResearchLab";
+import { AbTesting } from "./pages/AbTesting";
+import { AbTestingNew } from "./pages/AbTestingNew";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { CompanyActivity } from "./pages/audit/CompanyActivity";
@@ -393,6 +395,10 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       <Route path="direct-chat" element={<DirectChat />} />
       <Route path="research-labs" element={<ResearchLab />} />
       <Route path="research-labs/:labId" element={<ResearchLab />} />
+      <Route path="ab-testing" element={<AbTesting />} />
+      <Route path="ab-testing/new" element={<AbTestingNew />} />
+      <Route path="ab-testing/:studyId" element={<AbTesting />} />
+      <Route path="ab-testing/:studyId/:view" element={<AbTesting />} />
       <Route path="artifacts" element={<Artifacts />} />
       <Route path="approvals" element={<Navigate to="/approvals/pending" replace />} />
       <Route path="approvals/pending" element={<Approvals />} />
@@ -794,6 +800,7 @@ export function App() {
           <Route path="meetings/*" element={<UnprefixedBoardRedirect />} />
           <Route path="direct-chat" element={<UnprefixedBoardRedirect />} />
           <Route path="research-labs/*" element={<UnprefixedBoardRedirect />} />
+          <Route path="ab-testing/*" element={<UnprefixedBoardRedirect />} />
           <Route path="memory" element={<UnprefixedBoardRedirect />} />
           {/* Recover the malformed URL produced by the old router before this fix. */}
           <Route path="marketplace/dashboard" element={<UnprefixedBoardRedirect pathname="/marketplace" />} />

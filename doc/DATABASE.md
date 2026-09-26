@@ -391,6 +391,10 @@ Hosted AWS provider notes live in [SECRETS-AWS-PROVIDER.md](./SECRETS-AWS-PROVID
 
 Migration `0274_agent_chat.sql` adds conversation identity/state and session generation/boundary columns to `issues`, plus idempotent client request IDs and processed session-boundary generations to `issue_comments`. The company/agent/user unique index resolves concurrent first writes to one issue. A check constraint preserves the assigned-agent identity and prevents terminal conversation status. Comment request IDs are unique per issue and user. There is no separate chat/message store. Provider sessions continue to use `agent_task_sessions`; `/new` removes only the matching conversation session, and session writers fence stale generations against the issue row.
 
+## Synthetic A/B research studies
+
+Migration `9010_ab_tests.sql` adds `ab_studies`, `ab_personas`, `ab_runs`, `ab_batches`, and `ab_feedback`; `9011_ab_study_draft_columns.sql` repairs draft-preview columns for databases that applied an earlier 9010 revision. `9012_ab_research_workflow.sql` adds structured audit/market context, per-run target count and output-version compatibility, and budget/workflow fit. `9013_ab_run_output_version_repair.sql` repairs instances that applied an earlier 9012 revision without `output_version`. Every table carries `company_id` and route/service queries enforce company scope. A study is tied to a project and registered workspace; its bounded source snapshot/hash, audit findings, editable audience, variants, and preview-agent status are persisted. A run captures approval and progress, batches link to heartbeat runs, and feedback is unique per run/persona. Stable persona ordinals and variant assignments are reused across runs; feedback belongs to one run. Workspace source changes produce a pending-approval run instead of automatic execution. Existing runs default to their original 1,000-persona target. Database backups include study data but do not include workspace files themselves.
+
 ## Legacy controller ownership
 
 Legacy run claims atomically record `controller_boot_id`, a database-clock

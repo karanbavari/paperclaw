@@ -24,6 +24,7 @@ import {
   Store,
   MessageCircle,
   Microscope,
+  FlaskConical,
   PackageCheck,
   ShieldAlert,
 } from "lucide-react";
@@ -192,6 +193,7 @@ export function Sidebar() {
           <SidebarNavItem to="/direct-chat" label="Direct Chat" icon={MessageCircle} />
           <SidebarNavItem to="/meetings" label="Meetings" icon={MessagesSquare} />
           <SidebarNavItem to="/research-labs" label="Research Lab" icon={Microscope} />
+          <SidebarNavItem to="/ab-testing" label="A/B Testing" icon={FlaskConical} />
           {showCases ? (
             <SidebarNavItem to="/cases" label="Cases" icon={Layers} textBadge="beta" />
           ) : null}

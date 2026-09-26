@@ -28,6 +28,7 @@ import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
 import { renderPaperclipWakePrompt } from "@kesarcloud/adapter-utils/server-utils";
+import { renderAbDraftPrompt, renderAbTestPrompt } from "./ab-test-utils.js";
 import { PROJECT_REPOSITORIES_DIR, readGitWorkspaceSnapshot } from "@kesarcloud/adapter-utils/git-workspace-sync";
 import { isWorkspaceGitScanError, WorkspaceGitScanError, WORKSPACE_GIT_SCAN_ERROR_CODES } from "./workspace-git-operation-scheduler.js";
 import { captureDirectorySnapshot, mergeDirectoryWithBaseline } from "@kesarcloud/adapter-utils/workspace-restore-merge";
@@ -20981,7 +20982,12 @@ export function heartbeatService(
       runtimeSkillEntries.splice(0, runtimeSkillEntries.length, ...connectorSkillConfig.paperclipRuntimeSkills);
       const connectorDelivery = await prepareConnectorSkillDelivery(connectorSkillConfig, agent.adapterType);
       // Always replace this runtime-only field; caller wake data cannot supply skills.
-      context.paperclipWake = { ...parseObject(context.paperclipWake), connectorSkillInstructions: connectorDelivery.instructions };
+      context.paperclipWake = {
+        ...parseObject(context.paperclipWake),
+        connectorSkillInstructions: connectorDelivery.instructions,
+        paperclawAbTestPrompt: renderAbTestPrompt(context.paperclawAbTest),
+        paperclawAbDraftPrompt: renderAbDraftPrompt(context.paperclawAbDraft),
+      };
       let runtimeConfig: Record<string, unknown> = connectorDelivery.config;
       const latestAgentConfigRevision = await getLatestAgentConfigRevision(
         agent.companyId,

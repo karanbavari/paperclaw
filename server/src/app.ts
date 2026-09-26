@@ -75,6 +75,7 @@ import { goalRoutes } from "./routes/goals.js";
 import { meetingRoutes } from "./routes/meetings.js";
 import { directChatRoutes } from "./routes/direct-chat.js";
 import { researchLabRoutes } from "./routes/research-labs.js";
+import { abTestRoutes } from "./routes/ab-tests.js";
 import { onboardingSeedRoutes } from "./routes/onboarding-seed.js";
 import { boardChatRoutes } from "./routes/board-chat.js";
 import { approvalRoutes } from "./routes/approvals.js";
@@ -763,6 +764,8 @@ export async function createApp(
   api.use(meetingRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(directChatRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(researchLabRoutes(db));
+  const abTesting = abTestRoutes(db, { pluginWorkerManager: workerManager });
+  api.use(abTesting.router);
   api.use(onboardingSeedRoutes(db));
   api.use(boardChatRoutes(db, { deploymentMode: opts.deploymentMode }));
   api.use(approvalRoutes(db, { pluginWorkerManager: workerManager }));
@@ -1217,6 +1220,11 @@ export async function createApp(
       IMPORT_TRANSFER_SPOOL_SWEEP_INTERVAL_MS,
     );
   importTransferSweepTimer.unref?.();
+  let abTestingTimer: ReturnType<typeof setInterval> | null = setInterval(() => {
+    void abTesting.tick().catch((err) => logger.error({ err }, "A/B study reconciliation failed"));
+  }, 5_000);
+  abTestingTimer.unref?.();
+  void abTesting.tick().catch((err) => logger.warn({ err }, "A/B study startup reconciliation deferred"));
   // Startup only (never on the hourly interval — that would kill live
   // applies): apply jobs are in-memory in this single process, so any run
   // still "applying" now was interrupted by the previous shutdown and would
@@ -1321,6 +1329,10 @@ export async function createApp(
       if (importTransferSweepTimer) {
         clearInterval(importTransferSweepTimer);
         importTransferSweepTimer = null;
+      }
+      if (abTestingTimer) {
+        clearInterval(abTestingTimer);
+        abTestingTimer = null;
       }
       devWatcher?.close();
       viteHtmlRenderer?.dispose();

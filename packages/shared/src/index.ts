@@ -2797,6 +2797,8 @@ export * from "./validators/meeting.js";
 export * from "./validators/ops-incident.js";
 export * from "./validators/outcome-center.js";
 export * from "./validators/research-lab.js";
+export * from "./types/ab-test.js";
+export * from "./validators/ab-test.js";
 export * from "./validators/tool-permissions.js";
 export type {
   PluginSetupOverallStatus,

@@ -216,4 +216,5 @@ export { companyMemoryItems } from "./company_memory_items.js";
 export { meetings, meetingParticipants, meetingMessages } from "./meetings.js";
 export { directChatThreads, directChatMessages } from "./direct_chat.js";
 export { researchLabs } from "./research_labs.js";
+export { abStudies, abPersonas, abRuns, abBatches, abFeedback } from "./ab_tests.js";
 export { toolPermissionDecisions, toolPermissionPolicies } from "./tool_permissions.js";

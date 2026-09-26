@@ -2017,6 +2017,34 @@
       "when": 1790000009000,
       "tag": "9009_company_context_and_run_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 290,
+      "version": "7",
+      "when": 1790000010000,
+      "tag": "9010_ab_tests",
+      "breakpoints": true
+    },
+    {
+      "idx": 291,
+      "version": "7",
+      "when": 1790000011000,
+      "tag": "9011_ab_study_draft_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 292,
+      "version": "7",
+      "when": 1790000012000,
+      "tag": "9012_ab_research_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 293,
+      "version": "7",
+      "when": 1790000013000,
+      "tag": "9013_ab_run_output_version_repair",
+      "breakpoints": true
     }
   ]
 }

@@ -2402,9 +2402,13 @@ export function renderPaperclipWakePrompt(
   options: Parameters<typeof renderPaperclipWakePromptBody>[1] = {},
 ): string {
   const instructions = asString(parseObject(value).connectorSkillInstructions, "").trim();
+  const abTestPrompt = asString(parseObject(value).paperclawAbTestPrompt, "").trim();
+  const abDraftPrompt = asString(parseObject(value).paperclawAbDraftPrompt, "").trim();
   return joinPromptSections([
     renderPaperclipWakePromptBody(value, options),
     instructions ? `## Assigned connector skills\n\n${instructions}` : "",
+    abTestPrompt,
+    abDraftPrompt,
   ]);
 }
 

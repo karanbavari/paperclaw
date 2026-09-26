@@ -15,6 +15,8 @@ describe("company routes", () => {
     "/meetings/meeting-1",
     "/research-labs",
     "/research-labs/lab-1",
+    "/ab-testing",
+    "/ab-testing/study-1",
     "/memory",
     "/marketplace",
     "/cases",
