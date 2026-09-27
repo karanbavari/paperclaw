@@ -43,7 +43,7 @@ export function ChatIdentityConfirm() {
         <h1 className="text-xl font-bold">This identity link is unavailable</h1>
         <p className="text-sm text-muted-foreground">
           The link is invalid, expired, already used, or belongs to another
-          Paperclip organization.
+          Paperclaw organization.
         </p>
       </main>
     );
@@ -70,7 +70,7 @@ export function ChatIdentityConfirm() {
           <h1 className="text-xl font-bold">Identity linked</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Future messages from {identity.externalLabel} use your current
-            Paperclip permissions in {identity.companyName}.
+            Paperclaw permissions in {identity.companyName}.
           </p>
         </div>
         <Button asChild>
@@ -104,19 +104,19 @@ export function ChatIdentityConfirm() {
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
-          <dt className="text-sm text-muted-foreground">Paperclip account</dt>
+          <dt className="text-sm text-muted-foreground">Paperclaw account</dt>
           <dd className="text-right text-sm font-medium">{paperclipAccount}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
           <dt className="text-sm text-muted-foreground">Agent</dt>
           <dd className="text-sm font-medium">
-            {identity.botLabel ?? "Paperclip agent"}
+            {identity.botLabel ?? "Paperclaw agent"}
           </dd>
         </div>
       </dl>
       <p className="text-sm text-muted-foreground">
         Confirm only if this is your {providerNames[identity.provider]}{" "}
-        identity. Paperclip will check your current organization membership on
+        identity. Paperclaw will check your current organization membership on
         every action.
       </p>
       {confirm.isError && (

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
-import { Paperclip as PaperClaw, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { PAPERCLAW_MARK_PATHS } from "@kesarcloud/shared/brand";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   DndContext,
@@ -202,7 +203,9 @@ export function CompanyRail() {
     <div className="flex flex-col items-center w-[72px] shrink-0 h-full bg-background border-r border-border">
       {/* PaperClaw icon - aligned with top sections (implied line, no visible border) */}
       <div className="flex items-center justify-center h-12 w-full shrink-0">
-        <PaperClaw className="h-5 w-5 text-foreground" />
+        <svg viewBox="0 0 100 100" className="h-5 w-5 text-primary" aria-hidden="true" fill="currentColor">
+          {PAPERCLAW_MARK_PATHS.map((path) => <path key={path} d={path} />)}
+        </svg>
       </div>
 
       {/* Company list */}

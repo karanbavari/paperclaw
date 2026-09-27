@@ -67,7 +67,7 @@ program.enablePositionalOptions();
 
 program
   .name("paperclipai")
-  .description("Paperclip CLI — setup, diagnose, and configure your instance")
+  .description("Paperclaw CLI — setup, diagnose, and configure your instance")
   .version(cliVersion);
 
 program

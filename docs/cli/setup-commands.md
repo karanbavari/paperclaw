@@ -33,7 +33,7 @@ Interactive first-time setup:
 pnpm paperclipai onboard
 ```
 
-If Paperclip is already configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to change settings on an existing install.
+If Paperclaw is already configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to change settings on an existing install.
 
 First prompt:
 
@@ -52,7 +52,7 @@ Quickstart defaults + immediate start:
 pnpm paperclipai onboard --yes
 ```
 
-When onboarding starts Paperclip from an interactive terminal, it opens the
+When onboarding starts Paperclaw from an interactive terminal, it opens the
 onboarding page in your browser once. Non-interactive terminals stay silent.
 Suppress browser opening explicitly for headless or automated runs with either
 environment variable:
@@ -62,7 +62,7 @@ PAPERCLAW_NO_BROWSER=1 pnpm paperclipai onboard --yes
 PAPERCLAW_OPEN_ON_LISTEN=false pnpm paperclipai onboard --yes
 ```
 
-On an existing install, `--yes` now preserves the current config and just starts Paperclip with that setup.
+On an existing install, `--yes` now preserves the current config and just starts Paperclaw with that setup.
 
 ## `paperclipai doctor`
 

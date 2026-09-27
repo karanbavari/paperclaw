@@ -25,7 +25,7 @@ import { SidebarServerInfo } from "./SidebarServerInfo";
 
 const PROFILE_SETTINGS_PATH = "/company/settings/instance/profile";
 const DOCS_URL = "https://docs.paperclaw.ing/";
-const FEEDBACK_URL = "https://paperclip.ing/feedback";
+const FEEDBACK_URL = "https://github.com/karanbavari/paperclaw/issues";
 
 interface SidebarAccountMenuProps {
   deploymentMode?: DeploymentMode;

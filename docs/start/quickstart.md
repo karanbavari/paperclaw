@@ -1,54 +1,48 @@
 ---
 title: Quickstart
-summary: Get Paperclip running in minutes
+summary: Get Paperclaw running in minutes
 ---
 
-Get Paperclip running locally in under 5 minutes.
+Get Paperclaw running locally in a few steps.
 
-## Quick Start (Recommended)
-
-```sh
-npx paperclipai onboard --yes
-```
-
-This walks you through setup, configures your environment, and gets Paperclip running.
-
-If you already have a Paperclip install, rerunning `onboard` keeps your current config and data paths intact. Use `paperclipai configure` if you want to edit settings.
-
-To start Paperclip again later:
+## Quick Start
 
 ```sh
-npx paperclipai run
-```
-
-> **Note:** If you used `npx` for setup, always use `npx paperclipai` to run commands. The `pnpm paperclipai` form only works inside a cloned copy of the Paperclip repository (see Local Development below).
-
-## Local Development
-
-For contributors working on Paperclip itself. Prerequisites: Node.js 24.11+ and pnpm 9+.
-
-Clone the repository, then:
-
-```sh
+git clone https://github.com/karanbavari/paperclaw.git
+cd paperclaw
 pnpm install
 pnpm dev
 ```
 
-This starts the API server and UI at [http://localhost:3100](http://localhost:3100).
+Open [http://localhost:3100](http://localhost:3100) to complete setup. Development mode uses an embedded database by default; no external database is required.
 
-No external database required — Paperclip uses an embedded PostgreSQL instance by default.
+Prerequisites: Node.js 24.11+ and pnpm 9+.
+
+To start the same checkout again later:
+
+```sh
+pnpm dev
+```
+
+> **Compatibility note:** The local CLI supports both `paperclaw` and legacy `paperclipai` commands. Inside this repository, use `pnpm paperclaw` or `pnpm paperclipai`. Do not use `npx paperclipai` to install Paperclaw; that fetches the upstream package.
+
+## Local Development
+
+For contributors working on Paperclaw, the cloned checkout is ready after `pnpm install`.
+
+The API server and UI share [http://localhost:3100](http://localhost:3100).
 
 When working from the cloned repo, you can also use:
 
 ```sh
-pnpm paperclipai run
+pnpm paperclaw run
 ```
 
 This auto-onboards if config is missing, runs health checks with auto-repair, and starts the server.
 
 ## What's Next
 
-Once Paperclip is running:
+Once Paperclaw is running:
 
 1. Create your first company in the web UI
 2. Define a company goal
@@ -58,5 +52,5 @@ Once Paperclip is running:
 6. Hit go — agents start their heartbeats and the company runs
 
 <Card title="Core Concepts" href="/start/core-concepts">
-  Learn the key concepts behind Paperclip
+  Learn the key concepts behind Paperclaw
 </Card>

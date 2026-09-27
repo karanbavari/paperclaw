@@ -246,7 +246,7 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     async (req, res) => {
       assertBoard(req);
       const userId = actorUserId(req);
-      if (!userId) throw badRequest("A signed-in Paperclip user is required");
+      if (!userId) throw badRequest("A signed-in Paperclaw user is required");
       res.json(await service.confirmIdentityLink(req.body.token, userId));
     },
   );

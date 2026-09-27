@@ -146,7 +146,7 @@ type Step = 0 | 1 | 2 | 3 | 4 | 5;
 type AdapterType = string;
 
 // First-run onboarding stays on the proven direct adapters even when an
-// instance administrator has opted into Paperclip Runner elsewhere. The
+// instance administrator has opted into Paperclaw Runner elsewhere. The
 // experimental flag only exposes the runner in explicit agent configuration.
 const ONBOARDING_EXCLUDED_ADAPTER_TYPES = new Set([
   "process",
@@ -272,7 +272,7 @@ function ModelSourceMark({
 // Exported so tests write/read the exact key the component uses, instead of
 // duplicating the literal and silently drifting from it if it's ever renamed.
 export const ONBOARDING_STORAGE_KEY = "paperclip-onboarding-state";
-const DEFAULT_TASK_TITLE = "Paperclip onboarding";
+const DEFAULT_TASK_TITLE = "Paperclaw onboarding";
 /**
  * The onboarding draft in `localStorage`, via a browser that is allowed to say
  * no.
@@ -901,7 +901,7 @@ function OnboardingWizardInner({
     isFetching: adapterModelsFetching
   } = useQuery({
     // The wizard doesn't expose an environment selector, so models always
-    // resolve against the local Paperclip host (environmentId = null).
+    // resolve against the local Paperclaw host (environmentId = null).
     queryKey: createdCompanyId
       ? queryKeys.agents.adapterModels(createdCompanyId, adapterType, null)
       : ["agents", "none", "adapter-models", adapterType, null],
@@ -1998,7 +1998,7 @@ function OnboardingWizardInner({
     if (adapterType === "paperclip_runner") {
       setAdapterType("claude_local");
       setModel("");
-      setError("Paperclip Runner is not available during onboarding. Choose a legacy adapter.");
+      setError("Paperclaw Runner is not available during onboarding. Choose a legacy adapter.");
       return;
     }
     if (createdAgentId) {
@@ -2513,7 +2513,7 @@ function OnboardingWizardInner({
                       // sentence restating it only pushes the fields down.
                       lede={
                         step === 3 ? undefined : step === 4 ? (
-                          <>Paperclip works with your subscription or API keys.</>
+                          <>Paperclaw works with your subscription or API keys.</>
                         ) : (
                           <>{agentName.trim() || "Your first agent"} is ready to work!</>
                         )
@@ -2537,7 +2537,7 @@ function OnboardingWizardInner({
                   <OnboardingHeading
                     center
                     title="What is the name of your organization?"
-                    lede="Welcome to Paperclip — let's set up your organization."
+                    lede="Welcome to Paperclaw — let's set up your organization."
                   />
                   {/* The field takes the agent step's measure rather than the
                       column's, so the two questions the wizard asks — name the

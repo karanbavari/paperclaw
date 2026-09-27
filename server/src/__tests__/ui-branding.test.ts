@@ -38,6 +38,8 @@ describe("ui branding", () => {
     expect(branding.color).toBe("#4f86f7");
     expect(branding.textColor).toMatch(/^#[0-9a-f]{6}$/);
     expect(branding.faviconHref).toContain("data:image/svg+xml,");
+    expect(decodeURIComponent(branding.faviconHref ?? "")).toContain("M23 12 76 38");
+    expect(decodeURIComponent(branding.faviconHref ?? "")).not.toContain("m16 6-8.414");
   });
 
   it("renders a dynamic worktree favicon when enabled", () => {

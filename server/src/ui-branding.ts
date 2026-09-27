@@ -1,3 +1,5 @@
+import { PAPERCLAW_MARK_PATHS } from "@kesarcloud/shared/brand";
+
 const FAVICON_BLOCK_START = "<!-- PAPERCLAW_FAVICON_START -->";
 const FAVICON_BLOCK_END = "<!-- PAPERCLAW_FAVICON_END -->";
 const RUNTIME_BRANDING_BLOCK_START = "<!-- PAPERCLAW_RUNTIME_BRANDING_START -->";
@@ -141,7 +143,7 @@ function createFaviconDataUrl(background: string, foreground: string): string {
   const svg = [
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">',
     `<rect width="24" height="24" rx="6" fill="${background}"/>`,
-    `<path stroke="${foreground}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.15" d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/>`,
+    `<g fill="${foreground}" transform="translate(2 1) scale(.20)">${PAPERCLAW_MARK_PATHS.map((path) => `<path d="${path}"/>`).join("")}</g>`,
     "</svg>",
   ].join("");
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;

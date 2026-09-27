@@ -55,13 +55,13 @@ export const PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES = {
     // only through the root-denied, workspace-scoped, network-disabled, and
     // environment-allowlisted profile assembled by codex-security-config.ts.
     description:
-      "Codex runs automatically inside a root-denied, workspace-scoped, network-disabled Paperclip environment.",
+      "Codex runs automatically inside a root-denied, workspace-scoped, network-disabled Paperclaw environment.",
     options: [
       {
         value: "never",
         label: "Automatic (isolated)",
         description:
-          "Run without Codex approval pauses while Paperclip keeps its independent workspace, network, and environment restrictions.",
+          "Run without Codex approval pauses while Paperclaw keeps its independent workspace, network, and environment restrictions.",
       },
     ],
   },
@@ -70,7 +70,7 @@ export const PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES = {
     configKey: "opencodePermissionMode",
     defaultMode: "ask",
     description:
-      "Controls OpenCode tool permissions inside the assigned Paperclip environment.",
+      "Controls OpenCode tool permissions inside the assigned Paperclaw environment.",
     options: [
       {
         value: "allow",
@@ -94,21 +94,21 @@ export const PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES = {
     defaultMode: "provider-managed",
     options: [],
     description:
-      "Claude Managed runs non-interactively under its qualified provider profile and Paperclip policy.",
+      "Claude Managed runs non-interactively under its qualified provider profile and Paperclaw policy.",
   },
   aws_agentcore: {
     configurable: false,
     defaultMode: "provider-managed",
     options: [],
     description:
-      "AWS AgentCore runs non-interactively under its qualified harness profile and Paperclip policy.",
+      "AWS AgentCore runs non-interactively under its qualified harness profile and Paperclaw policy.",
   },
   acpx: {
     configurable: true,
     configKey: "acpxPermissionMode",
     defaultMode: "approve-reads",
     description:
-      "Controls ACPX agent operations inside the assigned Paperclip environment.",
+      "Controls ACPX agent operations inside the assigned Paperclaw environment.",
     options: [
       {
         value: "approve-all",
@@ -117,9 +117,9 @@ export const PAPERCLAW_RUNNER_PERMISSION_CAPABILITIES = {
       },
       {
         value: "approve-reads",
-        label: "Allow Paperclip reads",
+        label: "Allow Paperclaw reads",
         description:
-          "Automatically allow assigned Paperclip read tools. Other operations stop with an approval-required message because this runner has no interactive approval handler.",
+          "Automatically allow assigned Paperclaw read tools. Other operations stop with an approval-required message because this runner has no interactive approval handler.",
       },
       {
         value: "deny-all",

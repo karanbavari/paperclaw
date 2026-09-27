@@ -638,7 +638,7 @@ function Setup({
                   ·{" "}
                   {runnerProvider === "codex"
                     ? "Native app server runner"
-                    : "Paperclip Runner"}
+                    : "Paperclaw Runner"}
                 </span>
               )}
             </div>

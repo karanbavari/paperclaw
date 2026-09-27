@@ -24,7 +24,7 @@ import { SidebarServerInfo } from "./SidebarServerInfo";
 
 const PROFILE_SETTINGS_PATH = "/company/settings/instance/profile";
 const DOCS_URL = "https://docs.paperclaw.ing/";
-const FEEDBACK_URL = "https://paperclip.ing/feedback";
+const FEEDBACK_URL = "https://github.com/karanbavari/paperclaw/issues";
 
 interface SidebarAccountMenuProps {
   deploymentMode?: DeploymentMode;
@@ -194,7 +194,7 @@ export function SidebarAccountMenu({
               />
               <MenuAction
                 label="Documentation"
-                description="Open Paperclip docs in a new tab."
+                description="Open Paperclaw docs in a new tab."
                 icon={BookOpen}
                 href={DOCS_URL}
                 external

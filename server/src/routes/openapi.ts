@@ -11148,9 +11148,9 @@ export function buildOpenApiDocument(): any {
   return applyDocumentFixups({
     openapi: "3.0.0",
     info: {
-      title: "Paperclip API",
+      title: "Paperclaw API",
       version: "1.0.0",
-      description: "REST API for the Paperclip AI agent management platform",
+      description: "REST API for the Paperclaw autonomous-company control plane",
     },
     servers: [{ url: "/" }],
     components: registry.buildComponents(),

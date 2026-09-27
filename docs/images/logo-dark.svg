@@ -1,6 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="140" height="32" viewBox="0 0 140 32" fill="none">
-  <g stroke-linecap="round" stroke-linejoin="round">
-    <path stroke="#e4e4e7" stroke-width="2" d="m18 4-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="168" height="32" viewBox="0 0 168 32" fill="none">
+  <g fill="#A5B4FC" transform="translate(1 1) scale(.30)">
+    <path d="M23 12 76 38 91 53 79 61 68 47 38 32Z"/>
+    <path d="M14 39 76 59 63 67 27 58Z"/>
+    <path d="M8 64 57 78 36 89 22 83Z"/>
+    <path d="M91 53 96 61 69 88 45 98 56 81 79 61Z"/>
   </g>
-  <text x="32" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#e4e4e7">Paperclip</text>
+  <text x="37" y="23" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="-1.1" fill="#F4F4F5">Paperclaw</text>
 </svg>

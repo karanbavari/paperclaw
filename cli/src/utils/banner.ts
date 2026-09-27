@@ -1,15 +1,10 @@
 import pc from "picocolors";
 
 const PAPERCLAW_ART = [
-  "██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ",
-  "██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗",
-  "██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝",
-  "██╔═══╝ ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗██║     ██║     ██║██╔═══╝ ",
-  "██║     ██║  ██║██║     ███████╗██║  ██║╚██████╗███████╗██║██║     ",
-  "╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ",
+  "  ╱╱╱▶  PAPERCLAW",
 ] as const;
 
-const TAGLINE = "The app people use to manage AI agents for work";
+const TAGLINE = "Your autonomous company, under your control";
 
 export function printPaperclipCliBanner(): void {
   const lines = [

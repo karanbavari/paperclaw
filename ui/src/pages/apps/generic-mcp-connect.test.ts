@@ -92,7 +92,7 @@ describe("genericConnectGuidance", () => {
 
   it("does not ask the operator to resolve an internal name conflict", () => {
     const guidance = genericConnectGuidance("tool_access_name_conflict", null);
-    expect(guidance).toMatchObject({ title: "Paperclip couldn’t name this connection", focus: "none" });
+    expect(guidance).toMatchObject({ title: "Paperclaw couldn’t name this connection", focus: "none" });
     expect(guidance.body).not.toContain("different name");
   });
 
